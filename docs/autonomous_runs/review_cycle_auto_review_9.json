@@ -1,0 +1,38 @@
+{
+  "cycle_id": "cycle-20260219-201120",
+  "ran_at": "2026-02-19T20:11:20Z",
+  "dry_run": false,
+  "thresholds": {
+    "min_profit_usd": 0.01,
+    "min_margin_rate": 0.03,
+    "min_match_score": 0.75
+  },
+  "counts": {
+    "approve": 1,
+    "reject": 0,
+    "skipped": 0
+  },
+  "decisions": [
+    {
+      "id": 53,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす",
+      "metrics": {
+        "profit": 20.0008,
+        "margin": 0.321556,
+        "score": 0.92,
+        "common_codes": [
+          "F91W"
+        ],
+        "token_jaccard": 0.0667,
+        "source_colors": [
+          "green"
+        ],
+        "market_colors": []
+      },
+      "source_title": "国内正規品 F91W カシオ デジタル ウォッチ F-91W シリーズselect 腕時計 CASIO 薄型 軽量 コンパクトサイズ 軽い ウレタン樹脂バンド サイズフリー / 新色緑 グリーンライン F-91WM F-91WG F-91W F91W F91WM F91WG ユニセックスサイズ 男女兼用 ネコポス配送",
+      "market_title": "For Casio A-158 A159 F-91W stainless Steel Watch Case Modified Metal Watchband"
+    }
+  ]
+}

@@ -1,0 +1,754 @@
+{
+  "cycle_id": "cycle-20260219-230948",
+  "ran_at": "2026-02-19T23:09:48Z",
+  "dry_run": false,
+  "thresholds": {
+    "min_profit_usd": 0.01,
+    "min_margin_rate": 0.03,
+    "min_match_score": 0.75,
+    "min_auto_approve_score": 0.9,
+    "min_token_jaccard": 0.62,
+    "max_score_drift": 0.25
+  },
+  "counts": {
+    "approve": 24,
+    "reject": 0,
+    "skipped": 0
+  },
+  "decisions": [
+    {
+      "id": 307,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 20.0079,
+        "margin": 0.038477,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "AT6080-53L"
+        ],
+        "common_specific_codes": [
+          "AT6080-53L"
+        ],
+        "token_jaccard": 0.3333,
+        "source_colors": [],
+        "market_colors": []
+      },
+      "source_title": "シチズンAT6080-53Lプロマスター LAND-エコ・ドライブ電波時計[4974375504226]",
+      "market_title": "CITIZEN AT6080-53L [PROMASTER Eco Drive Radio Watch LAND Series] New"
+    },
+    {
+      "id": 306,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 37.1908,
+        "margin": 0.068794,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "AT6080-53L"
+        ],
+        "common_specific_codes": [
+          "AT6080-53L"
+        ],
+        "token_jaccard": 0.2727,
+        "source_colors": [
+          "blue"
+        ],
+        "market_colors": [
+          "blue"
+        ]
+      },
+      "source_title": "【クリーナークロスプレゼントキャンペーン中!】シチズンAT6080-53L LANDシリーズ プロマスター ネイビー ソーラー電波時計 エコドライブ",
+      "market_title": "Citizen Promaster Land Eco-Drive AT6080-53L Blue Dial Titanium Solar Men Watch"
+    },
+    {
+      "id": 305,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 37.1908,
+        "margin": 0.068794,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "AT6080-53L"
+        ],
+        "common_specific_codes": [
+          "AT6080-53L"
+        ],
+        "token_jaccard": 0.3333,
+        "source_colors": [
+          "blue",
+          "silver"
+        ],
+        "market_colors": [
+          "blue"
+        ]
+      },
+      "source_title": "シチズン PROMASTER（プロマスター） エコ・ドライブ電波時計［ソーラー電波時計］ LANDシリーズ ブルー/シルバー AT6080-53L AT608053L",
+      "market_title": "Citizen Promaster Land Eco-Drive AT6080-53L Blue Dial Titanium Solar Men Watch"
+    },
+    {
+      "id": 304,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 19.8784,
+        "margin": 0.038228,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "AT6080-53L"
+        ],
+        "common_specific_codes": [
+          "AT6080-53L"
+        ],
+        "token_jaccard": 0.5,
+        "source_colors": [],
+        "market_colors": []
+      },
+      "source_title": "シチズン 電波ソーラー 腕時計 CITIZEN 時計 プロマスター LANDシリーズ PROMASTER 男性 向け メンズ AT6080-53L 人気 おすすめ おしゃれ ブランド プレゼント ギフト",
+      "market_title": "CITIZEN AT6080-53L [PROMASTER Eco Drive Radio Watch LAND Series] New"
+    },
+    {
+      "id": 303,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 19.8784,
+        "margin": 0.038228,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "AT6080-53L"
+        ],
+        "common_specific_codes": [
+          "AT6080-53L"
+        ],
+        "token_jaccard": 0.5,
+        "source_colors": [],
+        "market_colors": []
+      },
+      "source_title": "シチズン CITIZEN プロマスター PROMASTER エコ ドライブ 電波 時計 AT6080-53L LANDシリーズ 20気圧防水 カレンダー 腕時計 【お取り寄せ】",
+      "market_title": "CITIZEN AT6080-53L [PROMASTER Eco Drive Radio Watch LAND Series] New"
+    },
+    {
+      "id": 302,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 37.1908,
+        "margin": 0.068794,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "AT6080-53L"
+        ],
+        "common_specific_codes": [
+          "AT6080-53L"
+        ],
+        "token_jaccard": 0.3636,
+        "source_colors": [
+          "blue"
+        ],
+        "market_colors": [
+          "blue"
+        ]
+      },
+      "source_title": "シチズン プロマスター LANDシリーズ エコドライブ電波 メンズ 腕時計 ソーラー電波腕時計 ソーラー電波時計 AT6080-53L CITIZEN PROMASTER ネイビー ブランド おしゃれ 防水 文字盤 大きい プレゼント 男性 実用的",
+      "market_title": "Citizen Promaster Land Eco-Drive AT6080-53L Blue Dial Titanium Solar Men Watch"
+    },
+    {
+      "id": 301,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 19.8784,
+        "margin": 0.038228,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "AT6080-53L"
+        ],
+        "common_specific_codes": [
+          "AT6080-53L"
+        ],
+        "token_jaccard": 0.3,
+        "source_colors": [],
+        "market_colors": []
+      },
+      "source_title": "【最大2000円OFFクーポン23日(月)01:59迄】シチズン CITIZEN プロマスター PROMASTER AT6080-53L 腕時計 メンズ",
+      "market_title": "CITIZEN AT6080-53L [PROMASTER Eco Drive Radio Watch LAND Series] New"
+    },
+    {
+      "id": 300,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 142.2246,
+        "margin": 0.418308,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-M5610U-2JF"
+        ],
+        "common_specific_codes": [
+          "GW-M5610U-2JF"
+        ],
+        "token_jaccard": 0.3333,
+        "source_colors": [
+          "green"
+        ],
+        "market_colors": [
+          "green"
+        ]
+      },
+      "source_title": "カシオ Gショック 腕時計 メンズ CASIO G-SHOCK ジーショック 時計 ウオッチ GW-M5610U-2JF 国内正規品【ギフト プレゼント】【ラッピング袋無料】【20s】",
+      "market_title": "Casio G-Shock GW-M5610U-2JF Multiband6 Solar Digital Watch New + Box & Paper's"
+    },
+    {
+      "id": 299,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 59.0583,
+        "margin": 0.22026,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-M5610UBC-1JF"
+        ],
+        "common_specific_codes": [
+          "GW-M5610UBC-1JF"
+        ],
+        "token_jaccard": 0.4286,
+        "source_colors": [
+          "green"
+        ],
+        "market_colors": [
+          "green"
+        ]
+      },
+      "source_title": "カシオ Gショック 腕時計 メンズ CASIO G-SHOCK ジーショック 時計 ウオッチ GW-M5610UBC-1JF 国内正規品【送料無料】【ギフト プレゼント】【ラッピング袋無料】【20s】",
+      "market_title": "CASIO GW-M5610UBC-1JF  G-SHOCK 20ATM Waterproof Solar New JP"
+    },
+    {
+      "id": 298,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 36.2838,
+        "margin": 0.169646,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-M5610U-1CJF"
+        ],
+        "common_specific_codes": [
+          "GW-M5610U-1CJF"
+        ],
+        "token_jaccard": 0.3,
+        "source_colors": [
+          "green"
+        ],
+        "market_colors": [
+          "green"
+        ]
+      },
+      "source_title": "カシオ Gショック 腕時計 メンズ CASIO G-SHOCK ジーショック 時計 ウオッチ GW-M5610U-1CJF 国内正規品【ギフト プレゼント】【ラッピング袋無料】【20s】",
+      "market_title": "CASIO Watch G-SHOCK Radio Solar Super Illuminator Type GW-M5610U-1CJF Men's NEW"
+    },
+    {
+      "id": 297,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 15.1914,
+        "margin": 0.080476,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-M5610U-1JF"
+        ],
+        "common_specific_codes": [
+          "GW-M5610U-1JF"
+        ],
+        "token_jaccard": 0.3333,
+        "source_colors": [
+          "green"
+        ],
+        "market_colors": [
+          "black",
+          "green"
+        ]
+      },
+      "source_title": "カシオ Gショック 腕時計 メンズ CASIO G-SHOCK ジーショック 時計 ウオッチ GW-M5610U-1JF 国内正規品【送料無料】【ギフト プレゼント】【ラッピング袋無料】【20s】",
+      "market_title": "CASIO G-SHOCK GW-M5610U-1JF Black Waterproof Solar Men's Watch New in Box"
+    },
+    {
+      "id": 296,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 49.749,
+        "margin": 0.216385,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-M5610U-1CJF"
+        ],
+        "common_specific_codes": [
+          "GW-M5610U-1CJF"
+        ],
+        "token_jaccard": 0.375,
+        "source_colors": [
+          "black",
+          "green"
+        ],
+        "market_colors": [
+          "black",
+          "green"
+        ]
+      },
+      "source_title": "国内正規品　G-SHOCK　Gショック　5600シリーズ　電波ソーラー　腕時計　ウォッチ　メンズ　男性用　デジタル　ブラック　カシオ　ジーショック【GW-M5610U-1CJF】AL",
+      "market_title": "CASIO G-SHOCK GW-M5610U-1CJF Black Solar Radio Men Watch Japan"
+    },
+    {
+      "id": 295,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 21.1491,
+        "margin": 0.094839,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-M5610UBC-1JF"
+        ],
+        "common_specific_codes": [
+          "GW-M5610UBC-1JF"
+        ],
+        "token_jaccard": 0.2727,
+        "source_colors": [
+          "black",
+          "green"
+        ],
+        "market_colors": [
+          "black",
+          "green"
+        ]
+      },
+      "source_title": "国内正規品　G-SHOCK　Gショック　5600シリーズ　電波ソーラー　腕時計　ウォッチ　メンズ　男性用　デジタル　ブラック　コンポジットバンド　カシオ　ジーショック【GW-M5610UBC-1JF】",
+      "market_title": "CASIO G-SHOCK GW-M5610UBC-1JF Black Origin Solar Radio Digital Men Watch 43.2mm"
+    },
+    {
+      "id": 294,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 15.1914,
+        "margin": 0.080476,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-M5610U-1JF"
+        ],
+        "common_specific_codes": [
+          "GW-M5610U-1JF"
+        ],
+        "token_jaccard": 0.3333,
+        "source_colors": [
+          "black",
+          "green"
+        ],
+        "market_colors": [
+          "black",
+          "green"
+        ]
+      },
+      "source_title": "国内正規品　G-SHOCK　Gショック　5600シリーズ　電波ソーラー　腕時計　ウォッチ　メンズ　男性用　デジタル　ブラック　カシオ　ジーショック【GW-M5610U-1JF】AL",
+      "market_title": "CASIO G-SHOCK GW-M5610U-1JF Black Waterproof Solar Men's Watch New in Box"
+    },
+    {
+      "id": 293,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 10.9173,
+        "margin": 0.057834,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-M5610U-1JF"
+        ],
+        "common_specific_codes": [
+          "GW-M5610U-1JF"
+        ],
+        "token_jaccard": 0.25,
+        "source_colors": [
+          "black",
+          "gray",
+          "green"
+        ],
+        "market_colors": [
+          "black",
+          "green"
+        ]
+      },
+      "source_title": "カシオ CASIO G-SHOCK DIGITAL 5600 SERIES 時計 ウォッチ メンズ ソーラー電波時計 【ブラック×ブラック：GW-M5610U-1BJF】 【ブラック×グレー：GW-M5610U-1JF】 腕時計 男性 Gショック ジーショック",
+      "market_title": "CASIO G-SHOCK GW-M5610U-1JF Black Waterproof Solar Men's Watch New in Box"
+    },
+    {
+      "id": 292,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 23.811,
+        "margin": 0.048103,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59E"
+        ],
+        "common_specific_codes": [
+          "NB1050-59E"
+        ],
+        "token_jaccard": 0.2857,
+        "source_colors": [],
+        "market_colors": []
+      },
+      "source_title": "シチズン 【国内正規品】シチズンコレクション　クラシカルライン メカニカル(自動巻き＋手巻き) メンズタイプ NB1050-59E [NB105059E]【返品種別A】",
+      "market_title": "CITIZEN NB1050-59E [CITIZEN COLLECTION Mechanical Classical Line] New"
+    },
+    {
+      "id": 291,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 23.811,
+        "margin": 0.048103,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59L"
+        ],
+        "common_specific_codes": [
+          "NB1050-59L"
+        ],
+        "token_jaccard": 0.25,
+        "source_colors": [],
+        "market_colors": []
+      },
+      "source_title": "シチズン 【国内正規品】シチズンコレクション　クラシカルライン メカニカル(自動巻き＋手巻き) メンズタイプ NB1050-59L [NB105059L]【返品種別A】",
+      "market_title": "CITIZEN NB1050-59L [CITIZEN COLLECTION Mechanical Classical Line] Japan Domestic"
+    },
+    {
+      "id": 290,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 42.6384,
+        "margin": 0.09072,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59A"
+        ],
+        "common_specific_codes": [
+          "NB1050-59A"
+        ],
+        "token_jaccard": 0.4,
+        "source_colors": [],
+        "market_colors": []
+      },
+      "source_title": "シチズン CITIZEN 腕時計 機械式 自動巻(手巻付き) サファイアクリスタル NB1050-59A メンズ［国内正規品］",
+      "market_title": "CITIZEN Collection Mechanical stainless watch NB1050-59A"
+    },
+    {
+      "id": 289,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 23.811,
+        "margin": 0.048103,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59A"
+        ],
+        "common_specific_codes": [
+          "NB1050-59A"
+        ],
+        "token_jaccard": 0.2857,
+        "source_colors": [],
+        "market_colors": []
+      },
+      "source_title": "シチズン 【国内正規品】シチズンコレクション　クラシカルライン メカニカル(自動巻き＋手巻き) メンズタイプ NB1050-59A [NB105059A]【返品種別A】",
+      "market_title": "CITIZEN NB1050-59A [CITIZEN COLLECTION Mechanical Classical Line] Japan New"
+    },
+    {
+      "id": 264,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 16.7984,
+        "margin": 0.143601,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "A168WEGB-1B"
+        ],
+        "common_specific_codes": [
+          "A168WEGB-1B"
+        ],
+        "token_jaccard": 0.1111,
+        "source_colors": [],
+        "market_colors": [
+          "black"
+        ]
+      },
+      "source_title": "CASIO 腕時計 カシオ 時計 ウォッチ チープカシオ チプカシ デジタル メンズ レディース キッズ A168WEGB-1B [並行輸入品]",
+      "market_title": "Casio Vintage Style Digital Black Ion Plated S.Steel Band Watch A168WEGB-1B"
+    },
+    {
+      "id": 263,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 11.354,
+        "margin": 0.094814,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "A168WEMB-1B"
+        ],
+        "common_specific_codes": [
+          "A168WEMB-1B"
+        ],
+        "token_jaccard": 0.1429,
+        "source_colors": [],
+        "market_colors": []
+      },
+      "source_title": "CASIO 腕時計 カシオ 時計 ウォッチ チープカシオ チプカシ デジタル メンズ レディース キッズ A168WEMB-1B [並行輸入品]",
+      "market_title": "CASIO A168WEMB-1B Digital Electro Luminescence Watch Gunmetal Mesh Band"
+    },
+    {
+      "id": 262,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 10.9082,
+        "margin": 0.212386,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "F-91W-3"
+        ],
+        "common_specific_codes": [
+          "F-91W-3"
+        ],
+        "token_jaccard": 0.1,
+        "source_colors": [],
+        "market_colors": []
+      },
+      "source_title": "【並行輸入品】【BOX無し】CASIO カシオ 腕時計 海外モデル F-91W-3 メンズ レディース STANDARD スタンダード チープカシオ チプカシ クオーツ",
+      "market_title": "CASIO WATCH FREE POST FROM SYDNEY VINTAGE RETRO F-91W-3 F91 F91W F-91 WARRANTY"
+    },
+    {
+      "id": 261,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 10.8952,
+        "margin": 0.212134,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "F-91W-3"
+        ],
+        "common_specific_codes": [
+          "F-91W-3"
+        ],
+        "token_jaccard": 0.1111,
+        "source_colors": [],
+        "market_colors": []
+      },
+      "source_title": "海外正規品 10年保証 日本未発売 CASIO STANDARD カシオ F-91W-3 腕時計 時計 ブランド メンズ レディース チープカシオ チプカシ デジタル 日付",
+      "market_title": "CASIO WATCH FREE POST FROM SYDNEY VINTAGE RETRO F-91W-3 F91 F91W F-91 WARRANTY"
+    },
+    {
+      "id": 208,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 19.5846,
+        "margin": 0.100952,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-M5610U-1CJF"
+        ],
+        "common_specific_codes": [
+          "GW-M5610U-1CJF"
+        ],
+        "token_jaccard": 0.3333,
+        "source_colors": [
+          "green"
+        ],
+        "market_colors": [
+          "black",
+          "green"
+        ]
+      },
+      "source_title": "CASIO(カシオ) GW-M5610U-1CJF G-SHOCK ジーショック 国内正規品 タフソーラー メンズ 腕時計",
+      "market_title": "Casio G-shock GW-M5610U-1CJF Men's Watch Radio Solar Black Japan Led Light Watch"
+    }
+  ]
+}

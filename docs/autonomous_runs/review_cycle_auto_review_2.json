@@ -1,0 +1,63 @@
+{
+  "cycle_id": "cycle-20260219-200510",
+  "ran_at": "2026-02-19T20:05:11Z",
+  "dry_run": false,
+  "thresholds": {
+    "min_profit_usd": 0.01,
+    "min_margin_rate": 0.03,
+    "min_match_score": 0.75
+  },
+  "counts": {
+    "approve": 1,
+    "reject": 1,
+    "skipped": 0
+  },
+  "decisions": [
+    {
+      "id": 48,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす",
+      "metrics": {
+        "profit": 5.5168,
+        "margin": 0.116708,
+        "score": 0.92,
+        "common_codes": [
+          "F91W1"
+        ],
+        "token_jaccard": 0.1111,
+        "source_colors": [],
+        "market_colors": [
+          "gold"
+        ]
+      },
+      "source_title": "CASIO 腕時計 カシオ 時計 ウォッチ チープカシオ チプカシ デジタル メンズ レディース キッズ F-91W-1 [並行輸入品]",
+      "market_title": "F-91W-1 Men’s 2025 Digital Watch Gold Stainless Steel Classic Alarm Light Water"
+    },
+    {
+      "id": 47,
+      "decision": "reject",
+      "issues": [
+        "color"
+      ],
+      "reason": "色情報が不一致",
+      "metrics": {
+        "profit": 18.136,
+        "margin": 0.302367,
+        "score": 0.92,
+        "common_codes": [
+          "F91W"
+        ],
+        "token_jaccard": 0.0833,
+        "source_colors": [
+          "green"
+        ],
+        "market_colors": [
+          "purple"
+        ]
+      },
+      "source_title": "国内正規品 F91W カシオ デジタル ウォッチ F-91W シリーズselect 腕時計 CASIO 薄型 軽量 コンパクトサイズ 軽い ウレタン樹脂バンド サイズフリー / 新色緑 グリーンライン F-91WM F-91WG F-91W F91W F91WM F91WG ユニセックスサイズ 男女兼用 ネコポス配送",
+      "market_title": "\"Purple\" Casio F91W Purple Screen Mod Minimalist Brand New"
+    }
+  ]
+}

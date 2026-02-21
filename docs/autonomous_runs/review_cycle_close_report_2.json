@@ -1,0 +1,32 @@
+{
+  "cycle_id": "cycle-20260219-200510",
+  "closed_at": "2026-02-19T20:05:11Z",
+  "manifest_path": "/Users/tadamichikimura/Downloads/dev-HQ/ebayminer/docs/review_cycle_active.json",
+  "batch_size": 2,
+  "reviewed_count": 2,
+  "unresolved_count": 0,
+  "unresolved_candidate_ids": [],
+  "status_breakdown": {
+    "listed": 1,
+    "rejected": 1
+  },
+  "rejected_with_reason_count": 1,
+  "reject_floor": 2,
+  "ready_for_tuning": false,
+  "top_issue_targets": [
+    {
+      "issue": "color",
+      "count": 1
+    }
+  ],
+  "recommendations": [
+    {
+      "issue": "color",
+      "count": 1,
+      "action": "色属性抽出を追加し、色不一致を減点する"
+    }
+  ],
+  "reason_samples": [
+    "色情報が不一致"
+  ]
+}

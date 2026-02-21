@@ -1,0 +1,328 @@
+{
+  "cycle_id": "cycle-20260220-025608",
+  "started_at": "2026-02-20T02:56:08Z",
+  "ended_at": "2026-02-20T02:56:08Z",
+  "run_seq": 71,
+  "target_count": 24,
+  "hard_cap": 24,
+  "batch_size": 1,
+  "cycle_ready": false,
+  "initial_reviewable_pending": 1,
+  "final_reviewable_pending": 1,
+  "delta_reviewable_pending": 0,
+  "min_match_score": 0.7,
+  "min_profit_usd": 0.01,
+  "min_margin_rate": 0.03,
+  "condition": "new",
+  "stopped_reason": "completed_rounds",
+  "selected_candidate_ids": [
+    474
+  ],
+  "cache_only": true,
+  "query_reordered": true,
+  "query_order": [
+    "seiko sbdc101 watch"
+  ],
+  "max_zero_gain_strikes": 2,
+  "historical_min_attempts": 3,
+  "historical_min_network_calls": 6,
+  "historical_min_gain_per_network_call": 0.05,
+  "historical_retry_every_runs": 4,
+  "rpa_refresh": {
+    "enabled": true,
+    "mode": "rpa_json",
+    "cache_only": true,
+    "ran": false,
+    "output_path": "/Users/tadamichikimura/Downloads/dev-HQ/ebayminer/data/liquidity_rpa_signals.jsonl",
+    "primary": {},
+    "fallback": {},
+    "model_backfill": {},
+    "missing_before": 0,
+    "missing_after_primary": 0,
+    "missing_after_fallback": 0,
+    "missing_after_model_backfill": 0,
+    "reason": "cache_only_skip"
+  },
+  "liquidity_backfill": {
+    "updated": false,
+    "added_entries": 0,
+    "touched_entries": 0,
+    "total_entries": 1
+  },
+  "query_skipped_count": 0,
+  "query_efficiency_snapshot": [
+    {
+      "query": "seiko sbdc101 watch",
+      "attempts": 16,
+      "network_calls": 18,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 0.0,
+      "zero_gain_streak": 7
+    }
+  ],
+  "api_efficiency_summary": {
+    "total_calls": 6,
+    "cache_hits": 6,
+    "network_calls": 0,
+    "by_site": {
+      "ebay": {
+        "calls_made": 1,
+        "cache_hits": 1,
+        "network_calls": 0,
+        "budget_remaining": -1
+      },
+      "rakuten": {
+        "calls_made": 2,
+        "cache_hits": 2,
+        "network_calls": 0,
+        "budget_remaining": -1
+      },
+      "yahoo": {
+        "calls_made": 3,
+        "cache_hits": 3,
+        "network_calls": 0,
+        "budget_remaining": -1
+      }
+    },
+    "cache_hit_rate": 1.0
+  },
+  "runs": [
+    {
+      "round": 1,
+      "query": "seiko sbdc101 watch",
+      "created_count": 0,
+      "added_to_reviewable_queue": 0,
+      "queue_before": 1,
+      "queue_after": 1,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 23,
+          "calls_made": 1,
+          "cache_hits": 1,
+          "network_calls": 0,
+          "budget_remaining": -1,
+          "max_calls": 3,
+          "per_call_limit": 50,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 0,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "SEIKO SBDC101 NEW",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 23,
+              "new_count": 23,
+              "duration_ms": 528,
+              "info": {
+                "http": 200,
+                "raw_total": 82,
+                "page": 1,
+                "offset": 0,
+                "cache_hit": true,
+                "cache_age_sec": 13480,
+                "budget_remaining": -1
+              }
+            }
+          ]
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 1,
+          "calls_made": 2,
+          "cache_hits": 2,
+          "network_calls": 0,
+          "budget_remaining": -1,
+          "max_calls": 2,
+          "per_call_limit": 30,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "max_calls_reached",
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 2,
+            "page": 1
+          },
+          "queries": [
+            {
+              "query": "seiko sbdc101 watch",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 0,
+              "new_count": 0,
+              "duration_ms": 1,
+              "info": {
+                "http": 200,
+                "raw_count": 1,
+                "page": 1,
+                "cache_hit": true,
+                "cache_age_sec": 13479,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "query": "SEIKO SBDC101",
+              "query_index": 1,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 1,
+              "new_count": 1,
+              "duration_ms": 15,
+              "info": {
+                "http": 200,
+                "raw_count": 23,
+                "page": 1,
+                "cache_hit": true,
+                "cache_age_sec": 13479,
+                "budget_remaining": -1
+              }
+            }
+          ]
+        },
+        "yahoo": {
+          "ok": true,
+          "count": 6,
+          "calls_made": 3,
+          "cache_hits": 3,
+          "network_calls": 0,
+          "budget_remaining": -1,
+          "max_calls": 3,
+          "per_call_limit": 50,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "max_calls_reached",
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 3,
+            "page": 1
+          },
+          "queries": [
+            {
+              "query": "seiko sbdc101 watch",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 0,
+              "new_count": 0,
+              "duration_ms": 0,
+              "info": {
+                "http": 200,
+                "raw_total": 2,
+                "page": 1,
+                "start": 1,
+                "cache_hit": true,
+                "cache_age_sec": 13479,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "query": "SEIKO SBDC101",
+              "query_index": 1,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 5,
+              "new_count": 5,
+              "duration_ms": 8,
+              "info": {
+                "http": 200,
+                "raw_total": 200,
+                "page": 1,
+                "start": 1,
+                "cache_hit": true,
+                "cache_age_sec": 13479,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "query": "SBDC101",
+              "query_index": 2,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 6,
+              "new_count": 1,
+              "duration_ms": 7,
+              "info": {
+                "http": 200,
+                "raw_total": 203,
+                "page": 1,
+                "start": 1,
+                "cache_hit": true,
+                "cache_age_sec": 13479,
+                "budget_remaining": -1
+              }
+            }
+          ]
+        }
+      },
+      "errors": [],
+      "skipped_duplicates": 5,
+      "skipped_low_match": 1,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 0,
+      "skipped_low_margin": 0,
+      "skipped_low_ev90": 0,
+      "skipped_low_liquidity": 0,
+      "skipped_liquidity_unavailable": 0,
+      "skipped_ambiguous_model_title": 1,
+      "liquidity_unavailable_model_codes": [],
+      "low_match_reason_counts": {
+        "family_conflict": 1
+      },
+      "low_match_samples": [
+        {
+          "source_title": "D-DAY Grape Iris LP",
+          "best_market_title": "SEIKO PROSPEX 1st Divers SBDC101 Mechanical Automatic men Watch New in Box",
+          "score": 0.0,
+          "reason": "family_conflict"
+        }
+      ],
+      "hints": [
+        "同一候補は既に取り込み済みです。別の型番やシリーズで検索してください。",
+        "一致不足の主因: family_conflict",
+        "複数型番が列挙された曖昧タイトルを除外しました。"
+      ],
+      "api_efficiency": {
+        "total_calls": 6,
+        "cache_hits": 6,
+        "network_calls": 0,
+        "by_site": {
+          "ebay": {
+            "calls_made": 1,
+            "cache_hits": 1,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "rakuten": {
+            "calls_made": 2,
+            "cache_hits": 2,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "yahoo": {
+            "calls_made": 3,
+            "cache_hits": 3,
+            "network_calls": 0,
+            "budget_remaining": -1
+          }
+        }
+      }
+    }
+  ]
+}

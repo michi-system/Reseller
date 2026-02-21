@@ -1,0 +1,147 @@
+{
+  "generated_at": "2026-02-19T18:09:45Z",
+  "inputs": {
+    "brand": "citizen",
+    "model": "bn0150",
+    "noun": "watch",
+    "sites": [
+      "ebay",
+      "yahoo",
+      "rakuten"
+    ]
+  },
+  "sites": {
+    "ebay": {
+      "rate_limit_rps": 2.0,
+      "min_candidates": 20,
+      "max_candidates": 2000,
+      "rows": [
+        {
+          "stage": "L1_precise_new",
+          "query": "citizen bn0150 watch new",
+          "http": 200,
+          "ok": true,
+          "count": 107,
+          "delta_from_prev": null,
+          "error": null
+        },
+        {
+          "stage": "L2_precise",
+          "query": "citizen bn0150 watch",
+          "http": 200,
+          "ok": true,
+          "count": 162,
+          "delta_from_prev": 55,
+          "error": null
+        },
+        {
+          "stage": "L3_mid",
+          "query": "citizen bn0150",
+          "http": 200,
+          "ok": true,
+          "count": 196,
+          "delta_from_prev": 34,
+          "error": null
+        },
+        {
+          "stage": "L4_broad",
+          "query": "citizen watch",
+          "http": 200,
+          "ok": true,
+          "count": 155900,
+          "delta_from_prev": 155704,
+          "error": null
+        }
+      ],
+      "recommended_stage": "L1_precise_new"
+    },
+    "yahoo": {
+      "rate_limit_rps": 1.0,
+      "min_candidates": 20,
+      "max_candidates": 1000,
+      "rows": [
+        {
+          "stage": "L1_precise_new",
+          "query": "citizen bn0150 watch new",
+          "http": 200,
+          "ok": true,
+          "count": 0,
+          "delta_from_prev": null,
+          "error": null
+        },
+        {
+          "stage": "L2_precise",
+          "query": "citizen bn0150 watch",
+          "http": 200,
+          "ok": true,
+          "count": 4,
+          "delta_from_prev": 4,
+          "error": null
+        },
+        {
+          "stage": "L3_mid",
+          "query": "citizen bn0150",
+          "http": 200,
+          "ok": true,
+          "count": 32,
+          "delta_from_prev": 28,
+          "error": null
+        },
+        {
+          "stage": "L4_broad",
+          "query": "citizen watch",
+          "http": 200,
+          "ok": true,
+          "count": 5542,
+          "delta_from_prev": 5510,
+          "error": null
+        }
+      ],
+      "recommended_stage": "L3_mid"
+    },
+    "rakuten": {
+      "rate_limit_rps": 1.0,
+      "min_candidates": 10,
+      "max_candidates": 1000,
+      "rows": [
+        {
+          "stage": "L1_precise_new",
+          "query": "citizen bn0150 watch new",
+          "http": 200,
+          "ok": true,
+          "count": 0,
+          "delta_from_prev": null,
+          "error": null
+        },
+        {
+          "stage": "L2_precise",
+          "query": "citizen bn0150 watch",
+          "http": 200,
+          "ok": true,
+          "count": 9,
+          "delta_from_prev": 9,
+          "error": null
+        },
+        {
+          "stage": "L3_mid",
+          "query": "citizen bn0150",
+          "http": 200,
+          "ok": true,
+          "count": 16,
+          "delta_from_prev": 7,
+          "error": null
+        },
+        {
+          "stage": "L4_broad",
+          "query": "citizen watch",
+          "http": 200,
+          "ok": true,
+          "count": 4770,
+          "delta_from_prev": 4754,
+          "error": null
+        }
+      ],
+      "recommended_stage": "L3_mid"
+    }
+  }
+}

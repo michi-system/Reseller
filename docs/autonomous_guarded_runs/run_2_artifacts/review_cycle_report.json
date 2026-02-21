@@ -1,0 +1,1759 @@
+{
+  "cycle_id": "cycle-20260219-230850",
+  "started_at": "2026-02-19T23:08:26Z",
+  "ended_at": "2026-02-19T23:08:50Z",
+  "run_seq": 7,
+  "target_count": 24,
+  "hard_cap": 30,
+  "batch_size": 24,
+  "cycle_ready": true,
+  "initial_reviewable_pending": 5,
+  "final_reviewable_pending": 26,
+  "delta_reviewable_pending": 21,
+  "min_match_score": 0.75,
+  "min_profit_usd": 0.01,
+  "min_margin_rate": 0.03,
+  "condition": "new",
+  "stopped_reason": "target_reached",
+  "selected_candidate_ids": [
+    260,
+    259,
+    258,
+    257,
+    256,
+    255,
+    254,
+    253,
+    252,
+    248,
+    247,
+    246,
+    245,
+    244,
+    243,
+    242,
+    241,
+    240,
+    239,
+    238,
+    237,
+    236,
+    210,
+    209
+  ],
+  "cache_only": false,
+  "query_reordered": true,
+  "query_order": [
+    "seiko sbga211 watch",
+    "seiko ssc813 watch",
+    "citizen nb1050 watch",
+    "citizen bj7110 watch",
+    "orient kamasu watch",
+    "orient bambino watch",
+    "citizen at6080 watch",
+    "seiko spb143 watch",
+    "casio f91w watch",
+    "casio a168 watch",
+    "seiko snk809 watch",
+    "citizen tsuyosa watch",
+    "g-shock ga110 watch",
+    "g-shock ga2100 1a1 watch",
+    "seiko prospex new watch",
+    "citizen promaster new watch",
+    "casio edifice watch",
+    "g-shock gw9400 watch",
+    "casio gwm5610 watch",
+    "g-shock gw5000 watch",
+    "casio ga2100 watch",
+    "seiko sbdc101 watch"
+  ],
+  "max_zero_gain_strikes": 2,
+  "historical_min_attempts": 3,
+  "historical_min_network_calls": 6,
+  "historical_min_gain_per_network_call": 0.05,
+  "historical_retry_every_runs": 4,
+  "query_skipped_count": 0,
+  "query_efficiency_snapshot": [
+    {
+      "query": "seiko spb143 watch",
+      "attempts": 0,
+      "network_calls": 0,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 9999.0,
+      "zero_gain_streak": 0
+    },
+    {
+      "query": "casio f91w watch",
+      "attempts": 0,
+      "network_calls": 0,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 9999.0,
+      "zero_gain_streak": 0
+    },
+    {
+      "query": "casio a168 watch",
+      "attempts": 0,
+      "network_calls": 0,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 9999.0,
+      "zero_gain_streak": 0
+    },
+    {
+      "query": "seiko snk809 watch",
+      "attempts": 0,
+      "network_calls": 0,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 9999.0,
+      "zero_gain_streak": 0
+    },
+    {
+      "query": "citizen tsuyosa watch",
+      "attempts": 0,
+      "network_calls": 0,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 9999.0,
+      "zero_gain_streak": 0
+    },
+    {
+      "query": "g-shock ga110 watch",
+      "attempts": 0,
+      "network_calls": 0,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 9999.0,
+      "zero_gain_streak": 0
+    },
+    {
+      "query": "g-shock ga2100 1a1 watch",
+      "attempts": 0,
+      "network_calls": 0,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 9999.0,
+      "zero_gain_streak": 0
+    },
+    {
+      "query": "seiko prospex new watch",
+      "attempts": 0,
+      "network_calls": 0,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 9999.0,
+      "zero_gain_streak": 0
+    },
+    {
+      "query": "citizen promaster new watch",
+      "attempts": 0,
+      "network_calls": 0,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 9999.0,
+      "zero_gain_streak": 0
+    },
+    {
+      "query": "casio edifice watch",
+      "attempts": 0,
+      "network_calls": 0,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 9999.0,
+      "zero_gain_streak": 0
+    },
+    {
+      "query": "citizen nb1050 watch",
+      "attempts": 1,
+      "network_calls": 5,
+      "queue_gain_total": 16,
+      "gain_per_network_call": 3.2,
+      "zero_gain_streak": 0
+    },
+    {
+      "query": "g-shock gw9400 watch",
+      "attempts": 1,
+      "network_calls": 5,
+      "queue_gain_total": 16,
+      "gain_per_network_call": 3.2,
+      "zero_gain_streak": 0
+    },
+    {
+      "query": "casio gwm5610 watch",
+      "attempts": 1,
+      "network_calls": 4,
+      "queue_gain_total": 8,
+      "gain_per_network_call": 2.0,
+      "zero_gain_streak": 0
+    },
+    {
+      "query": "citizen at6080 watch",
+      "attempts": 1,
+      "network_calls": 5,
+      "queue_gain_total": 9,
+      "gain_per_network_call": 1.8,
+      "zero_gain_streak": 0
+    },
+    {
+      "query": "g-shock gw5000 watch",
+      "attempts": 1,
+      "network_calls": 3,
+      "queue_gain_total": 5,
+      "gain_per_network_call": 1.6667,
+      "zero_gain_streak": 0
+    },
+    {
+      "query": "seiko sbga211 watch",
+      "attempts": 1,
+      "network_calls": 8,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 0.0,
+      "zero_gain_streak": 1
+    },
+    {
+      "query": "seiko ssc813 watch",
+      "attempts": 1,
+      "network_calls": 6,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 0.0,
+      "zero_gain_streak": 1
+    },
+    {
+      "query": "citizen bj7110 watch",
+      "attempts": 1,
+      "network_calls": 8,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 0.0,
+      "zero_gain_streak": 1
+    },
+    {
+      "query": "orient kamasu watch",
+      "attempts": 1,
+      "network_calls": 5,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 0.0,
+      "zero_gain_streak": 1
+    },
+    {
+      "query": "orient bambino watch",
+      "attempts": 1,
+      "network_calls": 3,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 0.0,
+      "zero_gain_streak": 1
+    },
+    {
+      "query": "casio ga2100 watch",
+      "attempts": 1,
+      "network_calls": 2,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 0.0,
+      "zero_gain_streak": 1
+    },
+    {
+      "query": "seiko sbdc101 watch",
+      "attempts": 2,
+      "network_calls": 6,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 0.0,
+      "zero_gain_streak": 2
+    }
+  ],
+  "api_efficiency_summary": {
+    "total_calls": 40,
+    "cache_hits": 0,
+    "network_calls": 40,
+    "by_site": {
+      "ebay": {
+        "calls_made": 11,
+        "cache_hits": 0,
+        "network_calls": 11,
+        "budget_remaining": 105
+      },
+      "rakuten": {
+        "calls_made": 13,
+        "cache_hits": 0,
+        "network_calls": 13,
+        "budget_remaining": 99
+      },
+      "yahoo": {
+        "calls_made": 16,
+        "cache_hits": 0,
+        "network_calls": 16,
+        "budget_remaining": 97
+      }
+    },
+    "cache_hit_rate": 0.0
+  },
+  "runs": [
+    {
+      "round": 1,
+      "query": "seiko sbga211 watch",
+      "created_count": 0,
+      "added_to_reviewable_queue": 0,
+      "queue_before": 5,
+      "queue_after": 5,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 6,
+          "calls_made": 3,
+          "cache_hits": 0,
+          "network_calls": 3,
+          "budget_remaining": 113,
+          "max_calls": 3,
+          "per_call_limit": 50,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "max_calls_reached",
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 3,
+            "page": 1
+          },
+          "queries": [
+            {
+              "query": "SEIKO SBGA211 NEW",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 6,
+              "new_count": 6,
+              "duration_ms": 1008,
+              "info": {
+                "http": 200,
+                "raw_total": 12,
+                "page": 1,
+                "offset": 0,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 115
+              }
+            },
+            {
+              "query": "SBGA211",
+              "query_index": 1,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 6,
+              "new_count": 0,
+              "duration_ms": 647,
+              "info": {
+                "http": 200,
+                "raw_total": 12,
+                "page": 1,
+                "offset": 0,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 114
+              }
+            },
+            {
+              "query": "seiko sbga211 watch",
+              "query_index": 2,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 5,
+              "new_count": 0,
+              "duration_ms": 614,
+              "info": {
+                "http": 200,
+                "raw_total": 7,
+                "page": 1,
+                "offset": 0,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 113
+              }
+            }
+          ]
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 2,
+          "calls_made": 2,
+          "cache_hits": 0,
+          "network_calls": 2,
+          "budget_remaining": 112,
+          "max_calls": 2,
+          "per_call_limit": 30,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "max_calls_reached",
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 2,
+            "page": 1
+          },
+          "queries": [
+            {
+              "query": "seiko sbga211 watch",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 0,
+              "new_count": 0,
+              "duration_ms": 148,
+              "info": {
+                "http": 200,
+                "raw_count": 1,
+                "page": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 113
+              }
+            },
+            {
+              "query": "SEIKO SBGA211",
+              "query_index": 1,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 2,
+              "new_count": 2,
+              "duration_ms": 238,
+              "info": {
+                "http": 200,
+                "raw_count": 15,
+                "page": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 112
+              }
+            }
+          ]
+        },
+        "yahoo": {
+          "ok": true,
+          "count": 1,
+          "calls_made": 3,
+          "cache_hits": 0,
+          "network_calls": 3,
+          "budget_remaining": 110,
+          "max_calls": 3,
+          "per_call_limit": 50,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "max_calls_reached",
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 3,
+            "page": 1
+          },
+          "queries": [
+            {
+              "query": "seiko sbga211 watch",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 0,
+              "new_count": 0,
+              "duration_ms": 108,
+              "info": {
+                "http": 200,
+                "raw_total": 0,
+                "page": 1,
+                "start": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 112
+              }
+            },
+            {
+              "query": "SEIKO SBGA211",
+              "query_index": 1,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 1,
+              "new_count": 1,
+              "duration_ms": 259,
+              "info": {
+                "http": 200,
+                "raw_total": 155,
+                "page": 1,
+                "start": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 111
+              }
+            },
+            {
+              "query": "SBGA211",
+              "query_index": 2,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 1,
+              "new_count": 0,
+              "duration_ms": 236,
+              "info": {
+                "http": 200,
+                "raw_total": 155,
+                "page": 1,
+                "start": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 110
+              }
+            }
+          ]
+        }
+      },
+      "errors": [],
+      "skipped_duplicates": 0,
+      "skipped_low_match": 3,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 0,
+      "skipped_low_margin": 0,
+      "api_efficiency": {
+        "total_calls": 8,
+        "cache_hits": 0,
+        "network_calls": 8,
+        "by_site": {
+          "ebay": {
+            "calls_made": 3,
+            "cache_hits": 0,
+            "network_calls": 3,
+            "budget_remaining": 113
+          },
+          "rakuten": {
+            "calls_made": 2,
+            "cache_hits": 0,
+            "network_calls": 2,
+            "budget_remaining": 112
+          },
+          "yahoo": {
+            "calls_made": 3,
+            "cache_hits": 0,
+            "network_calls": 3,
+            "budget_remaining": 110
+          }
+        }
+      }
+    },
+    {
+      "round": 1,
+      "query": "seiko ssc813 watch",
+      "created_count": 0,
+      "added_to_reviewable_queue": 0,
+      "queue_before": 5,
+      "queue_after": 5,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 26,
+          "calls_made": 1,
+          "cache_hits": 0,
+          "network_calls": 1,
+          "budget_remaining": 112,
+          "max_calls": 3,
+          "per_call_limit": 50,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 0,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "SEIKO SSC813 NEW",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 26,
+              "new_count": 26,
+              "duration_ms": 875,
+              "info": {
+                "http": 200,
+                "raw_total": 53,
+                "page": 1,
+                "offset": 0,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 112
+              }
+            }
+          ]
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 1,
+          "calls_made": 2,
+          "cache_hits": 0,
+          "network_calls": 2,
+          "budget_remaining": 110,
+          "max_calls": 2,
+          "per_call_limit": 30,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "max_calls_reached",
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 2,
+            "page": 1
+          },
+          "queries": [
+            {
+              "query": "seiko ssc813 watch",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 1,
+              "new_count": 1,
+              "duration_ms": 134,
+              "info": {
+                "http": 200,
+                "raw_count": 1,
+                "page": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 111
+              }
+            },
+            {
+              "query": "SEIKO SSC813",
+              "query_index": 1,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 1,
+              "new_count": 0,
+              "duration_ms": 169,
+              "info": {
+                "http": 200,
+                "raw_count": 2,
+                "page": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 110
+              }
+            }
+          ]
+        },
+        "yahoo": {
+          "ok": true,
+          "count": 2,
+          "calls_made": 3,
+          "cache_hits": 0,
+          "network_calls": 3,
+          "budget_remaining": 107,
+          "max_calls": 3,
+          "per_call_limit": 50,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "max_calls_reached",
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 3,
+            "page": 1
+          },
+          "queries": [
+            {
+              "query": "seiko ssc813 watch",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 1,
+              "new_count": 1,
+              "duration_ms": 139,
+              "info": {
+                "http": 200,
+                "raw_total": 3,
+                "page": 1,
+                "start": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 109
+              }
+            },
+            {
+              "query": "SEIKO SSC813",
+              "query_index": 1,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 1,
+              "new_count": 0,
+              "duration_ms": 165,
+              "info": {
+                "http": 200,
+                "raw_total": 12,
+                "page": 1,
+                "start": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 108
+              }
+            },
+            {
+              "query": "SSC813",
+              "query_index": 2,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 2,
+              "new_count": 1,
+              "duration_ms": 156,
+              "info": {
+                "http": 200,
+                "raw_total": 13,
+                "page": 1,
+                "start": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 107
+              }
+            }
+          ]
+        }
+      },
+      "errors": [],
+      "skipped_duplicates": 0,
+      "skipped_low_match": 3,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 0,
+      "skipped_low_margin": 0,
+      "api_efficiency": {
+        "total_calls": 6,
+        "cache_hits": 0,
+        "network_calls": 6,
+        "by_site": {
+          "ebay": {
+            "calls_made": 1,
+            "cache_hits": 0,
+            "network_calls": 1,
+            "budget_remaining": 112
+          },
+          "rakuten": {
+            "calls_made": 2,
+            "cache_hits": 0,
+            "network_calls": 2,
+            "budget_remaining": 110
+          },
+          "yahoo": {
+            "calls_made": 3,
+            "cache_hits": 0,
+            "network_calls": 3,
+            "budget_remaining": 107
+          }
+        }
+      }
+    },
+    {
+      "round": 1,
+      "query": "citizen nb1050 watch",
+      "created_count": 16,
+      "added_to_reviewable_queue": 16,
+      "queue_before": 5,
+      "queue_after": 21,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 48,
+          "calls_made": 1,
+          "cache_hits": 0,
+          "network_calls": 1,
+          "budget_remaining": 111,
+          "max_calls": 3,
+          "per_call_limit": 50,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 0,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "CITIZEN NB1050 NEW",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 48,
+              "new_count": 48,
+              "duration_ms": 817,
+              "info": {
+                "http": 200,
+                "raw_total": 202,
+                "page": 1,
+                "offset": 0,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 111
+              }
+            }
+          ]
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 27,
+          "calls_made": 2,
+          "cache_hits": 0,
+          "network_calls": 2,
+          "budget_remaining": 108,
+          "max_calls": 2,
+          "per_call_limit": 30,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 1,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "citizen nb1050 watch",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 3,
+              "new_count": 3,
+              "duration_ms": 164,
+              "info": {
+                "http": 200,
+                "raw_count": 3,
+                "page": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 109
+              }
+            },
+            {
+              "query": "CITIZEN NB1050",
+              "query_index": 1,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 24,
+              "new_count": 24,
+              "duration_ms": 303,
+              "info": {
+                "http": 200,
+                "raw_count": 189,
+                "page": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 108
+              }
+            }
+          ]
+        },
+        "yahoo": {
+          "ok": true,
+          "count": 53,
+          "calls_made": 2,
+          "cache_hits": 0,
+          "network_calls": 2,
+          "budget_remaining": 105,
+          "max_calls": 3,
+          "per_call_limit": 50,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 1,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "citizen nb1050 watch",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 7,
+              "new_count": 7,
+              "duration_ms": 177,
+              "info": {
+                "http": 200,
+                "raw_total": 11,
+                "page": 1,
+                "start": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 106
+              }
+            },
+            {
+              "query": "CITIZEN NB1050",
+              "query_index": 1,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 47,
+              "new_count": 46,
+              "duration_ms": 262,
+              "info": {
+                "http": 200,
+                "raw_total": 198,
+                "page": 1,
+                "start": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 105
+              }
+            }
+          ]
+        }
+      },
+      "errors": [],
+      "skipped_duplicates": 18,
+      "skipped_low_match": 5,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 39,
+      "skipped_low_margin": 2,
+      "api_efficiency": {
+        "total_calls": 5,
+        "cache_hits": 0,
+        "network_calls": 5,
+        "by_site": {
+          "ebay": {
+            "calls_made": 1,
+            "cache_hits": 0,
+            "network_calls": 1,
+            "budget_remaining": 111
+          },
+          "rakuten": {
+            "calls_made": 2,
+            "cache_hits": 0,
+            "network_calls": 2,
+            "budget_remaining": 108
+          },
+          "yahoo": {
+            "calls_made": 2,
+            "cache_hits": 0,
+            "network_calls": 2,
+            "budget_remaining": 105
+          }
+        }
+      }
+    },
+    {
+      "round": 1,
+      "query": "citizen bj7110 watch",
+      "created_count": 0,
+      "added_to_reviewable_queue": 0,
+      "queue_before": 21,
+      "queue_after": 19,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 1,
+          "calls_made": 3,
+          "cache_hits": 0,
+          "network_calls": 3,
+          "budget_remaining": 108,
+          "max_calls": 3,
+          "per_call_limit": 50,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "max_calls_reached",
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 3,
+            "page": 1
+          },
+          "queries": [
+            {
+              "query": "CITIZEN BJ7110 NEW",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 1,
+              "new_count": 1,
+              "duration_ms": 569,
+              "info": {
+                "http": 200,
+                "raw_total": 7,
+                "page": 1,
+                "offset": 0,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 110
+              }
+            },
+            {
+              "query": "BJ7110",
+              "query_index": 1,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 0,
+              "new_count": 0,
+              "duration_ms": 611,
+              "info": {
+                "http": 200,
+                "raw_total": 6,
+                "page": 1,
+                "offset": 0,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 109
+              }
+            },
+            {
+              "query": "citizen bj7110 watch",
+              "query_index": 2,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 0,
+              "new_count": 0,
+              "duration_ms": 717,
+              "info": {
+                "http": 200,
+                "raw_total": 3,
+                "page": 1,
+                "offset": 0,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 108
+              }
+            }
+          ]
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 1,
+          "calls_made": 2,
+          "cache_hits": 0,
+          "network_calls": 2,
+          "budget_remaining": 105,
+          "max_calls": 2,
+          "per_call_limit": 30,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "max_calls_reached",
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 2,
+            "page": 1
+          },
+          "queries": [
+            {
+              "query": "citizen bj7110 watch",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 0,
+              "new_count": 0,
+              "duration_ms": 196,
+              "info": {
+                "http": 200,
+                "raw_count": 1,
+                "page": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 107
+              }
+            },
+            {
+              "query": "CITIZEN BJ7110",
+              "query_index": 1,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 1,
+              "new_count": 1,
+              "duration_ms": 2267,
+              "info": {
+                "http": 200,
+                "raw_count": 2,
+                "page": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 105
+              }
+            }
+          ]
+        },
+        "yahoo": {
+          "ok": true,
+          "count": 2,
+          "calls_made": 3,
+          "cache_hits": 0,
+          "network_calls": 3,
+          "budget_remaining": 102,
+          "max_calls": 3,
+          "per_call_limit": 50,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "max_calls_reached",
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 3,
+            "page": 1
+          },
+          "queries": [
+            {
+              "query": "citizen bj7110 watch",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 0,
+              "new_count": 0,
+              "duration_ms": 143,
+              "info": {
+                "http": 200,
+                "raw_total": 2,
+                "page": 1,
+                "start": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 104
+              }
+            },
+            {
+              "query": "CITIZEN BJ7110",
+              "query_index": 1,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 0,
+              "new_count": 0,
+              "duration_ms": 202,
+              "info": {
+                "http": 200,
+                "raw_total": 23,
+                "page": 1,
+                "start": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 103
+              }
+            },
+            {
+              "query": "BJ7110",
+              "query_index": 2,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 2,
+              "new_count": 2,
+              "duration_ms": 201,
+              "info": {
+                "http": 200,
+                "raw_total": 26,
+                "page": 1,
+                "start": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 102
+              }
+            }
+          ]
+        }
+      },
+      "errors": [],
+      "skipped_duplicates": 0,
+      "skipped_low_match": 3,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 0,
+      "skipped_low_margin": 0,
+      "api_efficiency": {
+        "total_calls": 8,
+        "cache_hits": 0,
+        "network_calls": 8,
+        "by_site": {
+          "ebay": {
+            "calls_made": 3,
+            "cache_hits": 0,
+            "network_calls": 3,
+            "budget_remaining": 108
+          },
+          "rakuten": {
+            "calls_made": 2,
+            "cache_hits": 0,
+            "network_calls": 2,
+            "budget_remaining": 105
+          },
+          "yahoo": {
+            "calls_made": 3,
+            "cache_hits": 0,
+            "network_calls": 3,
+            "budget_remaining": 102
+          }
+        }
+      }
+    },
+    {
+      "round": 1,
+      "query": "orient kamasu watch",
+      "created_count": 0,
+      "added_to_reviewable_queue": 0,
+      "queue_before": 19,
+      "queue_after": 19,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 44,
+          "calls_made": 1,
+          "cache_hits": 0,
+          "network_calls": 1,
+          "budget_remaining": 107,
+          "max_calls": 3,
+          "per_call_limit": 50,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 0,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "orient kamasu watch",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 44,
+              "new_count": 44,
+              "duration_ms": 797,
+              "info": {
+                "http": 200,
+                "raw_total": 153,
+                "page": 1,
+                "offset": 0,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 107
+              }
+            }
+          ]
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 46,
+          "calls_made": 2,
+          "cache_hits": 0,
+          "network_calls": 2,
+          "budget_remaining": 103,
+          "max_calls": 2,
+          "per_call_limit": 30,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 1,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "orient kamasu watch",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 18,
+              "new_count": 18,
+              "duration_ms": 248,
+              "info": {
+                "http": 200,
+                "raw_count": 24,
+                "page": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 104
+              }
+            },
+            {
+              "query": "ORIENT WATCH",
+              "query_index": 1,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 28,
+              "new_count": 28,
+              "duration_ms": 258,
+              "info": {
+                "http": 200,
+                "raw_count": 927,
+                "page": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 103
+              }
+            }
+          ]
+        },
+        "yahoo": {
+          "ok": true,
+          "count": 61,
+          "calls_made": 2,
+          "cache_hits": 0,
+          "network_calls": 2,
+          "budget_remaining": 100,
+          "max_calls": 3,
+          "per_call_limit": 50,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 1,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "orient kamasu watch",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 14,
+              "new_count": 14,
+              "duration_ms": 179,
+              "info": {
+                "http": 200,
+                "raw_total": 14,
+                "page": 1,
+                "start": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 101
+              }
+            },
+            {
+              "query": "ORIENT WATCH",
+              "query_index": 1,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 48,
+              "new_count": 47,
+              "duration_ms": 277,
+              "info": {
+                "http": 200,
+                "raw_total": 1435,
+                "page": 1,
+                "start": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 100
+              }
+            }
+          ]
+        }
+      },
+      "errors": [],
+      "skipped_duplicates": 0,
+      "skipped_low_match": 100,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 7,
+      "skipped_low_margin": 0,
+      "api_efficiency": {
+        "total_calls": 5,
+        "cache_hits": 0,
+        "network_calls": 5,
+        "by_site": {
+          "ebay": {
+            "calls_made": 1,
+            "cache_hits": 0,
+            "network_calls": 1,
+            "budget_remaining": 107
+          },
+          "rakuten": {
+            "calls_made": 2,
+            "cache_hits": 0,
+            "network_calls": 2,
+            "budget_remaining": 103
+          },
+          "yahoo": {
+            "calls_made": 2,
+            "cache_hits": 0,
+            "network_calls": 2,
+            "budget_remaining": 100
+          }
+        }
+      }
+    },
+    {
+      "round": 1,
+      "query": "orient bambino watch",
+      "created_count": 0,
+      "added_to_reviewable_queue": 0,
+      "queue_before": 19,
+      "queue_after": 17,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 50,
+          "calls_made": 1,
+          "cache_hits": 0,
+          "network_calls": 1,
+          "budget_remaining": 106,
+          "max_calls": 3,
+          "per_call_limit": 50,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 0,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "orient bambino watch",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 50,
+              "new_count": 50,
+              "duration_ms": 716,
+              "info": {
+                "http": 200,
+                "raw_total": 1591,
+                "page": 1,
+                "offset": 0,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 106
+              }
+            }
+          ]
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 27,
+          "calls_made": 1,
+          "cache_hits": 0,
+          "network_calls": 1,
+          "budget_remaining": 102,
+          "max_calls": 2,
+          "per_call_limit": 30,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 0,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "orient bambino watch",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 27,
+              "new_count": 27,
+              "duration_ms": 275,
+              "info": {
+                "http": 200,
+                "raw_count": 102,
+                "page": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 102
+              }
+            }
+          ]
+        },
+        "yahoo": {
+          "ok": true,
+          "count": 46,
+          "calls_made": 1,
+          "cache_hits": 0,
+          "network_calls": 1,
+          "budget_remaining": 99,
+          "max_calls": 3,
+          "per_call_limit": 50,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 0,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "orient bambino watch",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 46,
+              "new_count": 46,
+              "duration_ms": 296,
+              "info": {
+                "http": 200,
+                "raw_total": 70,
+                "page": 1,
+                "start": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 99
+              }
+            }
+          ]
+        }
+      },
+      "errors": [],
+      "skipped_duplicates": 0,
+      "skipped_low_match": 64,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 9,
+      "skipped_low_margin": 0,
+      "api_efficiency": {
+        "total_calls": 3,
+        "cache_hits": 0,
+        "network_calls": 3,
+        "by_site": {
+          "ebay": {
+            "calls_made": 1,
+            "cache_hits": 0,
+            "network_calls": 1,
+            "budget_remaining": 106
+          },
+          "rakuten": {
+            "calls_made": 1,
+            "cache_hits": 0,
+            "network_calls": 1,
+            "budget_remaining": 102
+          },
+          "yahoo": {
+            "calls_made": 1,
+            "cache_hits": 0,
+            "network_calls": 1,
+            "budget_remaining": 99
+          }
+        }
+      }
+    },
+    {
+      "round": 1,
+      "query": "citizen at6080 watch",
+      "created_count": 9,
+      "added_to_reviewable_queue": 9,
+      "queue_before": 17,
+      "queue_after": 26,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 45,
+          "calls_made": 1,
+          "cache_hits": 0,
+          "network_calls": 1,
+          "budget_remaining": 105,
+          "max_calls": 3,
+          "per_call_limit": 50,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 0,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "CITIZEN AT6080 NEW",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 45,
+              "new_count": 45,
+              "duration_ms": 736,
+              "info": {
+                "http": 200,
+                "raw_total": 49,
+                "page": 1,
+                "offset": 0,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 105
+              }
+            }
+          ]
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 23,
+          "calls_made": 2,
+          "cache_hits": 0,
+          "network_calls": 2,
+          "budget_remaining": 99,
+          "max_calls": 2,
+          "per_call_limit": 30,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 1,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "citizen at6080 watch",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 4,
+              "new_count": 4,
+              "duration_ms": 220,
+              "info": {
+                "http": 200,
+                "raw_count": 7,
+                "page": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 101
+              }
+            },
+            {
+              "query": "CITIZEN AT6080",
+              "query_index": 1,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 20,
+              "new_count": 19,
+              "duration_ms": 2406,
+              "info": {
+                "http": 200,
+                "raw_count": 70,
+                "page": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 99
+              }
+            }
+          ]
+        },
+        "yahoo": {
+          "ok": true,
+          "count": 41,
+          "calls_made": 2,
+          "cache_hits": 0,
+          "network_calls": 2,
+          "budget_remaining": 97,
+          "max_calls": 3,
+          "per_call_limit": 50,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 1,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "citizen at6080 watch",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 0,
+              "new_count": 0,
+              "duration_ms": 116,
+              "info": {
+                "http": 200,
+                "raw_total": 1,
+                "page": 1,
+                "start": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 98
+              }
+            },
+            {
+              "query": "CITIZEN AT6080",
+              "query_index": 1,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 41,
+              "new_count": 41,
+              "duration_ms": 564,
+              "info": {
+                "http": 200,
+                "raw_total": 84,
+                "page": 1,
+                "start": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 97
+              }
+            }
+          ]
+        }
+      },
+      "errors": [],
+      "skipped_duplicates": 7,
+      "skipped_low_match": 6,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 3,
+      "skipped_low_margin": 1,
+      "api_efficiency": {
+        "total_calls": 5,
+        "cache_hits": 0,
+        "network_calls": 5,
+        "by_site": {
+          "ebay": {
+            "calls_made": 1,
+            "cache_hits": 0,
+            "network_calls": 1,
+            "budget_remaining": 105
+          },
+          "rakuten": {
+            "calls_made": 2,
+            "cache_hits": 0,
+            "network_calls": 2,
+            "budget_remaining": 99
+          },
+          "yahoo": {
+            "calls_made": 2,
+            "cache_hits": 0,
+            "network_calls": 2,
+            "budget_remaining": 97
+          }
+        }
+      }
+    }
+  ]
+}

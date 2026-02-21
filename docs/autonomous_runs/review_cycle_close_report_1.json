@@ -1,0 +1,42 @@
+{
+  "cycle_id": "cycle-20260219-200142",
+  "closed_at": "2026-02-19T20:01:43Z",
+  "manifest_path": "/Users/tadamichikimura/Downloads/dev-HQ/ebayminer/docs/review_cycle_active.json",
+  "batch_size": 6,
+  "reviewed_count": 6,
+  "unresolved_count": 0,
+  "unresolved_candidate_ids": [],
+  "status_breakdown": {
+    "listed": 4,
+    "rejected": 2
+  },
+  "rejected_with_reason_count": 2,
+  "reject_floor": 2,
+  "ready_for_tuning": true,
+  "top_issue_targets": [
+    {
+      "issue": "price",
+      "count": 2
+    },
+    {
+      "issue": "color",
+      "count": 1
+    }
+  ],
+  "recommendations": [
+    {
+      "issue": "price",
+      "count": 2,
+      "action": "仕入価格・送料の見積もり式を再点検し、最低利益閾値を引き上げる"
+    },
+    {
+      "issue": "color",
+      "count": 1,
+      "action": "色属性抽出を追加し、色不一致を減点する"
+    }
+  ],
+  "reason_samples": [
+    "粗利率が低い (2.0%) / 色情報が不一致",
+    "粗利率が低い (1.2%)"
+  ]
+}

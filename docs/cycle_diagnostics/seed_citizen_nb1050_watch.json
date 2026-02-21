@@ -1,0 +1,331 @@
+{
+  "cycle_id": "cycle-20260220-024717",
+  "started_at": "2026-02-20T02:47:16Z",
+  "ended_at": "2026-02-20T02:47:17Z",
+  "run_seq": 56,
+  "target_count": 8,
+  "hard_cap": 8,
+  "batch_size": 2,
+  "cycle_ready": false,
+  "initial_reviewable_pending": 2,
+  "final_reviewable_pending": 2,
+  "delta_reviewable_pending": 0,
+  "min_match_score": 0.75,
+  "min_profit_usd": 0.01,
+  "min_margin_rate": 0.03,
+  "condition": "new",
+  "stopped_reason": "completed_rounds",
+  "selected_candidate_ids": [
+    475,
+    474
+  ],
+  "cache_only": false,
+  "query_reordered": true,
+  "query_order": [
+    "citizen nb1050 watch"
+  ],
+  "max_zero_gain_strikes": 999,
+  "historical_min_attempts": 999,
+  "historical_min_network_calls": 6,
+  "historical_min_gain_per_network_call": 0.05,
+  "historical_retry_every_runs": 1,
+  "rpa_refresh": {
+    "enabled": false,
+    "mode": "rpa_json",
+    "cache_only": false,
+    "ran": false,
+    "output_path": "/Users/tadamichikimura/Downloads/dev-HQ/ebayminer/data/liquidity_rpa_signals.jsonl",
+    "primary": {},
+    "fallback": {},
+    "model_backfill": {},
+    "missing_before": 0,
+    "missing_after_primary": 0,
+    "missing_after_fallback": 0,
+    "missing_after_model_backfill": 0,
+    "reason": "disabled_or_non_rpa_mode"
+  },
+  "query_skipped_count": 0,
+  "query_efficiency_snapshot": [
+    {
+      "query": "citizen nb1050 watch",
+      "attempts": 26,
+      "network_calls": 27,
+      "queue_gain_total": 77,
+      "gain_per_network_call": 2.8519,
+      "zero_gain_streak": 2
+    }
+  ],
+  "api_efficiency_summary": {
+    "total_calls": 5,
+    "cache_hits": 5,
+    "network_calls": 0,
+    "by_site": {
+      "ebay": {
+        "calls_made": 1,
+        "cache_hits": 1,
+        "network_calls": 0,
+        "budget_remaining": -1
+      },
+      "rakuten": {
+        "calls_made": 2,
+        "cache_hits": 2,
+        "network_calls": 0,
+        "budget_remaining": -1
+      },
+      "yahoo": {
+        "calls_made": 2,
+        "cache_hits": 2,
+        "network_calls": 0,
+        "budget_remaining": -1
+      }
+    },
+    "cache_hit_rate": 1.0
+  },
+  "runs": [
+    {
+      "round": 1,
+      "query": "citizen nb1050 watch",
+      "created_count": 0,
+      "added_to_reviewable_queue": 0,
+      "queue_before": 2,
+      "queue_after": 2,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 48,
+          "calls_made": 1,
+          "cache_hits": 1,
+          "network_calls": 0,
+          "budget_remaining": -1,
+          "max_calls": 3,
+          "per_call_limit": 50,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 0,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "CITIZEN NB1050 NEW",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 48,
+              "new_count": 48,
+              "duration_ms": 266,
+              "info": {
+                "http": 200,
+                "raw_total": 202,
+                "page": 1,
+                "offset": 0,
+                "cache_hit": true,
+                "cache_age_sec": 13124,
+                "budget_remaining": -1
+              }
+            }
+          ]
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 27,
+          "calls_made": 2,
+          "cache_hits": 2,
+          "network_calls": 0,
+          "budget_remaining": -1,
+          "max_calls": 2,
+          "per_call_limit": 30,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 1,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "citizen nb1050 watch",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 3,
+              "new_count": 3,
+              "duration_ms": 4,
+              "info": {
+                "http": 200,
+                "raw_count": 3,
+                "page": 1,
+                "cache_hit": true,
+                "cache_age_sec": 13124,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "query": "CITIZEN NB1050",
+              "query_index": 1,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 24,
+              "new_count": 24,
+              "duration_ms": 35,
+              "info": {
+                "http": 200,
+                "raw_count": 189,
+                "page": 1,
+                "cache_hit": true,
+                "cache_age_sec": 13124,
+                "budget_remaining": -1
+              }
+            }
+          ]
+        },
+        "yahoo": {
+          "ok": true,
+          "count": 53,
+          "calls_made": 2,
+          "cache_hits": 2,
+          "network_calls": 0,
+          "budget_remaining": -1,
+          "max_calls": 3,
+          "per_call_limit": 50,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 1,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "citizen nb1050 watch",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 7,
+              "new_count": 7,
+              "duration_ms": 2,
+              "info": {
+                "http": 200,
+                "raw_total": 11,
+                "page": 1,
+                "start": 1,
+                "cache_hit": true,
+                "cache_age_sec": 13124,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "query": "CITIZEN NB1050",
+              "query_index": 1,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 47,
+              "new_count": 46,
+              "duration_ms": 10,
+              "info": {
+                "http": 200,
+                "raw_total": 198,
+                "page": 1,
+                "start": 1,
+                "cache_hit": true,
+                "cache_age_sec": 13123,
+                "budget_remaining": -1
+              }
+            }
+          ]
+        }
+      },
+      "errors": [],
+      "skipped_duplicates": 36,
+      "skipped_low_match": 5,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 35,
+      "skipped_low_margin": 2,
+      "skipped_low_ev90": 0,
+      "skipped_low_liquidity": 0,
+      "skipped_liquidity_unavailable": 0,
+      "skipped_ambiguous_model_title": 2,
+      "liquidity_unavailable_model_codes": [],
+      "low_match_reason_counts": {
+        "model_code_conflict": 4,
+        "color_missing_market": 1
+      },
+      "low_match_samples": [
+        {
+          "source_title": "CITIZEN シチズン NB1050-59H",
+          "best_market_title": "CITIZEN NB1050-59E [CITIZEN COLLECTION Mechanical Classical Line] New",
+          "score": 0.12,
+          "reason": "model_code_conflict"
+        },
+        {
+          "source_title": "シチズン NB1050-59H CITIZEN COLLECTION 10気圧防水 メカニカル 自動巻（手巻付）",
+          "best_market_title": "CITIZEN NB1050-59E [CITIZEN COLLECTION Mechanical Classical Line] New",
+          "score": 0.12,
+          "reason": "model_code_conflict"
+        },
+        {
+          "source_title": "シチズン NB1050-59H CITIZEN COLLECTION 10気圧防水 メカニカル 自動巻（手巻付）",
+          "best_market_title": "CITIZEN NB1050-59E [CITIZEN COLLECTION Mechanical Classical Line] New",
+          "score": 0.12,
+          "reason": "model_code_conflict"
+        },
+        {
+          "source_title": "シチズン NB1050-59H CITIZEN COLLECTION 10気圧防水 メカニカル 自動巻（手巻付）",
+          "best_market_title": "CITIZEN NB1050-59E [CITIZEN COLLECTION Mechanical Classical Line] New",
+          "score": 0.12,
+          "reason": "model_code_conflict"
+        },
+        {
+          "source_title": "シチズン CITIZEN 腕時計 機械式 自動巻(手巻付き)  オールブラックカラー サファイアクリスタル NB1054-58E メンズ［国内正規品］",
+          "best_market_title": "Brand-New Citizen Collection NB1050-59A Mechanical Men's Watch from Japan \"JDM\"",
+          "score": 0.16,
+          "reason": "color_missing_market"
+        }
+      ],
+      "hints": [
+        "同一候補は既に取り込み済みです。別の型番やシリーズで検索してください。",
+        "一致不足の主因: model_code_conflict",
+        "複数型番が列挙された曖昧タイトルを除外しました。",
+        "利益条件で除外されています。仕入れ価格が低い型番で再検索してください。"
+      ],
+      "api_efficiency": {
+        "total_calls": 5,
+        "cache_hits": 5,
+        "network_calls": 0,
+        "by_site": {
+          "ebay": {
+            "calls_made": 1,
+            "cache_hits": 1,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "rakuten": {
+            "calls_made": 2,
+            "cache_hits": 2,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "yahoo": {
+            "calls_made": 2,
+            "cache_hits": 2,
+            "network_calls": 0,
+            "budget_remaining": -1
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,755 @@
+{
+  "cycle_id": "cycle-20260219-230850",
+  "ran_at": "2026-02-19T23:08:50Z",
+  "dry_run": false,
+  "thresholds": {
+    "min_profit_usd": 0.01,
+    "min_margin_rate": 0.03,
+    "min_match_score": 0.75,
+    "min_auto_approve_score": 0.9,
+    "min_token_jaccard": 0.62,
+    "max_score_drift": 0.25
+  },
+  "counts": {
+    "approve": 24,
+    "reject": 0,
+    "skipped": 0
+  },
+  "decisions": [
+    {
+      "id": 260,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 37.1908,
+        "margin": 0.068794,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "AT6080-53L"
+        ],
+        "common_specific_codes": [
+          "AT6080-53L"
+        ],
+        "token_jaccard": 0.2727,
+        "source_colors": [
+          "blue"
+        ],
+        "market_colors": [
+          "blue"
+        ]
+      },
+      "source_title": "シチズン 腕時計 メンズ プロマスター ネイビー CITIZEN AT6080-53L PROMASTER",
+      "market_title": "Citizen Promaster Land Eco-Drive AT6080-53L Blue Dial Titanium Solar Men Watch"
+    },
+    {
+      "id": 259,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 37.1908,
+        "margin": 0.068794,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "AT6080-53L"
+        ],
+        "common_specific_codes": [
+          "AT6080-53L"
+        ],
+        "token_jaccard": 0.3636,
+        "source_colors": [
+          "blue"
+        ],
+        "market_colors": [
+          "blue"
+        ]
+      },
+      "source_title": "シチズン プロマスター ランド エコドライブ ソーラー 電波 メンズ 腕時計 CITIZEN PROMASTER LAND AT6080-53L ソーラー電波時計 紺 ネイビー 青 誕生日プレゼント 男性 卒業祝い 入学祝い 就職祝い 大学生 ギフト",
+      "market_title": "Citizen Promaster Land Eco-Drive AT6080-53L Blue Dial Titanium Solar Men Watch"
+    },
+    {
+      "id": 258,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 37.1908,
+        "margin": 0.068794,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "AT6080-53L"
+        ],
+        "common_specific_codes": [
+          "AT6080-53L"
+        ],
+        "token_jaccard": 0.1667,
+        "source_colors": [
+          "blue"
+        ],
+        "market_colors": [
+          "blue"
+        ]
+      },
+      "source_title": "【ポイント最大53倍＆10%OFFクーポンは21日9:59迄】シチズン プロマスター ランドシリーズ AT6080-53L メンズ 腕時計 ソーラー 電波 デイデイト チタン ネイビーダイヤル",
+      "market_title": "Citizen Promaster Land Eco-Drive AT6080-53L Blue Dial Titanium Solar Men Watch"
+    },
+    {
+      "id": 257,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 33.8232,
+        "margin": 0.062565,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "AT6080-53L"
+        ],
+        "common_specific_codes": [
+          "AT6080-53L"
+        ],
+        "token_jaccard": 0.3333,
+        "source_colors": [
+          "blue"
+        ],
+        "market_colors": [
+          "blue"
+        ]
+      },
+      "source_title": "＼全品10%OFF★21日10時迄／ シチズン プロマスター LANDシリーズ エコドライブ電波 メンズ 腕時計 ソーラー電波腕時計 ソーラー電波時計 AT6080-53L CITIZEN PROMASTER ネイビー ブランド おしゃれ 防水 文字盤 大きい プレゼント 男性 実用的",
+      "market_title": "Citizen Promaster Land Eco-Drive AT6080-53L Blue Dial Titanium Solar Men Watch"
+    },
+    {
+      "id": 256,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 19.8784,
+        "margin": 0.038228,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "AT6080-53L"
+        ],
+        "common_specific_codes": [
+          "AT6080-53L"
+        ],
+        "token_jaccard": 0.3333,
+        "source_colors": [],
+        "market_colors": []
+      },
+      "source_title": "【10％OFF＋10倍エントリーで＋店舗内3点でさらに10倍】AT6080-53L CITIZEN シチズン PROMASTER プロマスター メンズ 腕時計 国内正規品 送料無料",
+      "market_title": "CITIZEN AT6080-53L [PROMASTER Eco Drive Radio Watch LAND Series] New"
+    },
+    {
+      "id": 255,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 19.8784,
+        "margin": 0.038228,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "AT6080-53L"
+        ],
+        "common_specific_codes": [
+          "AT6080-53L"
+        ],
+        "token_jaccard": 0.6667,
+        "source_colors": [],
+        "market_colors": []
+      },
+      "source_title": "【 表示価格から10％off　クーポンあり 】シチズン プロマスター エコドライブ 電波時計 LANDシリーズ CITIZEN PROMASTER Eco-Drive メンズ腕時計 AT6080-53L",
+      "market_title": "CITIZEN AT6080-53L [PROMASTER Eco Drive Radio Watch LAND Series] New"
+    },
+    {
+      "id": 254,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 19.8784,
+        "margin": 0.038228,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "AT6080-53L"
+        ],
+        "common_specific_codes": [
+          "AT6080-53L"
+        ],
+        "token_jaccard": 0.2727,
+        "source_colors": [],
+        "market_colors": []
+      },
+      "source_title": "＼10％OFF★最大100%ポイントバック★要エントリー／シチズン プロマスター シチズン ソーラー 電波時計 メンズ CITIZEN PROMASTER AT6080-53L シチズン エコドライブ シチズン 電波ソーラー 腕時計 メンズ 39mm チタン 3針 日付 電池交換不要",
+      "market_title": "CITIZEN AT6080-53L [PROMASTER Eco Drive Radio Watch LAND Series] New"
+    },
+    {
+      "id": 253,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 102.7024,
+        "margin": 0.166024,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "AT6080-53L"
+        ],
+        "common_specific_codes": [
+          "AT6080-53L"
+        ],
+        "token_jaccard": 0.1667,
+        "source_colors": [
+          "silver"
+        ],
+        "market_colors": [
+          "silver"
+        ]
+      },
+      "source_title": "【ラッピング無料対象商品】CITIZEN PRO MASTER シチズン プロマスター LANDシリーズ シルバー メンズ腕時計 AT6080-53L",
+      "market_title": "CITIZEN Watch Promaster Eco-Drive Radio Solar AT6080-53L Men's Silver NEW"
+    },
+    {
+      "id": 252,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 19.8848,
+        "margin": 0.03824,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "AT6080-53L"
+        ],
+        "common_specific_codes": [
+          "AT6080-53L"
+        ],
+        "token_jaccard": 0.375,
+        "source_colors": [],
+        "market_colors": []
+      },
+      "source_title": "【送料無料】AT6080-53L シチズン CITIZEN プロマスター PROMASTER 電波ソーラー腕時計 エコ・ドライブ",
+      "market_title": "CITIZEN AT6080-53L [PROMASTER Eco Drive Radio Watch LAND Series] New"
+    },
+    {
+      "id": 248,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 58.251,
+        "margin": 0.108677,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59H"
+        ],
+        "common_specific_codes": [
+          "NB1050-59H"
+        ],
+        "token_jaccard": 0.2222,
+        "source_colors": [],
+        "market_colors": [
+          "black"
+        ]
+      },
+      "source_title": "（豪華おまけ有） シチズンコレクション メカニカル 自動巻き 腕時計 メンズ NB1050-59H CITIZEN",
+      "market_title": "CITIZEN NB1050-59H Black Analog Mechanical Auto Stainless Men's Watch New in Box"
+    },
+    {
+      "id": 247,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 25.3148,
+        "margin": 0.054446,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59E"
+        ],
+        "common_specific_codes": [
+          "NB1050-59E"
+        ],
+        "token_jaccard": 0.2222,
+        "source_colors": [
+          "black",
+          "silver"
+        ],
+        "market_colors": [
+          "black"
+        ]
+      },
+      "source_title": "『数量限定』CITIZEN COLLECTION シチズンコレクション 機械式 シースルーバック シルバー ブラック メンズ腕時計 NB1050-59E",
+      "market_title": "Citizen Mechanical NB1050-59E Black Automatic Sapphire Glass Men Watch JAPAN NEW"
+    },
+    {
+      "id": 246,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 23.811,
+        "margin": 0.048103,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59L"
+        ],
+        "common_specific_codes": [
+          "NB1050-59L"
+        ],
+        "token_jaccard": 0.4286,
+        "source_colors": [],
+        "market_colors": []
+      },
+      "source_title": "シチズン NB1050-59L CITIZEN COLLECTION メカニカル 自動巻（手巻付）",
+      "market_title": "CITIZEN NB1050-59L [CITIZEN COLLECTION Mechanical Classical Line] Japan Domestic"
+    },
+    {
+      "id": 245,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 26.18,
+        "margin": 0.056183,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59L"
+        ],
+        "common_specific_codes": [
+          "NB1050-59L"
+        ],
+        "token_jaccard": 0.3333,
+        "source_colors": [
+          "blue",
+          "silver"
+        ],
+        "market_colors": [
+          "blue"
+        ]
+      },
+      "source_title": "『数量限定』CITIZEN COLLECTION シチズンコレクション 機械式 シースルーバック シルバー ブルー メンズ腕時計 NB1050-59L",
+      "market_title": "BRAND-NEW Citizen Collection NB1050-59L Mechanical Watch (Royal Blue Dial) -JDM-"
+    },
+    {
+      "id": 244,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 23.811,
+        "margin": 0.048103,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59A"
+        ],
+        "common_specific_codes": [
+          "NB1050-59A"
+        ],
+        "token_jaccard": 0.5,
+        "source_colors": [],
+        "market_colors": []
+      },
+      "source_title": "シチズン NB1050-59A CITIZEN COLLECTION メカニカル 自動巻（手巻付）",
+      "market_title": "CITIZEN NB1050-59A [CITIZEN COLLECTION Mechanical Classical Line] Japan New"
+    },
+    {
+      "id": 243,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 23.811,
+        "margin": 0.048103,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59E"
+        ],
+        "common_specific_codes": [
+          "NB1050-59E"
+        ],
+        "token_jaccard": 0.5,
+        "source_colors": [],
+        "market_colors": []
+      },
+      "source_title": "シチズン NB1050-59E CITIZEN COLLECTION メカニカル 自動巻（手巻付）",
+      "market_title": "CITIZEN NB1050-59E [CITIZEN COLLECTION Mechanical Classical Line] New"
+    },
+    {
+      "id": 242,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 70.851,
+        "margin": 0.128586,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59A"
+        ],
+        "common_specific_codes": [
+          "NB1050-59A"
+        ],
+        "token_jaccard": 0.2,
+        "source_colors": [
+          "silver"
+        ],
+        "market_colors": [
+          "silver"
+        ]
+      },
+      "source_title": "【ラッピング無料対象商品】CITIZEN COLLECTION シチズンコレクション 機械式 シースルーバック シルバー メンズ腕時計 NB1050-59A",
+      "market_title": "CITIZEN Mechanical NB1050-59A Silver Auto Sapphire Glass Men's Watch New in Box"
+    },
+    {
+      "id": 241,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 38.4384,
+        "margin": 0.082663,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59H"
+        ],
+        "common_specific_codes": [
+          "NB1050-59H"
+        ],
+        "token_jaccard": 0.2222,
+        "source_colors": [
+          "gray"
+        ],
+        "market_colors": [
+          "gray"
+        ]
+      },
+      "source_title": "シチズン CITIZEN 腕時計 機械式 自動巻(手巻付き) グレー サファイアクリスタル NB1050-59H メンズ［国内正規品］",
+      "market_title": "Citizen NB1050-59H Mechanical Gray Dial Automatic Sapphire Glass Watch Men NEW"
+    },
+    {
+      "id": 240,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 39.2616,
+        "margin": 0.084256,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59L"
+        ],
+        "common_specific_codes": [
+          "NB1050-59L"
+        ],
+        "token_jaccard": 0.2222,
+        "source_colors": [
+          "blue"
+        ],
+        "market_colors": [
+          "blue"
+        ]
+      },
+      "source_title": "シチズン CITIZEN 腕時計 機械式 自動巻(手巻付き) ブルー サファイアクリスタル NB1050-59L メンズ［国内正規品］",
+      "market_title": "BRAND-NEW Citizen Collection NB1050-59L Mechanical Watch (Royal Blue Dial) -JDM-"
+    },
+    {
+      "id": 239,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 58.251,
+        "margin": 0.108677,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59H"
+        ],
+        "common_specific_codes": [
+          "NB1050-59H"
+        ],
+        "token_jaccard": 0.1667,
+        "source_colors": [],
+        "market_colors": [
+          "black"
+        ]
+      },
+      "source_title": "【2/20限定！10％OFFクーポン＆抽選で最大10000ptバック】【選べるノベルティー付き】シチズンコレクション CITIZEN COLLECTION メカニカル 自動巻き 機械式 腕時計 メンズ NB1050-59H",
+      "market_title": "CITIZEN NB1050-59H Black Analog Mechanical Auto Stainless Men's Watch New in Box"
+    },
+    {
+      "id": 238,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 67.3539,
+        "margin": 0.122239,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59A"
+        ],
+        "common_specific_codes": [
+          "NB1050-59A"
+        ],
+        "token_jaccard": 0.1818,
+        "source_colors": [
+          "silver"
+        ],
+        "market_colors": [
+          "silver"
+        ]
+      },
+      "source_title": "＼全品10%OFF★21日10時迄／ シチズン コレクション メカニカル 自動巻き NB1050-59A 腕時計 メンズ シルバー CITIZEN COLLECTION ブランド おしゃれ 防水 プレゼント 男性 実用的",
+      "market_title": "CITIZEN Mechanical NB1050-59A Silver Auto Sapphire Glass Men's Watch New in Box"
+    },
+    {
+      "id": 237,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 38.3964,
+        "margin": 0.082582,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59E"
+        ],
+        "common_specific_codes": [
+          "NB1050-59E"
+        ],
+        "token_jaccard": 0.25,
+        "source_colors": [
+          "black"
+        ],
+        "market_colors": [
+          "black"
+        ]
+      },
+      "source_title": "シチズン CITIZEN 腕時計 機械式 自動巻(手巻付き) ブラック サファイアクリスタル NB1050-59E メンズ［国内正規品］",
+      "market_title": "Citizen Mechanical NB1050-59E Black Automatic Sapphire Glass Men Watch JAPAN NEW"
+    },
+    {
+      "id": 236,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 39.2616,
+        "margin": 0.084256,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59A"
+        ],
+        "common_specific_codes": [
+          "NB1050-59A"
+        ],
+        "token_jaccard": 0.2857,
+        "source_colors": [],
+        "market_colors": []
+      },
+      "source_title": "シチズン CITIZEN 腕時計 機械式 自動巻(手巻付き) サファイアクリスタル NB1050-59A メンズ［国内正規品］",
+      "market_title": "Brand-New Citizen Collection NB1050-59A Mechanical Men's Watch from Japan \"JDM\""
+    },
+    {
+      "id": 210,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 19.5846,
+        "margin": 0.100952,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-M5610U-1CJF"
+        ],
+        "common_specific_codes": [
+          "GW-M5610U-1CJF"
+        ],
+        "token_jaccard": 0.3,
+        "source_colors": [
+          "green"
+        ],
+        "market_colors": [
+          "black",
+          "green"
+        ]
+      },
+      "source_title": "G-SHOCK MULTIBAND6 ソーラー電波時計 CASIO (カシオ) GW-M5610U-1CJF  国内正規品★",
+      "market_title": "Casio G-shock GW-M5610U-1CJF Men's Watch Radio Solar Black Japan Led Light Watch"
+    },
+    {
+      "id": 209,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 17.0646,
+        "margin": 0.089344,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-M5610U-1JF"
+        ],
+        "common_specific_codes": [
+          "GW-M5610U-1JF"
+        ],
+        "token_jaccard": 0.3333,
+        "source_colors": [
+          "green"
+        ],
+        "market_colors": [
+          "green"
+        ]
+      },
+      "source_title": "カシオ Ｇショック G-SHOCK GW-M5610U-1JF メンズ 爆買",
+      "market_title": "CASIO G-SHOCK GW-M5610U-1JF Origin Tough Solar Radio Multiband6 Men GW-M5610U-1"
+    }
+  ]
+}

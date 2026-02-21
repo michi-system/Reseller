@@ -1,0 +1,17 @@
+{
+  "cycle_id": "cycle-20260219-201818",
+  "ran_at": "2026-02-19T20:18:18Z",
+  "dry_run": false,
+  "thresholds": {
+    "min_profit_usd": 0.01,
+    "min_margin_rate": 0.03,
+    "min_match_score": 0.75
+  },
+  "counts": {
+    "approve": 0,
+    "reject": 0,
+    "skipped": 0
+  },
+  "decisions": [],
+  "note": "selected_candidate_ids is empty; nothing to review"
+}

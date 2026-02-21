@@ -1,0 +1,27 @@
+{
+  "cycle_id": "cycle-20260220-031359",
+  "ran_at": "2026-02-20T03:13:59Z",
+  "dry_run": false,
+  "thresholds": {
+    "min_profit_usd": 0.01,
+    "min_margin_rate": 0.03,
+    "min_ev90_usd": 0.0,
+    "min_match_score": 0.75,
+    "min_auto_approve_score": 0.9,
+    "min_token_jaccard": 0.62,
+    "max_score_drift": 0.25,
+    "auto_policy": {
+      "require_liquidity_signal": true,
+      "allow_fallback_any": true,
+      "fallback_min_sold_90d": 5,
+      "fallback_min_profit_usd": 20.0
+    }
+  },
+  "counts": {
+    "approve": 0,
+    "reject": 0,
+    "skipped": 0
+  },
+  "decisions": [],
+  "note": "selected_candidate_ids is empty; nothing to review"
+}

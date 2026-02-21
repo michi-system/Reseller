@@ -1,0 +1,53 @@
+{
+  "started_at": "2026-02-20T02:13:09Z",
+  "ended_at": "2026-02-20T02:13:09Z",
+  "requested_cycles": 1,
+  "executed_cycles": 1,
+  "finished_reason": "completed",
+  "stagnation_limit": 2,
+  "aggregate_review_kpi": {
+    "created_count": 0,
+    "skipped_low_ev90": 0,
+    "skipped_low_liquidity": 0,
+    "skipped_liquidity_unavailable": 0,
+    "liquidity_gate_exclusion_rate": 0.0,
+    "ev90_exclusion_rate": 0.0
+  },
+  "runs": [
+    {
+      "index": 1,
+      "started_at": "2026-02-20T02:13:09Z",
+      "ended_at": "2026-02-20T02:13:09Z",
+      "returncode": 0,
+      "status": "ok",
+      "stop_reason": "",
+      "cycle_id": "cycle-20260220-021309",
+      "batch_size": 0,
+      "cycle_ready": false,
+      "validation_ok": true,
+      "validation_errors": [],
+      "validation_warnings": [
+        "batch_size=0 (no review candidates were processed)"
+      ],
+      "progressed": false,
+      "stagnation_streak": 1,
+      "auto_counts": {
+        "approve": 0,
+        "reject": 0,
+        "skipped": 0
+      },
+      "close_ready": false,
+      "close_ready_light": false,
+      "recommended_tuning_mode": "none",
+      "review_kpi": {
+        "created_count": 0,
+        "skipped_low_ev90": 0,
+        "skipped_low_liquidity": 0,
+        "skipped_liquidity_unavailable": 0,
+        "liquidity_gate_exclusion_rate": 0.0,
+        "ev90_exclusion_rate": 0.0
+      },
+      "log_path": "/Users/tadamichikimura/Downloads/dev-HQ/ebayminer/docs/autonomous_guarded_runs/run_1.log"
+    }
+  ]
+}

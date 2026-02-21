@@ -1,0 +1,520 @@
+{
+  "generated_at": "2026-02-20T04:16:15Z",
+  "purpose": "fetch autotune verification",
+  "queries": [
+    "seiko sbdc101",
+    "casio ga2100",
+    "citizen promaster ny0084",
+    "sony wh-1000xm5",
+    "anker powercore 10000"
+  ],
+  "aggregate": {
+    "ebay": {
+      "rows": 5,
+      "calls_made": 5,
+      "network_calls": 1,
+      "count": 190,
+      "target_reached": 4,
+      "max_calls_reached": 1,
+      "low_yield_stop": 0,
+      "skipped_no_market_hits": 0,
+      "efficiency_count_per_network_call": 190.0
+    },
+    "rakuten": {
+      "rows": 5,
+      "calls_made": 8,
+      "network_calls": 3,
+      "count": 92,
+      "target_reached": 3,
+      "max_calls_reached": 1,
+      "low_yield_stop": 1,
+      "skipped_no_market_hits": 0,
+      "efficiency_count_per_network_call": 30.6667
+    },
+    "yahoo": {
+      "rows": 5,
+      "calls_made": 7,
+      "network_calls": 5,
+      "count": 181,
+      "target_reached": 2,
+      "max_calls_reached": 2,
+      "low_yield_stop": 1,
+      "skipped_no_market_hits": 0,
+      "efficiency_count_per_network_call": 36.2
+    }
+  },
+  "runs": [
+    {
+      "query": "seiko sbdc101",
+      "created_count": 0,
+      "search_scope_done": false,
+      "query_cache_skip": false,
+      "query_cache_saved_at": "2026-02-20T04:16:09Z",
+      "query_cache_expires_at": "2026-02-20T04:36:09Z",
+      "sites": {
+        "ebay": {
+          "calls_made": 1,
+          "network_calls": 0,
+          "cache_hits": 1,
+          "count": 40,
+          "efficiency_count_per_network_call": -1.0,
+          "stop_reason": "target_reached",
+          "max_calls": 2,
+          "per_call_limit": 70,
+          "autotune_in": {
+            "enabled": true,
+            "applied": true,
+            "updated_at": 1771560941,
+            "updated_at_iso": "2026-02-20T04:15:41Z",
+            "ema_efficiency": 29.899
+          },
+          "autotune_out": {
+            "enabled": true,
+            "saved": true,
+            "max_calls": 1,
+            "per_call_limit": 70,
+            "ema_efficiency": 29.899,
+            "updated_at": 1771560968,
+            "updated_at_iso": "2026-02-20T04:16:08Z"
+          }
+        },
+        "rakuten": {
+          "calls_made": 3,
+          "network_calls": 1,
+          "cache_hits": 2,
+          "count": 31,
+          "efficiency_count_per_network_call": 31.0,
+          "stop_reason": "target_reached",
+          "max_calls": 3,
+          "per_call_limit": 30,
+          "autotune_in": {
+            "enabled": true,
+            "applied": true,
+            "updated_at": 1771560941,
+            "updated_at_iso": "2026-02-20T04:15:41Z",
+            "ema_efficiency": 11.7942
+          },
+          "autotune_out": {
+            "enabled": true,
+            "saved": true,
+            "max_calls": 3,
+            "per_call_limit": 30,
+            "ema_efficiency": 17.5559,
+            "updated_at": 1771560968,
+            "updated_at_iso": "2026-02-20T04:16:08Z"
+          }
+        },
+        "yahoo": {
+          "calls_made": 2,
+          "network_calls": 2,
+          "cache_hits": 0,
+          "count": 7,
+          "efficiency_count_per_network_call": 3.5,
+          "stop_reason": "max_calls_reached",
+          "max_calls": 2,
+          "per_call_limit": 100,
+          "autotune_in": {
+            "enabled": true,
+            "applied": true,
+            "updated_at": 1771560941,
+            "updated_at_iso": "2026-02-20T04:15:41Z",
+            "ema_efficiency": 21.5783
+          },
+          "autotune_out": {
+            "enabled": true,
+            "saved": true,
+            "max_calls": 3,
+            "per_call_limit": 100,
+            "ema_efficiency": 16.1548,
+            "updated_at": 1771560969,
+            "updated_at_iso": "2026-02-20T04:16:09Z"
+          }
+        }
+      },
+      "hints": [
+        "同一候補は既に取り込み済みです。別の型番やシリーズで検索してください。",
+        "一致スコア不足が多いため、型番/JAN入りキーワードにすると改善します。",
+        "一致不足の主因: model_code_conflict",
+        "複数型番が列挙された曖昧タイトルを除外しました。",
+        "流動性データ未取得のため除外されています（LIQUIDITY_REQUIRE_SIGNAL=1）。"
+      ],
+      "errors": []
+    },
+    {
+      "query": "casio ga2100",
+      "created_count": 0,
+      "search_scope_done": false,
+      "query_cache_skip": false,
+      "query_cache_saved_at": "2026-02-20T04:16:11Z",
+      "query_cache_expires_at": "2026-02-20T04:36:11Z",
+      "sites": {
+        "ebay": {
+          "calls_made": 1,
+          "network_calls": 0,
+          "cache_hits": 1,
+          "count": 67,
+          "efficiency_count_per_network_call": -1.0,
+          "stop_reason": "target_reached",
+          "max_calls": 1,
+          "per_call_limit": 70,
+          "autotune_in": {
+            "enabled": true,
+            "applied": true,
+            "updated_at": 1771560968,
+            "updated_at_iso": "2026-02-20T04:16:08Z",
+            "ema_efficiency": 29.899
+          },
+          "autotune_out": {
+            "enabled": true,
+            "saved": true,
+            "max_calls": 1,
+            "per_call_limit": 70,
+            "ema_efficiency": 29.899,
+            "updated_at": 1771560969,
+            "updated_at_iso": "2026-02-20T04:16:09Z"
+          }
+        },
+        "rakuten": {
+          "calls_made": 1,
+          "network_calls": 1,
+          "cache_hits": 0,
+          "count": 22,
+          "efficiency_count_per_network_call": 22.0,
+          "stop_reason": "target_reached",
+          "max_calls": 3,
+          "per_call_limit": 30,
+          "autotune_in": {
+            "enabled": true,
+            "applied": true,
+            "updated_at": 1771560968,
+            "updated_at_iso": "2026-02-20T04:16:08Z",
+            "ema_efficiency": 17.5559
+          },
+          "autotune_out": {
+            "enabled": true,
+            "saved": true,
+            "max_calls": 2,
+            "per_call_limit": 30,
+            "ema_efficiency": 18.8891,
+            "updated_at": 1771560969,
+            "updated_at_iso": "2026-02-20T04:16:09Z"
+          }
+        },
+        "yahoo": {
+          "calls_made": 1,
+          "network_calls": 1,
+          "cache_hits": 0,
+          "count": 99,
+          "efficiency_count_per_network_call": 99.0,
+          "stop_reason": "target_reached",
+          "max_calls": 3,
+          "per_call_limit": 100,
+          "autotune_in": {
+            "enabled": true,
+            "applied": true,
+            "updated_at": 1771560969,
+            "updated_at_iso": "2026-02-20T04:16:09Z",
+            "ema_efficiency": 16.1548
+          },
+          "autotune_out": {
+            "enabled": true,
+            "saved": true,
+            "max_calls": 2,
+            "per_call_limit": 100,
+            "ema_efficiency": 41.0084,
+            "updated_at": 1771560970,
+            "updated_at_iso": "2026-02-20T04:16:10Z"
+          }
+        }
+      },
+      "hints": [
+        "同一候補は既に取り込み済みです。別の型番やシリーズで検索してください。",
+        "一致スコア不足が多いため、型番/JAN入りキーワードにすると改善します。",
+        "一致不足の主因: token_overlap",
+        "複数型番が列挙された曖昧タイトルを除外しました。",
+        "流動性データ未取得のため除外されています（LIQUIDITY_REQUIRE_SIGNAL=1）。"
+      ],
+      "errors": []
+    },
+    {
+      "query": "citizen promaster ny0084",
+      "created_count": 0,
+      "search_scope_done": false,
+      "query_cache_skip": false,
+      "query_cache_saved_at": "2026-02-20T04:16:11Z",
+      "query_cache_expires_at": "2026-02-20T04:36:11Z",
+      "sites": {
+        "ebay": {
+          "calls_made": 1,
+          "network_calls": 0,
+          "cache_hits": 1,
+          "count": 11,
+          "efficiency_count_per_network_call": -1.0,
+          "stop_reason": "max_calls_reached",
+          "max_calls": 1,
+          "per_call_limit": 70,
+          "autotune_in": {
+            "enabled": true,
+            "applied": true,
+            "updated_at": 1771560969,
+            "updated_at_iso": "2026-02-20T04:16:09Z",
+            "ema_efficiency": 29.899
+          },
+          "autotune_out": {
+            "enabled": true,
+            "saved": true,
+            "max_calls": 2,
+            "per_call_limit": 70,
+            "ema_efficiency": 29.899,
+            "updated_at": 1771560971,
+            "updated_at_iso": "2026-02-20T04:16:11Z"
+          }
+        },
+        "rakuten": {
+          "calls_made": 2,
+          "network_calls": 0,
+          "cache_hits": 2,
+          "count": 0,
+          "efficiency_count_per_network_call": -1.0,
+          "stop_reason": "low_yield_stop",
+          "max_calls": 2,
+          "per_call_limit": 30,
+          "autotune_in": {
+            "enabled": true,
+            "applied": true,
+            "updated_at": 1771560969,
+            "updated_at_iso": "2026-02-20T04:16:09Z",
+            "ema_efficiency": 18.8891
+          },
+          "autotune_out": {
+            "enabled": true,
+            "saved": true,
+            "max_calls": 2,
+            "per_call_limit": 30,
+            "ema_efficiency": 18.8891,
+            "updated_at": 1771560971,
+            "updated_at_iso": "2026-02-20T04:16:11Z"
+          }
+        },
+        "yahoo": {
+          "calls_made": 2,
+          "network_calls": 1,
+          "cache_hits": 1,
+          "count": 1,
+          "efficiency_count_per_network_call": 1.0,
+          "stop_reason": "low_yield_stop",
+          "max_calls": 2,
+          "per_call_limit": 100,
+          "autotune_in": {
+            "enabled": true,
+            "applied": true,
+            "updated_at": 1771560970,
+            "updated_at_iso": "2026-02-20T04:16:10Z",
+            "ema_efficiency": 41.0084
+          },
+          "autotune_out": {
+            "enabled": true,
+            "saved": true,
+            "max_calls": 2,
+            "per_call_limit": 100,
+            "ema_efficiency": 29.0059,
+            "updated_at": 1771560971,
+            "updated_at_iso": "2026-02-20T04:16:11Z"
+          }
+        }
+      },
+      "hints": [
+        "流動性データ未取得のため除外されています（LIQUIDITY_REQUIRE_SIGNAL=1）。"
+      ],
+      "errors": []
+    },
+    {
+      "query": "sony wh-1000xm5",
+      "created_count": 0,
+      "search_scope_done": false,
+      "query_cache_skip": false,
+      "query_cache_saved_at": "2026-02-20T04:16:12Z",
+      "query_cache_expires_at": "2026-02-20T04:36:12Z",
+      "sites": {
+        "ebay": {
+          "calls_made": 1,
+          "network_calls": 0,
+          "cache_hits": 1,
+          "count": 23,
+          "efficiency_count_per_network_call": -1.0,
+          "stop_reason": "target_reached",
+          "max_calls": 2,
+          "per_call_limit": 70,
+          "autotune_in": {
+            "enabled": true,
+            "applied": true,
+            "updated_at": 1771560971,
+            "updated_at_iso": "2026-02-20T04:16:11Z",
+            "ema_efficiency": 29.899
+          },
+          "autotune_out": {
+            "enabled": true,
+            "saved": true,
+            "max_calls": 1,
+            "per_call_limit": 70,
+            "ema_efficiency": 29.899,
+            "updated_at": 1771560971,
+            "updated_at_iso": "2026-02-20T04:16:11Z"
+          }
+        },
+        "rakuten": {
+          "calls_made": 1,
+          "network_calls": 0,
+          "cache_hits": 1,
+          "count": 25,
+          "efficiency_count_per_network_call": -1.0,
+          "stop_reason": "target_reached",
+          "max_calls": 2,
+          "per_call_limit": 30,
+          "autotune_in": {
+            "enabled": true,
+            "applied": true,
+            "updated_at": 1771560971,
+            "updated_at_iso": "2026-02-20T04:16:11Z",
+            "ema_efficiency": 18.8891
+          },
+          "autotune_out": {
+            "enabled": true,
+            "saved": true,
+            "max_calls": 1,
+            "per_call_limit": 30,
+            "ema_efficiency": 18.8891,
+            "updated_at": 1771560971,
+            "updated_at_iso": "2026-02-20T04:16:11Z"
+          }
+        },
+        "yahoo": {
+          "calls_made": 1,
+          "network_calls": 0,
+          "cache_hits": 1,
+          "count": 74,
+          "efficiency_count_per_network_call": -1.0,
+          "stop_reason": "target_reached",
+          "max_calls": 2,
+          "per_call_limit": 100,
+          "autotune_in": {
+            "enabled": true,
+            "applied": true,
+            "updated_at": 1771560971,
+            "updated_at_iso": "2026-02-20T04:16:11Z",
+            "ema_efficiency": 29.0059
+          },
+          "autotune_out": {
+            "enabled": true,
+            "saved": true,
+            "max_calls": 1,
+            "per_call_limit": 100,
+            "ema_efficiency": 29.0059,
+            "updated_at": 1771560971,
+            "updated_at_iso": "2026-02-20T04:16:11Z"
+          }
+        }
+      },
+      "hints": [
+        "一致スコア不足が多いため、型番/JAN入りキーワードにすると改善します。",
+        "一致不足の主因: model_code_conflict",
+        "複数型番が列挙された曖昧タイトルを除外しました。",
+        "流動性データ未取得のため除外されています（LIQUIDITY_REQUIRE_SIGNAL=1）。"
+      ],
+      "errors": []
+    },
+    {
+      "query": "anker powercore 10000",
+      "created_count": 0,
+      "search_scope_done": false,
+      "query_cache_skip": false,
+      "query_cache_saved_at": "2026-02-20T04:16:15Z",
+      "query_cache_expires_at": "2026-02-20T04:36:15Z",
+      "sites": {
+        "ebay": {
+          "calls_made": 1,
+          "network_calls": 1,
+          "cache_hits": 0,
+          "count": 49,
+          "efficiency_count_per_network_call": 49.0,
+          "stop_reason": "target_reached",
+          "max_calls": 1,
+          "per_call_limit": 70,
+          "autotune_in": {
+            "enabled": true,
+            "applied": true,
+            "updated_at": 1771560971,
+            "updated_at_iso": "2026-02-20T04:16:11Z",
+            "ema_efficiency": 29.899
+          },
+          "autotune_out": {
+            "enabled": true,
+            "saved": true,
+            "max_calls": 1,
+            "per_call_limit": 70,
+            "ema_efficiency": 35.6293,
+            "updated_at": 1771560973,
+            "updated_at_iso": "2026-02-20T04:16:13Z"
+          }
+        },
+        "rakuten": {
+          "calls_made": 1,
+          "network_calls": 1,
+          "cache_hits": 0,
+          "count": 14,
+          "efficiency_count_per_network_call": 14.0,
+          "stop_reason": "max_calls_reached",
+          "max_calls": 1,
+          "per_call_limit": 30,
+          "autotune_in": {
+            "enabled": true,
+            "applied": true,
+            "updated_at": 1771560971,
+            "updated_at_iso": "2026-02-20T04:16:11Z",
+            "ema_efficiency": 18.8891
+          },
+          "autotune_out": {
+            "enabled": true,
+            "saved": true,
+            "max_calls": 2,
+            "per_call_limit": 30,
+            "ema_efficiency": 17.4224,
+            "updated_at": 1771560974,
+            "updated_at_iso": "2026-02-20T04:16:14Z"
+          }
+        },
+        "yahoo": {
+          "calls_made": 1,
+          "network_calls": 1,
+          "cache_hits": 0,
+          "count": 0,
+          "efficiency_count_per_network_call": 0.0,
+          "stop_reason": "max_calls_reached",
+          "max_calls": 1,
+          "per_call_limit": 100,
+          "autotune_in": {
+            "enabled": true,
+            "applied": true,
+            "updated_at": 1771560971,
+            "updated_at_iso": "2026-02-20T04:16:11Z",
+            "ema_efficiency": 29.0059
+          },
+          "autotune_out": {
+            "enabled": true,
+            "saved": true,
+            "max_calls": 1,
+            "per_call_limit": 80,
+            "ema_efficiency": 20.3041,
+            "updated_at": 1771560974,
+            "updated_at_iso": "2026-02-20T04:16:14Z"
+          }
+        }
+      },
+      "hints": [
+        "一致スコア不足が多いため、型番/JAN入りキーワードにすると改善します。",
+        "一致不足の主因: token_overlap"
+      ],
+      "errors": []
+    }
+  ]
+}

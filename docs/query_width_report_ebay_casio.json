@@ -1,0 +1,55 @@
+{
+  "generated_at": "2026-02-19T17:42:43Z",
+  "inputs": {
+    "brand": "casio",
+    "model": "gwm5610",
+    "noun": "watch",
+    "sites": [
+      "ebay"
+    ]
+  },
+  "sites": {
+    "ebay": {
+      "rate_limit_rps": 2.0,
+      "rows": [
+        {
+          "stage": "L1_precise_new",
+          "query": "casio gwm5610 watch new",
+          "http": 200,
+          "ok": true,
+          "count": 315,
+          "delta_from_prev": null,
+          "error": null
+        },
+        {
+          "stage": "L2_precise",
+          "query": "casio gwm5610 watch",
+          "http": 200,
+          "ok": true,
+          "count": 1221,
+          "delta_from_prev": 906,
+          "error": null
+        },
+        {
+          "stage": "L3_mid",
+          "query": "casio gwm5610",
+          "http": 200,
+          "ok": true,
+          "count": 1571,
+          "delta_from_prev": 350,
+          "error": null
+        },
+        {
+          "stage": "L4_broad",
+          "query": "casio watch",
+          "http": 200,
+          "ok": true,
+          "count": 241253,
+          "delta_from_prev": 239682,
+          "error": null
+        }
+      ],
+      "recommended_stage": "L1_precise_new"
+    }
+  }
+}

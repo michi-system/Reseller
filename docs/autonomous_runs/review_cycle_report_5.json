@@ -1,0 +1,810 @@
+{
+  "cycle_id": "cycle-20260219-200852",
+  "started_at": "2026-02-19T20:07:37Z",
+  "ended_at": "2026-02-19T20:08:52Z",
+  "target_count": 24,
+  "hard_cap": 30,
+  "batch_size": 0,
+  "initial_reviewable_pending": 0,
+  "final_reviewable_pending": 0,
+  "delta_reviewable_pending": 0,
+  "min_match_score": 0.75,
+  "min_profit_usd": 0.01,
+  "condition": "new",
+  "stopped_reason": "completed_rounds",
+  "selected_candidate_ids": [],
+  "runs": [
+    {
+      "round": 1,
+      "query": "casio gwm5610 watch",
+      "created_count": 0,
+      "added_to_reviewable_queue": 0,
+      "queue_before": 0,
+      "queue_after": 0,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 14,
+          "http": 200,
+          "raw_total": 314
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 20,
+          "http": 200,
+          "raw_count": 134
+        },
+        "yahoo": {
+          "ok": false,
+          "count": 0
+        }
+      },
+      "errors": [
+        {
+          "site": "yahoo",
+          "message": "Yahoo検索失敗: http=429"
+        }
+      ],
+      "skipped_duplicates": 3,
+      "skipped_low_match": 16,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 0
+    },
+    {
+      "round": 1,
+      "query": "casio ga2100 watch",
+      "created_count": 0,
+      "added_to_reviewable_queue": 0,
+      "queue_before": 0,
+      "queue_after": 0,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 20,
+          "http": 200,
+          "raw_total": 3227
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 20,
+          "http": 200,
+          "raw_count": 478
+        },
+        "yahoo": {
+          "ok": false,
+          "count": 0
+        }
+      },
+      "errors": [
+        {
+          "site": "yahoo",
+          "message": "Yahoo検索失敗: http=429"
+        }
+      ],
+      "skipped_duplicates": 0,
+      "skipped_low_match": 18,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 2
+    },
+    {
+      "round": 1,
+      "query": "g-shock gw5000 watch",
+      "created_count": 0,
+      "added_to_reviewable_queue": 0,
+      "queue_before": 0,
+      "queue_after": 0,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 19,
+          "http": 200,
+          "raw_total": 495
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 20,
+          "http": 200,
+          "raw_count": 36
+        },
+        "yahoo": {
+          "ok": false,
+          "count": 0
+        }
+      },
+      "errors": [
+        {
+          "site": "yahoo",
+          "message": "Yahoo検索失敗: http=429"
+        }
+      ],
+      "skipped_duplicates": 8,
+      "skipped_low_match": 1,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 10
+    },
+    {
+      "round": 1,
+      "query": "g-shock gw9400 watch",
+      "created_count": 0,
+      "added_to_reviewable_queue": 0,
+      "queue_before": 0,
+      "queue_after": 0,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 16,
+          "http": 200,
+          "raw_total": 431
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 3,
+          "http": 200,
+          "raw_count": 5
+        },
+        "yahoo": {
+          "ok": false,
+          "count": 0
+        }
+      },
+      "errors": [
+        {
+          "site": "yahoo",
+          "message": "Yahoo検索失敗: http=429"
+        }
+      ],
+      "skipped_duplicates": 0,
+      "skipped_low_match": 0,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 3
+    },
+    {
+      "round": 1,
+      "query": "seiko sbga211 watch",
+      "created_count": 0,
+      "added_to_reviewable_queue": 0,
+      "queue_before": 0,
+      "queue_after": 0,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 6,
+          "http": 200,
+          "raw_total": 7
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 0,
+          "http": 200,
+          "raw_count": 1
+        },
+        "yahoo": {
+          "ok": false,
+          "count": 0
+        }
+      },
+      "errors": [
+        {
+          "site": "yahoo",
+          "message": "Yahoo検索失敗: http=429"
+        }
+      ],
+      "skipped_duplicates": 0,
+      "skipped_low_match": 0,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 0
+    },
+    {
+      "round": 1,
+      "query": "seiko sbdc101 watch",
+      "created_count": 0,
+      "added_to_reviewable_queue": 0,
+      "queue_before": 0,
+      "queue_after": 0,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 18,
+          "http": 200,
+          "raw_total": 24
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 0,
+          "http": 200,
+          "raw_count": 1
+        },
+        "yahoo": {
+          "ok": false,
+          "count": 0
+        }
+      },
+      "errors": [
+        {
+          "site": "yahoo",
+          "message": "Yahoo検索失敗: http=429"
+        }
+      ],
+      "skipped_duplicates": 0,
+      "skipped_low_match": 0,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 0
+    },
+    {
+      "round": 1,
+      "query": "seiko ssc813 watch",
+      "created_count": 0,
+      "added_to_reviewable_queue": 0,
+      "queue_before": 0,
+      "queue_after": 0,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 18,
+          "http": 200,
+          "raw_total": 40
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 1,
+          "http": 200,
+          "raw_count": 1
+        },
+        "yahoo": {
+          "ok": false,
+          "count": 0
+        }
+      },
+      "errors": [
+        {
+          "site": "yahoo",
+          "message": "Yahoo検索失敗: http=429"
+        }
+      ],
+      "skipped_duplicates": 0,
+      "skipped_low_match": 0,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 1
+    },
+    {
+      "round": 1,
+      "query": "citizen nb1050 watch",
+      "created_count": 0,
+      "added_to_reviewable_queue": 0,
+      "queue_before": 0,
+      "queue_after": 0,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 20,
+          "http": 200,
+          "raw_total": 197
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 3,
+          "http": 200,
+          "raw_count": 3
+        },
+        "yahoo": {
+          "ok": false,
+          "count": 0
+        }
+      },
+      "errors": [
+        {
+          "site": "yahoo",
+          "message": "Yahoo検索失敗: http=429"
+        }
+      ],
+      "skipped_duplicates": 0,
+      "skipped_low_match": 0,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 3
+    },
+    {
+      "round": 1,
+      "query": "citizen bj7110 watch",
+      "created_count": 0,
+      "added_to_reviewable_queue": 0,
+      "queue_before": 0,
+      "queue_after": 0,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 0,
+          "http": 200,
+          "raw_total": 2
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 0,
+          "http": 200,
+          "raw_count": 1
+        },
+        "yahoo": {
+          "ok": false,
+          "count": 0
+        }
+      },
+      "errors": [
+        {
+          "site": "yahoo",
+          "message": "Yahoo検索失敗: http=429"
+        }
+      ],
+      "skipped_duplicates": 0,
+      "skipped_low_match": 0,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 0
+    },
+    {
+      "round": 1,
+      "query": "orient kamasu watch",
+      "created_count": 0,
+      "added_to_reviewable_queue": 0,
+      "queue_before": 0,
+      "queue_after": 0,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 20,
+          "http": 200,
+          "raw_total": 155
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 16,
+          "http": 200,
+          "raw_count": 24
+        },
+        "yahoo": {
+          "ok": false,
+          "count": 0
+        }
+      },
+      "errors": [
+        {
+          "site": "yahoo",
+          "message": "Yahoo検索失敗: http=429"
+        }
+      ],
+      "skipped_duplicates": 0,
+      "skipped_low_match": 6,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 10
+    },
+    {
+      "round": 1,
+      "query": "orient bambino watch",
+      "created_count": 0,
+      "added_to_reviewable_queue": 0,
+      "queue_before": 0,
+      "queue_after": 0,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 20,
+          "http": 200,
+          "raw_total": 1596
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 19,
+          "http": 200,
+          "raw_count": 102
+        },
+        "yahoo": {
+          "ok": false,
+          "count": 0
+        }
+      },
+      "errors": [
+        {
+          "site": "yahoo",
+          "message": "Yahoo検索失敗: http=429"
+        }
+      ],
+      "skipped_duplicates": 0,
+      "skipped_low_match": 17,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 2
+    },
+    {
+      "round": 1,
+      "query": "citizen at6080 watch",
+      "created_count": 0,
+      "added_to_reviewable_queue": 0,
+      "queue_before": 0,
+      "queue_after": 0,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 20,
+          "http": 200,
+          "raw_total": 47
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 5,
+          "http": 200,
+          "raw_count": 7
+        },
+        "yahoo": {
+          "ok": false,
+          "count": 0
+        }
+      },
+      "errors": [
+        {
+          "site": "yahoo",
+          "message": "Yahoo検索失敗: http=429"
+        }
+      ],
+      "skipped_duplicates": 2,
+      "skipped_low_match": 0,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 3
+    },
+    {
+      "round": 1,
+      "query": "seiko spb143 watch",
+      "created_count": 0,
+      "added_to_reviewable_queue": 0,
+      "queue_before": 0,
+      "queue_after": 0,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 15,
+          "http": 200,
+          "raw_total": 34
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 1,
+          "http": 200,
+          "raw_count": 1
+        },
+        "yahoo": {
+          "ok": false,
+          "count": 0
+        }
+      },
+      "errors": [
+        {
+          "site": "yahoo",
+          "message": "Yahoo検索失敗: http=429"
+        }
+      ],
+      "skipped_duplicates": 0,
+      "skipped_low_match": 0,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 1
+    },
+    {
+      "round": 1,
+      "query": "casio f91w watch",
+      "created_count": 0,
+      "added_to_reviewable_queue": 0,
+      "queue_before": 0,
+      "queue_after": 0,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 18,
+          "http": 200,
+          "raw_total": 871
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 20,
+          "http": 200,
+          "raw_count": 84
+        },
+        "yahoo": {
+          "ok": false,
+          "count": 0
+        }
+      },
+      "errors": [
+        {
+          "site": "yahoo",
+          "message": "Yahoo検索失敗: http=429"
+        }
+      ],
+      "skipped_duplicates": 1,
+      "skipped_low_match": 18,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 1
+    },
+    {
+      "round": 1,
+      "query": "casio a168 watch",
+      "created_count": 0,
+      "added_to_reviewable_queue": 0,
+      "queue_before": 0,
+      "queue_after": 0,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 20,
+          "http": 200,
+          "raw_total": 897
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 20,
+          "http": 200,
+          "raw_count": 27
+        },
+        "yahoo": {
+          "ok": false,
+          "count": 0
+        }
+      },
+      "errors": [
+        {
+          "site": "yahoo",
+          "message": "Yahoo検索失敗: http=429"
+        }
+      ],
+      "skipped_duplicates": 0,
+      "skipped_low_match": 17,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 3
+    },
+    {
+      "round": 1,
+      "query": "seiko snk809 watch",
+      "created_count": 0,
+      "added_to_reviewable_queue": 0,
+      "queue_before": 0,
+      "queue_after": 0,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 15,
+          "http": 200,
+          "raw_total": 133
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 6,
+          "http": 200,
+          "raw_count": 6
+        },
+        "yahoo": {
+          "ok": false,
+          "count": 0
+        }
+      },
+      "errors": [
+        {
+          "site": "yahoo",
+          "message": "Yahoo検索失敗: http=429"
+        }
+      ],
+      "skipped_duplicates": 0,
+      "skipped_low_match": 0,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 6
+    },
+    {
+      "round": 1,
+      "query": "citizen tsuyosa watch",
+      "created_count": 0,
+      "added_to_reviewable_queue": 0,
+      "queue_before": 0,
+      "queue_after": 0,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 20,
+          "http": 200,
+          "raw_total": 796
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 20,
+          "http": 200,
+          "raw_count": 97
+        },
+        "yahoo": {
+          "ok": false,
+          "count": 0
+        }
+      },
+      "errors": [
+        {
+          "site": "yahoo",
+          "message": "Yahoo検索失敗: http=429"
+        }
+      ],
+      "skipped_duplicates": 0,
+      "skipped_low_match": 6,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 14
+    },
+    {
+      "round": 1,
+      "query": "g-shock ga110 watch",
+      "created_count": 0,
+      "added_to_reviewable_queue": 0,
+      "queue_before": 0,
+      "queue_after": 0,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 20,
+          "http": 200,
+          "raw_total": 2196
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 20,
+          "http": 200,
+          "raw_count": 684
+        },
+        "yahoo": {
+          "ok": false,
+          "count": 0
+        }
+      },
+      "errors": [
+        {
+          "site": "yahoo",
+          "message": "Yahoo検索失敗: http=429"
+        }
+      ],
+      "skipped_duplicates": 0,
+      "skipped_low_match": 20,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 0
+    },
+    {
+      "round": 1,
+      "query": "g-shock ga2100 1a1 watch",
+      "created_count": 0,
+      "added_to_reviewable_queue": 0,
+      "queue_before": 0,
+      "queue_after": 0,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 20,
+          "http": 200,
+          "raw_total": 306
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 17,
+          "http": 200,
+          "raw_count": 94
+        },
+        "yahoo": {
+          "ok": false,
+          "count": 0
+        }
+      },
+      "errors": [
+        {
+          "site": "yahoo",
+          "message": "Yahoo検索失敗: http=429"
+        }
+      ],
+      "skipped_duplicates": 5,
+      "skipped_low_match": 2,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 10
+    },
+    {
+      "round": 1,
+      "query": "seiko prospex new watch",
+      "created_count": 0,
+      "added_to_reviewable_queue": 0,
+      "queue_before": 0,
+      "queue_after": 0,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 20,
+          "http": 200,
+          "raw_total": 5461
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 1,
+          "http": 200,
+          "raw_count": 1
+        },
+        "yahoo": {
+          "ok": false,
+          "count": 0
+        }
+      },
+      "errors": [
+        {
+          "site": "yahoo",
+          "message": "Yahoo検索失敗: http=429"
+        }
+      ],
+      "skipped_duplicates": 0,
+      "skipped_low_match": 1,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 0
+    },
+    {
+      "round": 1,
+      "query": "citizen promaster new watch",
+      "created_count": 0,
+      "added_to_reviewable_queue": 0,
+      "queue_before": 0,
+      "queue_after": 0,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 20,
+          "http": 200,
+          "raw_total": 5270
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 0,
+          "http": 200,
+          "raw_count": 0
+        },
+        "yahoo": {
+          "ok": false,
+          "count": 0
+        }
+      },
+      "errors": [
+        {
+          "site": "yahoo",
+          "message": "Yahoo検索失敗: http=429"
+        }
+      ],
+      "skipped_duplicates": 0,
+      "skipped_low_match": 0,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 0
+    },
+    {
+      "round": 1,
+      "query": "casio edifice watch",
+      "created_count": 0,
+      "added_to_reviewable_queue": 0,
+      "queue_before": 0,
+      "queue_after": 0,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 20,
+          "http": 200,
+          "raw_total": 4085
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 17,
+          "http": 200,
+          "raw_count": 160
+        },
+        "yahoo": {
+          "ok": false,
+          "count": 0
+        }
+      },
+      "errors": [
+        {
+          "site": "yahoo",
+          "message": "Yahoo検索失敗: http=429"
+        }
+      ],
+      "skipped_duplicates": 0,
+      "skipped_low_match": 14,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 3
+    }
+  ]
+}

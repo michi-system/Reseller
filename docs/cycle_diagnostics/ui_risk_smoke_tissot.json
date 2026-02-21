@@ -1,0 +1,396 @@
+{
+  "cycle_id": "cycle-20260220-031239",
+  "started_at": "2026-02-20T03:12:35Z",
+  "ended_at": "2026-02-20T03:12:39Z",
+  "run_seq": 81,
+  "target_count": 2,
+  "hard_cap": 2,
+  "batch_size": 0,
+  "cycle_ready": false,
+  "initial_reviewable_pending": 0,
+  "final_reviewable_pending": 0,
+  "delta_reviewable_pending": 0,
+  "min_match_score": 0.7,
+  "min_profit_usd": 0.01,
+  "min_margin_rate": 0.03,
+  "condition": "new",
+  "stopped_reason": "completed_rounds",
+  "selected_candidate_ids": [],
+  "cache_only": false,
+  "query_reordered": false,
+  "query_order": [
+    "tissot prx t137407 watch"
+  ],
+  "max_zero_gain_strikes": 999,
+  "historical_min_attempts": 999,
+  "historical_min_network_calls": 999,
+  "historical_min_gain_per_network_call": 0.05,
+  "historical_retry_every_runs": 4,
+  "duplicate_heavy_cooldown_enabled": true,
+  "duplicate_heavy_ratio_threshold": 0.7,
+  "duplicate_heavy_min_evaluated": 12,
+  "duplicate_heavy_min_duplicates": 8,
+  "rpa_refresh": {
+    "enabled": true,
+    "mode": "rpa_json",
+    "cache_only": false,
+    "ran": true,
+    "output_path": "/Users/tadamichikimura/Downloads/dev-HQ/ebayminer/data/liquidity_rpa_signals.jsonl",
+    "primary": {
+      "ran": true,
+      "reason": "ok",
+      "query_count": 1,
+      "queries": [
+        "tissot prx t137407 watch"
+      ],
+      "condition": "new",
+      "strict_condition": true,
+      "fixed_price_only": false,
+      "pass_label": "primary_new",
+      "started_at": "2026-02-20T03:12:14Z",
+      "ended_at": "2026-02-20T03:12:35Z",
+      "returncode": 0,
+      "stdout_tail": [
+        "[1/1] query=tissot prx t137407 watch",
+        "  -> sold_90d=3 min=102.0 median=102.0 ccy=USD conf=0.95",
+        "saved 16 rows -> /Users/tadamichikimura/Downloads/dev-HQ/ebayminer/data/liquidity_rpa_signals.jsonl"
+      ],
+      "stderr_tail": []
+    },
+    "fallback": {},
+    "model_backfill": {},
+    "missing_before": 1,
+    "missing_after_primary": 0,
+    "missing_after_fallback": 0,
+    "missing_after_model_backfill": 0,
+    "reason": "no_missing_after_primary"
+  },
+  "liquidity_backfill": {
+    "updated": false,
+    "added_entries": 0,
+    "touched_entries": 0,
+    "total_entries": 1
+  },
+  "query_skipped_count": 0,
+  "duplicate_heavy_cooldown_count": 0,
+  "query_efficiency_snapshot": [
+    {
+      "query": "tissot prx t137407 watch",
+      "attempts": 2,
+      "network_calls": 9,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 0.0,
+      "zero_gain_streak": 2
+    }
+  ],
+  "api_efficiency_summary": {
+    "total_calls": 6,
+    "cache_hits": 0,
+    "network_calls": 6,
+    "by_site": {
+      "ebay": {
+        "calls_made": 2,
+        "cache_hits": 0,
+        "network_calls": 2,
+        "budget_remaining": -1
+      },
+      "rakuten": {
+        "calls_made": 2,
+        "cache_hits": 0,
+        "network_calls": 2,
+        "budget_remaining": -1
+      },
+      "yahoo": {
+        "calls_made": 2,
+        "cache_hits": 0,
+        "network_calls": 2,
+        "budget_remaining": -1
+      }
+    },
+    "cache_hit_rate": 0.0
+  },
+  "runs": [
+    {
+      "round": 1,
+      "query": "tissot prx t137407 watch",
+      "created_count": 0,
+      "added_to_reviewable_queue": 0,
+      "queue_before": 0,
+      "queue_after": 0,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 54,
+          "calls_made": 2,
+          "cache_hits": 0,
+          "network_calls": 2,
+          "budget_remaining": -1,
+          "max_calls": 3,
+          "per_call_limit": 50,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 1,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "tissot prx t137407 watch",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 5,
+              "new_count": 5,
+              "duration_ms": 1119,
+              "info": {
+                "http": 200,
+                "raw_total": 32,
+                "page": 1,
+                "offset": 0,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "query": "TISSOT WATCH",
+              "query_index": 1,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 49,
+              "new_count": 49,
+              "duration_ms": 916,
+              "info": {
+                "http": 200,
+                "raw_total": 15981,
+                "page": 1,
+                "offset": 0,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": -1
+              }
+            }
+          ]
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 1,
+          "calls_made": 2,
+          "cache_hits": 0,
+          "network_calls": 2,
+          "budget_remaining": -1,
+          "max_calls": 2,
+          "per_call_limit": 30,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "max_calls_reached",
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 2,
+            "page": 1
+          },
+          "queries": [
+            {
+              "query": "tissot prx t137407 watch",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 1,
+              "new_count": 1,
+              "duration_ms": 404,
+              "info": {
+                "http": 200,
+                "raw_count": 37,
+                "page": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "query": "TISSOT WATCH",
+              "query_index": 1,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 0,
+              "new_count": 0,
+              "duration_ms": 238,
+              "info": {
+                "http": 200,
+                "raw_count": 2473,
+                "page": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": -1
+              }
+            }
+          ]
+        },
+        "yahoo": {
+          "ok": true,
+          "count": 24,
+          "calls_made": 2,
+          "cache_hits": 0,
+          "network_calls": 2,
+          "budget_remaining": -1,
+          "max_calls": 3,
+          "per_call_limit": 50,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 1,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "tissot prx t137407 watch",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 0,
+              "new_count": 0,
+              "duration_ms": 129,
+              "info": {
+                "http": 200,
+                "raw_total": 1,
+                "page": 1,
+                "start": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "query": "TISSOT WATCH",
+              "query_index": 1,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 24,
+              "new_count": 24,
+              "duration_ms": 263,
+              "info": {
+                "http": 200,
+                "raw_total": 942,
+                "page": 1,
+                "start": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": -1
+              }
+            }
+          ]
+        }
+      },
+      "errors": [],
+      "skipped_duplicates": 0,
+      "skipped_low_match": 23,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 2,
+      "skipped_low_margin": 0,
+      "skipped_low_ev90": 0,
+      "skipped_low_liquidity": 0,
+      "skipped_liquidity_unavailable": 0,
+      "skipped_ambiguous_model_title": 0,
+      "liquidity_unavailable_model_codes": [],
+      "low_match_reason_counts": {
+        "token_overlap": 19,
+        "variant_color_missing_source": 4
+      },
+      "low_match_samples": [
+        {
+          "source_title": "【2,000円OFFクーポン有】【無金利ローン可】【3年間無料点検付】 ティソ TISSOT ピーアールエックス パワーマティック80 40mm PRX Powermatic 80 40mm T137.407.33.041.00 メンズ 腕時計 時計 日付 ビジネス ウォッチ [ラッピング無料 内祝い ギフト]",
+          "best_market_title": "Tissot PRX Champagne/Gold Stainless Steel Men's 40mm Watch T137.410.33.021.00",
+          "score": 0.25,
+          "reason": "token_overlap"
+        },
+        {
+          "source_title": "【並行輸入品】 Tissot PRC 100 Solar, Blue DIal, 34mm Watch for Women, Stainless",
+          "best_market_title": "TISSOT PR 100 Chronograph 40mm Blue Dial Watch T150.417.11.041.00",
+          "score": 0.3771,
+          "reason": "token_overlap"
+        },
+        {
+          "source_title": "【並行輸入品】 Tissot PRC 100 Solar, Gold PVD Dial, 34mm Watch for Women, Stain",
+          "best_market_title": "TISSOT Seastar 1000 Chronograph Black/Gold Dial Men's Watch T120.417.37.051.00",
+          "score": 0.2867,
+          "reason": "token_overlap"
+        },
+        {
+          "source_title": "【並行輸入品】Sight Focus FKM フロロラバー クイックリリースラバー腕時計バンド Tissot PRX Watch 40mm 35",
+          "best_market_title": "Tissot Men's PRX 40mm Quartz Digital Watch T1374631103000",
+          "score": 0.288,
+          "reason": "token_overlap"
+        },
+        {
+          "source_title": "【並行輸入品】Tissot PRX 腕時計ベルト T852047562, ブラック, One Size, モダン Tissot PRX Watc",
+          "best_market_title": "Tissot PRX Men's Black Watch - T137407A",
+          "score": 0.2689,
+          "reason": "token_overlap"
+        },
+        {
+          "source_title": "ティソ 時計 メンズ TISSOT COUTURIER AUTOMATIC T035.428.36.051.00 日本正規品",
+          "best_market_title": "Tissot Seastar 1000 Men's Black Watch - T120.417.11.051.00",
+          "score": 0.2267,
+          "reason": "token_overlap"
+        },
+        {
+          "source_title": "【並行輸入品】 Tissot PRC 100 Solar, Silver Dial, 34mm Watch for Women, Stainle",
+          "best_market_title": "TISSOT Gentleman T127.410.11.031.00 Silver Dial Men's Watch 40 mm",
+          "score": 0.3229,
+          "reason": "token_overlap"
+        },
+        {
+          "source_title": "ティソ 時計 メンズ TISSOT LUXURY　AUTOMATIC　80　T086.407.11.031.00 日本正規品",
+          "best_market_title": "New Tissot PRX Powermatic 80 Automatic Blue Men's Watch T137.407.33.041.00",
+          "score": 0.35,
+          "reason": "token_overlap"
+        }
+      ],
+      "hints": [
+        "一致スコア不足が多いため、型番/JAN入りキーワードにすると改善します。",
+        "一致不足の主因: token_overlap"
+      ],
+      "api_efficiency": {
+        "total_calls": 6,
+        "cache_hits": 0,
+        "network_calls": 6,
+        "by_site": {
+          "ebay": {
+            "calls_made": 2,
+            "cache_hits": 0,
+            "network_calls": 2,
+            "budget_remaining": -1
+          },
+          "rakuten": {
+            "calls_made": 2,
+            "cache_hits": 0,
+            "network_calls": 2,
+            "budget_remaining": -1
+          },
+          "yahoo": {
+            "calls_made": 2,
+            "cache_hits": 0,
+            "network_calls": 2,
+            "budget_remaining": -1
+          }
+        }
+      },
+      "evaluated_candidate_count": 25,
+      "duplicate_ratio": 0.0,
+      "duplicate_heavy_cooldown_applied": false
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+# run 1 | started_at=2026-02-20T02:13:09Z | ended_at=2026-02-20T02:13:09Z | returncode=0
+
+## stdout
+
+[rpa] mode=rpa_json ran=False missing primary=0 fallback=0
+
+Saved report: /Users/tadamichikimura/Downloads/dev-HQ/ebayminer/docs/review_cycle_report_latest.json
+Saved active cycle manifest: /Users/tadamichikimura/Downloads/dev-HQ/ebayminer/docs/review_cycle_active.json
+reviewable pending: initial=0 final=0 delta=0 target=12
+cycle_id=cycle-20260220-021309 batch_size=0 cycle_ready=False
+Saved auto review report: /Users/tadamichikimura/Downloads/dev-HQ/ebayminer/docs/review_cycle_auto_review_latest.json
+cycle=cycle-20260220-021309 approve=0 reject=0 skipped=0 (empty batch)
+Saved close report: /Users/tadamichikimura/Downloads/dev-HQ/ebayminer/docs/review_cycle_close_report_latest.json
+cycle=cycle-20260220-021309 reviewed=0/0 unresolved=0 rejected=0 ready_for_tuning=False
+synced rejected candidates: rows=108 added=0 total_blocked_pairs=106
+blocklist=/Users/tadamichikimura/Downloads/dev-HQ/ebayminer/data/review_blocklist.json
+$ python3 scripts/run_review_cycle.py --target-count 12 --hard-cap 12 --min-profit-usd 0.01 --min-margin-rate 0.03 --min-match-score 0.75 --max-rounds 4 --sleep-seconds 0.8 --max-zero-gain-strikes 2 --cache-only
+$ python3 scripts/auto_review_cycle.py --min-profit-usd 0.01 --min-margin-rate 0.03 --min-ev90-usd 0.0 --min-match-score 0.75 --min-auto-approve-score 0.9 --min-token-jaccard 0.62 --max-score-drift 0.25 --output /Users/tadamichikimura/Downloads/dev-HQ/ebayminer/docs/review_cycle_auto_review_latest.json
+$ python3 scripts/close_review_cycle.py --reject-floor 10 --min-reviewed-ratio 1.0 --min-reject-rate 0.1 --min-reject-with-issue-count 1 --auto-review-report /Users/tadamichikimura/Downloads/dev-HQ/ebayminer/docs/review_cycle_auto_review_latest.json --output /Users/tadamichikimura/Downloads/dev-HQ/ebayminer/docs/review_cycle_close_report_latest.json
+[cycle-summary] batch_size=0 cycle_ready=False auto(approve=0, reject=0, reject_rate=0.000) close_ready=False close_ready_light=False
+[cycle-summary] validation_report=/Users/tadamichikimura/Downloads/dev-HQ/ebayminer/docs/review_cycle_validation_latest.json ok=True
+[cycle-warning] batch_size=0 (no review candidates were processed)
+[cycle-summary] skip apply_cycle_improvements (ready_for_tuning=false, light_tuning=false)
+$ python3 scripts/sync_rejected_blocklist.py
+
+
+## stderr
+

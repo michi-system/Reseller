@@ -1,0 +1,52 @@
+{
+  "cycle_id": "cycle-20260219-231141",
+  "ran_at": "2026-02-19T23:11:41Z",
+  "dry_run": false,
+  "thresholds": {
+    "min_profit_usd": 0.01,
+    "min_margin_rate": 0.03,
+    "min_match_score": 0.75,
+    "min_auto_approve_score": 0.9,
+    "min_token_jaccard": 0.62,
+    "max_score_drift": 0.25
+  },
+  "counts": {
+    "approve": 1,
+    "reject": 0,
+    "skipped": 0
+  },
+  "decisions": [
+    {
+      "id": 379,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 36.2838,
+        "margin": 0.169646,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-M5610U-1CJF"
+        ],
+        "common_specific_codes": [
+          "GW-M5610U-1CJF"
+        ],
+        "token_jaccard": 0.3,
+        "source_colors": [
+          "green"
+        ],
+        "market_colors": [
+          "green"
+        ]
+      },
+      "source_title": "CASIO カシオ GW-M5610U-1CJF G-SHOCK ジーショック 国内正規品 タフソーラー メンズ 腕時計 GWM5610U1CJ",
+      "market_title": "CASIO Watch G-SHOCK Radio Solar Super Illuminator Type GW-M5610U-1CJF Men's NEW"
+    }
+  ]
+}

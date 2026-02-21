@@ -1,0 +1,821 @@
+{
+  "cycle_id": "cycle-20260219-231030",
+  "ran_at": "2026-02-19T23:10:30Z",
+  "dry_run": false,
+  "thresholds": {
+    "min_profit_usd": 0.01,
+    "min_margin_rate": 0.03,
+    "min_match_score": 0.75,
+    "min_auto_approve_score": 0.9,
+    "min_token_jaccard": 0.62,
+    "max_score_drift": 0.25
+  },
+  "counts": {
+    "approve": 23,
+    "reject": 1,
+    "skipped": 0
+  },
+  "decisions": [
+    {
+      "id": 411,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 16.487,
+        "margin": 0.050574,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-5000U-1JF"
+        ],
+        "common_specific_codes": [
+          "GW-5000U-1JF"
+        ],
+        "token_jaccard": 0.4286,
+        "source_colors": [
+          "green"
+        ],
+        "market_colors": [
+          "black",
+          "green"
+        ]
+      },
+      "source_title": "GW-5000U-1JF CASIO カシオ G-SHOCK ジーショック gshock Gショック g-ショック スクリューバック 電波 ソーラー メンズ 腕時計 国内正規品 送料無料",
+      "market_title": "CASIO Watch G-SHOCK GW-5000U-1JF Men's Black in Box"
+    },
+    {
+      "id": 410,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 16.4366,
+        "margin": 0.050428,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-5000HS-1JF"
+        ],
+        "common_specific_codes": [
+          "GW-5000HS-1JF"
+        ],
+        "token_jaccard": 0.3333,
+        "source_colors": [
+          "green"
+        ],
+        "market_colors": [
+          "green"
+        ]
+      },
+      "source_title": "国内正規品 CASIO G-SHOCK カシオ Gショック デジタル 電波ソーラー スクリューバック メンズ腕時計 GW-5000HS-1JF",
+      "market_title": "CASIO G-SHOCK GW-5000HS-1JF HERITAGE Series Solar Radio Digital Men Watch JAPAN"
+    },
+    {
+      "id": 409,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 40.6538,
+        "margin": 0.114592,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-5000HS-1JF"
+        ],
+        "common_specific_codes": [
+          "GW-5000HS-1JF"
+        ],
+        "token_jaccard": 0.3,
+        "source_colors": [
+          "black",
+          "green"
+        ],
+        "market_colors": [
+          "black",
+          "green"
+        ]
+      },
+      "source_title": "G-SHOCK ヘリテージシリーズ GW-5000HS-1JF メンズ 腕時計 電波ソーラー デジタル 樹脂バンド ブラック 反転液晶 日本製 国内正規品 カシオ",
+      "market_title": "CASIO G-SHOCK GW-5000HS-1JF HERITAGE Series Solar Radio Digital Men Watch Black"
+    },
+    {
+      "id": 408,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 46.4126,
+        "margin": 0.14237,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-5000U-1JF"
+        ],
+        "common_specific_codes": [
+          "GW-5000U-1JF"
+        ],
+        "token_jaccard": 0.5,
+        "source_colors": [
+          "green"
+        ],
+        "market_colors": [
+          "black",
+          "green"
+        ]
+      },
+      "source_title": "『新品』CASIO (カシオ) G-SHOCK GW-5000U-1JF",
+      "market_title": "CASIO Watch G-SHOCK GW-5000U-1JF Men's Black in Box"
+    },
+    {
+      "id": 407,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 16.487,
+        "margin": 0.050574,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-5000U-1JF"
+        ],
+        "common_specific_codes": [
+          "GW-5000U-1JF"
+        ],
+        "token_jaccard": 0.5,
+        "source_colors": [
+          "green"
+        ],
+        "market_colors": [
+          "black",
+          "green"
+        ]
+      },
+      "source_title": "カシオ Ｇショック G-SHOCK GW-5000U-1JF メンズ 爆買",
+      "market_title": "CASIO Watch G-SHOCK GW-5000U-1JF Men's Black in Box"
+    },
+    {
+      "id": 406,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 16.4366,
+        "margin": 0.050428,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-5000HS-1JF"
+        ],
+        "common_specific_codes": [
+          "GW-5000HS-1JF"
+        ],
+        "token_jaccard": 0.3333,
+        "source_colors": [
+          "green"
+        ],
+        "market_colors": [
+          "green"
+        ]
+      },
+      "source_title": "カシオ Ｇショック G-SHOCK GW-5000HS-1JF メンズ 爆買",
+      "market_title": "CASIO G-SHOCK GW-5000HS-1JF HERITAGE Series Solar Radio Digital Men Watch JAPAN"
+    },
+    {
+      "id": 405,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 16.487,
+        "margin": 0.050574,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-5000U-1JF"
+        ],
+        "common_specific_codes": [
+          "GW-5000U-1JF"
+        ],
+        "token_jaccard": 0.4286,
+        "source_colors": [
+          "black",
+          "green"
+        ],
+        "market_colors": [
+          "black",
+          "green"
+        ]
+      },
+      "source_title": "G-SHOCK 5600シリーズ GW-5000U-1JF メンズ 腕時計 電波ソーラー デジタル 樹脂バンド スクリューバック ブラック 日本製 国内正規品 カシオ",
+      "market_title": "CASIO Watch G-SHOCK GW-5000U-1JF Men's Black in Box"
+    },
+    {
+      "id": 404,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 16.487,
+        "margin": 0.050574,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-5000U-1JF"
+        ],
+        "common_specific_codes": [
+          "GW-5000U-1JF"
+        ],
+        "token_jaccard": 0.3,
+        "source_colors": [
+          "black",
+          "green"
+        ],
+        "market_colors": [
+          "black",
+          "green"
+        ]
+      },
+      "source_title": "10%OFFクーポン！~21日09:59｜カシオ Gショック GW-5000U-1JF スクリューバック 電波 ソーラー 腕時計 ブラック デジタル メンズ CASIO G-SHOCK GW-5000 【0721】【rx01】【店頭受取可能商品】",
+      "market_title": "CASIO Watch G-SHOCK GW-5000U-1JF Men's Black in Box"
+    },
+    {
+      "id": 403,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 161.807,
+        "margin": 0.324263,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-5000HS-7JF"
+        ],
+        "common_specific_codes": [
+          "GW-5000HS-7JF"
+        ],
+        "token_jaccard": 0.2308,
+        "source_colors": [
+          "green"
+        ],
+        "market_colors": [
+          "green"
+        ]
+      },
+      "source_title": "【クーポン利用で10％OFF】CASIO カシオ G-SHOCK ジーショック gshock Gショック GW-5000 HERITAGE SERIES ヘリテージシリーズ GW-5000HS-7JF メンズ 腕時計 国内正規品 送料無料",
+      "market_title": "CASIO G-SHOCK GW-5000HS-7JF Solar Radio Digital Men Watch Made in JAPAN New"
+    },
+    {
+      "id": 402,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 16.487,
+        "margin": 0.050574,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-5000U-1JF"
+        ],
+        "common_specific_codes": [
+          "GW-5000U-1JF"
+        ],
+        "token_jaccard": 0.3,
+        "source_colors": [
+          "black",
+          "green"
+        ],
+        "market_colors": [
+          "black",
+          "green"
+        ]
+      },
+      "source_title": "【\\8,400円引き】【20％OFF】カシオ ジーショック 腕時計 CASIO G-SHOCK GW-5000 series メンズ 液晶 ブラック 時計 GW-5000U-1JF 人気 おすすめ おしゃれ ブランド アウトドア キャンプ スポーツ 新社会人 母の日 プレゼント ギフト 父の日 観光 遠足 旅行",
+      "market_title": "CASIO Watch G-SHOCK GW-5000U-1JF Men's Black in Box"
+    },
+    {
+      "id": 401,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 16.4366,
+        "margin": 0.050428,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-5000HS-1JF"
+        ],
+        "common_specific_codes": [
+          "GW-5000HS-1JF"
+        ],
+        "token_jaccard": 0.3,
+        "source_colors": [
+          "green"
+        ],
+        "market_colors": [
+          "green"
+        ]
+      },
+      "source_title": "(最強配送)カシオ CASIO G-SHOCK GW-5000HS-1JF オリジン ソーラー 電波 メンズ ユニセックス 腕時計スクリューバック DLC処理 モノトーンカラー 日本製【送料無料】【楽ギフ_包装】【楽ギフ_のし】【楽ギフ_のし宛書】【楽ギフ_メッセ入力】【25年2月7日発売】",
+      "market_title": "CASIO G-SHOCK GW-5000HS-1JF HERITAGE Series Solar Radio Digital Men Watch JAPAN"
+    },
+    {
+      "id": 400,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 16.487,
+        "margin": 0.050574,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-5000U-1JF"
+        ],
+        "common_specific_codes": [
+          "GW-5000U-1JF"
+        ],
+        "token_jaccard": 0.375,
+        "source_colors": [
+          "green"
+        ],
+        "market_colors": [
+          "black",
+          "green"
+        ]
+      },
+      "source_title": "【10％OFF＋10倍エントリーで＋店舗内3点でさらに10倍】GW-5000U-1JF CASIO カシオ G-SHOCK ジーショック gshock Gショック g-ショック スクリューバック 電波 ソーラー メンズ 腕時計 国内正規品 送料無料",
+      "market_title": "CASIO Watch G-SHOCK GW-5000U-1JF Men's Black in Box"
+    },
+    {
+      "id": 399,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 40.6538,
+        "margin": 0.114592,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-5000HS-1JF"
+        ],
+        "common_specific_codes": [
+          "GW-5000HS-1JF"
+        ],
+        "token_jaccard": 0.2727,
+        "source_colors": [
+          "black",
+          "green"
+        ],
+        "market_colors": [
+          "black",
+          "green"
+        ]
+      },
+      "source_title": "G-SHOCK Gショック 電波 ソーラー GW-5000HS-1JF スクリューバック カシオ ジーショック オリジン ブラック 黒 メンズ 腕時計 （GW5000HS1JF） [在庫あり]",
+      "market_title": "CASIO G-SHOCK GW-5000HS-1JF HERITAGE Series Solar Radio Digital Men Watch Black"
+    },
+    {
+      "id": 398,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 25.727,
+        "margin": 0.076341,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-5000HS-7JF"
+        ],
+        "common_specific_codes": [
+          "GW-5000HS-7JF"
+        ],
+        "token_jaccard": 0.2727,
+        "source_colors": [
+          "black",
+          "green",
+          "white"
+        ],
+        "market_colors": [
+          "green",
+          "white"
+        ]
+      },
+      "source_title": "G-SHOCK Gショック 電波 ソーラー GW-5000HS-7JF スクリューバック カシオ ジーショック ORIGIN ホワイト＆ブラック 白 黒 メンズ 腕時計 （GW5000HS7JF） [在庫あり]",
+      "market_title": "CASIO G-SHOCK GW-5000HS-7JF Men Watch HERITAGE Series Solar Radio White NEW"
+    },
+    {
+      "id": 397,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 16.487,
+        "margin": 0.050574,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-5000U-1JF"
+        ],
+        "common_specific_codes": [
+          "GW-5000U-1JF"
+        ],
+        "token_jaccard": 0.375,
+        "source_colors": [
+          "black",
+          "green"
+        ],
+        "market_colors": [
+          "black",
+          "green"
+        ]
+      },
+      "source_title": "G-SHOCK Gショック 電波 ソーラー スクリューバック GW-5000U-1JF カシオ 電波時計 ORIGIN デジタル スクエア ブラック 黒 メンズ 腕時計 （GW5000U1JF） [在庫あり]",
+      "market_title": "CASIO Watch G-SHOCK GW-5000U-1JF Men's Black in Box"
+    },
+    {
+      "id": 396,
+      "decision": "reject",
+      "issues": [
+        "model"
+      ],
+      "reason": "一致コードが汎用すぎて同一性根拠として弱い",
+      "metrics": {
+        "profit": 38.5062,
+        "margin": 0.481388,
+        "score": 0.94,
+        "rematch_score": 0.94,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "common_codes": [
+          "DW-5600",
+          "GW-5000"
+        ],
+        "common_specific_codes": [],
+        "token_jaccard": 0.2143,
+        "source_colors": [
+          "green"
+        ],
+        "market_colors": [
+          "black",
+          "green"
+        ]
+      },
+      "source_title": "カシオ [CASIO] G-SHOCK DW-5600,GW-5000,GW-M5610,GW-M5600,DW-6900,GW-6900,GW-S5600,GW-B5600用バンドピース",
+      "market_title": "Genuine New CASIO G-SHOCK DW-5600 GW-5000 Band Piece Adapter 20mm Black"
+    },
+    {
+      "id": 395,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 25.601,
+        "margin": 0.076001,
+        "score": 0.94,
+        "rematch_score": 0.94,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-5000",
+          "GW-5000U-1JF"
+        ],
+        "common_specific_codes": [
+          "GW-5000U-1JF"
+        ],
+        "token_jaccard": 0.5,
+        "source_colors": [
+          "green"
+        ],
+        "market_colors": [
+          "green"
+        ]
+      },
+      "source_title": "カシオ Gショック GW-5000U-1JF スクリューバック 電波 ソーラー CASIO G-SHOCK GW-5000 G-SHOCK公式掲載店爆買",
+      "market_title": "CASIO G-SHOCK GW-5000U-1JF GW-5000 Digital Solar Radio Men Watch"
+    },
+    {
+      "id": 394,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 15.227,
+        "margin": 0.046925,
+        "score": 0.94,
+        "rematch_score": 0.94,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-5000",
+          "GW-5000HS-1JF"
+        ],
+        "common_specific_codes": [
+          "GW-5000HS-1JF"
+        ],
+        "token_jaccard": 0.4,
+        "source_colors": [
+          "green"
+        ],
+        "market_colors": [
+          "green"
+        ]
+      },
+      "source_title": "カシオ Gショック GW-5000HS-1JF スクリューバック バイオマスプラスチック GW-5000 G-SHOCK CASIO【0225】【rx01】爆買",
+      "market_title": "CASIO GW-5000HS-1JF G-SHOCK GW-5000 HERITAGE SERIES Made in Japan NEW From JPN"
+    },
+    {
+      "id": 393,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 15.227,
+        "margin": 0.046925,
+        "score": 0.94,
+        "rematch_score": 0.94,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-5000",
+          "GW-5000HS-1JF"
+        ],
+        "common_specific_codes": [
+          "GW-5000HS-1JF"
+        ],
+        "token_jaccard": 0.6667,
+        "source_colors": [
+          "green"
+        ],
+        "market_colors": [
+          "green"
+        ]
+      },
+      "source_title": "CASIO カシオ G-SHOCK  ジーショック gshock Gショック GW-5000 HERITAGE SERIES ヘリテージシリーズ GW-5000HS-1JF メンズ 腕時計 国内正規品 送料無料",
+      "market_title": "CASIO GW-5000HS-1JF G-SHOCK GW-5000 HERITAGE SERIES Made in Japan NEW From JPN"
+    },
+    {
+      "id": 392,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 15.227,
+        "margin": 0.046925,
+        "score": 0.94,
+        "rematch_score": 0.94,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-5000",
+          "GW-5000HS-1JF"
+        ],
+        "common_specific_codes": [
+          "GW-5000HS-1JF"
+        ],
+        "token_jaccard": 0.6667,
+        "source_colors": [
+          "green"
+        ],
+        "market_colors": [
+          "green"
+        ]
+      },
+      "source_title": "GW-5000HS-1JF CASIO カシオ G-SHOCK  ジーショック gshock Gショック GW-5000 HERITAGE SERIES ヘリテージシリーズ メンズ 腕時計 国内正規品 送料無料",
+      "market_title": "CASIO GW-5000HS-1JF G-SHOCK GW-5000 HERITAGE SERIES Made in Japan NEW From JPN"
+    },
+    {
+      "id": 391,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 37.2208,
+        "margin": 0.084809,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-9400YJ-1JF"
+        ],
+        "common_specific_codes": [
+          "GW-9400YJ-1JF"
+        ],
+        "token_jaccard": 0.7143,
+        "source_colors": [
+          "black",
+          "green",
+          "yellow"
+        ],
+        "market_colors": [
+          "black",
+          "green"
+        ]
+      },
+      "source_title": "国内正規品 CASIO G-SHOCK カシオ Gショック MASTER OF G RANGEMAN レンジマン ブラック×イエロー メンズ腕時計 GW-9400YJ-1JF",
+      "market_title": "CASIO G-SHOCK GW-9400YJ-1JF Black Master of G RANGEMAN Watch New in Box Japan🔥"
+    },
+    {
+      "id": 390,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 37.2208,
+        "margin": 0.084809,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-9400YJ-1JF"
+        ],
+        "common_specific_codes": [
+          "GW-9400YJ-1JF"
+        ],
+        "token_jaccard": 0.5714,
+        "source_colors": [
+          "black",
+          "green",
+          "yellow"
+        ],
+        "market_colors": [
+          "black",
+          "green"
+        ]
+      },
+      "source_title": "正規品 CASIO G-SHOCK RANGEMAN 電波 ソーラー ブラック＆イエロー GW-9400YJ-1JF  カシオ Gショック レンジマン トリプルセンサー マスターオブG 腕時計",
+      "market_title": "CASIO G-SHOCK GW-9400YJ-1JF Black Master of G RANGEMAN Watch New in Box Japan🔥"
+    },
+    {
+      "id": 389,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 37.2208,
+        "margin": 0.084809,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-9400YJ-1JF"
+        ],
+        "common_specific_codes": [
+          "GW-9400YJ-1JF"
+        ],
+        "token_jaccard": 0.4444,
+        "source_colors": [
+          "black",
+          "green"
+        ],
+        "market_colors": [
+          "black",
+          "green"
+        ]
+      },
+      "source_title": "【\\11,000円引き】【20％OFF】カシオ 腕時計 Gショック エマージェンシーカラー CASIO G-SHOCK RANGEMAN メンズ 液晶 ブラック 時計 ソーラー GW-9400YJ-1JF 人気 おすすめ おしゃれ ブランド プレゼント ギフト 防水 頑丈 アウトドア キャンプ フェス 夏フェス 観光 遠足",
+      "market_title": "CASIO G-SHOCK GW-9400YJ-1JF Black Master of G RANGEMAN Watch New in Box Japan🔥"
+    },
+    {
+      "id": 388,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 37.2208,
+        "margin": 0.084809,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-9400YJ-1JF"
+        ],
+        "common_specific_codes": [
+          "GW-9400YJ-1JF"
+        ],
+        "token_jaccard": 0.625,
+        "source_colors": [
+          "green"
+        ],
+        "market_colors": [
+          "black",
+          "green"
+        ]
+      },
+      "source_title": "[2/20限定 抽選で最大100％ポイントバック] G-SHOCK MASTER OF G RANGEMAN ヤドクガエル CASIO カシオ GW-9400YJ-1JF",
+      "market_title": "CASIO G-SHOCK GW-9400YJ-1JF Black Master of G RANGEMAN Watch New in Box Japan🔥"
+    }
+  ]
+}

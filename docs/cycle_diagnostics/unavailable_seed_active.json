@@ -1,0 +1,19 @@
+{
+  "cycle_id": "cycle-20260220-024652",
+  "created_at": "2026-02-20T02:46:52Z",
+  "target_count": 12,
+  "hard_cap": 12,
+  "batch_size": 2,
+  "filters": {
+    "status": "pending",
+    "min_profit_usd": 0.01,
+    "min_margin_rate": 0.03,
+    "min_match_score": 0.75,
+    "condition": "new"
+  },
+  "selected_candidate_ids": [
+    475,
+    474
+  ],
+  "notes": "Review all selected candidates. Approve only if same item and profit confidence is high."
+}

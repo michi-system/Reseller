@@ -1,0 +1,753 @@
+{
+  "cycle_id": "cycle-20260219-231017",
+  "ran_at": "2026-02-19T23:10:17Z",
+  "dry_run": false,
+  "thresholds": {
+    "min_profit_usd": 0.01,
+    "min_margin_rate": 0.03,
+    "min_match_score": 0.75,
+    "min_auto_approve_score": 0.9,
+    "min_token_jaccard": 0.62,
+    "max_score_drift": 0.25
+  },
+  "counts": {
+    "approve": 24,
+    "reject": 0,
+    "skipped": 0
+  },
+  "decisions": [
+    {
+      "id": 378,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 17.0646,
+        "margin": 0.089344,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-M5610U-1JF"
+        ],
+        "common_specific_codes": [
+          "GW-M5610U-1JF"
+        ],
+        "token_jaccard": 0.2727,
+        "source_colors": [
+          "green"
+        ],
+        "market_colors": [
+          "green"
+        ]
+      },
+      "source_title": "G-SHOCK Gショック GW-M5610U-1JF 5600 新作 タフソーラー デジタル 電波時計 カシオ 電波 ソーラー 腕時計 電波腕時計 【国内正規品】 メンズ ソーラー電波時計 ジーショック 【送料無料】 電波　ソーラー TheG",
+      "market_title": "CASIO G-SHOCK GW-M5610U-1JF Origin Tough Solar Radio Multiband6 Men GW-M5610U-1"
+    },
+    {
+      "id": 377,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 19.5846,
+        "margin": 0.100952,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-M5610U-1CJF"
+        ],
+        "common_specific_codes": [
+          "GW-M5610U-1CJF"
+        ],
+        "token_jaccard": 0.2727,
+        "source_colors": [
+          "green"
+        ],
+        "market_colors": [
+          "black",
+          "green"
+        ]
+      },
+      "source_title": "G-SHOCK Gショック GW-M5610U-1CJF 5600 新作 タフソーラー デジタル 電波時計 カシオ 電波 ソーラー 腕時計 電波腕時計 【国内正規品】 メンズ ソーラー電波時計 ジーショック 【送料無料】 電波　ソーラー TheG",
+      "market_title": "Casio G-shock GW-M5610U-1CJF Men's Watch Radio Solar Black Japan Led Light Watch"
+    },
+    {
+      "id": 376,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 36.1506,
+        "margin": 0.070927,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59L"
+        ],
+        "common_specific_codes": [
+          "NB1050-59L"
+        ],
+        "token_jaccard": 0.5,
+        "source_colors": [],
+        "market_colors": []
+      },
+      "source_title": "シチズン コレクション シチズン 自動巻き 腕時計 メンズ CITIZEN COLLECTION NB1050-59L 自動巻き 手巻き 機械式 オートマチック メカニカル",
+      "market_title": "CITIZEN Citizen Collection NB1050-59L Automatic men Watch New in Box"
+    },
+    {
+      "id": 375,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 36.1506,
+        "margin": 0.070927,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59L"
+        ],
+        "common_specific_codes": [
+          "NB1050-59L"
+        ],
+        "token_jaccard": 0.3333,
+        "source_colors": [],
+        "market_colors": []
+      },
+      "source_title": "（豪華おまけ有） シチズンコレクション メカニカル 自動巻き 腕時計 メンズ NB1050-59L CITIZEN",
+      "market_title": "CITIZEN Citizen Collection NB1050-59L Automatic men Watch New in Box"
+    },
+    {
+      "id": 374,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 64.8534,
+        "margin": 0.119246,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59E"
+        ],
+        "common_specific_codes": [
+          "NB1050-59E"
+        ],
+        "token_jaccard": 0.4,
+        "source_colors": [
+          "black",
+          "silver"
+        ],
+        "market_colors": [
+          "silver"
+        ]
+      },
+      "source_title": "NB1050-59E CITIZEN COLLECTION シチズンコレクション ブラック 文字盤 シルバー メンズ 腕時計 国内正規品 送料無料",
+      "market_title": "Citizen Watch NB1050-59E Men's Silver"
+    },
+    {
+      "id": 373,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 22.9593,
+        "margin": 0.043759,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59A"
+        ],
+        "common_specific_codes": [
+          "NB1050-59A"
+        ],
+        "token_jaccard": 0.2222,
+        "source_colors": [
+          "silver"
+        ],
+        "market_colors": [
+          "silver",
+          "white"
+        ]
+      },
+      "source_title": "シチズン コレクション メカニカル クラシカルライン 日本製 自動巻き 機械式 メンズ 腕時計 ブランド NB1050-59A CITIZEN シルバー",
+      "market_title": "CITIZEN Collection NB1050-59A Mechanical Classical Line Men's Watch White Silver"
+    },
+    {
+      "id": 372,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 36.7974,
+        "margin": 0.072087,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59E"
+        ],
+        "common_specific_codes": [
+          "NB1050-59E"
+        ],
+        "token_jaccard": 0.2857,
+        "source_colors": [],
+        "market_colors": []
+      },
+      "source_title": "（豪華おまけ有） シチズンコレクション NB1050-59E メカニカル 自動巻き 腕時計 メンズ CITIZEN",
+      "market_title": "Citizen Collection Mechanical NB1050-59E Automatic 24 Jewels Men`s Watch JAPAN"
+    },
+    {
+      "id": 371,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 41.1906,
+        "margin": 0.079875,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59H"
+        ],
+        "common_specific_codes": [
+          "NB1050-59H"
+        ],
+        "token_jaccard": 0.2,
+        "source_colors": [
+          "gray",
+          "silver"
+        ],
+        "market_colors": [
+          "gray"
+        ]
+      },
+      "source_title": "CITIZEN COLLECTION シチズンコレクション 機械式 シースルーバック シルバー グレー メンズ腕時計 NB1050-59H",
+      "market_title": "Citizen Mechanical NB1050-59H Gray Dial Automatic Sapphire Glass Men Watch JAPAN"
+    },
+    {
+      "id": 370,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 41.1906,
+        "margin": 0.079875,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59H"
+        ],
+        "common_specific_codes": [
+          "NB1050-59H"
+        ],
+        "token_jaccard": 0.2222,
+        "source_colors": [],
+        "market_colors": [
+          "gray"
+        ]
+      },
+      "source_title": "（豪華おまけ有） シチズンコレクション メカニカル 自動巻き 腕時計 メンズ NB1050-59H CITIZEN",
+      "market_title": "Citizen Mechanical NB1050-59H Gray Dial Automatic Sapphire Glass Men Watch JAPAN"
+    },
+    {
+      "id": 369,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 20.1654,
+        "margin": 0.041098,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59A"
+        ],
+        "common_specific_codes": [
+          "NB1050-59A"
+        ],
+        "token_jaccard": 0.25,
+        "source_colors": [],
+        "market_colors": []
+      },
+      "source_title": "シチズン CITIZEN 腕時計 NB1050-59A シチズンコレクション メカニカル メンズ クラシカルライン 中3針デイト（国内正規品）",
+      "market_title": "CITIZEN Collection NB1050-59A Mechanical Automatic Sapphire Glass Watch 38mm"
+    },
+    {
+      "id": 368,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 41.1906,
+        "margin": 0.079875,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59H"
+        ],
+        "common_specific_codes": [
+          "NB1050-59H"
+        ],
+        "token_jaccard": 0.2,
+        "source_colors": [],
+        "market_colors": [
+          "gray"
+        ]
+      },
+      "source_title": "NB1050-59H CITIZEN COLLECTION シチズンコレクション  メンズ 腕時計 国内正規品 送料無料",
+      "market_title": "Citizen Mechanical NB1050-59H Gray Dial Automatic Sapphire Glass Men Watch JAPAN"
+    },
+    {
+      "id": 367,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 48.7338,
+        "margin": 0.092885,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59A"
+        ],
+        "common_specific_codes": [
+          "NB1050-59A"
+        ],
+        "token_jaccard": 0.3333,
+        "source_colors": [
+          "silver"
+        ],
+        "market_colors": [
+          "silver",
+          "white"
+        ]
+      },
+      "source_title": "CITIZEN COLLECTION シチズンコレクション 機械式 シースルーバック シルバー メンズ腕時計 NB1050-59A",
+      "market_title": "CITIZEN Collection NB1050-59A Mechanical Classical Line Men's Watch White Silver"
+    },
+    {
+      "id": 366,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 91.5992,
+        "margin": 0.168424,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59E"
+        ],
+        "common_specific_codes": [
+          "NB1050-59E"
+        ],
+        "token_jaccard": 0.4,
+        "source_colors": [
+          "black",
+          "silver"
+        ],
+        "market_colors": [
+          "silver"
+        ]
+      },
+      "source_title": "『数量限定』CITIZEN COLLECTION シチズンコレクション 機械式 シースルーバック シルバー ブラック メンズ腕時計 NB1050-59E",
+      "market_title": "Citizen Watch NB1050-59E Men's Silver"
+    },
+    {
+      "id": 365,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 20.1654,
+        "margin": 0.041098,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59A"
+        ],
+        "common_specific_codes": [
+          "NB1050-59A"
+        ],
+        "token_jaccard": 0.25,
+        "source_colors": [],
+        "market_colors": []
+      },
+      "source_title": "（豪華おまけ有） シチズンコレクション NB1050-59A メカニカル 自動巻き 腕時計 メンズ CITIZEN",
+      "market_title": "CITIZEN Collection NB1050-59A Mechanical Automatic Sapphire Glass Watch 38mm"
+    },
+    {
+      "id": 364,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 36.7974,
+        "margin": 0.072087,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59E"
+        ],
+        "common_specific_codes": [
+          "NB1050-59E"
+        ],
+        "token_jaccard": 0.4286,
+        "source_colors": [],
+        "market_colors": []
+      },
+      "source_title": "シチズン コレクション シチズン 自動巻き 腕時計 メンズ CITIZEN COLLECTION NB1050-59E 自動巻き 手巻き 機械式 オートマチック メカニカル",
+      "market_title": "Citizen Collection Mechanical NB1050-59E Automatic 24 Jewels Men`s Watch JAPAN"
+    },
+    {
+      "id": 363,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 30.3884,
+        "margin": 0.06452,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59L"
+        ],
+        "common_specific_codes": [
+          "NB1050-59L"
+        ],
+        "token_jaccard": 0.3333,
+        "source_colors": [
+          "blue",
+          "silver"
+        ],
+        "market_colors": [
+          "blue",
+          "silver"
+        ]
+      },
+      "source_title": "『数量限定』CITIZEN COLLECTION シチズンコレクション 機械式 シースルーバック シルバー ブルー メンズ腕時計 NB1050-59L",
+      "market_title": "Citizen Collection NB1050-59L Mechanical Classical Line Men's Watch Blue Silver"
+    },
+    {
+      "id": 362,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 31.31,
+        "margin": 0.06237,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59E"
+        ],
+        "common_specific_codes": [
+          "NB1050-59E"
+        ],
+        "token_jaccard": 0.2,
+        "source_colors": [
+          "black"
+        ],
+        "market_colors": [
+          "black"
+        ]
+      },
+      "source_title": "シチズン CITIZEN 腕時計 機械式 自動巻(手巻付き) サファイアクリスタル ブラック NB1050-59E メンズ 国内正規品",
+      "market_title": "Citizen NB1050-59E Men's Watch Automatic Black Dial Stainless Steel Made in Japn"
+    },
+    {
+      "id": 361,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 42.162,
+        "margin": 0.081758,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59H"
+        ],
+        "common_specific_codes": [
+          "NB1050-59H"
+        ],
+        "token_jaccard": 0.2222,
+        "source_colors": [
+          "gray"
+        ],
+        "market_colors": [
+          "gray"
+        ]
+      },
+      "source_title": "シチズン CITIZEN 腕時計 機械式 自動巻(手巻付き) グレー サファイアクリスタル NB1050-59H メンズ 国内正規品",
+      "market_title": "Citizen Mechanical NB1050-59H Gray Dial Automatic Sapphire Glass Men Watch JAPAN"
+    },
+    {
+      "id": 360,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 21.1368,
+        "margin": 0.043078,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59A"
+        ],
+        "common_specific_codes": [
+          "NB1050-59A"
+        ],
+        "token_jaccard": 0.25,
+        "source_colors": [],
+        "market_colors": []
+      },
+      "source_title": "シチズン CITIZEN 腕時計 機械式 自動巻(手巻付き) サファイアクリスタル NB1050-59A メンズ 国内正規品",
+      "market_title": "CITIZEN Collection NB1050-59A Mechanical Automatic Sapphire Glass Watch 38mm"
+    },
+    {
+      "id": 311,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 16.1139,
+        "margin": 0.032886,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59H"
+        ],
+        "common_specific_codes": [
+          "NB1050-59H"
+        ],
+        "token_jaccard": 0.1818,
+        "source_colors": [
+          "gray"
+        ],
+        "market_colors": [
+          "gray"
+        ]
+      },
+      "source_title": "＼10%OFFクーポン★21日10時迄／ シチズン コレクション 自動巻き 腕時計 ブランド メンズ CITIZEN COLLECTION NB1050-59H アナログ グレー 日本製 ギフト プレゼント 実用的",
+      "market_title": "Citizen NB1050-59H Men's Watch Automatic Gray Dial Stainless Steel Japan Domesti"
+    },
+    {
+      "id": 310,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 17.931,
+        "margin": 0.036744,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59E"
+        ],
+        "common_specific_codes": [
+          "NB1050-59E"
+        ],
+        "token_jaccard": 0.3333,
+        "source_colors": [],
+        "market_colors": []
+      },
+      "source_title": "＼10％OFF★最大100%ポイントバック★要エントリー／シチズン コレクション シチズン 自動巻き 腕時計 メンズ CITIZEN COLLECTION NB1050-59E 自動巻き 手巻き 機械式 オートマチック シチズン 38mm ステンレス 日付 シチズン メカニカル シースルーバック",
+      "market_title": "Brand-New Citizen Collection Mechanical NB1050-59E Men's Watch"
+    },
+    {
+      "id": 309,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 33.1686,
+        "margin": 0.065532,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59H"
+        ],
+        "common_specific_codes": [
+          "NB1050-59H"
+        ],
+        "token_jaccard": 0.375,
+        "source_colors": [],
+        "market_colors": []
+      },
+      "source_title": "【10％OFF＋10倍エントリーで＋店舗内3点でさらに10倍】NB1050-59H CITIZEN COLLECTION シチズンコレクション メンズ 腕時計 国内正規品 送料無料",
+      "market_title": "Citizen Collection NB1050-59H Mechanical Automatic Men Watch New in Box"
+    },
+    {
+      "id": 308,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 33.1686,
+        "margin": 0.065532,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59H"
+        ],
+        "common_specific_codes": [
+          "NB1050-59H"
+        ],
+        "token_jaccard": 0.5,
+        "source_colors": [],
+        "market_colors": []
+      },
+      "source_title": "【 表示価格から10％off　クーポンあり 】シチズンコレクション メカニカル CITIZEN COLLECTION Mechanical メンズ腕時計 NB1050-59H",
+      "market_title": "Citizen Collection NB1050-59H Mechanical Automatic Men Watch New in Box"
+    },
+    {
+      "id": 207,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 19.5846,
+        "margin": 0.100952,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-M5610U-1CJF"
+        ],
+        "common_specific_codes": [
+          "GW-M5610U-1CJF"
+        ],
+        "token_jaccard": 0.3,
+        "source_colors": [
+          "green"
+        ],
+        "market_colors": [
+          "black",
+          "green"
+        ]
+      },
+      "source_title": "CASIO カシオ GW-M5610U-1CJF G-SHOCK ジーショック 国内正規品 タフソーラー メンズ 腕時計 GWM5610U1CJ",
+      "market_title": "Casio G-shock GW-M5610U-1CJF Men's Watch Radio Solar Black Japan Led Light Watch"
+    }
+  ]
+}

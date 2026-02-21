@@ -1,0 +1,351 @@
+{
+  "cycle_id": "cycle-20260220-024725",
+  "started_at": "2026-02-20T02:47:24Z",
+  "ended_at": "2026-02-20T02:47:25Z",
+  "run_seq": 60,
+  "target_count": 8,
+  "hard_cap": 8,
+  "batch_size": 2,
+  "cycle_ready": false,
+  "initial_reviewable_pending": 2,
+  "final_reviewable_pending": 2,
+  "delta_reviewable_pending": 0,
+  "min_match_score": 0.75,
+  "min_profit_usd": 0.01,
+  "min_margin_rate": 0.03,
+  "condition": "new",
+  "stopped_reason": "completed_rounds",
+  "selected_candidate_ids": [
+    475,
+    474
+  ],
+  "cache_only": false,
+  "query_reordered": true,
+  "query_order": [
+    "g-shock gw9400 watch"
+  ],
+  "max_zero_gain_strikes": 999,
+  "historical_min_attempts": 999,
+  "historical_min_network_calls": 6,
+  "historical_min_gain_per_network_call": 0.05,
+  "historical_retry_every_runs": 1,
+  "rpa_refresh": {
+    "enabled": false,
+    "mode": "rpa_json",
+    "cache_only": false,
+    "ran": false,
+    "output_path": "/Users/tadamichikimura/Downloads/dev-HQ/ebayminer/data/liquidity_rpa_signals.jsonl",
+    "primary": {},
+    "fallback": {},
+    "model_backfill": {},
+    "missing_before": 0,
+    "missing_after_primary": 0,
+    "missing_after_fallback": 0,
+    "missing_after_model_backfill": 0,
+    "reason": "disabled_or_non_rpa_mode"
+  },
+  "query_skipped_count": 0,
+  "query_efficiency_snapshot": [
+    {
+      "query": "g-shock gw9400 watch",
+      "attempts": 20,
+      "network_calls": 27,
+      "queue_gain_total": 46,
+      "gain_per_network_call": 1.7037,
+      "zero_gain_streak": 0
+    }
+  ],
+  "api_efficiency_summary": {
+    "total_calls": 5,
+    "cache_hits": 5,
+    "network_calls": 0,
+    "by_site": {
+      "ebay": {
+        "calls_made": 1,
+        "cache_hits": 1,
+        "network_calls": 0,
+        "budget_remaining": -1
+      },
+      "rakuten": {
+        "calls_made": 2,
+        "cache_hits": 2,
+        "network_calls": 0,
+        "budget_remaining": -1
+      },
+      "yahoo": {
+        "calls_made": 2,
+        "cache_hits": 2,
+        "network_calls": 0,
+        "budget_remaining": -1
+      }
+    },
+    "cache_hit_rate": 1.0
+  },
+  "runs": [
+    {
+      "round": 1,
+      "query": "g-shock gw9400 watch",
+      "created_count": 0,
+      "added_to_reviewable_queue": 0,
+      "queue_before": 2,
+      "queue_after": 2,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 31,
+          "calls_made": 1,
+          "cache_hits": 1,
+          "network_calls": 0,
+          "budget_remaining": -1,
+          "max_calls": 3,
+          "per_call_limit": 50,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 0,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "SHOCK GW9400 NEW",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 31,
+              "new_count": 31,
+              "duration_ms": 598,
+              "info": {
+                "http": 200,
+                "raw_total": 455,
+                "page": 1,
+                "offset": 0,
+                "cache_hit": true,
+                "cache_age_sec": 13141,
+                "budget_remaining": -1
+              }
+            }
+          ]
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 19,
+          "calls_made": 2,
+          "cache_hits": 2,
+          "network_calls": 0,
+          "budget_remaining": -1,
+          "max_calls": 2,
+          "per_call_limit": 30,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "max_calls_reached",
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 2,
+            "page": 1
+          },
+          "queries": [
+            {
+              "query": "g-shock gw9400 watch",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 2,
+              "new_count": 2,
+              "duration_ms": 11,
+              "info": {
+                "http": 200,
+                "raw_count": 5,
+                "page": 1,
+                "cache_hit": true,
+                "cache_age_sec": 13140,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "query": "SHOCK GW9400",
+              "query_index": 1,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 19,
+              "new_count": 17,
+              "duration_ms": 39,
+              "info": {
+                "http": 200,
+                "raw_count": 108,
+                "page": 1,
+                "cache_hit": true,
+                "cache_age_sec": 13140,
+                "budget_remaining": -1
+              }
+            }
+          ]
+        },
+        "yahoo": {
+          "ok": true,
+          "count": 44,
+          "calls_made": 2,
+          "cache_hits": 2,
+          "network_calls": 0,
+          "budget_remaining": -1,
+          "max_calls": 3,
+          "per_call_limit": 50,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 1,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "g-shock gw9400 watch",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 6,
+              "new_count": 6,
+              "duration_ms": 3,
+              "info": {
+                "http": 200,
+                "raw_total": 24,
+                "page": 1,
+                "start": 1,
+                "cache_hit": true,
+                "cache_age_sec": 13141,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "query": "SHOCK GW9400",
+              "query_index": 1,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 39,
+              "new_count": 38,
+              "duration_ms": 8,
+              "info": {
+                "http": 200,
+                "raw_total": 539,
+                "page": 1,
+                "start": 1,
+                "cache_hit": true,
+                "cache_age_sec": 13141,
+                "budget_remaining": -1
+              }
+            }
+          ]
+        }
+      },
+      "errors": [],
+      "skipped_duplicates": 19,
+      "skipped_low_match": 10,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 24,
+      "skipped_low_margin": 1,
+      "skipped_low_ev90": 0,
+      "skipped_low_liquidity": 0,
+      "skipped_liquidity_unavailable": 0,
+      "skipped_ambiguous_model_title": 1,
+      "liquidity_unavailable_model_codes": [],
+      "low_match_reason_counts": {
+        "variant_color_missing_source": 3,
+        "color_missing_market": 5,
+        "token_overlap": 2
+      },
+      "low_match_samples": [
+        {
+          "source_title": "カシオ 【国内正規品】G-SHOCK（ジーショック）　RANGEMAN ソーラー電波　メンズタイプ GW-9400YJ-1JF [GW9400YJ1JF]【返品種別A】",
+          "best_market_title": "Casio GW9400-1 G-Shock Rangeman all black Digital Dial Resin Band Men Watch NEW",
+          "score": 0.16,
+          "reason": "variant_color_missing_source"
+        },
+        {
+          "source_title": "【2/19〜2/23 10％オフクーポン配布中】G-SHOCK GW-9400Y-1 RANGEMAN 腕時計 電波ソーラー メンズ デジタル ブラック イエロー Gショック ジーショック カシオ 逆輸入海外モデル",
+          "best_market_title": "Casio GW9400-1 G-Shock Rangeman all black Digital Dial Resin Band Men Watch NEW",
+          "score": 0.16,
+          "reason": "variant_color_missing_source"
+        },
+        {
+          "source_title": "無金利ローン可 ジーショック G-SHOCK マスターオブジー レンジマン メンズ 腕時計 時計 ソーラークオーツ 正規品 GW-9400YJ-1JF",
+          "best_market_title": "CASIO G-SHOCK  GW-9400YJ-1JF Japan Import NEW",
+          "score": 0.16,
+          "reason": "color_missing_market"
+        },
+        {
+          "source_title": "腕時計 メンズ Gショック 9400型 電波 ソーラー ケース幅55mm レンジマン ポリウレタンベルト ブラック/ブラック×イエロー色 G-SHOCK 111NGW9400Y1",
+          "best_market_title": "CASIO G-SHOCK  GW-9400YJ-1JF Japan Import NEW",
+          "score": 0.16,
+          "reason": "color_missing_market"
+        },
+        {
+          "source_title": "【並行輸入品】CASIO 純正 G-SHOCK ベゼル GW-9400FBJ-4JR 用 カシオ Bezel",
+          "best_market_title": "Casio G-Shock Rangeman Multi-Band 6 A-c Timekeeping Digital Dial Men's Watch",
+          "score": 0.1691,
+          "reason": "token_overlap"
+        },
+        {
+          "source_title": "G-SHOCK Gショック マスターオブG RANGEMAN レンジマン カシオ CASIO ソーラー電波 デジタル 腕時計 ブラック イエロー GW-9400Y-1 逆輸入海外モデル",
+          "best_market_title": "CASIO G-SHOCK  GW-9400YJ-1JF Japan Import NEW",
+          "score": 0.16,
+          "reason": "color_missing_market"
+        },
+        {
+          "source_title": "2年保証 GW-9500-1 CASIO G-SHOCK MUDMAN マッドマン MASTER OF G 電波ソーラー ソーラー充電 電波時計 カシオ Gショック トリプルセンサー ブラック レッド",
+          "best_market_title": "CASIO G-SHOCK  GW-9400YJ-1JF Japan Import NEW",
+          "score": 0.16,
+          "reason": "color_missing_market"
+        },
+        {
+          "source_title": "カシオ (国内正規品)G-SHOCK(ジーショック) RANGEMANソーラー電波 メンズタイプ GW-9400YJ-1JF 返品種別A",
+          "best_market_title": "Casio GW9400-1 G-Shock Rangeman all black Digital Dial Resin Band Men Watch NEW",
+          "score": 0.16,
+          "reason": "variant_color_missing_source"
+        }
+      ],
+      "hints": [
+        "同一候補は既に取り込み済みです。別の型番やシリーズで検索してください。",
+        "一致不足の主因: color_missing_market",
+        "複数型番が列挙された曖昧タイトルを除外しました。",
+        "利益条件で除外されています。仕入れ価格が低い型番で再検索してください。",
+        "否認済みブロックに該当しています。別商品の検索を推奨します。"
+      ],
+      "api_efficiency": {
+        "total_calls": 5,
+        "cache_hits": 5,
+        "network_calls": 0,
+        "by_site": {
+          "ebay": {
+            "calls_made": 1,
+            "cache_hits": 1,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "rakuten": {
+            "calls_made": 2,
+            "cache_hits": 2,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "yahoo": {
+            "calls_made": 2,
+            "cache_hits": 2,
+            "network_calls": 0,
+            "budget_remaining": -1
+          }
+        }
+      }
+    }
+  ]
+}

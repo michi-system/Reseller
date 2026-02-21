@@ -1,0 +1,89 @@
+{
+  "cycle_id": "cycle-20260219-201006",
+  "ran_at": "2026-02-19T20:10:07Z",
+  "dry_run": false,
+  "thresholds": {
+    "min_profit_usd": 0.01,
+    "min_margin_rate": 0.03,
+    "min_match_score": 0.75
+  },
+  "counts": {
+    "approve": 3,
+    "reject": 0,
+    "skipped": 0
+  },
+  "decisions": [
+    {
+      "id": 52,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす",
+      "metrics": {
+        "profit": 16.6079,
+        "margin": 0.110904,
+        "score": 0.92,
+        "common_codes": [
+          "2100"
+        ],
+        "token_jaccard": 0.2,
+        "source_colors": [
+          "black"
+        ],
+        "market_colors": [
+          "black",
+          "red"
+        ]
+      },
+      "source_title": "腕時計 時計 CASIO カシオ G-SHOCK メンズ GA-2100-1A1JF Gショック GSHOCK ジーショック 2100 Series クォーツ ウォッチ ブラック 黒 正規品 新品 人気 誕生日 新生活 父の日 プレゼント ギフト 贈り物 GA21001A1JF",
+      "market_title": "CASIO G-SHOCK GA2100-1A1 2100 Series Carbon Core Guard Watch, Black"
+    },
+    {
+      "id": 51,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす",
+      "metrics": {
+        "profit": 16.6079,
+        "margin": 0.110904,
+        "score": 0.92,
+        "common_codes": [
+          "2100"
+        ],
+        "token_jaccard": 0.2,
+        "source_colors": [
+          "black"
+        ],
+        "market_colors": [
+          "black",
+          "red"
+        ]
+      },
+      "source_title": "腕時計 時計 CASIO カシオ G-SHOCK メンズ GA-2100-1A1JF Gショック GSHOCK ジーショック 2100 Series クォーツ ウォッチ ブラック 黒 正規品 新品 人気 誕生日 新生活 父の日 プレゼント ギフト 贈り物 GA21001A1JF",
+      "market_title": "CASIO G-SHOCK GA2100-1A1 2100 Series Carbon Core Guard Watch, Black"
+    },
+    {
+      "id": 50,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす",
+      "metrics": {
+        "profit": 12.3338,
+        "margin": 0.082362,
+        "score": 0.92,
+        "common_codes": [
+          "2100"
+        ],
+        "token_jaccard": 0.1818,
+        "source_colors": [
+          "black"
+        ],
+        "market_colors": [
+          "black",
+          "red"
+        ]
+      },
+      "source_title": "カシオ CASIO G-SHOCK ANALOG-DIGITAL 2100 SERIES 時計 ウォッチ メンズ クォーツ GA-2100-1A1JF ブラック文字盤 腕時計 男性 Gショック ジーショック",
+      "market_title": "CASIO G-SHOCK GA2100-1A1 2100 Series Carbon Core Guard Watch, Black"
+    }
+  ]
+}

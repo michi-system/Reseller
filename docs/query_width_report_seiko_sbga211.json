@@ -1,0 +1,147 @@
+{
+  "generated_at": "2026-02-19T18:09:23Z",
+  "inputs": {
+    "brand": "seiko",
+    "model": "sbga211",
+    "noun": "watch",
+    "sites": [
+      "ebay",
+      "yahoo",
+      "rakuten"
+    ]
+  },
+  "sites": {
+    "ebay": {
+      "rate_limit_rps": 2.0,
+      "min_candidates": 20,
+      "max_candidates": 2000,
+      "rows": [
+        {
+          "stage": "L1_precise_new",
+          "query": "seiko sbga211 watch new",
+          "http": 200,
+          "ok": true,
+          "count": 15,
+          "delta_from_prev": null,
+          "error": null
+        },
+        {
+          "stage": "L2_precise",
+          "query": "seiko sbga211 watch",
+          "http": 200,
+          "ok": true,
+          "count": 44,
+          "delta_from_prev": 29,
+          "error": null
+        },
+        {
+          "stage": "L3_mid",
+          "query": "seiko sbga211",
+          "http": 200,
+          "ok": true,
+          "count": 47,
+          "delta_from_prev": 3,
+          "error": null
+        },
+        {
+          "stage": "L4_broad",
+          "query": "seiko watch",
+          "http": 200,
+          "ok": true,
+          "count": 311396,
+          "delta_from_prev": 311349,
+          "error": null
+        }
+      ],
+      "recommended_stage": "L2_precise"
+    },
+    "yahoo": {
+      "rate_limit_rps": 1.0,
+      "min_candidates": 20,
+      "max_candidates": 1000,
+      "rows": [
+        {
+          "stage": "L1_precise_new",
+          "query": "seiko sbga211 watch new",
+          "http": 200,
+          "ok": true,
+          "count": 0,
+          "delta_from_prev": null,
+          "error": null
+        },
+        {
+          "stage": "L2_precise",
+          "query": "seiko sbga211 watch",
+          "http": 200,
+          "ok": true,
+          "count": 0,
+          "delta_from_prev": 0,
+          "error": null
+        },
+        {
+          "stage": "L3_mid",
+          "query": "seiko sbga211",
+          "http": 200,
+          "ok": true,
+          "count": 155,
+          "delta_from_prev": 155,
+          "error": null
+        },
+        {
+          "stage": "L4_broad",
+          "query": "seiko watch",
+          "http": 200,
+          "ok": true,
+          "count": 15951,
+          "delta_from_prev": 15796,
+          "error": null
+        }
+      ],
+      "recommended_stage": "L3_mid"
+    },
+    "rakuten": {
+      "rate_limit_rps": 1.0,
+      "min_candidates": 10,
+      "max_candidates": 1000,
+      "rows": [
+        {
+          "stage": "L1_precise_new",
+          "query": "seiko sbga211 watch new",
+          "http": 200,
+          "ok": true,
+          "count": 0,
+          "delta_from_prev": null,
+          "error": null
+        },
+        {
+          "stage": "L2_precise",
+          "query": "seiko sbga211 watch",
+          "http": 200,
+          "ok": true,
+          "count": 1,
+          "delta_from_prev": 1,
+          "error": null
+        },
+        {
+          "stage": "L3_mid",
+          "query": "seiko sbga211",
+          "http": 200,
+          "ok": true,
+          "count": 15,
+          "delta_from_prev": 14,
+          "error": null
+        },
+        {
+          "stage": "L4_broad",
+          "query": "seiko watch",
+          "http": 200,
+          "ok": true,
+          "count": 5877,
+          "delta_from_prev": 5862,
+          "error": null
+        }
+      ],
+      "recommended_stage": "L3_mid"
+    }
+  }
+}

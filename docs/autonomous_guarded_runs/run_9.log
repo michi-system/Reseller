@@ -1,0 +1,32 @@
+# run 9 | started_at=2026-02-19T23:10:30Z | ended_at=2026-02-19T23:10:44Z | returncode=0
+
+## stdout
+
+[round 1] g-shock gw5000 watch -> created=10 queue+=10 now=19 api(network/cache)=3/0
+[round 1] citizen nb1050 watch -> created=0 queue+=0 now=19 api(network/cache)=1/2
+[round 1] g-shock gw9400 watch -> created=0 queue+=0 now=19 api(network/cache)=2/2
+[round 1] casio gwm5610 watch -> created=0 queue+=0 now=19 api(network/cache)=2/1
+[round 1] citizen at6080 watch -> created=0 queue+=0 now=19 api(network/cache)=2/1
+[round 1] casio f91w watch -> created=7 queue+=7 now=26 api(network/cache)=3/0
+
+Saved report: /Users/tadamichikimura/Downloads/dev-HQ/ebayminer/docs/review_cycle_report_latest.json
+Saved active cycle manifest: /Users/tadamichikimura/Downloads/dev-HQ/ebayminer/docs/review_cycle_active.json
+reviewable pending: initial=9 final=26 delta=17 target=24
+cycle_id=cycle-20260219-231044 batch_size=24 cycle_ready=True
+Saved auto review report: /Users/tadamichikimura/Downloads/dev-HQ/ebayminer/docs/review_cycle_auto_review_latest.json
+cycle=cycle-20260219-231044 approve=23 reject=0 skipped=1
+Saved close report: /Users/tadamichikimura/Downloads/dev-HQ/ebayminer/docs/review_cycle_close_report_latest.json
+cycle=cycle-20260219-231044 reviewed=24/24 unresolved=0 rejected=0 ready_for_tuning=False
+synced rejected candidates: rows=91 added=0 total_blocked_pairs=89
+blocklist=/Users/tadamichikimura/Downloads/dev-HQ/ebayminer/data/review_blocklist.json
+$ python3 scripts/run_review_cycle.py --target-count 24 --hard-cap 30 --min-profit-usd 0.01 --min-margin-rate 0.03 --min-match-score 0.75 --max-rounds 2 --sleep-seconds 0.2 --max-zero-gain-strikes 2 --daily-budget-ebay 120 --daily-budget-rakuten 120 --daily-budget-yahoo 120
+$ python3 scripts/auto_review_cycle.py --min-profit-usd 0.01 --min-margin-rate 0.03 --min-match-score 0.75 --min-auto-approve-score 0.9 --min-token-jaccard 0.62 --max-score-drift 0.25 --output /Users/tadamichikimura/Downloads/dev-HQ/ebayminer/docs/review_cycle_auto_review_latest.json
+$ python3 scripts/close_review_cycle.py --reject-floor 10 --min-reviewed-ratio 1.0 --min-reject-rate 0.1 --min-reject-with-issue-count 1 --auto-review-report /Users/tadamichikimura/Downloads/dev-HQ/ebayminer/docs/review_cycle_auto_review_latest.json --output /Users/tadamichikimura/Downloads/dev-HQ/ebayminer/docs/review_cycle_close_report_latest.json
+[cycle-summary] batch_size=24 cycle_ready=True auto(approve=23, reject=0, reject_rate=0.000) close_ready=False
+[cycle-summary] validation_report=/Users/tadamichikimura/Downloads/dev-HQ/ebayminer/docs/review_cycle_validation_latest.json ok=True
+[cycle-summary] skip apply_cycle_improvements (ready_for_tuning=false)
+$ python3 scripts/sync_rejected_blocklist.py
+
+
+## stderr
+

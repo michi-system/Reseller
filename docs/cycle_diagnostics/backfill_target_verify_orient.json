@@ -1,0 +1,354 @@
+{
+  "cycle_id": "cycle-20260220-025537",
+  "started_at": "2026-02-20T02:55:36Z",
+  "ended_at": "2026-02-20T02:55:37Z",
+  "run_seq": 70,
+  "target_count": 24,
+  "hard_cap": 24,
+  "batch_size": 1,
+  "cycle_ready": false,
+  "initial_reviewable_pending": 1,
+  "final_reviewable_pending": 1,
+  "delta_reviewable_pending": 0,
+  "min_match_score": 0.7,
+  "min_profit_usd": 0.01,
+  "min_margin_rate": 0.03,
+  "condition": "new",
+  "stopped_reason": "completed_rounds",
+  "selected_candidate_ids": [
+    474
+  ],
+  "cache_only": false,
+  "query_reordered": false,
+  "query_order": [
+    "orient rn-aa0001b watch"
+  ],
+  "max_zero_gain_strikes": 999,
+  "historical_min_attempts": 999,
+  "historical_min_network_calls": 999,
+  "historical_min_gain_per_network_call": 0.05,
+  "historical_retry_every_runs": 4,
+  "rpa_refresh": {
+    "enabled": false,
+    "mode": "rpa_json",
+    "cache_only": false,
+    "ran": false,
+    "output_path": "/tmp/ebayminer_liq_empty.jsonl",
+    "primary": {},
+    "fallback": {},
+    "model_backfill": {},
+    "missing_before": 0,
+    "missing_after_primary": 0,
+    "missing_after_fallback": 0,
+    "missing_after_model_backfill": 0,
+    "reason": "disabled_or_non_rpa_mode"
+  },
+  "liquidity_backfill": {
+    "updated": true,
+    "added_entries": 1,
+    "touched_entries": 1,
+    "total_entries": 1
+  },
+  "query_skipped_count": 0,
+  "query_efficiency_snapshot": [
+    {
+      "query": "orient rn-aa0001b watch",
+      "attempts": 6,
+      "network_calls": 9,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 0.0,
+      "zero_gain_streak": 2
+    }
+  ],
+  "api_efficiency_summary": {
+    "total_calls": 5,
+    "cache_hits": 5,
+    "network_calls": 0,
+    "by_site": {
+      "ebay": {
+        "calls_made": 1,
+        "cache_hits": 1,
+        "network_calls": 0,
+        "budget_remaining": -1
+      },
+      "rakuten": {
+        "calls_made": 2,
+        "cache_hits": 2,
+        "network_calls": 0,
+        "budget_remaining": -1
+      },
+      "yahoo": {
+        "calls_made": 2,
+        "cache_hits": 2,
+        "network_calls": 0,
+        "budget_remaining": -1
+      }
+    },
+    "cache_hit_rate": 1.0
+  },
+  "runs": [
+    {
+      "round": 1,
+      "query": "orient rn-aa0001b watch",
+      "created_count": 0,
+      "added_to_reviewable_queue": 0,
+      "queue_before": 1,
+      "queue_after": 1,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 50,
+          "calls_made": 1,
+          "cache_hits": 1,
+          "network_calls": 0,
+          "budget_remaining": -1,
+          "max_calls": 3,
+          "per_call_limit": 50,
+          "target_items": 12,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 0,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "ORIENT RN-AA0001B NEW",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 50,
+              "new_count": 50,
+              "duration_ms": 537,
+              "info": {
+                "http": 200,
+                "raw_total": 151,
+                "page": 1,
+                "offset": 0,
+                "cache_hit": true,
+                "cache_age_sec": 497,
+                "budget_remaining": -1
+              }
+            }
+          ]
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 18,
+          "calls_made": 2,
+          "cache_hits": 2,
+          "network_calls": 0,
+          "budget_remaining": -1,
+          "max_calls": 2,
+          "per_call_limit": 30,
+          "target_items": 10,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 1,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "orient rn-aa0001b watch",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 0,
+              "new_count": 0,
+              "duration_ms": 0,
+              "info": {
+                "http": 200,
+                "raw_count": 0,
+                "page": 1,
+                "cache_hit": true,
+                "cache_age_sec": 497,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "query": "ORIENT RN-AA0001B",
+              "query_index": 1,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 18,
+              "new_count": 18,
+              "duration_ms": 16,
+              "info": {
+                "http": 200,
+                "raw_count": 20,
+                "page": 1,
+                "cache_hit": true,
+                "cache_age_sec": 494,
+                "budget_remaining": -1
+              }
+            }
+          ]
+        },
+        "yahoo": {
+          "ok": true,
+          "count": 19,
+          "calls_made": 2,
+          "cache_hits": 2,
+          "network_calls": 0,
+          "budget_remaining": -1,
+          "max_calls": 3,
+          "per_call_limit": 50,
+          "target_items": 10,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 1,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "orient rn-aa0001b watch",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 0,
+              "new_count": 0,
+              "duration_ms": 0,
+              "info": {
+                "http": 200,
+                "raw_total": 0,
+                "page": 1,
+                "start": 1,
+                "cache_hit": true,
+                "cache_age_sec": 494,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "query": "ORIENT RN-AA0001B",
+              "query_index": 1,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 19,
+              "new_count": 19,
+              "duration_ms": 6,
+              "info": {
+                "http": 200,
+                "raw_total": 44,
+                "page": 1,
+                "start": 1,
+                "cache_hit": true,
+                "cache_age_sec": 494,
+                "budget_remaining": -1
+              }
+            }
+          ]
+        }
+      },
+      "errors": [],
+      "skipped_duplicates": 0,
+      "skipped_low_match": 8,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 0,
+      "skipped_low_margin": 0,
+      "skipped_low_ev90": 0,
+      "skipped_low_liquidity": 0,
+      "skipped_liquidity_unavailable": 25,
+      "skipped_ambiguous_model_title": 4,
+      "liquidity_unavailable_model_codes": [
+        "RNAA0001B"
+      ],
+      "low_match_reason_counts": {
+        "token_overlap": 8
+      },
+      "low_match_samples": [
+        {
+          "source_title": "オリエント ORIENT スポーツ SPORTS ダイバー 腕時計 メンズ 自動巻き 機械式",
+          "best_market_title": "ORIENT ORIENT Sports RN-AA0808E Mechanical Automatic Men's Watch New in Box",
+          "score": 0.3171,
+          "reason": "token_overlap"
+        },
+        {
+          "source_title": "オリエント ORIENT スポーツ SPORTS ダイバー 腕時計 メンズ 自動巻き 機械式",
+          "best_market_title": "ORIENT ORIENT Sports RN-AA0808E Mechanical Automatic Men's Watch New in Box",
+          "score": 0.3171,
+          "reason": "token_overlap"
+        },
+        {
+          "source_title": "オリエント ORIENT スポーツ SPORTS ダイバー 腕時計 メンズ 自動巻き 機械式",
+          "best_market_title": "ORIENT ORIENT Sports RN-AA0808E Mechanical Automatic Men's Watch New in Box",
+          "score": 0.3171,
+          "reason": "token_overlap"
+        },
+        {
+          "source_title": "オリエント ORIENT スポーツ SPORTS ダイバー 腕時計 メンズ 自動巻き 機械式",
+          "best_market_title": "ORIENT ORIENT Sports RN-AA0808E Mechanical Automatic Men's Watch New in Box",
+          "score": 0.3171,
+          "reason": "token_overlap"
+        },
+        {
+          "source_title": "オリエント ORIENT スポーツ SPORTS ダイバー 腕時計 メンズ 自動巻き 機械式",
+          "best_market_title": "ORIENT ORIENT Sports RN-AA0808E Mechanical Automatic Men's Watch New in Box",
+          "score": 0.3171,
+          "reason": "token_overlap"
+        },
+        {
+          "source_title": "オリエント ORIENT スポーツ SPORTS ダイバー 腕時計 メンズ 自動巻き 機械式",
+          "best_market_title": "ORIENT ORIENT Sports RN-AA0808E Mechanical Automatic Men's Watch New in Box",
+          "score": 0.3171,
+          "reason": "token_overlap"
+        },
+        {
+          "source_title": "オリエント ORIENT スポーツ SPORTS ダイバー 腕時計 メンズ 自動巻き 機械式",
+          "best_market_title": "ORIENT ORIENT Sports RN-AA0808E Mechanical Automatic Men's Watch New in Box",
+          "score": 0.3171,
+          "reason": "token_overlap"
+        },
+        {
+          "source_title": "オリエント ORIENT スポーツ SPORTS ダイバー 腕時計 メンズ 自動巻き 機械式",
+          "best_market_title": "ORIENT ORIENT Sports RN-AA0808E Mechanical Automatic Men's Watch New in Box",
+          "score": 0.3171,
+          "reason": "token_overlap"
+        }
+      ],
+      "hints": [
+        "一致不足の主因: token_overlap",
+        "複数型番が列挙された曖昧タイトルを除外しました。",
+        "流動性データ未取得のため除外されています（LIQUIDITY_REQUIRE_SIGNAL=1）。"
+      ],
+      "api_efficiency": {
+        "total_calls": 5,
+        "cache_hits": 5,
+        "network_calls": 0,
+        "by_site": {
+          "ebay": {
+            "calls_made": 1,
+            "cache_hits": 1,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "rakuten": {
+            "calls_made": 2,
+            "cache_hits": 2,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "yahoo": {
+            "calls_made": 2,
+            "cache_hits": 2,
+            "network_calls": 0,
+            "budget_remaining": -1
+          }
+        }
+      }
+    }
+  ]
+}

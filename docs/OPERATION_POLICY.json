@@ -1,0 +1,25 @@
+{
+  "version": "2026-02-20",
+  "definition_of_done": {
+    "cycle_target_reviewed_count": 24,
+    "require_same_product": true,
+    "require_new_and_in_stock": true,
+    "require_liquidity_signal": true,
+    "require_profit_positive": true
+  },
+  "run_thresholds": {
+    "min_profit_usd": 0.01,
+    "min_margin_rate": 0.03,
+    "min_match_score": 0.75,
+    "min_ev90_usd": 0.0
+  },
+  "env_requirements": {
+    "ITEM_CONDITION": "new",
+    "LIQUIDITY_REQUIRE_SIGNAL": "1",
+    "AUTO_REVIEW_REQUIRE_LIQUIDITY_SIGNAL": "1",
+    "LIQUIDITY_PROVIDER_MODE_allowed": [
+      "rpa_json",
+      "ebay_marketplace_insights"
+    ]
+  }
+}

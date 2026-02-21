@@ -1,0 +1,49 @@
+{
+  "cycle_id": "cycle-20260219-231044",
+  "closed_at": "2026-02-19T23:10:44Z",
+  "manifest_path": "/Users/tadamichikimura/Downloads/dev-HQ/ebayminer/docs/review_cycle_active.json",
+  "batch_size": 24,
+  "reviewed_count": 24,
+  "review_completion_rate": 1.0,
+  "unresolved_count": 0,
+  "unresolved_candidate_ids": [],
+  "status_breakdown": {
+    "listed": 24
+  },
+  "approved_count": 24,
+  "rejected_count": 0,
+  "rejected_with_reason_count": 0,
+  "rejected_with_issue_count": 0,
+  "reject_floor": 10,
+  "min_reviewed_ratio": 1.0,
+  "min_reject_rate": 0.1,
+  "min_reject_with_issue_count": 1,
+  "reject_rate": 0.0,
+  "avg_rejected_issue_count": 0.0,
+  "profit_usd_stats": {
+    "min": 1.3444,
+    "median": 31.0766,
+    "max": 50.7751
+  },
+  "score_stats": {
+    "min": 0.92,
+    "median": 0.92,
+    "max": 0.92
+  },
+  "auto_review_counts": {
+    "approve": 23,
+    "reject": 0,
+    "skipped": 1
+  },
+  "auto_review_reject_rate": 0.0,
+  "ready_for_tuning": false,
+  "top_issue_targets": [],
+  "recommendations": [
+    {
+      "issue": "other",
+      "count": 0,
+      "action": "否認データが不足しています。対象件数を増やすか、指摘箇所付きで否認を集めてください。"
+    }
+  ],
+  "reason_samples": []
+}

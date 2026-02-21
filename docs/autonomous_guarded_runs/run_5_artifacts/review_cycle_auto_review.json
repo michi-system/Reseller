@@ -1,0 +1,767 @@
+{
+  "cycle_id": "cycle-20260219-231001",
+  "ran_at": "2026-02-19T23:10:02Z",
+  "dry_run": false,
+  "thresholds": {
+    "min_profit_usd": 0.01,
+    "min_margin_rate": 0.03,
+    "min_match_score": 0.75,
+    "min_auto_approve_score": 0.9,
+    "min_token_jaccard": 0.62,
+    "max_score_drift": 0.25
+  },
+  "counts": {
+    "approve": 24,
+    "reject": 0,
+    "skipped": 0
+  },
+  "decisions": [
+    {
+      "id": 335,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 37.1908,
+        "margin": 0.068794,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "AT6080-53L"
+        ],
+        "common_specific_codes": [
+          "AT6080-53L"
+        ],
+        "token_jaccard": 0.3636,
+        "source_colors": [
+          "blue",
+          "silver"
+        ],
+        "market_colors": [
+          "blue"
+        ]
+      },
+      "source_title": "シチズン PROMASTER（プロマスター） エコ・ドライブ電波時計［ソーラー電波時計］ LANDシリーズ  ブルー/シルバー AT6080-53L",
+      "market_title": "Citizen Promaster Land Eco-Drive AT6080-53L Blue Dial Titanium Solar Men Watch"
+    },
+    {
+      "id": 334,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 37.1908,
+        "margin": 0.068794,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "AT6080-53L"
+        ],
+        "common_specific_codes": [
+          "AT6080-53L"
+        ],
+        "token_jaccard": 0.1818,
+        "source_colors": [
+          "blue"
+        ],
+        "market_colors": [
+          "blue"
+        ]
+      },
+      "source_title": "シチズン プロマスター ランドシリーズ AT6080-53L メンズ 腕時計 ソーラー 電波 デイデイト チタン ネイビーダイヤル",
+      "market_title": "Citizen Promaster Land Eco-Drive AT6080-53L Blue Dial Titanium Solar Men Watch"
+    },
+    {
+      "id": 333,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 37.1908,
+        "margin": 0.068794,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "AT6080-53L"
+        ],
+        "common_specific_codes": [
+          "AT6080-53L"
+        ],
+        "token_jaccard": 0.1818,
+        "source_colors": [
+          "blue"
+        ],
+        "market_colors": [
+          "blue"
+        ]
+      },
+      "source_title": "シチズン プロマスター ランド エコドライブ ソーラー電波 メンズ 腕時計 ブランド AT6080-53L CITIZEN ネイビー",
+      "market_title": "Citizen Promaster Land Eco-Drive AT6080-53L Blue Dial Titanium Solar Men Watch"
+    },
+    {
+      "id": 332,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 36.586,
+        "margin": 0.067766,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "AT6080-53L"
+        ],
+        "common_specific_codes": [
+          "AT6080-53L"
+        ],
+        "token_jaccard": 0.3333,
+        "source_colors": [],
+        "market_colors": []
+      },
+      "source_title": "【2/20限定！10％OFFクーポン＆抽選で最大10000ptバック】【選べるノベルティー付き】シチズン プロマスター ランド エコドライブ 電波時計 腕時計 メンズ AT6080-53L CITIZEN PROMASTER LAND",
+      "market_title": "Citizen Promaster Land AT6080-53L Eco-Drive Super Titanium Sapphire Men Watch"
+    },
+    {
+      "id": 331,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 36.586,
+        "margin": 0.067766,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "AT6080-53L"
+        ],
+        "common_specific_codes": [
+          "AT6080-53L"
+        ],
+        "token_jaccard": 0.2308,
+        "source_colors": [],
+        "market_colors": []
+      },
+      "source_title": "＼10％OFF★最大100%ポイントバック★要エントリー／シチズン プロマスター シチズン ソーラー 電波時計 メンズ CITIZEN PROMASTER AT6080-53L シチズン エコドライブ シチズン 電波ソーラー 腕時計 メンズ 39mm チタン 3針 日付 電池交換不要",
+      "market_title": "Citizen Promaster Land AT6080-53L Eco-Drive Super Titanium Sapphire Men Watch"
+    },
+    {
+      "id": 330,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 36.586,
+        "margin": 0.067766,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "AT6080-53L"
+        ],
+        "common_specific_codes": [
+          "AT6080-53L"
+        ],
+        "token_jaccard": 0.5455,
+        "source_colors": [],
+        "market_colors": []
+      },
+      "source_title": "【 表示価格から10％off　クーポンあり 】シチズン プロマスター エコドライブ 電波時計 LANDシリーズ CITIZEN PROMASTER Eco-Drive メンズ腕時計 AT6080-53L",
+      "market_title": "Citizen Promaster Land AT6080-53L Eco-Drive Super Titanium Sapphire Men Watch"
+    },
+    {
+      "id": 329,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 36.5924,
+        "margin": 0.067778,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "AT6080-53L"
+        ],
+        "common_specific_codes": [
+          "AT6080-53L"
+        ],
+        "token_jaccard": 0.3,
+        "source_colors": [],
+        "market_colors": []
+      },
+      "source_title": "【送料無料】AT6080-53L シチズン CITIZEN プロマスター PROMASTER 電波ソーラー腕時計 エコ・ドライブ",
+      "market_title": "Citizen Promaster Land AT6080-53L Eco-Drive Super Titanium Sapphire Men Watch"
+    },
+    {
+      "id": 328,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 47.0356,
+        "margin": 0.085158,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "AT6080-53L"
+        ],
+        "common_specific_codes": [
+          "AT6080-53L"
+        ],
+        "token_jaccard": 0.1818,
+        "source_colors": [
+          "silver"
+        ],
+        "market_colors": [
+          "silver"
+        ]
+      },
+      "source_title": "【ラッピング無料対象商品】CITIZEN PRO MASTER シチズン プロマスター LANDシリーズ シルバー メンズ腕時計 AT6080-53L",
+      "market_title": "Citizen AT6080-53L Promaster EcoDrive Titanium Solar Men's Watch Silver Japan"
+    },
+    {
+      "id": 327,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 37.0492,
+        "margin": 0.07194,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-9400J-1JF"
+        ],
+        "common_specific_codes": [
+          "GW-9400J-1JF"
+        ],
+        "token_jaccard": 0.4444,
+        "source_colors": [
+          "green"
+        ],
+        "market_colors": [
+          "black",
+          "green",
+          "red"
+        ]
+      },
+      "source_title": "腕時計 MASTER OF G RANGEMAN(レンジマン) / GW-9400J-1JF メンズ",
+      "market_title": "CASIO G-SHOCK GW-9400J-1JF Black Red Master of G RANGEMAN Men's Watch New in Box"
+    },
+    {
+      "id": 326,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 37.424,
+        "margin": 0.092359,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-9400YJ-1JF"
+        ],
+        "common_specific_codes": [
+          "GW-9400YJ-1JF"
+        ],
+        "token_jaccard": 0.3,
+        "source_colors": [
+          "green"
+        ],
+        "market_colors": [
+          "green"
+        ]
+      },
+      "source_title": "カシオ ジーショック GW-9400YJ-1JF 時計 腕時計 国内正規品 CASIO G-SHOCK Gショック ウォッチ LEDライト 防水 気圧防水 耐衝撃構造",
+      "market_title": "Brand-New Casio G-Shock GW-9400YJ-1JF Master of RANGEMAN (Limited Qquantity) JDM"
+    },
+    {
+      "id": 325,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 15.509,
+        "margin": 0.042329,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-9400BJ-1JF"
+        ],
+        "common_specific_codes": [
+          "GW-9400BJ-1JF"
+        ],
+        "token_jaccard": 0.4444,
+        "source_colors": [
+          "green"
+        ],
+        "market_colors": [
+          "green"
+        ]
+      },
+      "source_title": "カシオ 腕時計 G-SHOCK RANGEMAN 電波ソーラー時計 GW-9400BJ-1JF",
+      "market_title": "Casio G-SHOCK GW-9400BJ-1JF Master of G RANGEMAN Solar Atomic Digital Men Watch"
+    },
+    {
+      "id": 324,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 40.9858,
+        "margin": 0.101149,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-9400YJ-1JF"
+        ],
+        "common_specific_codes": [
+          "GW-9400YJ-1JF"
+        ],
+        "token_jaccard": 0.4444,
+        "source_colors": [
+          "green"
+        ],
+        "market_colors": [
+          "green"
+        ]
+      },
+      "source_title": "腕時計・時計 ウォッチ おしゃれ カシオ G-SHOCK ジーショック 【国内正規品】RANGEMAN 電波ソーラー GW-9400YJ-1JF",
+      "market_title": "Brand-New Casio G-Shock GW-9400YJ-1JF Master of RANGEMAN (Limited Qquantity) JDM"
+    },
+    {
+      "id": 323,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 44.5476,
+        "margin": 0.10994,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-9400YJ-1JF"
+        ],
+        "common_specific_codes": [
+          "GW-9400YJ-1JF"
+        ],
+        "token_jaccard": 0.3333,
+        "source_colors": [
+          "green"
+        ],
+        "market_colors": [
+          "green"
+        ]
+      },
+      "source_title": "CASIO 腕時計 G-SHOCK マスター オブ G レンジマン GW-9400YJ-1JF",
+      "market_title": "Brand-New Casio G-Shock GW-9400YJ-1JF Master of RANGEMAN (Limited Qquantity) JDM"
+    },
+    {
+      "id": 322,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 48.1094,
+        "margin": 0.11873,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-9400YJ-1JF"
+        ],
+        "common_specific_codes": [
+          "GW-9400YJ-1JF"
+        ],
+        "token_jaccard": 0.4444,
+        "source_colors": [
+          "green"
+        ],
+        "market_colors": [
+          "green"
+        ]
+      },
+      "source_title": "カシオCASIO G-SHOCK Gショック ジーショック RANGEMAN レンジマン GW-9400YJ-1JF【国内正規品】",
+      "market_title": "Brand-New Casio G-Shock GW-9400YJ-1JF Master of RANGEMAN (Limited Qquantity) JDM"
+    },
+    {
+      "id": 321,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 15.509,
+        "margin": 0.042329,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-9400BJ-1JF"
+        ],
+        "common_specific_codes": [
+          "GW-9400BJ-1JF"
+        ],
+        "token_jaccard": 0.3333,
+        "source_colors": [
+          "green"
+        ],
+        "market_colors": [
+          "green"
+        ]
+      },
+      "source_title": "アウトドアウォッチ・時計 G-SHOCK 国内正規品 GW-9400BJ-1JF",
+      "market_title": "Casio G-SHOCK GW-9400BJ-1JF Master of G RANGEMAN Solar Atomic Digital Men Watch"
+    },
+    {
+      "id": 320,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 15.509,
+        "margin": 0.042329,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-9400BJ-1JF"
+        ],
+        "common_specific_codes": [
+          "GW-9400BJ-1JF"
+        ],
+        "token_jaccard": 0.4444,
+        "source_colors": [
+          "green"
+        ],
+        "market_colors": [
+          "green"
+        ]
+      },
+      "source_title": "Gショック レンジマン G-SHOCK RANGEMAN 電波ソーラー GW-9400BJ-1JF ジーショック",
+      "market_title": "Casio G-SHOCK GW-9400BJ-1JF Master of G RANGEMAN Solar Atomic Digital Men Watch"
+    },
+    {
+      "id": 319,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 17.0646,
+        "margin": 0.089344,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-M5610U-1JF"
+        ],
+        "common_specific_codes": [
+          "GW-M5610U-1JF"
+        ],
+        "token_jaccard": 0.25,
+        "source_colors": [
+          "green"
+        ],
+        "market_colors": [
+          "green"
+        ]
+      },
+      "source_title": "【23日26時まで最大2,000円OFFクーポン！ポイント最大49倍】CASIO カシオ G-SHOCK Gショック GW-M5610U-1JF 【安心の5年保証】GWM5610U1JF",
+      "market_title": "CASIO G-SHOCK GW-M5610U-1JF Origin Tough Solar Radio Multiband6 Men GW-M5610U-1"
+    },
+    {
+      "id": 318,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 19.5846,
+        "margin": 0.100952,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-M5610U-1CJF"
+        ],
+        "common_specific_codes": [
+          "GW-M5610U-1CJF"
+        ],
+        "token_jaccard": 0.25,
+        "source_colors": [
+          "black",
+          "blue",
+          "green"
+        ],
+        "market_colors": [
+          "black",
+          "green"
+        ]
+      },
+      "source_title": "G-SHOCK Gショック 電波 ソーラー GW-M5610U-1CJF ブラック＆ブルー カシオ 電波時計 ORIGIN 5600 スクエア デジタル 黒 青 メンズ 腕時計 （GWM5610U1CJF）[在庫あり]",
+      "market_title": "Casio G-shock GW-M5610U-1CJF Men's Watch Radio Solar Black Japan Led Light Watch"
+    },
+    {
+      "id": 317,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 19.611,
+        "margin": 0.040022,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59H"
+        ],
+        "common_specific_codes": [
+          "NB1050-59H"
+        ],
+        "token_jaccard": 0.2,
+        "source_colors": [
+          "gray"
+        ],
+        "market_colors": [
+          "gray"
+        ]
+      },
+      "source_title": "【クリーナークロスプレゼントキャンペーン中!】シチズンコレクション NB1050-59H CITIZEN COLLECTION メカニカル 自動巻き グレー 腕時計 メンズ",
+      "market_title": "Citizen NB1050-59H Men's Watch Automatic Gray Dial Stainless Steel Japan Domesti"
+    },
+    {
+      "id": 316,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 43.971,
+        "margin": 0.084722,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59A"
+        ],
+        "common_specific_codes": [
+          "NB1050-59A"
+        ],
+        "token_jaccard": 0.25,
+        "source_colors": [],
+        "market_colors": []
+      },
+      "source_title": "シチズン CITIZEN 腕時計 NB1050-59A シチズンコレクション メカニカル メンズ クラシカルライン 中3針デイト ベーシックデザイン アナログ ステンレスバンド 自動巻き（手巻付）（国内正規品）（デジタルライフ）",
+      "market_title": "CITIZEN Collection NB1050-59A Mechanical Automatic Sapphire Glass Watch Men New"
+    },
+    {
+      "id": 315,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 17.931,
+        "margin": 0.036744,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59E"
+        ],
+        "common_specific_codes": [
+          "NB1050-59E"
+        ],
+        "token_jaccard": 0.4286,
+        "source_colors": [],
+        "market_colors": []
+      },
+      "source_title": "シチズン コレクション メカニカル クラシックライン 時計 NB1050-59E CITIZEN Collection 日付 Made in Japan 日本製 腕時計 【お取り寄せ】",
+      "market_title": "Brand-New Citizen Collection Mechanical NB1050-59E Men's Watch"
+    },
+    {
+      "id": 314,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 19.611,
+        "margin": 0.040022,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59H"
+        ],
+        "common_specific_codes": [
+          "NB1050-59H"
+        ],
+        "token_jaccard": 0.2,
+        "source_colors": [
+          "gray",
+          "silver"
+        ],
+        "market_colors": [
+          "gray"
+        ]
+      },
+      "source_title": "【ラッピング無料対象商品】CITIZEN COLLECTION シチズンコレクション 機械式 シースルーバック シルバー グレー メンズ腕時計 NB1050-59H",
+      "market_title": "Citizen NB1050-59H Men's Watch Automatic Gray Dial Stainless Steel Japan Domesti"
+    },
+    {
+      "id": 313,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 21.2463,
+        "margin": 0.042826,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59E"
+        ],
+        "common_specific_codes": [
+          "NB1050-59E"
+        ],
+        "token_jaccard": 0.1818,
+        "source_colors": [
+          "black"
+        ],
+        "market_colors": [
+          "black"
+        ]
+      },
+      "source_title": "＼10%OFFクーポン★21日10時迄／ シチズン コレクション メカニカル 自動巻き NB1050-59E 腕時計 メンズ ブラック CITIZEN COLLECTION ブランド おしゃれ 防水 プレゼント 男性 実用的",
+      "market_title": "Citizen NB1050-59E Black Dial Mechanical Automatic Sapphire Glass Men Watch JP"
+    },
+    {
+      "id": 312,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 20.997,
+        "margin": 0.042707,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59A"
+        ],
+        "common_specific_codes": [
+          "NB1050-59A"
+        ],
+        "token_jaccard": 0.3333,
+        "source_colors": [],
+        "market_colors": []
+      },
+      "source_title": "シチズン NB1050-59A シチズンコレクション クラシカルライン メカニカル(自動巻き＋手巻き)",
+      "market_title": "CITIZEN NB1050-59A CITIZEN COLLECTION Mechanical Classical Line"
+    }
+  ]
+}

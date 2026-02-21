@@ -1,0 +1,21 @@
+{
+  "ok": true,
+  "errors": [],
+  "warnings": [],
+  "metrics": {
+    "cycle_id": "cycle-20260219-230933",
+    "batch_size": 24,
+    "target_count": 24,
+    "cycle_ready": true,
+    "auto_approve": 21,
+    "auto_reject": 3,
+    "auto_skipped": 0,
+    "auto_actions": 24,
+    "auto_reject_rate": 0.125,
+    "reviewed_count": 24,
+    "unresolved_count": 0,
+    "close_ready": false,
+    "reject_rate": 0.125,
+    "progressed": true
+  }
+}

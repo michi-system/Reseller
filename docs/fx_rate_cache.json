@@ -1,0 +1,9 @@
+{
+  "latest": {
+    "provider": "open_er_api",
+    "base": "USD",
+    "quote": "JPY",
+    "rate": 154.416292,
+    "fetched_at": 1771526980
+  }
+}

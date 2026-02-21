@@ -1,0 +1,44 @@
+{
+  "cycle_id": "cycle-20260220-021309",
+  "closed_at": "2026-02-20T02:13:09Z",
+  "manifest_path": "/Users/tadamichikimura/Downloads/dev-HQ/ebayminer/docs/review_cycle_active.json",
+  "batch_size": 0,
+  "reviewed_count": 0,
+  "review_completion_rate": 0.0,
+  "unresolved_count": 0,
+  "unresolved_candidate_ids": [],
+  "status_breakdown": {},
+  "approved_count": 0,
+  "rejected_count": 0,
+  "rejected_with_reason_count": 0,
+  "rejected_with_issue_count": 0,
+  "reject_floor": 10,
+  "min_reviewed_ratio": 1.0,
+  "min_reject_rate": 0.1,
+  "min_reject_with_issue_count": 1,
+  "reject_rate": 0.0,
+  "avg_rejected_issue_count": 0.0,
+  "profit_usd_stats": {
+    "min": null,
+    "median": null,
+    "max": null
+  },
+  "score_stats": {
+    "min": null,
+    "median": null,
+    "max": null
+  },
+  "auto_review_counts": {
+    "approve": 0,
+    "reject": 0,
+    "skipped": 0
+  },
+  "auto_review_reject_rate": 0.0,
+  "ready_for_tuning": false,
+  "ready_for_light_tuning": false,
+  "recommended_tuning_mode": "none",
+  "top_issue_targets": [],
+  "recommendations": [],
+  "reason_samples": [],
+  "note": "selected_candidate_ids is empty; nothing to close"
+}

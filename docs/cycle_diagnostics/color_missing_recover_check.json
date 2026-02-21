@@ -1,0 +1,343 @@
+{
+  "cycle_id": "cycle-20260220-030622",
+  "started_at": "2026-02-20T03:06:21Z",
+  "ended_at": "2026-02-20T03:06:22Z",
+  "run_seq": 78,
+  "target_count": 24,
+  "hard_cap": 24,
+  "batch_size": 0,
+  "cycle_ready": false,
+  "initial_reviewable_pending": 0,
+  "final_reviewable_pending": 0,
+  "delta_reviewable_pending": 0,
+  "min_match_score": 0.7,
+  "min_profit_usd": 0.01,
+  "min_margin_rate": 0.03,
+  "condition": "new",
+  "stopped_reason": "completed_rounds",
+  "selected_candidate_ids": [],
+  "cache_only": true,
+  "query_reordered": false,
+  "query_order": [
+    "casio gwm5610 watch"
+  ],
+  "max_zero_gain_strikes": 999,
+  "historical_min_attempts": 999,
+  "historical_min_network_calls": 999,
+  "historical_min_gain_per_network_call": 0.05,
+  "historical_retry_every_runs": 4,
+  "duplicate_heavy_cooldown_enabled": true,
+  "duplicate_heavy_ratio_threshold": 0.7,
+  "duplicate_heavy_min_evaluated": 12,
+  "duplicate_heavy_min_duplicates": 8,
+  "rpa_refresh": {
+    "enabled": true,
+    "mode": "rpa_json",
+    "cache_only": true,
+    "ran": false,
+    "output_path": "/Users/tadamichikimura/Downloads/dev-HQ/ebayminer/data/liquidity_rpa_signals.jsonl",
+    "primary": {},
+    "fallback": {},
+    "model_backfill": {},
+    "missing_before": 0,
+    "missing_after_primary": 0,
+    "missing_after_fallback": 0,
+    "missing_after_model_backfill": 0,
+    "reason": "cache_only_skip"
+  },
+  "liquidity_backfill": {
+    "updated": false,
+    "added_entries": 0,
+    "touched_entries": 0,
+    "total_entries": 1
+  },
+  "query_skipped_count": 0,
+  "duplicate_heavy_cooldown_count": 0,
+  "query_efficiency_snapshot": [
+    {
+      "query": "casio gwm5610 watch",
+      "attempts": 23,
+      "network_calls": 28,
+      "queue_gain_total": 37,
+      "gain_per_network_call": 1.3214,
+      "zero_gain_streak": 3
+    }
+  ],
+  "api_efficiency_summary": {
+    "total_calls": 4,
+    "cache_hits": 4,
+    "network_calls": 0,
+    "by_site": {
+      "ebay": {
+        "calls_made": 1,
+        "cache_hits": 1,
+        "network_calls": 0,
+        "budget_remaining": -1
+      },
+      "rakuten": {
+        "calls_made": 1,
+        "cache_hits": 1,
+        "network_calls": 0,
+        "budget_remaining": -1
+      },
+      "yahoo": {
+        "calls_made": 2,
+        "cache_hits": 2,
+        "network_calls": 0,
+        "budget_remaining": -1
+      }
+    },
+    "cache_hit_rate": 1.0
+  },
+  "runs": [
+    {
+      "round": 1,
+      "query": "casio gwm5610 watch",
+      "created_count": 0,
+      "added_to_reviewable_queue": 0,
+      "queue_before": 0,
+      "queue_after": 0,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 34,
+          "calls_made": 1,
+          "cache_hits": 1,
+          "network_calls": 0,
+          "budget_remaining": -1,
+          "max_calls": 3,
+          "per_call_limit": 50,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 0,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "CASIO GWM5610 NEW",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 34,
+              "new_count": 34,
+              "duration_ms": 380,
+              "info": {
+                "http": 200,
+                "raw_total": 333,
+                "page": 1,
+                "offset": 0,
+                "cache_hit": true,
+                "cache_age_sec": 14284,
+                "budget_remaining": -1
+              }
+            }
+          ]
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 23,
+          "calls_made": 1,
+          "cache_hits": 1,
+          "network_calls": 0,
+          "budget_remaining": -1,
+          "max_calls": 2,
+          "per_call_limit": 30,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 0,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "casio gwm5610 watch",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 23,
+              "new_count": 23,
+              "duration_ms": 35,
+              "info": {
+                "http": 200,
+                "raw_count": 134,
+                "page": 1,
+                "cache_hit": true,
+                "cache_age_sec": 14284,
+                "budget_remaining": -1
+              }
+            }
+          ]
+        },
+        "yahoo": {
+          "ok": true,
+          "count": 52,
+          "calls_made": 2,
+          "cache_hits": 2,
+          "network_calls": 0,
+          "budget_remaining": -1,
+          "max_calls": 3,
+          "per_call_limit": 50,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 1,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "casio gwm5610 watch",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 4,
+              "new_count": 4,
+              "duration_ms": 1,
+              "info": {
+                "http": 200,
+                "raw_total": 10,
+                "page": 1,
+                "start": 1,
+                "cache_hit": true,
+                "cache_age_sec": 14284,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "query": "CASIO GWM5610",
+              "query_index": 1,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 50,
+              "new_count": 48,
+              "duration_ms": 12,
+              "info": {
+                "http": 200,
+                "raw_total": 131,
+                "page": 1,
+                "start": 1,
+                "cache_hit": true,
+                "cache_age_sec": 14284,
+                "budget_remaining": -1
+              }
+            }
+          ]
+        }
+      },
+      "errors": [],
+      "skipped_duplicates": 9,
+      "skipped_low_match": 31,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 0,
+      "skipped_low_margin": 0,
+      "skipped_low_ev90": 0,
+      "skipped_low_liquidity": 10,
+      "skipped_liquidity_unavailable": 0,
+      "skipped_ambiguous_model_title": 25,
+      "liquidity_unavailable_model_codes": [],
+      "low_match_reason_counts": {
+        "model_code_conflict": 31
+      },
+      "low_match_samples": [
+        {
+          "source_title": "腕時計 時計 CASIO カシオ G-SHOCK メンズ GW-M5610U-1BJF Gショック GSHOCK ジーショック ORIGIN 5600 SERIES ソーラー 電波 ウォッチ ブラック 黒 誕生日 新生活 父の日 プレゼント ギフト 贈り物 GWM5610U1BJF",
+          "best_market_title": "Casio GWM5610-1, G-Shock Chronograph Watch, Solar Atomic, 5 Alarms, 200 Meter WR",
+          "score": 0.12,
+          "reason": "model_code_conflict"
+        },
+        {
+          "source_title": "腕時計 時計 CASIO カシオ G-SHOCK メンズ GW-M5610U-1BJF Gショック GSHOCK ジーショック ORIGIN 5600 SERIES ソーラー 電波 ウォッチ ブラック 黒 誕生日 新生活 父の日 プレゼント ギフト 贈り物 GWM5610U1BJF",
+          "best_market_title": "Casio GWM5610-1, G-Shock Chronograph Watch, Solar Atomic, 5 Alarms, 200 Meter WR",
+          "score": 0.12,
+          "reason": "model_code_conflict"
+        },
+        {
+          "source_title": "【これからの未来も、あなたと一緒に刻みたい】恋人たちのGショック ペアウオッチ gショック 人気 婚約夫婦 高級クリスマス プレゼントGSHOCK ジーショック カシオ 男女兼用 メンズ レディース GW-M5610U-1JF 電波 ソーラー デジタル 誕生日 御祝い還暦",
+          "best_market_title": "JaysAndKays® Metal Adapters kit  for GW5000 GBX100 DW5600 GWM5610 Casio GShock",
+          "score": 0.12,
+          "reason": "model_code_conflict"
+        },
+        {
+          "source_title": "【21日まで10％OFFクーポン対象】新品＆安心の正規品 Gショック G-SHOCK カシオ メンズウオッチ GW-M5610U-2JF 電波ソーラー 大人のG-SHOCK スピードモデル プレゼント 腕時計 ラッピング無料 手書きのメッセージカード 愛の証 感謝の気持ち",
+          "best_market_title": "Casio GWM5610-1, G-Shock Chronograph Watch, Solar Atomic, 5 Alarms, 200 Meter WR",
+          "score": 0.12,
+          "reason": "model_code_conflict"
+        },
+        {
+          "source_title": "【21日まで10％OFFクーポン対象】新品＆安心の正規品Gショック G-SHOCK カシオ メンズウオッチ GW-M5610U-1BJF 電波ソーラー 大人のG-SHOCK スピードモデル プレゼント 腕時計 ラッピング無料 手書きのメッセージカード 愛の証 感謝の気持ち",
+          "best_market_title": "Casio GWM5610-1, G-Shock Chronograph Watch, Solar Atomic, 5 Alarms, 200 Meter WR",
+          "score": 0.12,
+          "reason": "model_code_conflict"
+        },
+        {
+          "source_title": "【2,000円OFFクーポン有】カシオ CASIO ジーショック G-SHOCK メンズ 腕時計 時計 ソーラー デジタル カジュアル ファッション スポーツ ウォッチ おしゃれ ネイビー GW-M5610U-2JF[ラッピング無料 内祝い ギフト]",
+          "best_market_title": "Casio GWM5610-1, G-Shock Chronograph Watch, Solar Atomic, 5 Alarms, 200 Meter WR",
+          "score": 0.12,
+          "reason": "model_code_conflict"
+        },
+        {
+          "source_title": "G-SHOCKジーショック (GW-M5610U-1BJF) カシオCASIOスタンダードシリーズ/Gショック　送料無料/腕時計 ウォッチ 値段 時刻 合わせ 電池交換 合わせ 合わせかた アラーム アナデジ アウトレット ベビージー 防水 ベージュ ベゼル",
+          "best_market_title": "Casio GWM5610-1, G-Shock Chronograph Watch, Solar Atomic, 5 Alarms, 200 Meter WR",
+          "score": 0.12,
+          "reason": "model_code_conflict"
+        },
+        {
+          "source_title": "【即納】国内正規品 CASIO カシオ G-SHOCK Gショック タフソーラー 世界6局電波受信 マルチバンド6 GW-M5610U-1BJF オールブラック 腕時計 メンズ",
+          "best_market_title": "Casio GWM5610-1, G-Shock Chronograph Watch, Solar Atomic, 5 Alarms, 200 Meter WR",
+          "score": 0.12,
+          "reason": "model_code_conflict"
+        }
+      ],
+      "hints": [
+        "同一候補は既に取り込み済みです。別の型番やシリーズで検索してください。",
+        "一致スコア不足が多いため、型番/JAN入りキーワードにすると改善します。",
+        "一致不足の主因: model_code_conflict",
+        "複数型番が列挙された曖昧タイトルを除外しました。",
+        "90日売却流動性の閾値で除外されています。回転率の高い型番で再検索してください。"
+      ],
+      "api_efficiency": {
+        "total_calls": 4,
+        "cache_hits": 4,
+        "network_calls": 0,
+        "by_site": {
+          "ebay": {
+            "calls_made": 1,
+            "cache_hits": 1,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "rakuten": {
+            "calls_made": 1,
+            "cache_hits": 1,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "yahoo": {
+            "calls_made": 2,
+            "cache_hits": 2,
+            "network_calls": 0,
+            "budget_remaining": -1
+          }
+        }
+      },
+      "evaluated_candidate_count": 75,
+      "duplicate_ratio": 0.12,
+      "duplicate_heavy_cooldown_applied": false
+    }
+  ]
+}

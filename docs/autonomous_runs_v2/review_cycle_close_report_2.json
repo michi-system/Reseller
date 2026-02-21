@@ -1,0 +1,17 @@
+{
+  "cycle_id": "cycle-20260219-201818",
+  "closed_at": "2026-02-19T20:18:18Z",
+  "manifest_path": "/Users/tadamichikimura/Downloads/dev-HQ/ebayminer/docs/review_cycle_active.json",
+  "batch_size": 0,
+  "reviewed_count": 0,
+  "unresolved_count": 0,
+  "unresolved_candidate_ids": [],
+  "status_breakdown": {},
+  "rejected_with_reason_count": 0,
+  "reject_floor": 2,
+  "ready_for_tuning": false,
+  "top_issue_targets": [],
+  "recommendations": [],
+  "reason_samples": [],
+  "note": "selected_candidate_ids is empty; nothing to close"
+}

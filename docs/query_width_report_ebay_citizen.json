@@ -1,0 +1,55 @@
+{
+  "generated_at": "2026-02-19T17:42:43Z",
+  "inputs": {
+    "brand": "citizen",
+    "model": "bn0150",
+    "noun": "watch",
+    "sites": [
+      "ebay"
+    ]
+  },
+  "sites": {
+    "ebay": {
+      "rate_limit_rps": 2.0,
+      "rows": [
+        {
+          "stage": "L1_precise_new",
+          "query": "citizen bn0150 watch new",
+          "http": 200,
+          "ok": true,
+          "count": 107,
+          "delta_from_prev": null,
+          "error": null
+        },
+        {
+          "stage": "L2_precise",
+          "query": "citizen bn0150 watch",
+          "http": 200,
+          "ok": true,
+          "count": 162,
+          "delta_from_prev": 55,
+          "error": null
+        },
+        {
+          "stage": "L3_mid",
+          "query": "citizen bn0150",
+          "http": 200,
+          "ok": true,
+          "count": 196,
+          "delta_from_prev": 34,
+          "error": null
+        },
+        {
+          "stage": "L4_broad",
+          "query": "citizen watch",
+          "http": 200,
+          "ok": true,
+          "count": 155900,
+          "delta_from_prev": 155704,
+          "error": null
+        }
+      ],
+      "recommended_stage": "L1_precise_new"
+    }
+  }
+}

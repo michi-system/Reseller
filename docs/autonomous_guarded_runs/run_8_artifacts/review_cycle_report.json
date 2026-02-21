@@ -1,0 +1,1201 @@
+{
+  "cycle_id": "cycle-20260219-231030",
+  "started_at": "2026-02-19T23:10:17Z",
+  "ended_at": "2026-02-19T23:10:30Z",
+  "run_seq": 13,
+  "target_count": 24,
+  "hard_cap": 30,
+  "batch_size": 24,
+  "cycle_ready": true,
+  "initial_reviewable_pending": 0,
+  "final_reviewable_pending": 33,
+  "delta_reviewable_pending": 33,
+  "min_match_score": 0.75,
+  "min_profit_usd": 0.01,
+  "min_margin_rate": 0.03,
+  "condition": "new",
+  "stopped_reason": "target_reached",
+  "selected_candidate_ids": [
+    411,
+    410,
+    409,
+    408,
+    407,
+    406,
+    405,
+    404,
+    403,
+    402,
+    401,
+    400,
+    399,
+    398,
+    397,
+    396,
+    395,
+    394,
+    393,
+    392,
+    391,
+    390,
+    389,
+    388
+  ],
+  "cache_only": false,
+  "query_reordered": true,
+  "query_order": [
+    "citizen nb1050 watch",
+    "casio gwm5610 watch",
+    "g-shock gw9400 watch",
+    "citizen at6080 watch",
+    "g-shock gw5000 watch",
+    "casio f91w watch",
+    "casio a168 watch",
+    "casio ga2100 watch",
+    "seiko sbga211 watch",
+    "seiko ssc813 watch",
+    "citizen bj7110 watch",
+    "orient kamasu watch",
+    "orient bambino watch",
+    "seiko spb143 watch",
+    "seiko snk809 watch",
+    "citizen tsuyosa watch",
+    "g-shock ga110 watch",
+    "g-shock ga2100 1a1 watch",
+    "seiko prospex new watch",
+    "citizen promaster new watch",
+    "casio edifice watch",
+    "seiko sbdc101 watch"
+  ],
+  "max_zero_gain_strikes": 2,
+  "historical_min_attempts": 3,
+  "historical_min_network_calls": 6,
+  "historical_min_gain_per_network_call": 0.05,
+  "historical_retry_every_runs": 4,
+  "query_skipped_count": 0,
+  "query_efficiency_snapshot": [
+    {
+      "query": "g-shock gw5000 watch",
+      "attempts": 2,
+      "network_calls": 8,
+      "queue_gain_total": 25,
+      "gain_per_network_call": 3.125,
+      "zero_gain_streak": 0
+    },
+    {
+      "query": "citizen nb1050 watch",
+      "attempts": 7,
+      "network_calls": 22,
+      "queue_gain_total": 68,
+      "gain_per_network_call": 3.0909,
+      "zero_gain_streak": 1
+    },
+    {
+      "query": "g-shock gw9400 watch",
+      "attempts": 6,
+      "network_calls": 20,
+      "queue_gain_total": 43,
+      "gain_per_network_call": 2.15,
+      "zero_gain_streak": 0
+    },
+    {
+      "query": "casio gwm5610 watch",
+      "attempts": 6,
+      "network_calls": 20,
+      "queue_gain_total": 37,
+      "gain_per_network_call": 1.85,
+      "zero_gain_streak": 0
+    },
+    {
+      "query": "citizen at6080 watch",
+      "attempts": 5,
+      "network_calls": 18,
+      "queue_gain_total": 28,
+      "gain_per_network_call": 1.5556,
+      "zero_gain_streak": 1
+    },
+    {
+      "query": "casio f91w watch",
+      "attempts": 1,
+      "network_calls": 4,
+      "queue_gain_total": 2,
+      "gain_per_network_call": 0.5,
+      "zero_gain_streak": 0
+    },
+    {
+      "query": "casio a168 watch",
+      "attempts": 1,
+      "network_calls": 4,
+      "queue_gain_total": 2,
+      "gain_per_network_call": 0.5,
+      "zero_gain_streak": 0
+    },
+    {
+      "query": "casio ga2100 watch",
+      "attempts": 1,
+      "network_calls": 2,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 0.0,
+      "zero_gain_streak": 1
+    },
+    {
+      "query": "seiko sbga211 watch",
+      "attempts": 1,
+      "network_calls": 8,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 0.0,
+      "zero_gain_streak": 1
+    },
+    {
+      "query": "seiko ssc813 watch",
+      "attempts": 1,
+      "network_calls": 6,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 0.0,
+      "zero_gain_streak": 1
+    },
+    {
+      "query": "citizen bj7110 watch",
+      "attempts": 1,
+      "network_calls": 8,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 0.0,
+      "zero_gain_streak": 1
+    },
+    {
+      "query": "orient kamasu watch",
+      "attempts": 1,
+      "network_calls": 5,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 0.0,
+      "zero_gain_streak": 1
+    },
+    {
+      "query": "orient bambino watch",
+      "attempts": 1,
+      "network_calls": 3,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 0.0,
+      "zero_gain_streak": 1
+    },
+    {
+      "query": "seiko spb143 watch",
+      "attempts": 1,
+      "network_calls": 6,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 0.0,
+      "zero_gain_streak": 1
+    },
+    {
+      "query": "seiko snk809 watch",
+      "attempts": 1,
+      "network_calls": 4,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 0.0,
+      "zero_gain_streak": 1
+    },
+    {
+      "query": "citizen tsuyosa watch",
+      "attempts": 1,
+      "network_calls": 3,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 0.0,
+      "zero_gain_streak": 1
+    },
+    {
+      "query": "g-shock ga110 watch",
+      "attempts": 1,
+      "network_calls": 3,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 0.0,
+      "zero_gain_streak": 1
+    },
+    {
+      "query": "g-shock ga2100 1a1 watch",
+      "attempts": 1,
+      "network_calls": 2,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 0.0,
+      "zero_gain_streak": 1
+    },
+    {
+      "query": "seiko prospex new watch",
+      "attempts": 1,
+      "network_calls": 4,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 0.0,
+      "zero_gain_streak": 1
+    },
+    {
+      "query": "citizen promaster new watch",
+      "attempts": 1,
+      "network_calls": 4,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 0.0,
+      "zero_gain_streak": 1
+    },
+    {
+      "query": "casio edifice watch",
+      "attempts": 1,
+      "network_calls": 3,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 0.0,
+      "zero_gain_streak": 1
+    },
+    {
+      "query": "seiko sbdc101 watch",
+      "attempts": 2,
+      "network_calls": 6,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 0.0,
+      "zero_gain_streak": 2
+    }
+  ],
+  "api_efficiency_summary": {
+    "total_calls": 21,
+    "cache_hits": 6,
+    "network_calls": 15,
+    "by_site": {
+      "ebay": {
+        "calls_made": 6,
+        "cache_hits": 0,
+        "network_calls": 6,
+        "budget_remaining": 74
+      },
+      "rakuten": {
+        "calls_made": 9,
+        "cache_hits": 6,
+        "network_calls": 3,
+        "budget_remaining": 65
+      },
+      "yahoo": {
+        "calls_made": 6,
+        "cache_hits": 0,
+        "network_calls": 6,
+        "budget_remaining": 44
+      }
+    },
+    "cache_hit_rate": 0.2857
+  },
+  "runs": [
+    {
+      "round": 1,
+      "query": "citizen nb1050 watch",
+      "created_count": 0,
+      "added_to_reviewable_queue": 0,
+      "queue_before": 0,
+      "queue_after": 0,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 50,
+          "calls_made": 1,
+          "cache_hits": 0,
+          "network_calls": 1,
+          "budget_remaining": 79,
+          "max_calls": 3,
+          "per_call_limit": 50,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "cursor_start": {
+            "query_index": 3,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 3,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "CITIZEN WATCH",
+              "query_index": 3,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 50,
+              "new_count": 50,
+              "duration_ms": 1208,
+              "info": {
+                "http": 200,
+                "raw_total": 64036,
+                "page": 1,
+                "offset": 0,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 79
+              }
+            }
+          ]
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 27,
+          "calls_made": 2,
+          "cache_hits": 2,
+          "network_calls": 0,
+          "budget_remaining": -1,
+          "max_calls": 2,
+          "per_call_limit": 30,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 1,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "citizen nb1050 watch",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 3,
+              "new_count": 3,
+              "duration_ms": 2,
+              "info": {
+                "http": 200,
+                "raw_count": 3,
+                "page": 1,
+                "cache_hit": true,
+                "cache_age_sec": 106,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "query": "CITIZEN NB1050",
+              "query_index": 1,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 24,
+              "new_count": 24,
+              "duration_ms": 22,
+              "info": {
+                "http": 200,
+                "raw_count": 189,
+                "page": 1,
+                "cache_hit": true,
+                "cache_age_sec": 106,
+                "budget_remaining": -1
+              }
+            }
+          ]
+        },
+        "yahoo": {
+          "ok": true,
+          "count": 48,
+          "calls_made": 1,
+          "cache_hits": 0,
+          "network_calls": 1,
+          "budget_remaining": 49,
+          "max_calls": 3,
+          "per_call_limit": 50,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "cursor_start": {
+            "query_index": 2,
+            "page": 2
+          },
+          "cursor_next": {
+            "query_index": 3,
+            "page": 1
+          },
+          "queries": [
+            {
+              "query": "NB1050",
+              "query_index": 2,
+              "page": 2,
+              "ok": true,
+              "fetched_count": 48,
+              "new_count": 48,
+              "duration_ms": 263,
+              "info": {
+                "http": 200,
+                "raw_total": 221,
+                "page": 2,
+                "start": 51,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 49
+              }
+            }
+          ]
+        }
+      },
+      "errors": [],
+      "skipped_duplicates": 0,
+      "skipped_low_match": 75,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 0,
+      "skipped_low_margin": 0,
+      "api_efficiency": {
+        "total_calls": 4,
+        "cache_hits": 2,
+        "network_calls": 2,
+        "by_site": {
+          "ebay": {
+            "calls_made": 1,
+            "cache_hits": 0,
+            "network_calls": 1,
+            "budget_remaining": 79
+          },
+          "rakuten": {
+            "calls_made": 2,
+            "cache_hits": 2,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "yahoo": {
+            "calls_made": 1,
+            "cache_hits": 0,
+            "network_calls": 1,
+            "budget_remaining": 49
+          }
+        }
+      }
+    },
+    {
+      "round": 1,
+      "query": "casio gwm5610 watch",
+      "created_count": 4,
+      "added_to_reviewable_queue": 4,
+      "queue_before": 0,
+      "queue_after": 4,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 62,
+          "calls_made": 2,
+          "cache_hits": 0,
+          "network_calls": 2,
+          "budget_remaining": 77,
+          "max_calls": 3,
+          "per_call_limit": 50,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "cursor_start": {
+            "query_index": 2,
+            "page": 2
+          },
+          "cursor_next": {
+            "query_index": 3,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "casio gwm5610 watch",
+              "query_index": 2,
+              "page": 2,
+              "ok": true,
+              "fetched_count": 13,
+              "new_count": 13,
+              "duration_ms": 915,
+              "info": {
+                "http": 200,
+                "raw_total": 314,
+                "page": 2,
+                "offset": 50,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 78
+              }
+            },
+            {
+              "query": "CASIO WATCH",
+              "query_index": 3,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 49,
+              "new_count": 49,
+              "duration_ms": 959,
+              "info": {
+                "http": 200,
+                "raw_total": 97321,
+                "page": 1,
+                "offset": 0,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 77
+              }
+            }
+          ]
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 24,
+          "calls_made": 1,
+          "cache_hits": 0,
+          "network_calls": 1,
+          "budget_remaining": 67,
+          "max_calls": 2,
+          "per_call_limit": 30,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "cursor_start": {
+            "query_index": 2,
+            "page": 2
+          },
+          "cursor_next": {
+            "query_index": 3,
+            "page": 1
+          },
+          "queries": [
+            {
+              "query": "GWM5610",
+              "query_index": 2,
+              "page": 2,
+              "ok": true,
+              "fetched_count": 24,
+              "new_count": 24,
+              "duration_ms": 270,
+              "info": {
+                "http": 200,
+                "raw_count": 591,
+                "page": 2,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 67
+              }
+            }
+          ]
+        },
+        "yahoo": {
+          "ok": true,
+          "count": 33,
+          "calls_made": 1,
+          "cache_hits": 0,
+          "network_calls": 1,
+          "budget_remaining": 48,
+          "max_calls": 3,
+          "per_call_limit": 50,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "cursor_start": {
+            "query_index": 2,
+            "page": 2
+          },
+          "cursor_next": {
+            "query_index": 3,
+            "page": 1
+          },
+          "queries": [
+            {
+              "query": "GWM5610",
+              "query_index": 2,
+              "page": 2,
+              "ok": true,
+              "fetched_count": 33,
+              "new_count": 33,
+              "duration_ms": 248,
+              "info": {
+                "http": 200,
+                "raw_total": 142,
+                "page": 2,
+                "start": 51,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 48
+              }
+            }
+          ]
+        }
+      },
+      "errors": [],
+      "skipped_duplicates": 0,
+      "skipped_low_match": 51,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 1,
+      "skipped_low_margin": 1,
+      "api_efficiency": {
+        "total_calls": 4,
+        "cache_hits": 0,
+        "network_calls": 4,
+        "by_site": {
+          "ebay": {
+            "calls_made": 2,
+            "cache_hits": 0,
+            "network_calls": 2,
+            "budget_remaining": 77
+          },
+          "rakuten": {
+            "calls_made": 1,
+            "cache_hits": 0,
+            "network_calls": 1,
+            "budget_remaining": 67
+          },
+          "yahoo": {
+            "calls_made": 1,
+            "cache_hits": 0,
+            "network_calls": 1,
+            "budget_remaining": 48
+          }
+        }
+      }
+    },
+    {
+      "round": 1,
+      "query": "g-shock gw9400 watch",
+      "created_count": 9,
+      "added_to_reviewable_queue": 9,
+      "queue_before": 4,
+      "queue_after": 13,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 25,
+          "calls_made": 1,
+          "cache_hits": 0,
+          "network_calls": 1,
+          "budget_remaining": 76,
+          "max_calls": 3,
+          "per_call_limit": 50,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "cursor_start": {
+            "query_index": 2,
+            "page": 2
+          },
+          "cursor_next": {
+            "query_index": 3,
+            "page": 1
+          },
+          "queries": [
+            {
+              "query": "g-shock gw9400 watch",
+              "query_index": 2,
+              "page": 2,
+              "ok": true,
+              "fetched_count": 25,
+              "new_count": 25,
+              "duration_ms": 755,
+              "info": {
+                "http": 200,
+                "raw_total": 430,
+                "page": 2,
+                "offset": 50,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 76
+              }
+            }
+          ]
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 19,
+          "calls_made": 2,
+          "cache_hits": 2,
+          "network_calls": 0,
+          "budget_remaining": -1,
+          "max_calls": 2,
+          "per_call_limit": 30,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "max_calls_reached",
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 2,
+            "page": 1
+          },
+          "queries": [
+            {
+              "query": "g-shock gw9400 watch",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 2,
+              "new_count": 2,
+              "duration_ms": 10,
+              "info": {
+                "http": 200,
+                "raw_count": 5,
+                "page": 1,
+                "cache_hit": true,
+                "cache_age_sec": 120,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "query": "SHOCK GW9400",
+              "query_index": 1,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 19,
+              "new_count": 17,
+              "duration_ms": 37,
+              "info": {
+                "http": 200,
+                "raw_count": 108,
+                "page": 1,
+                "cache_hit": true,
+                "cache_age_sec": 120,
+                "budget_remaining": -1
+              }
+            }
+          ]
+        },
+        "yahoo": {
+          "ok": true,
+          "count": 35,
+          "calls_made": 1,
+          "cache_hits": 0,
+          "network_calls": 1,
+          "budget_remaining": 47,
+          "max_calls": 3,
+          "per_call_limit": 50,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "cursor_start": {
+            "query_index": 2,
+            "page": 2
+          },
+          "cursor_next": {
+            "query_index": 3,
+            "page": 1
+          },
+          "queries": [
+            {
+              "query": "GW9400",
+              "query_index": 2,
+              "page": 2,
+              "ok": true,
+              "fetched_count": 35,
+              "new_count": 35,
+              "duration_ms": 245,
+              "info": {
+                "http": 200,
+                "raw_total": 567,
+                "page": 2,
+                "start": 51,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 47
+              }
+            }
+          ]
+        }
+      },
+      "errors": [],
+      "skipped_duplicates": 3,
+      "skipped_low_match": 18,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 4,
+      "skipped_low_margin": 10,
+      "api_efficiency": {
+        "total_calls": 4,
+        "cache_hits": 2,
+        "network_calls": 2,
+        "by_site": {
+          "ebay": {
+            "calls_made": 1,
+            "cache_hits": 0,
+            "network_calls": 1,
+            "budget_remaining": 76
+          },
+          "rakuten": {
+            "calls_made": 2,
+            "cache_hits": 2,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "yahoo": {
+            "calls_made": 1,
+            "cache_hits": 0,
+            "network_calls": 1,
+            "budget_remaining": 47
+          }
+        }
+      }
+    },
+    {
+      "round": 1,
+      "query": "citizen at6080 watch",
+      "created_count": 0,
+      "added_to_reviewable_queue": 0,
+      "queue_before": 13,
+      "queue_after": 13,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 44,
+          "calls_made": 1,
+          "cache_hits": 0,
+          "network_calls": 1,
+          "budget_remaining": 75,
+          "max_calls": 3,
+          "per_call_limit": 50,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "cursor_start": {
+            "query_index": 2,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 2,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "citizen at6080 watch",
+              "query_index": 2,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 44,
+              "new_count": 44,
+              "duration_ms": 782,
+              "info": {
+                "http": 200,
+                "raw_total": 47,
+                "page": 1,
+                "offset": 0,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 75
+              }
+            }
+          ]
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 44,
+          "calls_made": 2,
+          "cache_hits": 2,
+          "network_calls": 0,
+          "budget_remaining": -1,
+          "max_calls": 2,
+          "per_call_limit": 30,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "cursor_start": {
+            "query_index": 3,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 4,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "CITIZEN WATCH",
+              "query_index": 3,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 17,
+              "new_count": 17,
+              "duration_ms": 20,
+              "info": {
+                "http": 200,
+                "raw_count": 4779,
+                "page": 1,
+                "cache_hit": true,
+                "cache_age_sec": 68,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "query": "CITIZEN",
+              "query_index": 4,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 27,
+              "new_count": 27,
+              "duration_ms": 34,
+              "info": {
+                "http": 200,
+                "raw_count": 52518,
+                "page": 1,
+                "cache_hit": true,
+                "cache_age_sec": 23,
+                "budget_remaining": -1
+              }
+            }
+          ]
+        },
+        "yahoo": {
+          "ok": true,
+          "count": 40,
+          "calls_made": 1,
+          "cache_hits": 0,
+          "network_calls": 1,
+          "budget_remaining": 46,
+          "max_calls": 3,
+          "per_call_limit": 50,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "cursor_start": {
+            "query_index": 3,
+            "page": 2
+          },
+          "cursor_next": {
+            "query_index": 4,
+            "page": 1
+          },
+          "queries": [
+            {
+              "query": "CITIZEN WATCH",
+              "query_index": 3,
+              "page": 2,
+              "ok": true,
+              "fetched_count": 40,
+              "new_count": 40,
+              "duration_ms": 257,
+              "info": {
+                "http": 200,
+                "raw_total": 5543,
+                "page": 2,
+                "start": 51,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 46
+              }
+            }
+          ]
+        }
+      },
+      "errors": [],
+      "skipped_duplicates": 0,
+      "skipped_low_match": 84,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 0,
+      "skipped_low_margin": 0,
+      "api_efficiency": {
+        "total_calls": 4,
+        "cache_hits": 2,
+        "network_calls": 2,
+        "by_site": {
+          "ebay": {
+            "calls_made": 1,
+            "cache_hits": 0,
+            "network_calls": 1,
+            "budget_remaining": 75
+          },
+          "rakuten": {
+            "calls_made": 2,
+            "cache_hits": 2,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "yahoo": {
+            "calls_made": 1,
+            "cache_hits": 0,
+            "network_calls": 1,
+            "budget_remaining": 46
+          }
+        }
+      }
+    },
+    {
+      "round": 1,
+      "query": "g-shock gw5000 watch",
+      "created_count": 20,
+      "added_to_reviewable_queue": 20,
+      "queue_before": 13,
+      "queue_after": 33,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 37,
+          "calls_made": 1,
+          "cache_hits": 0,
+          "network_calls": 1,
+          "budget_remaining": 74,
+          "max_calls": 3,
+          "per_call_limit": 50,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "cursor_start": {
+            "query_index": 0,
+            "page": 2
+          },
+          "cursor_next": {
+            "query_index": 1,
+            "page": 1
+          },
+          "queries": [
+            {
+              "query": "SHOCK GW5000 NEW",
+              "query_index": 0,
+              "page": 2,
+              "ok": true,
+              "fetched_count": 37,
+              "new_count": 37,
+              "duration_ms": 821,
+              "info": {
+                "http": 200,
+                "raw_total": 497,
+                "page": 2,
+                "offset": 50,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 74
+              }
+            }
+          ]
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 25,
+          "calls_made": 2,
+          "cache_hits": 0,
+          "network_calls": 2,
+          "budget_remaining": 65,
+          "max_calls": 2,
+          "per_call_limit": 30,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "cursor_start": {
+            "query_index": 0,
+            "page": 2
+          },
+          "cursor_next": {
+            "query_index": 1,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "g-shock gw5000 watch",
+              "query_index": 0,
+              "page": 2,
+              "ok": true,
+              "fetched_count": 1,
+              "new_count": 1,
+              "duration_ms": 137,
+              "info": {
+                "http": 200,
+                "raw_count": 36,
+                "page": 2,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 66
+              }
+            },
+            {
+              "query": "SHOCK GW5000",
+              "query_index": 1,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 24,
+              "new_count": 24,
+              "duration_ms": 270,
+              "info": {
+                "http": 200,
+                "raw_count": 227,
+                "page": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 65
+              }
+            }
+          ]
+        },
+        "yahoo": {
+          "ok": true,
+          "count": 41,
+          "calls_made": 2,
+          "cache_hits": 0,
+          "network_calls": 2,
+          "budget_remaining": 44,
+          "max_calls": 3,
+          "per_call_limit": 50,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "cursor_start": {
+            "query_index": 0,
+            "page": 2
+          },
+          "cursor_next": {
+            "query_index": 1,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "g-shock gw5000 watch",
+              "query_index": 0,
+              "page": 2,
+              "ok": true,
+              "fetched_count": 0,
+              "new_count": 0,
+              "duration_ms": 137,
+              "info": {
+                "http": 200,
+                "raw_total": 37,
+                "page": 2,
+                "start": 51,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 45
+              }
+            },
+            {
+              "query": "SHOCK GW5000",
+              "query_index": 1,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 41,
+              "new_count": 41,
+              "duration_ms": 239,
+              "info": {
+                "http": 200,
+                "raw_total": 609,
+                "page": 1,
+                "start": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": 44
+              }
+            }
+          ]
+        }
+      },
+      "errors": [],
+      "skipped_duplicates": 1,
+      "skipped_low_match": 25,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 3,
+      "skipped_low_margin": 1,
+      "api_efficiency": {
+        "total_calls": 5,
+        "cache_hits": 0,
+        "network_calls": 5,
+        "by_site": {
+          "ebay": {
+            "calls_made": 1,
+            "cache_hits": 0,
+            "network_calls": 1,
+            "budget_remaining": 74
+          },
+          "rakuten": {
+            "calls_made": 2,
+            "cache_hits": 0,
+            "network_calls": 2,
+            "budget_remaining": 65
+          },
+          "yahoo": {
+            "calls_made": 2,
+            "cache_hits": 0,
+            "network_calls": 2,
+            "budget_remaining": 44
+          }
+        }
+      }
+    }
+  ]
+}

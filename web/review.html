@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>レビュー画面 | ebayminer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/static/review.css" />
+  </head>
+  <body>
+    <header class="header">
+      <div>
+        <p class="eyebrow">ヒューマンレビュー</p>
+        <h1>同一商品・利益確認</h1>
+      </div>
+      <div class="header-controls">
+        <label class="query-label">
+          カテゴリ
+          <select id="fetchQuery"></select>
+        </label>
+        <button id="fetchBtn" type="button">探索開始</button>
+        <button id="reloadBtn" type="button">一覧更新</button>
+        <button id="openSettingsBtn" type="button" class="secondary">詳細設定</button>
+      </div>
+    </header>
+
+    <div id="settingsOverlay" class="overlay" hidden>
+      <div class="overlay-backdrop" data-close-settings="1"></div>
+      <section class="overlay-panel" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+        <div class="overlay-head">
+          <h2 id="settingsTitle">詳細設定</h2>
+          <button id="closeSettingsBtn" type="button" class="secondary">閉じる</button>
+        </div>
+        <div class="options-grid">
+          <label class="inline-check">
+            <input id="requireInStock" type="checkbox" checked />
+            日本側 在庫ありのみ（既定）
+          </label>
+          <label>サイトあたり取得件数
+            <input id="limitPerSite" type="number" min="1" max="30" step="1" value="20" />
+          </label>
+          <label>最大候補数
+            <input id="maxCandidates" type="number" min="1" max="50" step="1" value="20" />
+          </label>
+          <label>最小一致スコア
+            <input id="minMatchScore" type="number" min="0.50" max="0.99" step="0.01" value="0.75" />
+          </label>
+          <label>最小利益(USD)
+            <input id="minProfitUsd" type="number" min="0.00" step="0.01" value="0.01" />
+          </label>
+          <label>最小粗利率
+            <input id="minMarginRate" type="number" min="0.00" max="1.00" step="0.01" value="0.03" />
+          </label>
+        </div>
+      </section>
+    </div>
+
+    <p id="endpointLabel" class="endpoint-label">API接続先: -</p>
+
+    <main class="workspace">
+      <section class="left-pane">
+        <section class="panel queue-panel" id="queuePanel">
+          <h2>レビュー候補一覧</h2>
+          <div class="tabs" role="tablist" aria-label="レビュー候補タブ">
+            <button id="tabPending" class="tab active" type="button" role="tab" aria-selected="true">
+              レビュー待ち <span id="countPending">0</span>
+            </button>
+            <button id="tabReviewed" class="tab" type="button" role="tab" aria-selected="false">
+              レビュー済み <span id="countReviewed">0</span>
+            </button>
+          </div>
+          <p id="currentCandidateLabel" class="current-label">候補を選択してください</p>
+          <ul id="reviewList" class="review-list"></ul>
+          <p id="reviewListEmpty" class="empty">候補がありません。</p>
+        </section>
+      </section>
+
+      <aside class="right-pane">
+        <section class="selected-pair">
+          <article class="card ebay" id="ebayCard">
+            <div class="card-head">
+              <h2>eBay（販売側）</h2>
+              <span id="ebaySiteTag" class="site-tag">eBay</span>
+            </div>
+            <img id="ebayImage" class="item-image" alt="eBay商品画像" />
+            <h3 id="ebayTitle">-</h3>
+            <section class="extract-panel">
+              <h4>抽出情報</h4>
+              <div id="ebayExtracted" class="extract-grid"></div>
+            </section>
+            <div class="meta">
+              <div><span>価格</span><strong id="ebayPrice">-</strong></div>
+              <div><span>送料</span><strong id="ebayShipping">-</strong></div>
+              <div><span>合計</span><strong id="ebayTotal">-</strong></div>
+              <div><span>参考諸経費</span><strong id="ebayExtraCosts">-</strong></div>
+              <div><span>90日売却件数</span><strong id="ebaySoldCount90d">-</strong></div>
+              <div><span>90日最低成約価格</span><strong id="ebaySoldMin90d">-</strong></div>
+            </div>
+            <a id="ebayLink" class="link-btn" target="_blank" rel="noopener noreferrer">商品ページを開く</a>
+          </article>
+
+          <article class="card jp" id="jpCard">
+            <div class="card-head">
+              <h2>日本（仕入側）</h2>
+              <span id="jpSiteTag" class="site-tag">日本サイト</span>
+            </div>
+            <img id="jpImage" class="item-image" alt="日本商品画像" />
+            <h3 id="jpTitle">-</h3>
+            <section class="extract-panel">
+              <h4>抽出情報</h4>
+              <div id="jpExtracted" class="extract-grid"></div>
+            </section>
+            <div class="meta">
+              <div><span>価格</span><strong id="jpPrice">-</strong></div>
+              <div><span>送料</span><strong id="jpShipping">-</strong></div>
+              <div><span>合計</span><strong id="jpTotal">-</strong></div>
+              <div id="jpStockRow"><span>在庫</span><strong id="jpStockRule">-</strong></div>
+              <div><span>補足</span><strong id="jpExtraInfo">-</strong></div>
+            </div>
+            <a id="jpLink" class="link-btn" target="_blank" rel="noopener noreferrer">商品ページを開く</a>
+          </article>
+        </section>
+
+        <article class="card control-card" id="controlCard">
+        <section class="panel summary-panel">
+          <h2>計算と判定</h2>
+          <div id="riskFlags" class="risk-flags"></div>
+          <div id="decisionTone" class="decision-main">
+            <span class="label">現在の判定</span>
+            <strong id="decisionLabel">-</strong>
+            <small id="decisionSub">候補を選択してください</small>
+          </div>
+          <div id="decisionReasons" class="decision-reasons">
+            <span class="reason-chip">理由を判定中</span>
+          </div>
+          <div class="finance-grid">
+            <div class="summary-cell">
+              <span>売上見込み</span>
+              <strong id="sumRevenue">-</strong>
+              <small id="sumRevenueBreakdown">-</small>
+            </div>
+            <div class="summary-cell">
+              <span>仕入原価</span>
+              <strong id="sumPurchase">-</strong>
+              <small id="sumPurchaseBreakdown">-</small>
+            </div>
+            <div class="summary-cell">
+              <span>諸経費合計</span>
+              <strong id="sumExpenses">-</strong>
+              <small id="sumExpensesBreakdown">-</small>
+            </div>
+            <div class="summary-cell">
+              <span>最終利益（手数料後）</span>
+              <strong id="sumProfit">-</strong>
+              <small id="sumProfitBreakdown">-</small>
+            </div>
+          </div>
+          <p id="financeFormula" class="finance-formula">最終利益 = 売上見込み - 仕入原価 - 諸経費合計</p>
+          <div class="summary-grid liquidity-grid">
+            <div class="summary-cell">
+              <span>90日売却</span>
+              <strong id="sumSoldCount90d">-</strong>
+            </div>
+            <div class="summary-cell">
+              <span>90日最低成約</span>
+              <strong id="sumSoldMin90d">-</strong>
+            </div>
+            <div class="summary-cell">
+              <span>アクティブ / STR</span>
+              <strong id="sumLiquidityActiveStr">-</strong>
+            </div>
+            <div class="summary-cell">
+              <span>流動性Gate</span>
+              <strong id="sumLiquidityGate">-</strong>
+            </div>
+          </div>
+          <details class="detail-toggle">
+            <summary>為替・手数料の詳細を開く</summary>
+            <div class="summary-grid detail-grid">
+              <div class="summary-cell">
+                <span>使用為替</span>
+                <strong id="fxRate">-</strong>
+              </div>
+              <div class="summary-cell">
+                <span>販売/決済手数料率</span>
+                <strong id="sumFeeRates">-</strong>
+              </div>
+              <div class="summary-cell">
+                <span>その他コスト</span>
+                <strong id="sumOtherCosts">-</strong>
+              </div>
+            </div>
+          </details>
+        </section>
+
+        <section class="panel fetch-panel">
+          <h2>探索ログ</h2>
+          <p id="fetchStatusHeadline" class="hint strong">まだ探索を実行していません。</p>
+          <details class="detail-toggle">
+            <summary>サイト別ログを開く</summary>
+            <div id="fetchStatsRows" class="fetch-stats"></div>
+          </details>
+        </section>
+
+        <section class="panel calc-panel">
+          <h2>算出に使ったデータ</h2>
+          <p id="calcDigest" class="calc-digest">候補を選択してください。</p>
+          <details class="detail-toggle">
+            <summary>算出データ詳細を開く</summary>
+            <div id="calcData" class="calc-groups"></div>
+            <details class="nested-detail">
+              <summary>生データ（JSON）</summary>
+              <pre id="rawJson"></pre>
+            </details>
+          </details>
+        </section>
+
+        <section class="panel action-panel">
+          <h2>レビュー操作</h2>
+          <div class="approve-zone">
+            <button id="approveBtn" type="button" class="approve">同一商品・利益OK（承認）</button>
+            <p id="approveHint" class="hint">承認するとダミー出品ステータスに遷移します。</p>
+          </div>
+          <div class="reject-zone">
+            <div id="issueTargets" class="checks"></div>
+            <details class="detail-toggle compact">
+              <summary>否認理由（任意）</summary>
+              <textarea id="reasonText" rows="2" placeholder="例: 型番末尾が不一致。送料見積が不足。"></textarea>
+            </details>
+            <button id="rejectBtn" type="button" class="reject">否認して保存</button>
+          </div>
+        </section>
+        </article>
+      </aside>
+    </main>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script src="/static/review.js"></script>
+  </body>
+</html>

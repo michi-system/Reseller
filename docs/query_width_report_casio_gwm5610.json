@@ -1,0 +1,147 @@
+{
+  "generated_at": "2026-02-19T18:09:34Z",
+  "inputs": {
+    "brand": "casio",
+    "model": "gwm5610",
+    "noun": "watch",
+    "sites": [
+      "ebay",
+      "yahoo",
+      "rakuten"
+    ]
+  },
+  "sites": {
+    "ebay": {
+      "rate_limit_rps": 2.0,
+      "min_candidates": 20,
+      "max_candidates": 2000,
+      "rows": [
+        {
+          "stage": "L1_precise_new",
+          "query": "casio gwm5610 watch new",
+          "http": 200,
+          "ok": true,
+          "count": 315,
+          "delta_from_prev": null,
+          "error": null
+        },
+        {
+          "stage": "L2_precise",
+          "query": "casio gwm5610 watch",
+          "http": 200,
+          "ok": true,
+          "count": 1221,
+          "delta_from_prev": 906,
+          "error": null
+        },
+        {
+          "stage": "L3_mid",
+          "query": "casio gwm5610",
+          "http": 200,
+          "ok": true,
+          "count": 1571,
+          "delta_from_prev": 350,
+          "error": null
+        },
+        {
+          "stage": "L4_broad",
+          "query": "casio watch",
+          "http": 200,
+          "ok": true,
+          "count": 241253,
+          "delta_from_prev": 239682,
+          "error": null
+        }
+      ],
+      "recommended_stage": "L1_precise_new"
+    },
+    "yahoo": {
+      "rate_limit_rps": 1.0,
+      "min_candidates": 20,
+      "max_candidates": 1000,
+      "rows": [
+        {
+          "stage": "L1_precise_new",
+          "query": "casio gwm5610 watch new",
+          "http": 200,
+          "ok": true,
+          "count": 0,
+          "delta_from_prev": null,
+          "error": null
+        },
+        {
+          "stage": "L2_precise",
+          "query": "casio gwm5610 watch",
+          "http": 200,
+          "ok": true,
+          "count": 10,
+          "delta_from_prev": 10,
+          "error": null
+        },
+        {
+          "stage": "L3_mid",
+          "query": "casio gwm5610",
+          "http": 200,
+          "ok": true,
+          "count": 131,
+          "delta_from_prev": 121,
+          "error": null
+        },
+        {
+          "stage": "L4_broad",
+          "query": "casio watch",
+          "http": 200,
+          "ok": true,
+          "count": 6389,
+          "delta_from_prev": 6258,
+          "error": null
+        }
+      ],
+      "recommended_stage": "L3_mid"
+    },
+    "rakuten": {
+      "rate_limit_rps": 1.0,
+      "min_candidates": 10,
+      "max_candidates": 1000,
+      "rows": [
+        {
+          "stage": "L1_precise_new",
+          "query": "casio gwm5610 watch new",
+          "http": 200,
+          "ok": true,
+          "count": 0,
+          "delta_from_prev": null,
+          "error": null
+        },
+        {
+          "stage": "L2_precise",
+          "query": "casio gwm5610 watch",
+          "http": 200,
+          "ok": true,
+          "count": 135,
+          "delta_from_prev": 135,
+          "error": null
+        },
+        {
+          "stage": "L3_mid",
+          "query": "casio gwm5610",
+          "http": 200,
+          "ok": true,
+          "count": 514,
+          "delta_from_prev": 379,
+          "error": null
+        },
+        {
+          "stage": "L4_broad",
+          "query": "casio watch",
+          "http": 200,
+          "ok": true,
+          "count": 10686,
+          "delta_from_prev": 10172,
+          "error": null
+        }
+      ],
+      "recommended_stage": "L2_precise"
+    }
+  }
+}

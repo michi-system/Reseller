@@ -1,0 +1,59 @@
+{
+  "cycle_id": "cycle-20260219-230933",
+  "closed_at": "2026-02-19T23:09:33Z",
+  "manifest_path": "/Users/tadamichikimura/Downloads/dev-HQ/ebayminer/docs/review_cycle_active.json",
+  "batch_size": 24,
+  "reviewed_count": 24,
+  "review_completion_rate": 1.0,
+  "unresolved_count": 0,
+  "unresolved_candidate_ids": [],
+  "status_breakdown": {
+    "listed": 21,
+    "rejected": 3
+  },
+  "approved_count": 21,
+  "rejected_count": 3,
+  "rejected_with_reason_count": 3,
+  "rejected_with_issue_count": 3,
+  "reject_floor": 10,
+  "min_reviewed_ratio": 1.0,
+  "min_reject_rate": 0.1,
+  "min_reject_with_issue_count": 1,
+  "reject_rate": 0.125,
+  "avg_rejected_issue_count": 1.0,
+  "profit_usd_stats": {
+    "min": 2.6954,
+    "median": 35.3526,
+    "max": 175.011
+  },
+  "score_stats": {
+    "min": 0.92,
+    "median": 0.92,
+    "max": 0.92
+  },
+  "auto_review_counts": {
+    "approve": 21,
+    "reject": 3,
+    "skipped": 0
+  },
+  "auto_review_reject_rate": 0.125,
+  "ready_for_tuning": false,
+  "top_issue_targets": [
+    {
+      "issue": "model",
+      "count": 3
+    }
+  ],
+  "recommendations": [
+    {
+      "issue": "model",
+      "count": 3,
+      "action": "型番トークン一致の閾値を上げ、コード一致なし候補のスコア上限を下げる"
+    }
+  ],
+  "reason_samples": [
+    "一致コードが汎用すぎて同一性根拠として弱い",
+    "一致コードが汎用すぎて同一性根拠として弱い",
+    "一致コードが汎用すぎて同一性根拠として弱い"
+  ]
+}

@@ -1,0 +1,365 @@
+{
+  "cycle_id": "cycle-20260220-024325",
+  "started_at": "2026-02-20T02:43:22Z",
+  "ended_at": "2026-02-20T02:43:25Z",
+  "run_seq": 53,
+  "target_count": 1,
+  "hard_cap": 1,
+  "batch_size": 0,
+  "cycle_ready": false,
+  "initial_reviewable_pending": 0,
+  "final_reviewable_pending": 0,
+  "delta_reviewable_pending": 0,
+  "min_match_score": 0.7,
+  "min_profit_usd": 0.01,
+  "min_margin_rate": 0.03,
+  "condition": "new",
+  "stopped_reason": "completed_rounds",
+  "selected_candidate_ids": [],
+  "cache_only": false,
+  "query_reordered": true,
+  "query_order": [
+    "citizen xx9999 watch"
+  ],
+  "max_zero_gain_strikes": 999,
+  "historical_min_attempts": 999,
+  "historical_min_network_calls": 6,
+  "historical_min_gain_per_network_call": 0.05,
+  "historical_retry_every_runs": 1,
+  "rpa_refresh": {
+    "enabled": true,
+    "mode": "rpa_json",
+    "cache_only": false,
+    "ran": true,
+    "output_path": "/Users/tadamichikimura/Downloads/dev-HQ/ebayminer/data/liquidity_rpa_signals.jsonl",
+    "primary": {
+      "ran": true,
+      "reason": "ok",
+      "query_count": 1,
+      "queries": [
+        "citizen xx9999 watch"
+      ],
+      "condition": "new",
+      "strict_condition": true,
+      "fixed_price_only": false,
+      "pass_label": "primary_new",
+      "started_at": "2026-02-20T02:43:00Z",
+      "ended_at": "2026-02-20T02:43:22Z",
+      "returncode": 0,
+      "stdout_tail": [
+        "[1/1] query=citizen xx9999 watch",
+        "  -> sold_90d=0 min=-1.0 median=-1.0 ccy=USD conf=0.55",
+        "saved 13 rows -> /Users/tadamichikimura/Downloads/dev-HQ/ebayminer/data/liquidity_rpa_signals.jsonl"
+      ],
+      "stderr_tail": []
+    },
+    "fallback": {},
+    "model_backfill": {},
+    "missing_before": 1,
+    "missing_after_primary": 0,
+    "missing_after_fallback": 0,
+    "missing_after_model_backfill": 0,
+    "reason": "no_missing_after_primary"
+  },
+  "query_skipped_count": 0,
+  "query_efficiency_snapshot": [
+    {
+      "query": "citizen xx9999 watch",
+      "attempts": 1,
+      "network_calls": 8,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 0.0,
+      "zero_gain_streak": 1
+    }
+  ],
+  "api_efficiency_summary": {
+    "total_calls": 8,
+    "cache_hits": 0,
+    "network_calls": 8,
+    "by_site": {
+      "ebay": {
+        "calls_made": 3,
+        "cache_hits": 0,
+        "network_calls": 3,
+        "budget_remaining": -1
+      },
+      "rakuten": {
+        "calls_made": 2,
+        "cache_hits": 0,
+        "network_calls": 2,
+        "budget_remaining": -1
+      },
+      "yahoo": {
+        "calls_made": 3,
+        "cache_hits": 0,
+        "network_calls": 3,
+        "budget_remaining": -1
+      }
+    },
+    "cache_hit_rate": 0.0
+  },
+  "runs": [
+    {
+      "round": 1,
+      "query": "citizen xx9999 watch",
+      "created_count": 0,
+      "added_to_reviewable_queue": 0,
+      "queue_before": 0,
+      "queue_after": 0,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 0,
+          "calls_made": 3,
+          "cache_hits": 0,
+          "network_calls": 3,
+          "budget_remaining": -1,
+          "max_calls": 3,
+          "per_call_limit": 50,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "max_calls_reached",
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 3,
+            "page": 1
+          },
+          "queries": [
+            {
+              "query": "CITIZEN XX9999 NEW",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 0,
+              "new_count": 0,
+              "duration_ms": 956,
+              "info": {
+                "http": 200,
+                "raw_total": 0,
+                "page": 1,
+                "offset": 0,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "query": "XX9999",
+              "query_index": 1,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 0,
+              "new_count": 0,
+              "duration_ms": 581,
+              "info": {
+                "http": 200,
+                "raw_total": 0,
+                "page": 1,
+                "offset": 0,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "query": "citizen xx9999 watch",
+              "query_index": 2,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 0,
+              "new_count": 0,
+              "duration_ms": 531,
+              "info": {
+                "http": 200,
+                "raw_total": 0,
+                "page": 1,
+                "offset": 0,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": -1
+              }
+            }
+          ]
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 0,
+          "calls_made": 2,
+          "cache_hits": 0,
+          "network_calls": 2,
+          "budget_remaining": -1,
+          "max_calls": 2,
+          "per_call_limit": 30,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "max_calls_reached",
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 2,
+            "page": 1
+          },
+          "queries": [
+            {
+              "query": "citizen xx9999 watch",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 0,
+              "new_count": 0,
+              "duration_ms": 116,
+              "info": {
+                "http": 200,
+                "raw_count": 0,
+                "page": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "query": "CITIZEN XX9999",
+              "query_index": 1,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 0,
+              "new_count": 0,
+              "duration_ms": 107,
+              "info": {
+                "http": 200,
+                "raw_count": 0,
+                "page": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": -1
+              }
+            }
+          ]
+        },
+        "yahoo": {
+          "ok": true,
+          "count": 0,
+          "calls_made": 3,
+          "cache_hits": 0,
+          "network_calls": 3,
+          "budget_remaining": -1,
+          "max_calls": 3,
+          "per_call_limit": 50,
+          "target_items": 20,
+          "max_pages_per_query": 2,
+          "stop_reason": "max_calls_reached",
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 3,
+            "page": 1
+          },
+          "queries": [
+            {
+              "query": "citizen xx9999 watch",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 0,
+              "new_count": 0,
+              "duration_ms": 191,
+              "info": {
+                "http": 200,
+                "raw_total": 0,
+                "page": 1,
+                "start": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "query": "CITIZEN XX9999",
+              "query_index": 1,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 0,
+              "new_count": 0,
+              "duration_ms": 113,
+              "info": {
+                "http": 200,
+                "raw_total": 0,
+                "page": 1,
+                "start": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "query": "XX9999",
+              "query_index": 2,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 0,
+              "new_count": 0,
+              "duration_ms": 130,
+              "info": {
+                "http": 200,
+                "raw_total": 1,
+                "page": 1,
+                "start": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": -1
+              }
+            }
+          ]
+        }
+      },
+      "errors": [],
+      "skipped_duplicates": 0,
+      "skipped_low_match": 0,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 0,
+      "skipped_low_margin": 0,
+      "skipped_low_ev90": 0,
+      "skipped_low_liquidity": 0,
+      "skipped_liquidity_unavailable": 0,
+      "skipped_ambiguous_model_title": 0,
+      "low_match_reason_counts": {},
+      "low_match_samples": [],
+      "hints": [
+        "eBay側のヒットがありません。型番入りで再検索してください。",
+        "日本側のヒットがありません。キーワードを少し広げて再検索してください。"
+      ],
+      "api_efficiency": {
+        "total_calls": 8,
+        "cache_hits": 0,
+        "network_calls": 8,
+        "by_site": {
+          "ebay": {
+            "calls_made": 3,
+            "cache_hits": 0,
+            "network_calls": 3,
+            "budget_remaining": -1
+          },
+          "rakuten": {
+            "calls_made": 2,
+            "cache_hits": 0,
+            "network_calls": 2,
+            "budget_remaining": -1
+          },
+          "yahoo": {
+            "calls_made": 3,
+            "cache_hits": 0,
+            "network_calls": 3,
+            "budget_remaining": -1
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "ok": true,
+  "errors": [],
+  "warnings": [
+    "batch_size=0 (no review candidates were processed)"
+  ],
+  "metrics": {
+    "cycle_id": "cycle-20260220-021309",
+    "batch_size": 0,
+    "target_count": 12,
+    "cycle_ready": false,
+    "auto_approve": 0,
+    "auto_reject": 0,
+    "auto_skipped": 0,
+    "auto_actions": 0,
+    "auto_reject_rate": 0.0,
+    "reviewed_count": 0,
+    "unresolved_count": 0,
+    "close_ready": false,
+    "reject_rate": 0.0,
+    "progressed": false
+  }
+}

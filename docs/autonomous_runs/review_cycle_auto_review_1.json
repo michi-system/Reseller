@@ -1,0 +1,152 @@
+{
+  "cycle_id": "cycle-20260219-200142",
+  "ran_at": "2026-02-19T20:01:43Z",
+  "dry_run": false,
+  "thresholds": {
+    "min_profit_usd": 0.01,
+    "min_margin_rate": 0.03,
+    "min_match_score": 0.75
+  },
+  "counts": {
+    "approve": 4,
+    "reject": 2,
+    "skipped": 0
+  },
+  "decisions": [
+    {
+      "id": 46,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす",
+      "metrics": {
+        "profit": 50.3728,
+        "margin": 0.170784,
+        "score": 0.768,
+        "common_codes": [],
+        "token_jaccard": 0.8,
+        "source_colors": [],
+        "market_colors": []
+      },
+      "source_title": "カシオ 時計 G-SHOCK MASTER OF G - LAND RANGEMAN 樹脂【本物保証】",
+      "market_title": "Casio G Shock Master of G - Land Rangeman GW9400-1 Watch"
+    },
+    {
+      "id": 20,
+      "decision": "reject",
+      "issues": [
+        "price"
+      ],
+      "reason": "粗利率が低い (1.2%)",
+      "metrics": {
+        "profit": 3.7862,
+        "margin": 0.012179,
+        "score": 0.92,
+        "common_codes": [
+          "GW5000"
+        ],
+        "token_jaccard": 0.2,
+        "source_colors": [],
+        "market_colors": [
+          "black"
+        ]
+      },
+      "source_title": "10%OFFクーポン！~21日09:59｜ 【ウオッチケアクロス付き】カシオ Gショック GW-5000HS-1JF スクリューバック バイオマスプラスチック GW-5000 G-SHOCK CASIO【0225】【rx01】【店頭受取可能商品】",
+      "market_title": "CASIO G-SHOCK GW-5000U-1JF GW-5000 Solar Radio Digital Men Watch Black Japan"
+    },
+    {
+      "id": 19,
+      "decision": "reject",
+      "issues": [
+        "price",
+        "color"
+      ],
+      "reason": "粗利率が低い (2.0%) / 色情報が不一致",
+      "metrics": {
+        "profit": 3.9127,
+        "margin": 0.020169,
+        "score": 0.92,
+        "common_codes": [
+          "GWM5610U1CJF"
+        ],
+        "token_jaccard": 0.3333,
+        "source_colors": [
+          "green"
+        ],
+        "market_colors": [
+          "black"
+        ]
+      },
+      "source_title": "【21日まで10％OFFクーポン対象】新品＆安心の正規品Gショック G-SHOCK カシオ メンズウオッチ gショック カシオ腕時計 電波ソーラー ジーショック 国内正規品アーバンユーティリティシリーズ　GW-M5610U-1CJFメンズ グリーンプレゼント 腕時計 ギフト",
+      "market_title": "Casio G-shock GW-M5610U-1CJF Men's Watch Radio Solar Black Japan Led Light Watch"
+    },
+    {
+      "id": 18,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす",
+      "metrics": {
+        "profit": 19.5846,
+        "margin": 0.100952,
+        "score": 0.92,
+        "common_codes": [
+          "GWM5610U1CJF"
+        ],
+        "token_jaccard": 0.3333,
+        "source_colors": [
+          "black"
+        ],
+        "market_colors": [
+          "black"
+        ]
+      },
+      "source_title": "'21-10メンズソーラー電波 スクエアデジタル CASIO G-SHOCK/カシオ ジーショック ORIGIN/オリジン タフソーラー マルチバンド6搭載 20気圧防水 ストップウオッチ バックライト ブラック GW-M5610U-1CJF",
+      "market_title": "Casio G-shock GW-M5610U-1CJF Men's Watch Radio Solar Black Japan Led Light Watch"
+    },
+    {
+      "id": 9,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす",
+      "metrics": {
+        "profit": 36.8108,
+        "margin": 0.189746,
+        "score": 0.92,
+        "common_codes": [
+          "GWM5610U1CJF"
+        ],
+        "token_jaccard": 0.2727,
+        "source_colors": [
+          "black"
+        ],
+        "market_colors": [
+          "black"
+        ]
+      },
+      "source_title": "腕時計 時計 CASIO カシオ G-SHOCK メンズ GW-M5610U-1CJF Gショック GSHOCK ジーショック ORIGIN 5600 SERIES ソーラー 電波 ウォッチ ブラック 黒 誕生日 新生活 父の日 プレゼント ギフト 贈り物 GWM5610U1CJF",
+      "market_title": "Casio G-shock GW-M5610U-1CJF Men's Watch Radio Solar Black Japan Led Light Watch"
+    },
+    {
+      "id": 8,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす",
+      "metrics": {
+        "profit": 36.8108,
+        "margin": 0.189746,
+        "score": 0.92,
+        "common_codes": [
+          "GWM5610U1CJF"
+        ],
+        "token_jaccard": 0.2727,
+        "source_colors": [
+          "black"
+        ],
+        "market_colors": [
+          "black"
+        ]
+      },
+      "source_title": "腕時計 時計 CASIO カシオ G-SHOCK メンズ GW-M5610U-1CJF Gショック GSHOCK ジーショック ORIGIN 5600 SERIES ソーラー 電波 ウォッチ ブラック 黒 誕生日 新生活 父の日 プレゼント ギフト 贈り物 GWM5610U1CJF",
+      "market_title": "Casio G-shock GW-M5610U-1CJF Men's Watch Radio Solar Black Japan Led Light Watch"
+    }
+  ]
+}

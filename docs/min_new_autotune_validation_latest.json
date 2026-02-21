@@ -1,0 +1,269 @@
+{
+  "generated_at": "2026-02-20T04:20:24Z",
+  "queries": [
+    "seiko sbdc101",
+    "casio ga2100",
+    "citizen promaster ny0084",
+    "g-shock gw-m5610u",
+    "seiko snk809",
+    "sony wh-1000xm5",
+    "anker powercore 10000",
+    "nintendo switch oled"
+  ],
+  "inflow": {
+    "runs": 8,
+    "runs_with_created": 0,
+    "created_total": 0,
+    "inflow_rate": 0.0
+  },
+  "aggregate": {
+    "ebay": {
+      "runs": 8,
+      "network_calls": 8,
+      "count": 237,
+      "low_yield_stop": 0,
+      "target_reached": 5,
+      "max_calls_reached": 3,
+      "low_yield_stop_rate": 0.0,
+      "efficiency": 29.625
+    },
+    "rakuten": {
+      "runs": 8,
+      "network_calls": 11,
+      "count": 153,
+      "low_yield_stop": 0,
+      "target_reached": 4,
+      "max_calls_reached": 4,
+      "low_yield_stop_rate": 0.0,
+      "efficiency": 13.9091
+    },
+    "yahoo": {
+      "runs": 8,
+      "network_calls": 10,
+      "count": 342,
+      "low_yield_stop": 1,
+      "target_reached": 6,
+      "max_calls_reached": 1,
+      "low_yield_stop_rate": 0.125,
+      "efficiency": 34.2
+    }
+  },
+  "runs": [
+    {
+      "query": "seiko sbdc101",
+      "created_count": 0,
+      "sites": {
+        "ebay": {
+          "calls_made": 1,
+          "network_calls": 1,
+          "count": 23,
+          "stop_reason": "target_reached",
+          "min_new_items": 0
+        },
+        "rakuten": {
+          "calls_made": 1,
+          "network_calls": 1,
+          "count": 1,
+          "stop_reason": "max_calls_reached",
+          "min_new_items": 0
+        },
+        "yahoo": {
+          "calls_made": 2,
+          "network_calls": 2,
+          "count": 7,
+          "stop_reason": "max_calls_reached",
+          "min_new_items": 0
+        }
+      }
+    },
+    {
+      "query": "casio ga2100",
+      "created_count": 0,
+      "sites": {
+        "ebay": {
+          "calls_made": 1,
+          "network_calls": 1,
+          "count": 49,
+          "stop_reason": "target_reached",
+          "min_new_items": 0
+        },
+        "rakuten": {
+          "calls_made": 1,
+          "network_calls": 1,
+          "count": 21,
+          "stop_reason": "target_reached",
+          "min_new_items": 0
+        },
+        "yahoo": {
+          "calls_made": 1,
+          "network_calls": 1,
+          "count": 80,
+          "stop_reason": "target_reached",
+          "min_new_items": 0
+        }
+      }
+    },
+    {
+      "query": "citizen promaster ny0084",
+      "created_count": 0,
+      "sites": {
+        "ebay": {
+          "calls_made": 1,
+          "network_calls": 1,
+          "count": 11,
+          "stop_reason": "max_calls_reached",
+          "min_new_items": 0
+        },
+        "rakuten": {
+          "calls_made": 1,
+          "network_calls": 1,
+          "count": 0,
+          "stop_reason": "max_calls_reached",
+          "min_new_items": 0
+        },
+        "yahoo": {
+          "calls_made": 2,
+          "network_calls": 2,
+          "count": 1,
+          "stop_reason": "low_yield_stop",
+          "min_new_items": 0
+        }
+      }
+    },
+    {
+      "query": "g-shock gw-m5610u",
+      "created_count": 0,
+      "sites": {
+        "ebay": {
+          "calls_made": 1,
+          "network_calls": 1,
+          "count": 50,
+          "stop_reason": "target_reached",
+          "min_new_items": 0
+        },
+        "rakuten": {
+          "calls_made": 1,
+          "network_calls": 1,
+          "count": 16,
+          "stop_reason": "max_calls_reached",
+          "min_new_items": 0
+        },
+        "yahoo": {
+          "calls_made": 1,
+          "network_calls": 1,
+          "count": 60,
+          "stop_reason": "target_reached",
+          "min_new_items": 0
+        }
+      }
+    },
+    {
+      "query": "seiko snk809",
+      "created_count": 0,
+      "sites": {
+        "ebay": {
+          "calls_made": 1,
+          "network_calls": 1,
+          "count": 32,
+          "stop_reason": "target_reached",
+          "min_new_items": 0
+        },
+        "rakuten": {
+          "calls_made": 2,
+          "network_calls": 2,
+          "count": 8,
+          "stop_reason": "max_calls_reached",
+          "min_new_items": 0
+        },
+        "yahoo": {
+          "calls_made": 1,
+          "network_calls": 1,
+          "count": 30,
+          "stop_reason": "target_reached",
+          "min_new_items": 0
+        }
+      }
+    },
+    {
+      "query": "sony wh-1000xm5",
+      "created_count": 0,
+      "sites": {
+        "ebay": {
+          "calls_made": 1,
+          "network_calls": 1,
+          "count": 14,
+          "stop_reason": "max_calls_reached",
+          "min_new_items": 0
+        },
+        "rakuten": {
+          "calls_made": 1,
+          "network_calls": 1,
+          "count": 25,
+          "stop_reason": "target_reached",
+          "min_new_items": 0
+        },
+        "yahoo": {
+          "calls_made": 1,
+          "network_calls": 1,
+          "count": 51,
+          "stop_reason": "target_reached",
+          "min_new_items": 0
+        }
+      }
+    },
+    {
+      "query": "anker powercore 10000",
+      "created_count": 0,
+      "sites": {
+        "ebay": {
+          "calls_made": 1,
+          "network_calls": 1,
+          "count": 39,
+          "stop_reason": "target_reached",
+          "min_new_items": 0
+        },
+        "rakuten": {
+          "calls_made": 2,
+          "network_calls": 2,
+          "count": 42,
+          "stop_reason": "target_reached",
+          "min_new_items": 0
+        },
+        "yahoo": {
+          "calls_made": 1,
+          "network_calls": 1,
+          "count": 58,
+          "stop_reason": "target_reached",
+          "min_new_items": 0
+        }
+      }
+    },
+    {
+      "query": "nintendo switch oled",
+      "created_count": 0,
+      "sites": {
+        "ebay": {
+          "calls_made": 1,
+          "network_calls": 1,
+          "count": 19,
+          "stop_reason": "max_calls_reached",
+          "min_new_items": 0
+        },
+        "rakuten": {
+          "calls_made": 2,
+          "network_calls": 2,
+          "count": 40,
+          "stop_reason": "target_reached",
+          "min_new_items": 0
+        },
+        "yahoo": {
+          "calls_made": 1,
+          "network_calls": 1,
+          "count": 55,
+          "stop_reason": "target_reached",
+          "min_new_items": 0
+        }
+      }
+    }
+  ]
+}

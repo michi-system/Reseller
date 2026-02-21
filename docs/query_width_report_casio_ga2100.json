@@ -1,0 +1,147 @@
+{
+  "generated_at": "2026-02-19T18:10:07Z",
+  "inputs": {
+    "brand": "casio",
+    "model": "ga2100",
+    "noun": "watch",
+    "sites": [
+      "ebay",
+      "yahoo",
+      "rakuten"
+    ]
+  },
+  "sites": {
+    "ebay": {
+      "rate_limit_rps": 2.0,
+      "min_candidates": 20,
+      "max_candidates": 2000,
+      "rows": [
+        {
+          "stage": "L1_precise_new",
+          "query": "casio ga2100 watch new",
+          "http": 200,
+          "ok": true,
+          "count": 3288,
+          "delta_from_prev": null,
+          "error": null
+        },
+        {
+          "stage": "L2_precise",
+          "query": "casio ga2100 watch",
+          "http": 200,
+          "ok": true,
+          "count": 4904,
+          "delta_from_prev": 1616,
+          "error": null
+        },
+        {
+          "stage": "L3_mid",
+          "query": "casio ga2100",
+          "http": 200,
+          "ok": true,
+          "count": 5465,
+          "delta_from_prev": 561,
+          "error": null
+        },
+        {
+          "stage": "L4_broad",
+          "query": "casio watch",
+          "http": 200,
+          "ok": true,
+          "count": 241253,
+          "delta_from_prev": 235788,
+          "error": null
+        }
+      ],
+      "recommended_stage": "L1_precise_new"
+    },
+    "yahoo": {
+      "rate_limit_rps": 1.0,
+      "min_candidates": 20,
+      "max_candidates": 1000,
+      "rows": [
+        {
+          "stage": "L1_precise_new",
+          "query": "casio ga2100 watch new",
+          "http": 200,
+          "ok": true,
+          "count": 9,
+          "delta_from_prev": null,
+          "error": null
+        },
+        {
+          "stage": "L2_precise",
+          "query": "casio ga2100 watch",
+          "http": 200,
+          "ok": true,
+          "count": 273,
+          "delta_from_prev": 264,
+          "error": null
+        },
+        {
+          "stage": "L3_mid",
+          "query": "casio ga2100",
+          "http": 200,
+          "ok": true,
+          "count": 6322,
+          "delta_from_prev": 6049,
+          "error": null
+        },
+        {
+          "stage": "L4_broad",
+          "query": "casio watch",
+          "http": 200,
+          "ok": true,
+          "count": 6389,
+          "delta_from_prev": 67,
+          "error": null
+        }
+      ],
+      "recommended_stage": "L2_precise"
+    },
+    "rakuten": {
+      "rate_limit_rps": 1.0,
+      "min_candidates": 10,
+      "max_candidates": 1000,
+      "rows": [
+        {
+          "stage": "L1_precise_new",
+          "query": "casio ga2100 watch new",
+          "http": 200,
+          "ok": true,
+          "count": 0,
+          "delta_from_prev": null,
+          "error": null
+        },
+        {
+          "stage": "L2_precise",
+          "query": "casio ga2100 watch",
+          "http": 200,
+          "ok": true,
+          "count": 478,
+          "delta_from_prev": 478,
+          "error": null
+        },
+        {
+          "stage": "L3_mid",
+          "query": "casio ga2100",
+          "http": 200,
+          "ok": true,
+          "count": 1542,
+          "delta_from_prev": 1064,
+          "error": null
+        },
+        {
+          "stage": "L4_broad",
+          "query": "casio watch",
+          "http": 200,
+          "ok": true,
+          "count": 10686,
+          "delta_from_prev": 9144,
+          "error": null
+        }
+      ],
+      "recommended_stage": "L2_precise"
+    }
+  }
+}

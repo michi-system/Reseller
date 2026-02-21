@@ -1,0 +1,765 @@
+{
+  "cycle_id": "cycle-20260219-230933",
+  "ran_at": "2026-02-19T23:09:33Z",
+  "dry_run": false,
+  "thresholds": {
+    "min_profit_usd": 0.01,
+    "min_margin_rate": 0.03,
+    "min_match_score": 0.75,
+    "min_auto_approve_score": 0.9,
+    "min_token_jaccard": 0.62,
+    "max_score_drift": 0.25
+  },
+  "counts": {
+    "approve": 21,
+    "reject": 3,
+    "skipped": 0
+  },
+  "decisions": [
+    {
+      "id": 288,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 39.9642,
+        "margin": 0.077717,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59L"
+        ],
+        "common_specific_codes": [
+          "NB1050-59L"
+        ],
+        "token_jaccard": 0.25,
+        "source_colors": [],
+        "market_colors": [
+          "blue"
+        ]
+      },
+      "source_title": "シチズン 【国内正規品】シチズンコレクション　クラシカルライン メカニカル(自動巻き＋手巻き) メンズタイプ NB1050-59L [NB105059L]【返品種別A】",
+      "market_title": "Citizen NB1050-59L | Automatic Blue Dial Sapphire JDM | New"
+    },
+    {
+      "id": 287,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 59.091,
+        "margin": 0.110039,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59E"
+        ],
+        "common_specific_codes": [
+          "NB1050-59E"
+        ],
+        "token_jaccard": 0.2857,
+        "source_colors": [],
+        "market_colors": []
+      },
+      "source_title": "シチズン 【国内正規品】シチズンコレクション　クラシカルライン メカニカル(自動巻き＋手巻き) メンズタイプ NB1050-59E [NB105059E]【返品種別A】",
+      "market_title": "CITIZEN NB1050-59E NB1050 Wristwatch, Collection, Mechanical Automatic,"
+    },
+    {
+      "id": 286,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 20.997,
+        "margin": 0.042707,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59A"
+        ],
+        "common_specific_codes": [
+          "NB1050-59A"
+        ],
+        "token_jaccard": 0.2857,
+        "source_colors": [],
+        "market_colors": []
+      },
+      "source_title": "シチズン 【国内正規品】シチズンコレクション　クラシカルライン メカニカル(自動巻き＋手巻き) メンズタイプ NB1050-59A [NB105059A]【返品種別A】",
+      "market_title": "CITIZEN NB1050-59A CITIZEN COLLECTION Mechanical Classical Line"
+    },
+    {
+      "id": 285,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 121.584,
+        "margin": 0.180124,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59A"
+        ],
+        "common_specific_codes": [
+          "NB1050-59A"
+        ],
+        "token_jaccard": 0.5,
+        "source_colors": [],
+        "market_colors": [
+          "silver",
+          "white"
+        ]
+      },
+      "source_title": "CITIZEN COLLECTION シチズンコレクション エコ・ドライブ ステンレスバンド NB1050-59A CITIZEN シチズン 腕時計 メンズ",
+      "market_title": "Citizen Collection NB1050-59A Mechanical Watch Silver White 38ｍｍ"
+    },
+    {
+      "id": 284,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 116.4032,
+        "margin": 0.172449,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59A"
+        ],
+        "common_specific_codes": [
+          "NB1050-59A"
+        ],
+        "token_jaccard": 0.3333,
+        "source_colors": [
+          "silver"
+        ],
+        "market_colors": [
+          "silver",
+          "white"
+        ]
+      },
+      "source_title": "[Citizen] 腕時計腕時計 機械式自動巻 防水 日付 シースルーバック NB1050-59A メンズ シルバー 自動巻き手巻き",
+      "market_title": "Citizen Collection NB1050-59A Mechanical Watch Silver White 38ｍｍ"
+    },
+    {
+      "id": 283,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 125.1458,
+        "margin": 0.185401,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59A"
+        ],
+        "common_specific_codes": [
+          "NB1050-59A"
+        ],
+        "token_jaccard": 0.5,
+        "source_colors": [],
+        "market_colors": [
+          "silver",
+          "white"
+        ]
+      },
+      "source_title": "取寄品 正規品 CITIZEN シチズン シチズンコレクション NB1050-59A COLLECTION ラウンドフェイス 自動巻き メンズ腕時計 送料無料",
+      "market_title": "Citizen Collection NB1050-59A Mechanical Watch Silver White 38ｍｍ"
+    },
+    {
+      "id": 282,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 35.3526,
+        "margin": 0.06949,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59H"
+        ],
+        "common_specific_codes": [
+          "NB1050-59H"
+        ],
+        "token_jaccard": 0.2727,
+        "source_colors": [],
+        "market_colors": [
+          "gray"
+        ]
+      },
+      "source_title": "【 表示価格から10％off　クーポンあり 】シチズンコレクション メカニカル CITIZEN COLLECTION Mechanical メンズ腕時計 NB1050-59H",
+      "market_title": "Citizen NB1050-59H Mechanical Gray Dial Sapphire Glass Automatic Watch Men JAPAN"
+    },
+    {
+      "id": 281,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 35.3526,
+        "margin": 0.06949,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59H"
+        ],
+        "common_specific_codes": [
+          "NB1050-59H"
+        ],
+        "token_jaccard": 0.2,
+        "source_colors": [
+          "gray"
+        ],
+        "market_colors": [
+          "gray"
+        ]
+      },
+      "source_title": "【クリーナークロスプレゼントキャンペーン中!】シチズンコレクション NB1050-59H CITIZEN COLLECTION メカニカル 自動巻き グレー 腕時計 メンズ",
+      "market_title": "Citizen NB1050-59H Mechanical Gray Dial Sapphire Glass Automatic Watch Men JAPAN"
+    },
+    {
+      "id": 280,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 29.691,
+        "margin": 0.059145,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59E"
+        ],
+        "common_specific_codes": [
+          "NB1050-59E"
+        ],
+        "token_jaccard": 0.1667,
+        "source_colors": [],
+        "market_colors": [
+          "black"
+        ]
+      },
+      "source_title": "【抽選で最大10000ptバック！20日限定！】【選べるノベルティー付き】シチズンコレクション CITIZEN COLLECTION メカニカル 自動巻き 機械式 腕時計 メンズ クラシカルライン NB1050-59E",
+      "market_title": "Citizen NB1050-59E Men's Watch Automatic Black Dial Stainless Steel Made in Japn"
+    },
+    {
+      "id": 279,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 31.8555,
+        "margin": 0.062617,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59H"
+        ],
+        "common_specific_codes": [
+          "NB1050-59H"
+        ],
+        "token_jaccard": 0.1818,
+        "source_colors": [
+          "gray"
+        ],
+        "market_colors": [
+          "gray"
+        ]
+      },
+      "source_title": "＼全品10%OFF★21日10時迄／ シチズン コレクション 自動巻き 腕時計 メンズ CITIZEN COLLECTION NB1050-59H アナログ グレー 日本製 ブランド おしゃれ 防水 プレゼント 男性 実用的",
+      "market_title": "Citizen NB1050-59H Mechanical Gray Dial Sapphire Glass Automatic Watch Men JAPAN"
+    },
+    {
+      "id": 278,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 29.691,
+        "margin": 0.059145,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59E"
+        ],
+        "common_specific_codes": [
+          "NB1050-59E"
+        ],
+        "token_jaccard": 0.2727,
+        "source_colors": [],
+        "market_colors": [
+          "black"
+        ]
+      },
+      "source_title": "シチズン コレクション メカニカル クラシックライン 時計 NB1050-59E CITIZEN Collection 日付 Made in Japan 日本製 腕時計 【お取り寄せ】",
+      "market_title": "Citizen NB1050-59E Men's Watch Automatic Black Dial Stainless Steel Made in Japn"
+    },
+    {
+      "id": 277,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 175.011,
+        "margin": 0.259276,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59A"
+        ],
+        "common_specific_codes": [
+          "NB1050-59A"
+        ],
+        "token_jaccard": 0.3333,
+        "source_colors": [],
+        "market_colors": [
+          "silver",
+          "white"
+        ]
+      },
+      "source_title": "シチズン CITIZEN 腕時計 NB1050-59A シチズンコレクション メカニカル メンズ クラシカルライン 中3針デイト ベーシックデザイン アナログ ステンレスバンド 自動巻き（手巻付）（国内正規品）（デジタルライフ）",
+      "market_title": "Citizen Collection NB1050-59A Mechanical Watch Silver White 38ｍｍ"
+    },
+    {
+      "id": 276,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 29.691,
+        "margin": 0.059145,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59E"
+        ],
+        "common_specific_codes": [
+          "NB1050-59E"
+        ],
+        "token_jaccard": 0.1818,
+        "source_colors": [],
+        "market_colors": [
+          "black"
+        ]
+      },
+      "source_title": "【 表示価格から10％off　クーポンあり 】シチズン シースルーバック　メカニカル　クラシカルライン　サファイアガラス　機械式腕時計　自動巻き＋手巻きメンズ 腕時計 CITIZEN NB1050-59E",
+      "market_title": "Citizen NB1050-59E Men's Watch Automatic Black Dial Stainless Steel Made in Japn"
+    },
+    {
+      "id": 275,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 29.691,
+        "margin": 0.059145,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59E"
+        ],
+        "common_specific_codes": [
+          "NB1050-59E"
+        ],
+        "token_jaccard": 0.1538,
+        "source_colors": [],
+        "market_colors": [
+          "black"
+        ]
+      },
+      "source_title": "【2/20限定！10％OFFクーポン＆抽選で最大10000ptバック】【選べるノベルティー付き】シチズンコレクション CITIZEN COLLECTION メカニカル 自動巻き 機械式 腕時計 メンズ クラシカルライン NB1050-59E",
+      "market_title": "Citizen NB1050-59E Men's Watch Automatic Black Dial Stainless Steel Made in Japn"
+    },
+    {
+      "id": 274,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 35.3526,
+        "margin": 0.06949,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "NB1050-59H"
+        ],
+        "common_specific_codes": [
+          "NB1050-59H"
+        ],
+        "token_jaccard": 0.1818,
+        "source_colors": [],
+        "market_colors": [
+          "gray"
+        ]
+      },
+      "source_title": "【10％OFF＋10倍エントリーで＋店舗内3点でさらに10倍】NB1050-59H CITIZEN COLLECTION シチズンコレクション メンズ 腕時計 国内正規品 送料無料",
+      "market_title": "Citizen NB1050-59H Mechanical Gray Dial Sapphire Glass Automatic Watch Men JAPAN"
+    },
+    {
+      "id": 273,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 37.2208,
+        "margin": 0.084809,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-9400YJ-1JF"
+        ],
+        "common_specific_codes": [
+          "GW-9400YJ-1JF"
+        ],
+        "token_jaccard": 0.5556,
+        "source_colors": [
+          "green"
+        ],
+        "market_colors": [
+          "black",
+          "green"
+        ]
+      },
+      "source_title": "【2/20限定！10％OFFクーポン＆抽選で最大10000ptバック】G-SHOCK カシオ Gショック レンジマン CASIO RANGEMAN GW-9400YJ-1JF 電波 ソーラー 電波時計 腕時計 メンズ MASTER OF G",
+      "market_title": "CASIO G-SHOCK GW-9400YJ-1JF Black Master of G RANGEMAN Watch New in Box Japan🔥"
+    },
+    {
+      "id": 272,
+      "decision": "reject",
+      "issues": [
+        "model"
+      ],
+      "reason": "一致コードが汎用すぎて同一性根拠として弱い",
+      "metrics": {
+        "profit": 2.6954,
+        "margin": 0.073825,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "common_codes": [
+          "GW-9400"
+        ],
+        "common_specific_codes": [],
+        "token_jaccard": 0.1818,
+        "source_colors": [
+          "green"
+        ],
+        "market_colors": [
+          "green"
+        ]
+      },
+      "source_title": "Crystal Shield G-SHOCK GW-9400 (3枚セット) 日本製 自社製造直販",
+      "market_title": "Casio G-Shock Rangeman GW-9400 Series Adjustable Paracord Survival Band Colors"
+    },
+    {
+      "id": 271,
+      "decision": "reject",
+      "issues": [
+        "model"
+      ],
+      "reason": "一致コードが汎用すぎて同一性根拠として弱い",
+      "metrics": {
+        "profit": 8.3942,
+        "margin": 0.229916,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "common_codes": [
+          "GW-9400"
+        ],
+        "common_specific_codes": [],
+        "token_jaccard": 0.1818,
+        "source_colors": [
+          "green"
+        ],
+        "market_colors": [
+          "green"
+        ]
+      },
+      "source_title": "Crystal Shield G-SHOCK GW-9400 日本製 自社製造直販",
+      "market_title": "Casio G-Shock Rangeman GW-9400 Series Adjustable Paracord Survival Band Colors"
+    },
+    {
+      "id": 270,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 112.048,
+        "margin": 0.212228,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-9400YJ-1JF"
+        ],
+        "common_specific_codes": [
+          "GW-9400YJ-1JF"
+        ],
+        "token_jaccard": 0.5,
+        "source_colors": [],
+        "market_colors": []
+      },
+      "source_title": "カシオ 【国内正規品】G-SHOCK（ジーショック）　RANGEMAN ソーラー電波　メンズタイプ GW-9400YJ-1JF [GW9400YJ1JF]【返品種別A】",
+      "market_title": "【CASIO】G-SHOCK RANGEMAN GW-9400YJ-1JF Triple Sensor Solar Japan"
+    },
+    {
+      "id": 269,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 37.2208,
+        "margin": 0.084809,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-9400YJ-1JF"
+        ],
+        "common_specific_codes": [
+          "GW-9400YJ-1JF"
+        ],
+        "token_jaccard": 0.625,
+        "source_colors": [
+          "black",
+          "green",
+          "yellow"
+        ],
+        "market_colors": [
+          "black",
+          "green"
+        ]
+      },
+      "source_title": "G-SHOCK Gショック 電波 ソーラー レンジマン GW-9400YJ-1JF ブラック＆イエロー カシオ 電波時計 陸G RANGEMAN トリプルセンサー マスターオブG MASTER OF G 黒 黄色 メンズ 腕時計 （GW9400YJ1JF）[在庫あり]",
+      "market_title": "CASIO G-SHOCK GW-9400YJ-1JF Black Master of G RANGEMAN Watch New in Box Japan🔥"
+    },
+    {
+      "id": 268,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 67.2614,
+        "margin": 0.157153,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-9400BJ-1JF"
+        ],
+        "common_specific_codes": [
+          "GW-9400BJ-1JF"
+        ],
+        "token_jaccard": 0.4444,
+        "source_colors": [
+          "black",
+          "green"
+        ],
+        "market_colors": [
+          "black",
+          "green"
+        ]
+      },
+      "source_title": "G-SHOCK Gショック 電波 ソーラー トリプルセンサー レンジマン GW-9400BJ-1JF ブラック カシオ 電波時計 マスターオブG 陸G RANGEMAN 反転液晶 ウレタンバンド 黒 メンズ 腕時計 （GW9400BJ1JF） [在庫あり]",
+      "market_title": "CASIO G-SHOCK GW-9400BJ-1JF Black Master of G RANGEMAN Men's Watch New in Box"
+    },
+    {
+      "id": 267,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 67.2614,
+        "margin": 0.157153,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-9400BJ-1JF"
+        ],
+        "common_specific_codes": [
+          "GW-9400BJ-1JF"
+        ],
+        "token_jaccard": 0.3,
+        "source_colors": [
+          "black",
+          "green"
+        ],
+        "market_colors": [
+          "black",
+          "green"
+        ]
+      },
+      "source_title": "【10％OFF＋10倍エントリーで＋店舗内3点でさらに10倍】レンジマン オールブラック GW-9400BJ-1JF　CASIO 電波ソーラー カシオ G-SHOCK 黒 ブラック ジーショック gshock　Gショック g-ショック デジタル 送料無料 プレゼント アスレジャー ブランド",
+      "market_title": "CASIO G-SHOCK GW-9400BJ-1JF Black Master of G RANGEMAN Men's Watch New in Box"
+    },
+    {
+      "id": 266,
+      "decision": "reject",
+      "issues": [
+        "model"
+      ],
+      "reason": "一致コードが汎用すぎて同一性根拠として弱い",
+      "metrics": {
+        "profit": 8.3942,
+        "margin": 0.229916,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "common_codes": [
+          "GW-9400"
+        ],
+        "common_specific_codes": [],
+        "token_jaccard": 0.1818,
+        "source_colors": [
+          "green"
+        ],
+        "market_colors": [
+          "green"
+        ]
+      },
+      "source_title": "Perfect Shield G-SHOCK GW-9400 日本製 自社製造直販",
+      "market_title": "Casio G-Shock Rangeman GW-9400 Series Adjustable Paracord Survival Band Colors"
+    },
+    {
+      "id": 265,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 15.509,
+        "margin": 0.042329,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "GW-9400BJ-1JF"
+        ],
+        "common_specific_codes": [
+          "GW-9400BJ-1JF"
+        ],
+        "token_jaccard": 0.3333,
+        "source_colors": [
+          "green"
+        ],
+        "market_colors": [
+          "green"
+        ]
+      },
+      "source_title": "G-SHOCK Gショック 電波 ソーラー GW-9400BJ-1JF レンジマン CASIO 腕時計 【国内正規品】 メンズ 【送料無料】",
+      "market_title": "Casio G-SHOCK GW-9400BJ-1JF Master of G RANGEMAN Solar Atomic Digital Men Watch"
+    }
+  ]
+}

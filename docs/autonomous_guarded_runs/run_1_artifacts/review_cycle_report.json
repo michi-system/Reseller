@@ -1,0 +1,501 @@
+{
+  "cycle_id": "cycle-20260220-021309",
+  "started_at": "2026-02-20T02:13:09Z",
+  "ended_at": "2026-02-20T02:13:09Z",
+  "run_seq": 36,
+  "target_count": 12,
+  "hard_cap": 12,
+  "batch_size": 0,
+  "cycle_ready": false,
+  "initial_reviewable_pending": 0,
+  "final_reviewable_pending": 0,
+  "delta_reviewable_pending": 0,
+  "min_match_score": 0.75,
+  "min_profit_usd": 0.01,
+  "min_margin_rate": 0.03,
+  "condition": "new",
+  "stopped_reason": "low_yield_cooldown",
+  "selected_candidate_ids": [],
+  "cache_only": true,
+  "query_reordered": true,
+  "query_order": [
+    "citizen nb1050 watch",
+    "g-shock gw5000 watch",
+    "g-shock gw9400 watch",
+    "casio gwm5610 watch",
+    "citizen at6080 watch",
+    "casio f91w watch",
+    "casio a168 watch",
+    "seiko sbga211 watch",
+    "seiko ssc813 watch",
+    "citizen bj7110 watch",
+    "seiko spb143 watch",
+    "citizen tsuyosa watch",
+    "seiko prospex new watch",
+    "citizen promaster new watch",
+    "casio edifice watch",
+    "g-shock ga110 watch",
+    "g-shock ga2100 1a1 watch",
+    "casio ga2100 watch",
+    "seiko sbdc101 watch",
+    "orient bambino watch",
+    "seiko snk809 watch",
+    "orient kamasu watch"
+  ],
+  "max_zero_gain_strikes": 2,
+  "historical_min_attempts": 3,
+  "historical_min_network_calls": 6,
+  "historical_min_gain_per_network_call": 0.05,
+  "historical_retry_every_runs": 4,
+  "rpa_refresh": {
+    "enabled": true,
+    "mode": "rpa_json",
+    "cache_only": true,
+    "ran": false,
+    "output_path": "/Users/tadamichikimura/Downloads/dev-HQ/ebayminer/data/liquidity_rpa_signals.jsonl",
+    "primary": {},
+    "fallback": {},
+    "missing_before": 0,
+    "missing_after_primary": 0,
+    "missing_after_fallback": 0,
+    "reason": "cache_only_skip"
+  },
+  "query_skipped_count": 22,
+  "query_efficiency_snapshot": [
+    {
+      "query": "citizen nb1050 watch",
+      "attempts": 18,
+      "network_calls": 27,
+      "queue_gain_total": 77,
+      "gain_per_network_call": 2.8519,
+      "zero_gain_streak": 2
+    },
+    {
+      "query": "g-shock gw5000 watch",
+      "attempts": 14,
+      "network_calls": 23,
+      "queue_gain_total": 53,
+      "gain_per_network_call": 2.3043,
+      "zero_gain_streak": 5
+    },
+    {
+      "query": "g-shock gw9400 watch",
+      "attempts": 18,
+      "network_calls": 27,
+      "queue_gain_total": 43,
+      "gain_per_network_call": 1.5926,
+      "zero_gain_streak": 4
+    },
+    {
+      "query": "casio gwm5610 watch",
+      "attempts": 18,
+      "network_calls": 28,
+      "queue_gain_total": 37,
+      "gain_per_network_call": 1.3214,
+      "zero_gain_streak": 3
+    },
+    {
+      "query": "citizen at6080 watch",
+      "attempts": 12,
+      "network_calls": 23,
+      "queue_gain_total": 28,
+      "gain_per_network_call": 1.2174,
+      "zero_gain_streak": 5
+    },
+    {
+      "query": "casio f91w watch",
+      "attempts": 18,
+      "network_calls": 21,
+      "queue_gain_total": 12,
+      "gain_per_network_call": 0.5714,
+      "zero_gain_streak": 3
+    },
+    {
+      "query": "casio a168 watch",
+      "attempts": 5,
+      "network_calls": 10,
+      "queue_gain_total": 2,
+      "gain_per_network_call": 0.2,
+      "zero_gain_streak": 4
+    },
+    {
+      "query": "seiko sbga211 watch",
+      "attempts": 4,
+      "network_calls": 14,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 0.0,
+      "zero_gain_streak": 4
+    },
+    {
+      "query": "seiko ssc813 watch",
+      "attempts": 4,
+      "network_calls": 12,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 0.0,
+      "zero_gain_streak": 4
+    },
+    {
+      "query": "citizen bj7110 watch",
+      "attempts": 4,
+      "network_calls": 10,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 0.0,
+      "zero_gain_streak": 3
+    },
+    {
+      "query": "seiko spb143 watch",
+      "attempts": 4,
+      "network_calls": 12,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 0.0,
+      "zero_gain_streak": 4
+    },
+    {
+      "query": "citizen tsuyosa watch",
+      "attempts": 4,
+      "network_calls": 9,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 0.0,
+      "zero_gain_streak": 4
+    },
+    {
+      "query": "seiko prospex new watch",
+      "attempts": 4,
+      "network_calls": 10,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 0.0,
+      "zero_gain_streak": 4
+    },
+    {
+      "query": "citizen promaster new watch",
+      "attempts": 4,
+      "network_calls": 9,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 0.0,
+      "zero_gain_streak": 4
+    },
+    {
+      "query": "casio edifice watch",
+      "attempts": 4,
+      "network_calls": 7,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 0.0,
+      "zero_gain_streak": 3
+    },
+    {
+      "query": "g-shock ga110 watch",
+      "attempts": 5,
+      "network_calls": 15,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 0.0,
+      "zero_gain_streak": 3
+    },
+    {
+      "query": "g-shock ga2100 1a1 watch",
+      "attempts": 5,
+      "network_calls": 11,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 0.0,
+      "zero_gain_streak": 3
+    },
+    {
+      "query": "casio ga2100 watch",
+      "attempts": 8,
+      "network_calls": 7,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 0.0,
+      "zero_gain_streak": 4
+    },
+    {
+      "query": "seiko sbdc101 watch",
+      "attempts": 8,
+      "network_calls": 18,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 0.0,
+      "zero_gain_streak": 7
+    },
+    {
+      "query": "orient bambino watch",
+      "attempts": 8,
+      "network_calls": 14,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 0.0,
+      "zero_gain_streak": 6
+    },
+    {
+      "query": "seiko snk809 watch",
+      "attempts": 9,
+      "network_calls": 20,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 0.0,
+      "zero_gain_streak": 5
+    },
+    {
+      "query": "orient kamasu watch",
+      "attempts": 12,
+      "network_calls": 18,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 0.0,
+      "zero_gain_streak": 7
+    }
+  ],
+  "api_efficiency_summary": {
+    "total_calls": 0,
+    "cache_hits": 0,
+    "network_calls": 0,
+    "by_site": {},
+    "cache_hit_rate": 0.0
+  },
+  "runs": [
+    {
+      "round": 1,
+      "query": "citizen nb1050 watch",
+      "skipped_query": true,
+      "skip_reason": "zero_gain_cooldown",
+      "zero_gain_streak": 2,
+      "runs_since_last_attempt": 2,
+      "queue_before": 0,
+      "queue_after": 0
+    },
+    {
+      "round": 1,
+      "query": "g-shock gw5000 watch",
+      "skipped_query": true,
+      "skip_reason": "zero_gain_cooldown",
+      "zero_gain_streak": 5,
+      "runs_since_last_attempt": 1,
+      "queue_before": 0,
+      "queue_after": 0
+    },
+    {
+      "round": 1,
+      "query": "g-shock gw9400 watch",
+      "skipped_query": true,
+      "skip_reason": "zero_gain_cooldown",
+      "zero_gain_streak": 4,
+      "runs_since_last_attempt": 1,
+      "queue_before": 0,
+      "queue_after": 0
+    },
+    {
+      "round": 1,
+      "query": "casio gwm5610 watch",
+      "skipped_query": true,
+      "skip_reason": "zero_gain_cooldown",
+      "zero_gain_streak": 3,
+      "runs_since_last_attempt": 1,
+      "queue_before": 0,
+      "queue_after": 0
+    },
+    {
+      "round": 1,
+      "query": "citizen at6080 watch",
+      "skipped_query": true,
+      "skip_reason": "zero_gain_cooldown",
+      "zero_gain_streak": 5,
+      "runs_since_last_attempt": 1,
+      "queue_before": 0,
+      "queue_after": 0
+    },
+    {
+      "round": 1,
+      "query": "casio f91w watch",
+      "skipped_query": true,
+      "skip_reason": "zero_gain_cooldown",
+      "zero_gain_streak": 3,
+      "runs_since_last_attempt": 1,
+      "queue_before": 0,
+      "queue_after": 0
+    },
+    {
+      "round": 1,
+      "query": "casio a168 watch",
+      "skipped_query": true,
+      "skip_reason": "zero_gain_cooldown",
+      "zero_gain_streak": 4,
+      "runs_since_last_attempt": 1,
+      "queue_before": 0,
+      "queue_after": 0
+    },
+    {
+      "round": 1,
+      "query": "seiko sbga211 watch",
+      "skipped_query": true,
+      "skip_reason": "historical_low_efficiency",
+      "queue_before": 0,
+      "queue_after": 0,
+      "historical_attempts": 4,
+      "historical_network_calls": 14,
+      "historical_gain_per_network_call": 0.0,
+      "runs_since_last_attempt": 1
+    },
+    {
+      "round": 1,
+      "query": "seiko ssc813 watch",
+      "skipped_query": true,
+      "skip_reason": "historical_low_efficiency",
+      "queue_before": 0,
+      "queue_after": 0,
+      "historical_attempts": 4,
+      "historical_network_calls": 12,
+      "historical_gain_per_network_call": 0.0,
+      "runs_since_last_attempt": 1
+    },
+    {
+      "round": 1,
+      "query": "citizen bj7110 watch",
+      "skipped_query": true,
+      "skip_reason": "historical_low_efficiency",
+      "queue_before": 0,
+      "queue_after": 0,
+      "historical_attempts": 4,
+      "historical_network_calls": 10,
+      "historical_gain_per_network_call": 0.0,
+      "runs_since_last_attempt": 1
+    },
+    {
+      "round": 1,
+      "query": "seiko spb143 watch",
+      "skipped_query": true,
+      "skip_reason": "historical_low_efficiency",
+      "queue_before": 0,
+      "queue_after": 0,
+      "historical_attempts": 4,
+      "historical_network_calls": 12,
+      "historical_gain_per_network_call": 0.0,
+      "runs_since_last_attempt": 1
+    },
+    {
+      "round": 1,
+      "query": "citizen tsuyosa watch",
+      "skipped_query": true,
+      "skip_reason": "historical_low_efficiency",
+      "queue_before": 0,
+      "queue_after": 0,
+      "historical_attempts": 4,
+      "historical_network_calls": 9,
+      "historical_gain_per_network_call": 0.0,
+      "runs_since_last_attempt": 1
+    },
+    {
+      "round": 1,
+      "query": "seiko prospex new watch",
+      "skipped_query": true,
+      "skip_reason": "historical_low_efficiency",
+      "queue_before": 0,
+      "queue_after": 0,
+      "historical_attempts": 4,
+      "historical_network_calls": 10,
+      "historical_gain_per_network_call": 0.0,
+      "runs_since_last_attempt": 1
+    },
+    {
+      "round": 1,
+      "query": "citizen promaster new watch",
+      "skipped_query": true,
+      "skip_reason": "historical_low_efficiency",
+      "queue_before": 0,
+      "queue_after": 0,
+      "historical_attempts": 4,
+      "historical_network_calls": 9,
+      "historical_gain_per_network_call": 0.0,
+      "runs_since_last_attempt": 1
+    },
+    {
+      "round": 1,
+      "query": "casio edifice watch",
+      "skipped_query": true,
+      "skip_reason": "historical_low_efficiency",
+      "queue_before": 0,
+      "queue_after": 0,
+      "historical_attempts": 4,
+      "historical_network_calls": 7,
+      "historical_gain_per_network_call": 0.0,
+      "runs_since_last_attempt": 1
+    },
+    {
+      "round": 1,
+      "query": "g-shock ga110 watch",
+      "skipped_query": true,
+      "skip_reason": "historical_low_efficiency",
+      "queue_before": 0,
+      "queue_after": 0,
+      "historical_attempts": 5,
+      "historical_network_calls": 15,
+      "historical_gain_per_network_call": 0.0,
+      "runs_since_last_attempt": 1
+    },
+    {
+      "round": 1,
+      "query": "g-shock ga2100 1a1 watch",
+      "skipped_query": true,
+      "skip_reason": "historical_low_efficiency",
+      "queue_before": 0,
+      "queue_after": 0,
+      "historical_attempts": 5,
+      "historical_network_calls": 11,
+      "historical_gain_per_network_call": 0.0,
+      "runs_since_last_attempt": 1
+    },
+    {
+      "round": 1,
+      "query": "casio ga2100 watch",
+      "skipped_query": true,
+      "skip_reason": "historical_low_efficiency",
+      "queue_before": 0,
+      "queue_after": 0,
+      "historical_attempts": 8,
+      "historical_network_calls": 7,
+      "historical_gain_per_network_call": 0.0,
+      "runs_since_last_attempt": 1
+    },
+    {
+      "round": 1,
+      "query": "seiko sbdc101 watch",
+      "skipped_query": true,
+      "skip_reason": "historical_low_efficiency",
+      "queue_before": 0,
+      "queue_after": 0,
+      "historical_attempts": 8,
+      "historical_network_calls": 18,
+      "historical_gain_per_network_call": 0.0,
+      "runs_since_last_attempt": 2
+    },
+    {
+      "round": 1,
+      "query": "orient bambino watch",
+      "skipped_query": true,
+      "skip_reason": "historical_low_efficiency",
+      "queue_before": 0,
+      "queue_after": 0,
+      "historical_attempts": 8,
+      "historical_network_calls": 14,
+      "historical_gain_per_network_call": 0.0,
+      "runs_since_last_attempt": 1
+    },
+    {
+      "round": 1,
+      "query": "seiko snk809 watch",
+      "skipped_query": true,
+      "skip_reason": "historical_low_efficiency",
+      "queue_before": 0,
+      "queue_after": 0,
+      "historical_attempts": 9,
+      "historical_network_calls": 20,
+      "historical_gain_per_network_call": 0.0,
+      "runs_since_last_attempt": 1
+    },
+    {
+      "round": 1,
+      "query": "orient kamasu watch",
+      "skipped_query": true,
+      "skip_reason": "historical_low_efficiency",
+      "queue_before": 0,
+      "queue_after": 0,
+      "historical_attempts": 12,
+      "historical_network_calls": 18,
+      "historical_gain_per_network_call": 0.0,
+      "runs_since_last_attempt": 1
+    }
+  ]
+}
