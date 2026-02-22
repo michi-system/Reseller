@@ -51,6 +51,101 @@ const state = {
   selectedListing: null,
 };
 
+const STATE_LABELS = {
+  ready: "準備中 (ready)",
+  listed: "出品中 (listed)",
+  alert_review: "要確認 (alert_review)",
+  stopped: "停止中 (stopped)",
+};
+
+const JOB_TYPE_LABELS = {
+  ingest_approved_jsonl: "承認データ取込",
+  listing_cycle: "出品サイクル",
+  monitor_cycle_light: "軽量監視サイクル",
+  monitor_cycle_heavy: "重量監視サイクル",
+};
+
+const JOB_STATUS_LABELS = {
+  success: "成功",
+  partial_success: "一部成功",
+  failed: "失敗",
+  running: "実行中",
+};
+
+const CHECK_TYPE_LABELS = {
+  light: "軽量監視",
+  heavy: "重量監視",
+};
+
+const DECISION_LABELS = {
+  keep: "維持",
+  stop: "停止",
+  alert_review: "要確認",
+};
+
+const EVENT_TYPE_LABELS = {
+  listed_dry_run: "試運転出品",
+  listed_live: "本番出品",
+  auto_stop: "自動停止",
+  alert_review: "要確認化",
+  back_to_listed: "出品中へ復帰",
+  restart_candidate: "再開候補検知",
+  manual_stop: "手動停止",
+  manual_alert_review: "手動で要確認化",
+  manual_keep_listed: "手動で出品継続",
+  manual_resume_ready: "手動で準備中へ戻し",
+};
+
+const REASON_LABELS = {
+  low_profit: "利益不足",
+  low_stock: "在庫不足",
+  heavy_price_drop: "価格急落",
+  restart_candidate_detected: "再開候補検知",
+  manual_stop: "手動停止",
+  manual_alert_review: "手動で要確認化",
+  manual_keep_listed: "手動で出品継続",
+  manual_resume_ready: "手動で準備中へ戻し",
+};
+
+function labelState(value) {
+  const key = String(value || "").trim().toLowerCase();
+  return STATE_LABELS[key] || key || "-";
+}
+
+function labelJobType(value) {
+  const key = String(value || "").trim().toLowerCase();
+  return JOB_TYPE_LABELS[key] || key || "-";
+}
+
+function labelJobStatus(value) {
+  const key = String(value || "").trim().toLowerCase();
+  return JOB_STATUS_LABELS[key] || key || "-";
+}
+
+function labelCheckType(value) {
+  const key = String(value || "").trim().toLowerCase();
+  return CHECK_TYPE_LABELS[key] || key || "-";
+}
+
+function labelDecision(value) {
+  const key = String(value || "").trim().toLowerCase();
+  return DECISION_LABELS[key] || key || "-";
+}
+
+function labelEventType(value) {
+  const key = String(value || "").trim().toLowerCase();
+  const label = EVENT_TYPE_LABELS[key];
+  if (label) return `${label} (${key})`;
+  return key || "-";
+}
+
+function labelReason(value) {
+  const key = String(value || "").trim().toLowerCase();
+  const label = REASON_LABELS[key];
+  if (label) return `${label} (${key})`;
+  return key || "-";
+}
+
 function toInt(value, fallback = 0) {
   const num = Number(value);
   if (!Number.isFinite(num)) return fallback;
@@ -174,14 +269,14 @@ function renderJobs(items) {
   refs.jobList.innerHTML = rows
     .slice(0, 12)
     .map((row) => {
-      const jobType = escapeHtml(row.job_type || "-");
-      const status = escapeHtml(row.status || "-");
+      const jobType = escapeHtml(labelJobType(row.job_type));
+      const status = escapeHtml(labelJobStatus(row.status));
       const started = escapeHtml(formatDate(row.started_at));
       const finished = escapeHtml(formatDate(row.finished_at));
       const processed = toInt(row.processed_count, 0);
       const ok = toInt(row.success_count, 0);
       const ng = toInt(row.error_count, 0);
-      return `<li><strong>${jobType}</strong> / ${status}<br>${started} -> ${finished}<br>processed:${processed} ok:${ok} ng:${ng}</li>`;
+      return `<li><strong>${jobType}</strong> / ${status}<br>${started} -> ${finished}<br>処理:${processed} 成功:${ok} 失敗:${ng}</li>`;
     })
     .join("");
   refs.jobEmpty.hidden = rows.length > 0;
@@ -208,7 +303,7 @@ function renderListings() {
       const margin = formatPercent(toFloat(row.current_profit_rate, NaN));
       return `<tr data-id="${id}" class="${active} ${tone}">
         <td>${id}</td>
-        <td>${escapeHtml(row.listing_state || "-")}</td>
+        <td>${escapeHtml(labelState(row.listing_state))}</td>
         <td>${escapeHtml(row.sku_key || "-")}</td>
         <td>${escapeHtml(profit)}</td>
         <td>${escapeHtml(margin)}</td>
@@ -239,24 +334,24 @@ function renderListingDetail(listing) {
     refs.detailMetrics.innerHTML = "";
     return;
   }
-  refs.detailTitle.textContent = `#${toInt(listing.id, 0)} ${listing.title || "(no title)"}`;
+  refs.detailTitle.textContent = `#${toInt(listing.id, 0)} ${listing.title || "(タイトルなし)"}`;
   refs.detailMetrics.innerHTML = [
-    metric("state", listing.listing_state || "-"),
-    metric("approved_id", listing.approved_id || "-"),
-    metric("sku", listing.sku_key || "-"),
-    metric("channel_listing_id", listing.channel_listing_id || "-"),
-    metric("source_market", listing.source_market || "-"),
-    metric("target_market", listing.target_market || "-"),
-    metric("現source", formatJpy(toFloat(listing.current_source_price_jpy, NaN))),
-    metric("現target", formatUsd(toFloat(listing.current_target_price_usd, NaN))),
+    metric("状態", labelState(listing.listing_state)),
+    metric("承認ID", listing.approved_id || "-"),
+    metric("SKU", listing.sku_key || "-"),
+    metric("出品ID", listing.channel_listing_id || "-"),
+    metric("仕入れ市場", listing.source_market || "-"),
+    metric("販売市場", listing.target_market || "-"),
+    metric("現在仕入れ価格", formatJpy(toFloat(listing.current_source_price_jpy, NaN))),
+    metric("現在販売価格", formatUsd(toFloat(listing.current_target_price_usd, NaN))),
     metric("現利益(JPY)", formatJpy(toFloat(listing.current_profit_jpy, NaN))),
     metric("現利益率", formatPercent(toFloat(listing.current_profit_rate, NaN))),
-    metric("source在庫", toInt(listing.source_in_stock, 0) === 1 ? "あり" : "なし"),
-    metric("needs_review", String(toInt(listing.needs_review, 0))),
-    metric("次Light", formatDate(listing.next_light_check_at)),
-    metric("次Heavy", formatDate(listing.next_heavy_check_at)),
-    metric("更新", formatDate(listing.updated_at)),
-    metric("作成", formatDate(listing.created_at)),
+    metric("仕入れ在庫", toInt(listing.source_in_stock, 0) === 1 ? "あり" : "なし"),
+    metric("要確認フラグ", String(toInt(listing.needs_review, 0))),
+    metric("次回軽量監視", formatDate(listing.next_light_check_at)),
+    metric("次回重量監視", formatDate(listing.next_heavy_check_at)),
+    metric("更新日時", formatDate(listing.updated_at)),
+    metric("作成日時", formatDate(listing.created_at)),
   ].join("");
 }
 
@@ -264,12 +359,12 @@ function renderEvents(items) {
   const rows = Array.isArray(items) ? items : [];
   refs.eventList.innerHTML = rows
     .map((row) => {
-      const type = escapeHtml(row.event_type || "-");
-      const reason = escapeHtml(row.reason_code || "-");
+      const type = escapeHtml(labelEventType(row.event_type));
+      const reason = escapeHtml(labelReason(row.reason_code));
       const actor = escapeHtml(row.actor_id || "-");
       const note = escapeHtml(row.note || "");
       const at = escapeHtml(formatDate(row.created_at));
-      return `<li><strong>${type}</strong> / ${reason}<br>actor:${actor} at:${at}<br>${note}</li>`;
+      return `<li><strong>${type}</strong> / ${reason}<br>作業者:${actor} 実行:${at}<br>${note}</li>`;
     })
     .join("");
   refs.eventEmpty.hidden = rows.length > 0;
@@ -280,13 +375,13 @@ function renderSnapshots(items) {
   refs.snapshotList.innerHTML = rows
     .slice(0, 20)
     .map((row) => {
-      const kind = escapeHtml(row.check_type || "-");
-      const decision = escapeHtml(row.decision || "-");
-      const reason = escapeHtml(row.reason_code || "-");
+      const kind = escapeHtml(labelCheckType(row.check_type));
+      const decision = escapeHtml(labelDecision(row.decision));
+      const reason = escapeHtml(labelReason(row.reason_code));
       const at = escapeHtml(formatDate(row.captured_at));
       const profit = escapeHtml(formatJpy(toFloat(row.profit_jpy, NaN)));
       const rate = escapeHtml(formatPercent(toFloat(row.profit_rate, NaN)));
-      return `<li><strong>${kind}</strong> ${decision} / ${reason}<br>profit:${profit} rate:${rate}<br>${at}</li>`;
+      return `<li><strong>${kind}</strong> ${decision} / ${reason}<br>利益:${profit} 利益率:${rate}<br>${at}</li>`;
     })
     .join("");
   refs.snapshotEmpty.hidden = rows.length > 0;
@@ -306,7 +401,7 @@ async function loadSummary() {
   const payload = await api("/v1/operator/summary");
   renderSummary(payload);
   if (refs.endpointLabel) {
-    refs.endpointLabel.textContent = `API接続先: ${API_BASE || window.location.origin} / DB: ${payload.db_path || "-"}`;
+    refs.endpointLabel.textContent = `API接続先: ${API_BASE || window.location.origin} / DBパス: ${payload.db_path || "-"}`;
   }
 }
 
@@ -412,7 +507,9 @@ async function runMonitor(checkType, buttonRef) {
       method: "POST",
       body: JSON.stringify(body),
     });
-    showToast(`${checkType}監視完了: stop ${toInt(payload.stop_count, 0)} / alert ${toInt(payload.alert_count, 0)}`);
+    showToast(
+      `${labelCheckType(checkType)}完了: 停止 ${toInt(payload.stop_count, 0)}件 / 要確認 ${toInt(payload.alert_count, 0)}件`
+    );
     await refreshAll();
   } finally {
     setBusy(buttonRef, false);
@@ -438,7 +535,7 @@ async function runManualAction(pathSuffix, defaultReason, buttonRef) {
       method: "POST",
       body: JSON.stringify(buildManualPayload(defaultReason)),
     });
-    const nextState = payload?.action?.next_state || "-";
+    const nextState = labelState(payload?.action?.next_state || "-");
     showToast(`手動操作完了: ${nextState}`);
     await refreshAll();
     await reloadSelectedListing();
@@ -463,7 +560,7 @@ async function saveConfig() {
         heavy_interval_days: Math.max(1, toInt(refs.cfgHeavyDays.value, 7)),
       }),
     });
-    showToast(`config更新: ${payload?.active_config?.config_version || "new"}`);
+    showToast(`設定更新: ${payload?.active_config?.config_version || "new"}`);
     await refreshAll();
   } finally {
     setBusy(refs.saveConfigBtn, false);

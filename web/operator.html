@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Operator Console | Reseller</title>
+    <title>オペレーター運用画面 | Reseller</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -15,11 +15,11 @@
   <body>
     <header class="topbar">
       <div>
-        <p class="eyebrow">Reseller / Operator</p>
+        <p class="eyebrow">Reseller / オペレーター</p>
         <h1>出品運用コンソール</h1>
       </div>
       <div class="topbar-actions">
-        <a class="ghost" href="/review">Minerレビュー画面へ</a>
+        <a class="ghost" href="/review">Minerレビュー画面に戻る</a>
         <button id="refreshAllBtn" type="button">全体更新</button>
       </div>
     </header>
@@ -32,19 +32,19 @@
         <strong id="sumTotal">0</strong>
       </article>
       <article class="summary-card ready">
-        <span>Ready</span>
+        <span>準備中 (ready)</span>
         <strong id="sumReady">0</strong>
       </article>
       <article class="summary-card listed">
-        <span>Listed</span>
+        <span>出品中 (listed)</span>
         <strong id="sumListed">0</strong>
       </article>
       <article class="summary-card alert">
-        <span>Alert Review</span>
+        <span>要確認 (alert_review)</span>
         <strong id="sumAlert">0</strong>
       </article>
       <article class="summary-card stopped">
-        <span>Stopped</span>
+        <span>停止中 (stopped)</span>
         <strong id="sumStopped">0</strong>
       </article>
     </section>
@@ -53,7 +53,7 @@
       <section class="panel ops-panel">
         <h2>運用ジョブ</h2>
         <div class="ops-block">
-          <h3>Ingest（Miner承認データ取込）</h3>
+          <h3>取込（Miner承認データ）</h3>
           <label>JSONLパス
             <input id="ingestPath" type="text" value="data/approved_listing_exports/latest.jsonl" />
           </label>
@@ -61,24 +61,24 @@
         </div>
 
         <div class="ops-block">
-          <h3>Listing Cycle</h3>
+          <h3>出品サイクル</h3>
           <div class="row">
             <label>件数
               <input id="listingLimit" type="number" min="1" max="500" step="1" value="20" />
             </label>
             <label class="inline-check">
               <input id="listingDryRun" type="checkbox" checked />
-              Dry Run
+              試運転のみ (dry-run)
             </label>
           </div>
-          <label>actor_id
+          <label>作業者ID (actor_id)
             <input id="actorId" type="text" value="michi-system" />
           </label>
           <button id="listingCycleBtn" type="button">出品サイクル実行</button>
         </div>
 
         <div class="ops-block">
-          <h3>Monitor Cycle</h3>
+          <h3>監視サイクル</h3>
           <div class="row">
             <label>件数
               <input id="monitorLimit" type="number" min="1" max="2000" step="1" value="300" />
@@ -88,13 +88,13 @@
             </label>
           </div>
           <div class="row actions-row">
-            <button id="monitorLightBtn" type="button">Light監視実行</button>
-            <button id="monitorHeavyBtn" type="button">Heavy監視実行</button>
+            <button id="monitorLightBtn" type="button">軽量監視を実行</button>
+            <button id="monitorHeavyBtn" type="button">重量監視を実行</button>
           </div>
         </div>
 
         <div class="ops-block">
-          <h3>監視閾値（active config）</h3>
+          <h3>監視閾値（有効設定）</h3>
           <div class="row two-col">
             <label>最低利益(JPY)
               <input id="cfgMinProfitJpy" type="number" min="1" step="100" />
@@ -105,16 +105,16 @@
             <label>停止連続失敗回数
               <input id="cfgStopStreak" type="number" min="1" max="10" step="1" />
             </label>
-            <label>Light間隔(new/h)
+            <label>軽量監視間隔（新規・時間）
               <input id="cfgLightNew" type="number" min="1" max="168" step="1" />
             </label>
-            <label>Light間隔(stable/h)
+            <label>軽量監視間隔（安定・時間）
               <input id="cfgLightStable" type="number" min="1" max="336" step="1" />
             </label>
-            <label>Light間隔(stopped/h)
+            <label>軽量監視間隔（停止中・時間）
               <input id="cfgLightStopped" type="number" min="1" max="720" step="1" />
             </label>
-            <label>Heavy間隔(days)
+            <label>重量監視間隔（日）
               <input id="cfgHeavyDays" type="number" min="1" max="30" step="1" />
             </label>
           </div>
@@ -130,18 +130,18 @@
 
       <section class="panel table-panel">
         <div class="table-head">
-          <h2>Listing一覧</h2>
+          <h2>出品一覧</h2>
           <div class="row">
             <label>状態
               <select id="stateFilter">
-                <option value="">all</option>
-                <option value="ready">ready</option>
-                <option value="listed">listed</option>
-                <option value="alert_review">alert_review</option>
-                <option value="stopped">stopped</option>
+                <option value="">すべて</option>
+                <option value="ready">準備中 (ready)</option>
+                <option value="listed">出品中 (listed)</option>
+                <option value="alert_review">要確認 (alert_review)</option>
+                <option value="stopped">停止中 (stopped)</option>
               </select>
             </label>
-            <label>limit
+            <label>表示件数 (limit)
               <input id="listLimit" type="number" min="1" max="500" step="1" value="100" />
             </label>
             <button id="reloadListBtn" type="button">一覧更新</button>
@@ -152,11 +152,11 @@
             <thead>
               <tr>
                 <th>ID</th>
-                <th>state</th>
-                <th>sku</th>
+                <th>状態</th>
+                <th>SKU</th>
                 <th>利益(JPY)</th>
                 <th>利益率</th>
-                <th>次Light</th>
+                <th>次回軽量監視</th>
                 <th>更新</th>
               </tr>
             </thead>
@@ -181,19 +181,19 @@
             <button id="manualStopBtn" type="button" class="warn">停止する</button>
           </div>
           <div class="row actions-row">
-            <button id="manualKeepListedBtn" type="button">出品継続(listed)</button>
-            <button id="manualResumeReadyBtn" type="button">readyへ戻す</button>
+            <button id="manualKeepListedBtn" type="button">出品継続 (listed)</button>
+            <button id="manualResumeReadyBtn" type="button">準備中へ戻す (ready)</button>
           </div>
         </div>
 
         <div class="history-block">
-          <h3>Event履歴</h3>
+          <h3>イベント履歴</h3>
           <ul id="eventList"></ul>
           <p id="eventEmpty" class="empty">イベントなし</p>
         </div>
 
         <div class="history-block">
-          <h3>Monitor Snapshot</h3>
+          <h3>監視スナップショット</h3>
           <ul id="snapshotList"></ul>
           <p id="snapshotEmpty" class="empty">スナップショットなし</p>
         </div>
