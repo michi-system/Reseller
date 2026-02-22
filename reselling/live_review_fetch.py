@@ -1960,6 +1960,85 @@ def _liquidity_sold_sample(liquidity_signal: Dict[str, Any]) -> Dict[str, Any]:
     return out
 
 
+def _has_sold_sample_reference(sample: Dict[str, Any]) -> bool:
+    if not isinstance(sample, dict) or not sample:
+        return False
+    item_url = str(sample.get("item_url", "") or "").strip()
+    sold_price = _to_float(sample.get("sold_price_usd"), -1.0)
+    return bool(item_url and sold_price > 0)
+
+
+def _is_related_model_code(candidate: str, query_code: str) -> bool:
+    left = _canonicalize_code(candidate)
+    right = _canonicalize_code(query_code)
+    if not left or not right:
+        return False
+    if left == right:
+        return True
+    if left.startswith(right) or right.startswith(left):
+        return True
+    if min(len(left), len(right)) < 6:
+        return False
+    if left[:6] != right[:6]:
+        return False
+    left_digits = "".join(ch for ch in left if ch.isdigit())
+    right_digits = "".join(ch for ch in right if ch.isdigit())
+    if left_digits and right_digits and (
+        left_digits != right_digits
+        and (not left_digits.startswith(right_digits))
+        and (not right_digits.startswith(left_digits))
+    ):
+        return False
+    return True
+
+
+def _liquidity_query_matches_pair(*, query: str, source: MarketItem, market: MarketItem) -> bool:
+    query_code = _canonicalize_code(query)
+    if not query_code or not _is_specific_model_code(query_code):
+        return True
+    pair_codes = _canonical_code_set(_extract_codes(source.title)) | _canonical_code_set(_extract_codes(market.title))
+    if not pair_codes:
+        return False
+    return any(_is_related_model_code(code, query_code) for code in pair_codes)
+
+
+def _liquidity_signal_is_reliable_for_pair(
+    *,
+    signal: Dict[str, Any],
+    liquidity_query: str,
+    source: MarketItem,
+    market: MarketItem,
+) -> Tuple[bool, str]:
+    if not isinstance(signal, dict) or not signal:
+        return False, "signal_empty"
+    if not _liquidity_query_matches_pair(query=liquidity_query, source=source, market=market):
+        return False, "signal_liquidity_query_pair_mismatch"
+
+    sold_90d_count = _to_int(signal.get("sold_90d_count"), -1)
+    metadata = signal.get("metadata") if isinstance(signal.get("metadata"), dict) else {}
+    filter_state = metadata.get("filter_state") if isinstance(metadata.get("filter_state"), dict) else {}
+
+    if sold_90d_count > 0:
+        sold_tab_selected = bool(filter_state.get("sold_tab_selected"))
+        lookback_selected = str(filter_state.get("lookback_selected", "") or "").strip().lower()
+        if filter_state and ((not sold_tab_selected) or lookback_selected != "last 90 days"):
+            return False, "signal_unconfirmed_sold_last90"
+        filtered_row_count = _to_int(metadata.get("filtered_row_count"), -1)
+        sold_sample = _liquidity_sold_sample(signal)
+        if filtered_row_count <= 0 and (not _has_sold_sample_reference(sold_sample)):
+            return False, "signal_positive_without_filtered_rows_or_sample"
+
+    rpa_query = str(metadata.get("rpa_query", "") or "").strip()
+    if rpa_query:
+        rpa_codes = _canonical_code_set(_extract_codes(rpa_query))
+        pair_codes = _canonical_code_set(_extract_codes(source.title)) | _canonical_code_set(_extract_codes(market.title))
+        if rpa_codes and pair_codes:
+            related = any(_is_related_model_code(code, rp) for code in pair_codes for rp in rpa_codes)
+            if not related:
+                return False, "signal_rpa_query_model_mismatch"
+    return True, ""
+
+
 def _is_implausible_sold_min(
     *,
     sold_min_raw_usd: float,
@@ -3100,6 +3179,8 @@ def fetch_live_review_candidates(
                     "skipped_low_margin": _to_int(row.get("skipped_low_margin"), 0),
                     "skipped_low_ev90": _to_int(row.get("skipped_low_ev90"), 0),
                     "skipped_low_liquidity": _to_int(row.get("skipped_low_liquidity"), 0),
+                    "skipped_liquidity_query_mismatch": _to_int(row.get("skipped_liquidity_query_mismatch"), 0),
+                    "skipped_unreliable_liquidity_signal": _to_int(row.get("skipped_unreliable_liquidity_signal"), 0),
                     "skipped_liquidity_unavailable": _to_int(row.get("skipped_liquidity_unavailable"), 0),
                     "skipped_blocked": _to_int(row.get("skipped_blocked"), 0),
                     "skipped_group_cap": _to_int(row.get("skipped_group_cap"), 0),
@@ -3154,6 +3235,8 @@ def fetch_live_review_candidates(
             "skipped_low_margin": _to_int(result.get("skipped_low_margin"), 0),
             "skipped_low_ev90": _to_int(result.get("skipped_low_ev90"), 0),
             "skipped_low_liquidity": _to_int(result.get("skipped_low_liquidity"), 0),
+            "skipped_liquidity_query_mismatch": _to_int(result.get("skipped_liquidity_query_mismatch"), 0),
+            "skipped_unreliable_liquidity_signal": _to_int(result.get("skipped_unreliable_liquidity_signal"), 0),
             "skipped_liquidity_unavailable": _to_int(result.get("skipped_liquidity_unavailable"), 0),
             "skipped_blocked": _to_int(result.get("skipped_blocked"), 0),
             "skipped_group_cap": _to_int(result.get("skipped_group_cap"), 0),
@@ -3225,6 +3308,8 @@ def fetch_live_review_candidates(
             "skipped_low_margin": 0,
             "skipped_low_ev90": 0,
             "skipped_low_liquidity": 0,
+            "skipped_liquidity_query_mismatch": 0,
+            "skipped_unreliable_liquidity_signal": 0,
             "skipped_liquidity_unavailable": 0,
             "skipped_blocked": 0,
             "skipped_group_cap": 0,
@@ -3294,6 +3379,8 @@ def fetch_live_review_candidates(
             "skipped_low_margin": 0,
             "skipped_low_ev90": 0,
             "skipped_low_liquidity": 0,
+            "skipped_liquidity_query_mismatch": 0,
+            "skipped_unreliable_liquidity_signal": 0,
             "skipped_liquidity_unavailable": 0,
             "skipped_blocked": 0,
             "skipped_group_cap": 0,
@@ -3409,6 +3496,8 @@ def fetch_live_review_candidates(
     skipped_implausible_sold_min = 0
     skipped_low_ev90 = 0
     skipped_low_liquidity = 0
+    skipped_liquidity_query_mismatch = 0
+    skipped_unreliable_liquidity_signal = 0
     skipped_liquidity_unavailable = 0
     skipped_blocked = 0
     skipped_group_cap = 0
@@ -3468,9 +3557,16 @@ def fetch_live_review_candidates(
             "sell_through_90d": -1.0,
             "source": "",
         }
+        liquidity_query = text_query
+        pair_codes = _candidate_model_codes(source, market)
+        if pair_codes:
+            liquidity_query = pair_codes[0]
+        if not _liquidity_query_matches_pair(query=liquidity_query, source=source, market=market):
+            skipped_liquidity_query_mismatch += 1
+            continue
         if liquidity_gate_enabled:
             liquidity_signal = get_liquidity_signal(
-                query=text_query,
+                query=liquidity_query,
                 source_title=source.title,
                 market_title=market.title,
                 source_identifiers=source.identifiers,
@@ -3479,6 +3575,17 @@ def fetch_live_review_candidates(
                 timeout=timeout,
                 settings=settings,
             )
+            signal_reliable, signal_reject_reason = _liquidity_signal_is_reliable_for_pair(
+                signal=liquidity_signal,
+                liquidity_query=liquidity_query,
+                source=source,
+                market=market,
+            )
+            if not signal_reliable:
+                skipped_unreliable_liquidity_signal += 1
+                if signal_reject_reason in {"signal_rpa_query_model_mismatch", "signal_liquidity_query_pair_mismatch"}:
+                    skipped_liquidity_query_mismatch += 1
+                continue
             liquidity_gate = evaluate_liquidity_gate(
                 liquidity_signal,
                 min_sold_90d_count=liquidity_min_sold_90d,
@@ -3563,7 +3670,7 @@ def fetch_live_review_candidates(
             skipped_low_ev90 += 1
             continue
         sold_sample = _liquidity_sold_sample(liquidity_signal)
-        if require_sold_sample_item and not sold_sample:
+        if require_sold_sample_item and (not _has_sold_sample_reference(sold_sample)):
             skipped_missing_sold_sample += 1
             continue
         market_title_display = str(sold_sample.get("title", "") or market.title or "").strip() or market.title
@@ -3606,6 +3713,7 @@ def fetch_live_review_candidates(
                 "match_reason": reason,
                 "pair_signature": signature,
                 "liquidity_sold_min_implausible_check": implausible_detail,
+                "liquidity_query": liquidity_query,
                 "source_identifiers": source.identifiers,
                 "market_identifiers": market.identifiers,
                 "source_currency": source.currency,
@@ -3717,6 +3825,10 @@ def fetch_live_review_candidates(
             hints.append("EV90（90日期待値）で除外されています。回転率か利幅の高い商品に寄せてください。")
         if skipped_low_liquidity > 0:
             hints.append("90日売却流動性の閾値で除外されています。回転率の高い型番で再検索してください。")
+        if skipped_liquidity_query_mismatch > 0:
+            hints.append("流動性クエリと商品型番の不一致候補を除外しました。")
+        if skipped_unreliable_liquidity_signal > 0:
+            hints.append("売却件数の根拠が不十分な流動性シグナルを除外しました。")
         if skipped_liquidity_unavailable > 0:
             hints.append("流動性データ未取得のため除外されています（LIQUIDITY_REQUIRE_SIGNAL=1）。")
         if skipped_blocked > 0:
@@ -3744,6 +3856,8 @@ def fetch_live_review_candidates(
         "skipped_implausible_sold_min": skipped_implausible_sold_min,
         "skipped_low_ev90": skipped_low_ev90,
         "skipped_low_liquidity": skipped_low_liquidity,
+        "skipped_liquidity_query_mismatch": skipped_liquidity_query_mismatch,
+        "skipped_unreliable_liquidity_signal": skipped_unreliable_liquidity_signal,
         "skipped_liquidity_unavailable": skipped_liquidity_unavailable,
         "skipped_blocked": skipped_blocked,
         "skipped_group_cap": skipped_group_cap,
