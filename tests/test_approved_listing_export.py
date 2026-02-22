@@ -16,7 +16,7 @@ def _insert_candidate(
 ) -> None:
     conn.execute(
         """
-        INSERT INTO review_candidates (
+        INSERT INTO miner_candidates (
             source_site,
             market_site,
             source_item_id,

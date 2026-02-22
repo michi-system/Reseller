@@ -4,12 +4,12 @@ import sys
 import unittest
 
 
-def _load_auto_review_module():
+def _load_auto_miner_module():
     root = pathlib.Path(__file__).resolve().parents[1]
-    script_path = root / "scripts" / "auto_review_cycle.py"
-    spec = importlib.util.spec_from_file_location("auto_review_cycle", script_path)
+    script_path = root / "scripts" / "auto_miner_cycle.py"
+    spec = importlib.util.spec_from_file_location("auto_miner_cycle", script_path)
     if spec is None or spec.loader is None:
-        raise RuntimeError("failed to load auto_review_cycle.py")
+        raise RuntimeError("failed to load auto_miner_cycle.py")
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
@@ -19,7 +19,7 @@ def _load_auto_review_module():
 class AutoReviewCycleTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
-        cls.mod = _load_auto_review_module()
+        cls.mod = _load_auto_miner_module()
 
     def test_extract_auto_part_tags_detects_jp_and_en(self) -> None:
         source_tags = self.mod._extract_auto_part_tags("トヨタ カムリ AXVH70 リヤガーニッシュ")

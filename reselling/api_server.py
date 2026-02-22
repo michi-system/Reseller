@@ -14,18 +14,18 @@ from typing import Any, Callable, Dict, List, Optional
 from urllib.parse import parse_qs, urlparse
 
 from .fx_rate import get_current_usd_jpy_snapshot, maybe_refresh_usd_jpy_rate
-from .live_review_fetch import (
+from .live_miner_fetch import (
     backfill_candidate_market_images,
-    fetch_live_review_candidates,
+    fetch_live_miner_candidates,
     get_rpa_progress_snapshot,
 )
 from .profit import ProfitInput, calculate_profit
-from .review import (
-    approve_review_candidate,
-    create_review_candidate,
-    get_review_candidate,
-    list_review_queue,
-    reject_review_candidate,
+from .miner import (
+    approve_miner_candidate,
+    create_miner_candidate,
+    get_miner_candidate,
+    list_miner_queue,
+    reject_miner_candidate,
 )
 from listing_ops.config import load_operator_settings
 from listing_ops.config_versions import create_config_version, load_or_default
@@ -48,7 +48,7 @@ from listing_ops.query import (
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
 WEB_DIR = ROOT_DIR / "web"
-ACTIVE_CYCLE_PATH = ROOT_DIR / "docs" / "review_cycle_active.json"
+ACTIVE_CYCLE_PATH = ROOT_DIR / "docs" / "miner_cycle_active.json"
 CATEGORY_KNOWLEDGE_PATH = ROOT_DIR / "data" / "category_knowledge_seeds_v1.json"
 DEFAULT_APPROVED_JSONL_PATH = ROOT_DIR / "data" / "approved_listing_exports" / "latest.jsonl"
 _FETCH_PROGRESS_LOCK = threading.Lock()
@@ -200,7 +200,7 @@ def _get_fetch_progress_snapshot() -> Dict[str, Any]:
     return snap
 
 
-def _fetch_live_review_candidates_timed(
+def _fetch_live_miner_candidates_timed(
     *,
     query: str,
     source_sites: List[str],
@@ -282,7 +282,7 @@ def _fetch_live_review_candidates_timed(
                 }
             )
 
-        result = fetch_live_review_candidates(
+        result = fetch_live_miner_candidates(
             query=query,
             source_sites=source_sites,
             market_site=market_site,
@@ -497,18 +497,18 @@ class ApiHandler(BaseHTTPRequestHandler):
         parsed = urlparse(self.path)
         query = parse_qs(parsed.query)
         path = parsed.path
-        if path in {"/", "/miner", "/review"}:
-            self._send_file(WEB_DIR / "review.html", content_type="text/html; charset=utf-8")
+        if path in {"/", "/miner"}:
+            self._send_file(WEB_DIR / "miner.html", content_type="text/html; charset=utf-8")
             return
         if path == "/operator":
             self._send_file(WEB_DIR / "operator.html", content_type="text/html; charset=utf-8")
             return
-        if path in {"/static/review.css", "/static/miner.css"}:
-            self._send_file(WEB_DIR / "review.css", content_type="text/css; charset=utf-8")
+        if path == "/static/miner.css":
+            self._send_file(WEB_DIR / "miner.css", content_type="text/css; charset=utf-8")
             return
-        if path in {"/static/review.js", "/static/miner.js"}:
+        if path == "/static/miner.js":
             self._send_file(
-                WEB_DIR / "review.js",
+                WEB_DIR / "miner.js",
                 content_type="application/javascript; charset=utf-8",
             )
             return
@@ -548,11 +548,9 @@ class ApiHandler(BaseHTTPRequestHandler):
             )
             return
 
-        review_api_path = path
-        if review_api_path.startswith("/v1/miner"):
-            review_api_path = "/v1/review" + review_api_path[len("/v1/miner") :]
+        miner_api_path = path
 
-        if review_api_path == "/v1/review/queue":
+        if miner_api_path == "/v1/miner/queue":
             try:
                 status = (query.get("status", ["pending"])[0] or "pending").strip()
                 limit = int((query.get("limit", ["50"])[0] or "50").strip())
@@ -573,7 +571,7 @@ class ApiHandler(BaseHTTPRequestHandler):
                         if not token:
                             continue
                         candidate_ids.append(int(token))
-                payload = list_review_queue(
+                payload = list_miner_queue(
                     status=status,
                     limit=limit,
                     offset=offset,
@@ -594,7 +592,7 @@ class ApiHandler(BaseHTTPRequestHandler):
                 )
             return
 
-        if review_api_path == "/v1/review/category-options":
+        if miner_api_path == "/v1/miner/category-options":
             items: list[Dict[str, str]] = []
             try:
                 if CATEGORY_KNOWLEDGE_PATH.exists():
@@ -614,10 +612,10 @@ class ApiHandler(BaseHTTPRequestHandler):
             self._send(HTTPStatus.OK, {"items": items})
             return
 
-        m = re.fullmatch(r"/v1/review/candidates/(\d+)", review_api_path)
+        m = re.fullmatch(r"/v1/miner/candidates/(\d+)", miner_api_path)
         if m:
             candidate_id = int(m.group(1))
-            candidate = get_review_candidate(candidate_id)
+            candidate = get_miner_candidate(candidate_id)
             if candidate is None:
                 self._send(
                     HTTPStatus.NOT_FOUND,
@@ -628,7 +626,7 @@ class ApiHandler(BaseHTTPRequestHandler):
             self._send(HTTPStatus.OK, candidate)
             return
 
-        if review_api_path == "/v1/review/cycle/active":
+        if miner_api_path == "/v1/miner/cycle/active":
             if not ACTIVE_CYCLE_PATH.exists():
                 self._send(
                     HTTPStatus.NOT_FOUND,
@@ -734,9 +732,7 @@ class ApiHandler(BaseHTTPRequestHandler):
         parsed = urlparse(self.path)
         query = parse_qs(parsed.query)
         path = parsed.path
-        review_api_path = path
-        if review_api_path.startswith("/v1/miner"):
-            review_api_path = "/v1/review" + review_api_path[len("/v1/miner") :]
+        miner_api_path = path
 
         try:
             body = self._read_json()
@@ -759,12 +755,12 @@ class ApiHandler(BaseHTTPRequestHandler):
                 self._send(HTTPStatus.OK, result)
                 return
 
-            if review_api_path == "/v1/review/candidates":
-                candidate = create_review_candidate(body)
+            if miner_api_path == "/v1/miner/candidates":
+                candidate = create_miner_candidate(body)
                 self._send(HTTPStatus.CREATED, candidate)
                 return
 
-            if review_api_path == "/v1/review/fetch":
+            if miner_api_path == "/v1/miner/fetch":
                 query_text = str(body.get("query", "") or "")
                 source_sites = body.get("source_sites", ["rakuten", "yahoo"])
                 if not isinstance(source_sites, list):
@@ -823,7 +819,7 @@ class ApiHandler(BaseHTTPRequestHandler):
 
                 try:
                     if timed_mode:
-                        payload = _fetch_live_review_candidates_timed(
+                        payload = _fetch_live_miner_candidates_timed(
                             **fetch_kwargs,
                             min_target_candidates=min_target_candidates,
                             timebox_sec=timebox_sec,
@@ -841,7 +837,7 @@ class ApiHandler(BaseHTTPRequestHandler):
                                 "max_passes": 1,
                             }
                         )
-                        payload = fetch_live_review_candidates(
+                        payload = fetch_live_miner_candidates(
                             **fetch_kwargs,
                         )
                         payload["timed_fetch"] = {
@@ -885,21 +881,21 @@ class ApiHandler(BaseHTTPRequestHandler):
                 self._send(HTTPStatus.OK, payload)
                 return
 
-            m = re.fullmatch(r"/v1/review/candidates/(\d+)/approve", review_api_path)
+            m = re.fullmatch(r"/v1/miner/candidates/(\d+)/approve", miner_api_path)
             if m:
                 candidate_id = int(m.group(1))
-                candidate = approve_review_candidate(candidate_id)
+                candidate = approve_miner_candidate(candidate_id)
                 self._send(HTTPStatus.OK, candidate)
                 return
 
-            m = re.fullmatch(r"/v1/review/candidates/(\d+)/reject", review_api_path)
+            m = re.fullmatch(r"/v1/miner/candidates/(\d+)/reject", miner_api_path)
             if m:
                 candidate_id = int(m.group(1))
                 issue_targets = body.get("issue_targets", [])
                 if not isinstance(issue_targets, list):
                     raise ValueError("issue_targets must be an array")
                 reason_text = str(body.get("reason_text", "") or "")
-                candidate = reject_review_candidate(
+                candidate = reject_miner_candidate(
                     candidate_id,
                     issue_targets=[str(v) for v in issue_targets],
                     reason_text=reason_text,

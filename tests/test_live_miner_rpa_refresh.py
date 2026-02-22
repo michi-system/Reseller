@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from unittest.mock import patch
 
-from reselling import live_review_fetch as fetch_mod
+from reselling import live_miner_fetch as fetch_mod
 
 
 class LiveReviewRpaRefreshTests(unittest.TestCase):

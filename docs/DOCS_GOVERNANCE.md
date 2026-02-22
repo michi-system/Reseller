@@ -7,8 +7,8 @@
 |---|---|---|---|
 | 正本 | 手動更新 | `docs/REQUIREMENTS.md`, `docs/OPERATION_POLICY.json` | 要件・基準・運用判断の正本 |
 | 補助資料 | 手動更新 | `docs/RESEARCH_NOTES.md`, `docs/API_LOCAL.md` | 調査・運用補助 |
-| 生成物 | 手動編集禁止 | `docs/review_cycle_*_latest.json`, `docs/autonomous_*` | 実行結果の証跡 |
-| 実行状態 | 原則手動編集禁止 | `data/review_query_cache.json` など | ランタイム継続状態 |
+| 生成物 | 手動編集禁止 | `docs/miner_cycle_*_latest.json`, `docs/autonomous_*` | 実行結果の証跡 |
+| 実行状態 | 原則手動編集禁止 | `data/miner_query_cache.json` など | ランタイム継続状態 |
 | アーカイブ | 原則固定 | `docs/archive/**` | 旧資料保管 |
 
 ## 2. 情報の正規書き先
@@ -55,14 +55,14 @@
 
 ## 4. 生成物と状態ファイルの扱い
 手編集禁止:
-- `docs/review_cycle_*_latest.json`
+- `docs/miner_cycle_*_latest.json`
 - `docs/autonomous_runs*/`
 - `docs/autonomous_guarded_runs/`
 - `docs/cycle_diagnostics/`
-- `data/review_query_cache.json`
-- `data/review_query_skip.json`
-- `data/review_fetch_cursor.json`
-- `data/review_fetch_tuner.json`
+- `data/miner_query_cache.json`
+- `data/miner_query_skip.json`
+- `data/miner_fetch_cursor.json`
+- `data/miner_fetch_tuner.json`
 - `data/liquidity_rpa_progress.json`
 - `data/liquidity_rpa_fetch_state.json`
 

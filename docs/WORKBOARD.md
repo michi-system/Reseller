@@ -42,11 +42,11 @@
 | 2026-02-22 | WB-OPS-001 | ローカルDBバックアップ運用スクリプト追加 | `scripts/backup_local_db.py`, `docs/LOCAL_DB_STRATEGY.md` |
 | 2026-02-22 | WB-NAME-001 | 表示名を Reseller / Miner / Operator に統一（internal名は維持） | `README.md`, `docs/*.md`, `.github/ISSUE_TEMPLATE/*` |
 | 2026-02-22 | WB-NAME-002 | internal名移行のPhase 1実装（DB canonical化 + legacy fallback） | `reselling/config.py`, `scripts/sync_rejected_blocklist.py`, `scripts/backup_local_db.py`, `docs/INTERNAL_NAME_MIGRATION.md` |
-| 2026-02-22 | WB-NAME-003 | internal名移行のPhase 2実装（レスポンスヘッダ新旧互換） | `reselling/live_review_fetch.py`, `docs/INTERNAL_NAME_MIGRATION.md` |
-| 2026-02-22 | WB-NAME-004 | internal名移行のPhase 3実装（RPAスクリプトcanonical入口追加） | `scripts/rpa_market_research.py`, `scripts/run_review_cycle.py`, `reselling/live_review_fetch.py` |
+| 2026-02-22 | WB-NAME-003 | internal名移行のPhase 2実装（レスポンスヘッダ新旧互換） | `reselling/live_miner_fetch.py`, `docs/INTERNAL_NAME_MIGRATION.md` |
+| 2026-02-22 | WB-NAME-004 | internal名移行のPhase 3実装（RPAスクリプトcanonical入口追加） | `scripts/rpa_market_research.py`, `scripts/run_miner_cycle.py`, `reselling/live_miner_fetch.py` |
 | 2026-02-22 | WB-NAME-005 | internal名移行のPhase 4実装（DB実体を `data/reseller.db` へ移行） | `scripts/migrate_db_to_reseller.py`, `.env.local`, `reselling/config.py` |
 | 2026-02-22 | WB-P0-005 | 承認済み出品データJSONLエクスポートを実装（Issue #3） | `reselling/approved_export.py`, `scripts/export_approved_listings.py`, `tests/test_approved_listing_export.py`, `data/approved_listing_exports/latest.jsonl` |
-| 2026-02-22 | WB-P1-005 | legacy internal aliasサンセット方針を実装/文書化（Issue #4） | `scripts/rpa_ebay_product_research.py`, `scripts/rpa_market_research.py`, `reselling/live_review_fetch.py`, `docs/INTERNAL_NAME_MIGRATION.md` |
+| 2026-02-22 | WB-P1-005 | legacy internal aliasサンセット方針を実装/文書化（Issue #4） | `scripts/rpa_ebay_product_research.py`, `scripts/rpa_market_research.py`, `reselling/live_miner_fetch.py`, `docs/INTERNAL_NAME_MIGRATION.md` |
 | 2026-02-22 | WB-P0-004 | GitHub運用をIssue最小・日報中心へ切替 | `docs/OPERATIONS_MANUAL.md`, `docs/GITHUB_PROJECT_SETUP.md`, `docs/daily_reports/TEMPLATE.md`, `scripts/generate_daily_report.py` |
 | 2026-02-22 | WB-OPS-003 | Reseller Roadmapを工数表運用へ整備（Track/担当/見積/実績、未来+過去タスク登録） | `https://github.com/users/michi-system/projects/4` |
 | 2026-02-22 | WB-OPS-004 | Operator運用仕様v1と開発工数表を策定 | `docs/OPERATOR_OPERATIONS_SPEC.md`, `docs/OPERATOR_EFFORT_TABLE.md` |
@@ -54,7 +54,7 @@
 | 2026-02-22 | WB-MIG-001 | Supabase一括移行の事前安全策を実装（ローカル復帰チェックポイント作成/復元スクリプト + 手順書） | `scripts/create_local_checkpoint.py`, `scripts/restore_local_checkpoint.py`, `docs/SUPABASE_BIG_BANG_MIGRATION.md` |
 | 2026-02-22 | WB-MIG-002 | Supabase投入準備を実装（初期スキーマSQL + SQLite CSV一括エクスポート） | `docs/sql/reseller_supabase_schema.sql`, `scripts/export_sqlite_bundle.py`, `docs/SUPABASE_BIG_BANG_MIGRATION.md` |
 | 2026-02-22 | WB-MIG-003 | CSVバンドル投入スクリプトを実装（dry-run + truncate投入 + シーケンス同期） | `scripts/import_csv_bundle_to_postgres.py`, `docs/SUPABASE_BIG_BANG_MIGRATION.md` |
-| 2026-02-22 | WB-MIG-004 | DBランタイムをSQLite/PostgreSQL両対応化し、Supabase切替運用を有効化 | `reselling/db_runtime.py`, `reselling/models.py`, `listing_ops/models.py`, `reselling/review.py`, `listing_ops/ingest.py`, `reselling/env.py` |
+| 2026-02-22 | WB-MIG-004 | DBランタイムをSQLite/PostgreSQL両対応化し、Supabase切替運用を有効化 | `reselling/db_runtime.py`, `reselling/models.py`, `listing_ops/models.py`, `reselling/miner.py`, `listing_ops/ingest.py`, `reselling/env.py` |
 | 2026-02-22 | WB-OPS-006 | Operator運用UIと手動介入APIを実装（一覧/詳細/ジョブ実行/手動状態遷移） | `web/operator.*`, `listing_ops/manual_actions.py`, `reselling/api_server.py`, `tests/test_operator_manual_actions.py` |
 | 2026-02-22 | WB-OPS-007 | 別Mac/別アカウントCodex向けの共同開発オンボーディング手順を整備 | `docs/CODEX_COLLAB_ONBOARDING.md`, `docs/README.md`, `docs/START_HERE.md`, `docs/OPERATIONS_MANUAL.md` |
 | 2026-02-22 | WB-SEC-001 | `.env`運用を安全化し、未使用のSupabase関連env要素を削除 | `.gitignore`, `.env.example`, `scripts/import_csv_bundle_to_postgres.py`, `reselling/db_runtime.py`, `docs/SUPABASE_BIG_BANG_MIGRATION.md`, `docs/CODEX_COLLAB_ONBOARDING.md` |

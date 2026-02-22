@@ -12,9 +12,54 @@ def connect(db_path: Path) -> DbConnection:
     return connect_db(db_path)
 
 
+def _table_exists(conn: DbConnection, table_name: str) -> bool:
+    if is_postgres_connection(conn):
+        row = conn.execute(
+            """
+            SELECT EXISTS (
+                SELECT 1
+                FROM information_schema.tables
+                WHERE table_schema = 'public' AND table_name = ?
+            ) AS exists
+            """,
+            (table_name,),
+        ).fetchone()
+        return bool(row["exists"]) if row is not None else False
+    row = conn.execute(
+        "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ? LIMIT 1",
+        (table_name,),
+    ).fetchone()
+    return row is not None
+
+
+def _rename_table(conn: DbConnection, old_name: str, new_name: str) -> None:
+    conn.execute(f'ALTER TABLE "{old_name}" RENAME TO "{new_name}"')
+
+
+def _migrate_legacy_review_tables(conn: DbConnection) -> None:
+    if _table_exists(conn, "review_candidates") and not _table_exists(conn, "miner_candidates"):
+        _rename_table(conn, "review_candidates", "miner_candidates")
+    if _table_exists(conn, "review_rejections") and not _table_exists(conn, "miner_rejections"):
+        _rename_table(conn, "review_rejections", "miner_rejections")
+
+
 def init_db(conn: DbConnection) -> None:
     if is_postgres_connection(conn):
         ensure_postgres_schema(conn)
+        _migrate_legacy_review_tables(conn)
+        conn.execute(
+            """
+            CREATE INDEX IF NOT EXISTS idx_miner_candidates_status_created_at
+            ON miner_candidates(status, created_at DESC)
+            """
+        )
+        conn.execute(
+            """
+            CREATE INDEX IF NOT EXISTS idx_miner_rejections_candidate_id
+            ON miner_rejections(candidate_id)
+            """
+        )
+        conn.commit()
         return
 
     conn.execute(
@@ -28,9 +73,10 @@ def init_db(conn: DbConnection) -> None:
         )
         """
     )
+    _migrate_legacy_review_tables(conn)
     conn.execute(
         """
-        CREATE TABLE IF NOT EXISTS review_candidates (
+        CREATE TABLE IF NOT EXISTS miner_candidates (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             source_site TEXT NOT NULL,
             market_site TEXT NOT NULL,
@@ -59,13 +105,13 @@ def init_db(conn: DbConnection) -> None:
     )
     conn.execute(
         """
-        CREATE TABLE IF NOT EXISTS review_rejections (
+        CREATE TABLE IF NOT EXISTS miner_rejections (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             candidate_id INTEGER NOT NULL,
             issue_targets_json TEXT NOT NULL,
             reason_text TEXT NOT NULL,
             created_at TEXT NOT NULL,
-            FOREIGN KEY(candidate_id) REFERENCES review_candidates(id)
+            FOREIGN KEY(candidate_id) REFERENCES miner_candidates(id)
         )
         """
     )
@@ -89,14 +135,14 @@ def init_db(conn: DbConnection) -> None:
     )
     conn.execute(
         """
-        CREATE INDEX IF NOT EXISTS idx_review_candidates_status_created_at
-        ON review_candidates(status, created_at DESC)
+        CREATE INDEX IF NOT EXISTS idx_miner_candidates_status_created_at
+        ON miner_candidates(status, created_at DESC)
         """
     )
     conn.execute(
         """
-        CREATE INDEX IF NOT EXISTS idx_review_rejections_candidate_id
-        ON review_rejections(candidate_id)
+        CREATE INDEX IF NOT EXISTS idx_miner_rejections_candidate_id
+        ON miner_rejections(candidate_id)
         """
     )
     conn.execute(

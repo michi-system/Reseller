@@ -12,7 +12,7 @@
 3. 収集すべきプロパティを統一し、レビュー判定までつなぐ。
 
 実装連携（有効化済み）:
-- `reselling/live_review_fetch.py` で `query` がカテゴリ名と判定されたとき、
+- `reselling/live_miner_fetch.py` で `query` がカテゴリ名と判定されたとき、
   `data/category_knowledge_seeds_v1.json` を参照してサイト別クエリへ自動展開する。
 - 適用状況は API レスポンス `fetched.<site>.knowledge` と `hints` に出力される。
 

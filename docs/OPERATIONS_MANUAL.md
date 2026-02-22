@@ -95,7 +95,7 @@ python3 scripts/generate_daily_report.py --date YYYY-MM-DD --operator @github_id
 - ローカルDBバックアップ: `backups/`（`scripts/backup_local_db.py` で管理）
 
 ## 12. 事故を避ける禁止事項
-- `docs/review_cycle_*_latest.json` を手編集しない。
+- `docs/miner_cycle_*_latest.json` を手編集しない。
 - `data/*.json` の実行状態ファイルを手編集しない。
 - 1つの変更で要件だけ更新して、運用閾値を更新し忘れない。
 - 仕様変更をPR本文だけに残し、`docs/WORKBOARD.md` へ残さない運用をしない。

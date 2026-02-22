@@ -1,9 +1,9 @@
 {
   "generated_at": "2026-02-20T04:19:41Z",
   "mode": {
-    "REVIEW_FETCH_CACHE_ENABLED": "0",
-    "REVIEW_QUERY_SKIP_DISABLED": "1",
-    "REVIEW_FETCH_AUTOTUNE_ENABLED": "1"
+    "MINER_FETCH_CACHE_ENABLED": "0",
+    "MINER_QUERY_SKIP_DISABLED": "1",
+    "MINER_FETCH_AUTOTUNE_ENABLED": "1"
   },
   "queries": [
     "seiko sbdc101",

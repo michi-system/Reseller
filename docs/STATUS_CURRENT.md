@@ -11,12 +11,12 @@
 - API消費とレビュー工数のバランスを最適化する。
 
 ## 2. 現在の処理フロー（運用実体）
-1. `scripts/run_review_cycle.py`
-2. `scripts/auto_review_cycle.py`
-3. `scripts/close_review_cycle.py`
+1. `scripts/run_miner_cycle.py`
+2. `scripts/auto_miner_cycle.py`
+3. `scripts/close_miner_cycle.py`
 4. `scripts/apply_cycle_improvements.py`
 5. `scripts/run_autonomous_cycle.py` / `scripts/run_autonomous_cycles_guarded.py`
-6. UI: `web/review.html` + `web/review.js`
+6. UI: `web/miner.html` + `web/miner.js`
 
 ## 3. 現在地スナップショット
 - 最新サイクルID: `cycle-20260220-031359`
@@ -26,7 +26,7 @@
 - 否認上位傾向: `price`, `color`, `condition`, `accessories`
 
 注記:
-- 上記数値は実行により変動するため、最新値は `docs/review_cycle_report_latest.json` と DB を正とする。
+- 上記数値は実行により変動するため、最新値は `docs/miner_cycle_report_latest.json` と DB を正とする。
 
 ## 4. 稼働中の主要ガード
 - 新品固定 (`ITEM_CONDITION=new`)

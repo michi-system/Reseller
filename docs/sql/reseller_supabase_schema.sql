@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS fx_rate_states (
     next_refresh_at TEXT NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS review_candidates (
+CREATE TABLE IF NOT EXISTS miner_candidates (
     id BIGSERIAL PRIMARY KEY,
     source_site TEXT NOT NULL,
     market_site TEXT NOT NULL,
@@ -37,9 +37,9 @@ CREATE TABLE IF NOT EXISTS review_candidates (
     listed_at TEXT
 );
 
-CREATE TABLE IF NOT EXISTS review_rejections (
+CREATE TABLE IF NOT EXISTS miner_rejections (
     id BIGSERIAL PRIMARY KEY,
-    candidate_id BIGINT NOT NULL REFERENCES review_candidates(id),
+    candidate_id BIGINT NOT NULL REFERENCES miner_candidates(id),
     issue_targets_json TEXT NOT NULL,
     reason_text TEXT NOT NULL,
     created_at TEXT NOT NULL
@@ -161,11 +161,11 @@ CREATE TABLE IF NOT EXISTS operator_config_versions (
     created_by TEXT NOT NULL
 );
 
-CREATE INDEX IF NOT EXISTS idx_review_candidates_status_created_at
-    ON review_candidates(status, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_miner_candidates_status_created_at
+    ON miner_candidates(status, created_at DESC);
 
-CREATE INDEX IF NOT EXISTS idx_review_rejections_candidate_id
-    ON review_rejections(candidate_id);
+CREATE INDEX IF NOT EXISTS idx_miner_rejections_candidate_id
+    ON miner_rejections(candidate_id);
 
 CREATE INDEX IF NOT EXISTS idx_liquidity_signals_next_refresh_at
     ON liquidity_signals(next_refresh_at);

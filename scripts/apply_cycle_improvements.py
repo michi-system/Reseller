@@ -12,13 +12,13 @@ from typing import Any, Dict, List
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
 ENV_PATH = ROOT_DIR / ".env.local"
-BLOCKLIST_PATH = ROOT_DIR / "data" / "review_blocklist.json"
+BLOCKLIST_PATH = ROOT_DIR / "data" / "miner_blocklist.json"
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 from reselling.env import load_dotenv
-from reselling.live_review_fetch import _pair_signature
-from reselling.review import get_review_candidate
+from reselling.live_miner_fetch import _pair_signature
+from reselling.miner import get_miner_candidate
 
 
 def _now_iso() -> str:
@@ -44,7 +44,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Apply reviewed-cycle reject learning to blocklist.")
     parser.add_argument(
         "--active-manifest",
-        default=str(ROOT_DIR / "docs" / "review_cycle_active.json"),
+        default=str(ROOT_DIR / "docs" / "miner_cycle_active.json"),
         help="Path to active review cycle manifest.",
     )
     parser.add_argument(
@@ -84,7 +84,7 @@ def main() -> int:
     added = 0
     skipped_no_issue = 0
     for cid in ids:
-        candidate = get_review_candidate(cid)
+        candidate = get_miner_candidate(cid)
         if candidate is None:
             continue
         if str(candidate.get("status", "")) != "rejected":

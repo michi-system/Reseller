@@ -1,6 +1,6 @@
 import unittest
 
-from reselling.live_review_fetch import MarketItem, _match_score
+from reselling.live_miner_fetch import MarketItem, _match_score
 
 
 def _mk(site: str, title: str) -> MarketItem:

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run one full autonomous cycle: start -> auto-review -> close -> improve."""
+"""Run one full autonomous cycle: start -> auto-miner -> close -> improve."""
 
 from __future__ import annotations
 
@@ -127,10 +127,10 @@ def _validate_operation_policy(
         errors.append("LIQUIDITY_REQUIRE_SIGNAL must be enabled by policy")
 
     require_auto_liquidity = str(
-        env_req.get("AUTO_REVIEW_REQUIRE_LIQUIDITY_SIGNAL", "1") or "1"
+        env_req.get("AUTO_MINER_REQUIRE_LIQUIDITY_SIGNAL", "1") or "1"
     ).strip().lower() in {"1", "true", "yes", "on"}
-    if require_auto_liquidity and not _env_bool("AUTO_REVIEW_REQUIRE_LIQUIDITY_SIGNAL", False):
-        errors.append("AUTO_REVIEW_REQUIRE_LIQUIDITY_SIGNAL must be enabled by policy")
+    if require_auto_liquidity and not _env_bool("AUTO_MINER_REQUIRE_LIQUIDITY_SIGNAL", False):
+        errors.append("AUTO_MINER_REQUIRE_LIQUIDITY_SIGNAL must be enabled by policy")
 
     allowed_provider_modes = env_req.get("LIQUIDITY_PROVIDER_MODE_allowed", [])
     if not isinstance(allowed_provider_modes, list):
@@ -180,7 +180,7 @@ def _validate_cycle_reports(
     if auto_total != batch_size:
         errors.append(f"auto report count mismatch: approve+reject+skipped={auto_total}, batch_size={batch_size}")
     if batch_size > 0 and auto_actions <= 0:
-        errors.append("auto review produced zero actions (approve/reject) despite non-empty batch")
+        errors.append("auto miner produced zero actions (approve/reject) despite non-empty batch")
 
     reviewed_count = _to_int(close_report.get("reviewed_count"), 0)
     unresolved_count = _to_int(close_report.get("unresolved_count"), 0)
@@ -284,23 +284,27 @@ def main() -> int:
         "--queries",
         type=str,
         default="",
-        help="Comma-separated query list passed to run_review_cycle.py",
+        help="Comma-separated query list passed to run_miner_cycle.py",
     )
     parser.add_argument(
+        "--miner-report",
         "--review-report",
-        default=str(ROOT_DIR / "docs" / "review_cycle_report_latest.json"),
+        dest="miner_report",
+        default=str(ROOT_DIR / "docs" / "miner_cycle_report_latest.json"),
     )
     parser.add_argument(
+        "--auto-miner-report",
         "--auto-review-report",
-        default=str(ROOT_DIR / "docs" / "review_cycle_auto_review_latest.json"),
+        dest="auto_miner_report",
+        default=str(ROOT_DIR / "docs" / "miner_cycle_auto_miner_latest.json"),
     )
     parser.add_argument(
         "--close-report",
-        default=str(ROOT_DIR / "docs" / "review_cycle_close_report_latest.json"),
+        default=str(ROOT_DIR / "docs" / "miner_cycle_close_report_latest.json"),
     )
     parser.add_argument(
         "--validation-report",
-        default=str(ROOT_DIR / "docs" / "review_cycle_validation_latest.json"),
+        default=str(ROOT_DIR / "docs" / "miner_cycle_validation_latest.json"),
     )
     args = parser.parse_args()
     load_dotenv(ENV_PATH)
@@ -326,7 +330,7 @@ def main() -> int:
     run_cmd(
         [
             "python3",
-            "scripts/run_review_cycle.py",
+            "scripts/run_miner_cycle.py",
             "--target-count",
             str(args.target_count),
             "--hard-cap",
@@ -376,7 +380,7 @@ def main() -> int:
     run_cmd(
         [
             "python3",
-            "scripts/auto_review_cycle.py",
+            "scripts/auto_miner_cycle.py",
             "--min-profit-usd",
             str(args.min_profit_usd),
             "--min-margin-rate",
@@ -392,14 +396,14 @@ def main() -> int:
             "--max-score-drift",
             str(args.max_score_drift),
             "--output",
-            str(args.auto_review_report),
+            str(args.auto_miner_report),
         ]
     )
 
     run_cmd(
         [
             "python3",
-            "scripts/close_review_cycle.py",
+            "scripts/close_miner_cycle.py",
             "--reject-floor",
             str(args.reject_floor),
             "--min-reviewed-ratio",
@@ -408,15 +412,15 @@ def main() -> int:
             str(args.close_min_reject_rate),
             "--min-reject-with-issue-count",
             str(args.close_min_reject_with_issue_count),
-            "--auto-review-report",
-            str(args.auto_review_report),
+            "--auto-miner-report",
+            str(args.auto_miner_report),
             "--output",
             str(args.close_report),
         ]
     )
 
-    review_report = _load_json(Path(args.review_report))
-    auto_report = _load_json(Path(args.auto_review_report))
+    review_report = _load_json(Path(args.miner_report))
+    auto_report = _load_json(Path(args.auto_miner_report))
     close_report = _load_json(Path(args.close_report))
 
     batch_size = int(review_report.get("batch_size", 0) or 0)

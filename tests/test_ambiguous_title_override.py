@@ -1,6 +1,6 @@
 import unittest
 
-from reselling.live_review_fetch import (
+from reselling.live_miner_fetch import (
     MarketItem,
     _analyze_candidate_matches,
     _canonicalize_code,

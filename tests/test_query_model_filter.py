@@ -1,6 +1,6 @@
 import unittest
 
-from reselling.live_review_fetch import (
+from reselling.live_miner_fetch import (
     MarketItem,
     _filter_items_by_query_codes,
     _preferred_liquidity_query,

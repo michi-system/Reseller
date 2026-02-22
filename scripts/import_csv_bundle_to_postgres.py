@@ -16,8 +16,8 @@ BUNDLE_ROOT = ROOT_DIR / "backups" / "sqlite_exports"
 
 IMPORT_ORDER = [
     "fx_rate_states",
-    "review_candidates",
-    "review_rejections",
+    "miner_candidates",
+    "miner_rejections",
     "liquidity_signals",
     "approved_listing_inbox",
     "operator_listings",
@@ -28,8 +28,8 @@ IMPORT_ORDER = [
 ]
 
 ID_TABLES = [
-    "review_candidates",
-    "review_rejections",
+    "miner_candidates",
+    "miner_rejections",
     "operator_listings",
     "monitor_snapshots",
     "listing_events",

@@ -1,7 +1,7 @@
 {
   "cycle_id": "cycle-20260220-031359",
   "closed_at": "2026-02-20T03:13:59Z",
-  "manifest_path": "/Users/tadamichikimura/Downloads/dev-HQ/ebayminer/docs/review_cycle_active.json",
+  "manifest_path": "/Users/tadamichikimura/Downloads/dev-HQ/ebayminer/docs/miner_cycle_active.json",
   "batch_size": 0,
   "reviewed_count": 0,
   "review_completion_rate": 0.0,
@@ -28,12 +28,12 @@
     "median": null,
     "max": null
   },
-  "auto_review_counts": {
+  "auto_miner_counts": {
     "approve": 0,
     "reject": 0,
     "skipped": 0
   },
-  "auto_review_reject_rate": 0.0,
+  "auto_miner_reject_rate": 0.0,
   "ready_for_tuning": false,
   "ready_for_light_tuning": false,
   "recommended_tuning_mode": "none",

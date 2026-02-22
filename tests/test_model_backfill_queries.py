@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch
 
-from reselling.live_review_fetch import (
+from reselling.live_miner_fetch import (
     MarketItem,
     _collect_source_model_code_queries,
     _fetch_source_model_backfill_from_market,
@@ -71,7 +71,7 @@ class ModelBackfillQueryTests(unittest.TestCase):
             row = _item(f"SEIKO {query} 国内在庫 新品", 90000)
             return [row], {"http": 200, "raw_total": 1, "cache_hit": False, "budget_remaining": -1}
 
-        with patch("reselling.live_review_fetch._search_rakuten", side_effect=fake_search):
+        with patch("reselling.live_miner_fetch._search_rakuten", side_effect=fake_search):
             rows, summary = _fetch_source_model_backfill_from_market(
                 market_items=market_items,
                 source_sites=["rakuten"],
@@ -88,7 +88,7 @@ class ModelBackfillQueryTests(unittest.TestCase):
         self.assertTrue(_should_skip_model_backfill_for_query({"GWM56101JF"}))
 
     def test_skip_model_backfill_can_be_disabled_by_env(self) -> None:
-        with patch.dict("os.environ", {"REVIEW_FETCH_MODEL_BACKFILL_SKIP_ON_SPECIFIC_QUERY": "0"}, clear=False):
+        with patch.dict("os.environ", {"MINER_FETCH_MODEL_BACKFILL_SKIP_ON_SPECIFIC_QUERY": "0"}, clear=False):
             self.assertFalse(_should_skip_model_backfill_for_query({"GWM56101JF"}))
 
     def test_skip_model_backfill_false_without_specific_codes(self) -> None:

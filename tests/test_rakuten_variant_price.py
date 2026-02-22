@@ -1,6 +1,6 @@
 import unittest
 
-from reselling.live_review_fetch import (
+from reselling.live_miner_fetch import (
     _extract_rakuten_variant_price_from_html,
     _specific_model_codes_in_title,
 )

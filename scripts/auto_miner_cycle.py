@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Auto-review active cycle candidates with precision-first strictness."""
+"""Auto-miner active cycle candidates with precision-first strictness."""
 
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 from reselling.env import load_dotenv
-from reselling.live_review_fetch import (
+from reselling.live_miner_fetch import (
     MarketItem,
     _contains_out_of_stock_marker,
     _extract_codes,
@@ -29,7 +29,7 @@ from reselling.live_review_fetch import (
     _match_score,
     _title_tokens,
 )
-from reselling.review import auto_approve_review_candidate, get_review_candidate, reject_review_candidate
+from reselling.miner import auto_approve_miner_candidate, get_miner_candidate, reject_miner_candidate
 
 
 IDENTIFIER_KEYS = ("jan", "upc", "ean", "gtin")
@@ -276,11 +276,11 @@ def evaluate_candidate(
 
     issues: List[str] = []
     reasons: List[str] = []
-    require_liquidity_signal = _env_bool("AUTO_REVIEW_REQUIRE_LIQUIDITY_SIGNAL", True)
-    fallback_any_allow = _env_bool("AUTO_REVIEW_ALLOW_FALLBACK_ANY", True)
-    fallback_min_sold_90d = max(0, _env_int("AUTO_REVIEW_FALLBACK_MIN_SOLD_90D", 5))
-    fallback_min_profit_usd = _env_float("AUTO_REVIEW_FALLBACK_MIN_PROFIT_USD", 20.0)
-    block_color_missing_market = _env_bool("AUTO_REVIEW_BLOCK_COLOR_MISSING_MARKET", True)
+    require_liquidity_signal = _env_bool("AUTO_MINER_REQUIRE_LIQUIDITY_SIGNAL", True)
+    fallback_any_allow = _env_bool("AUTO_MINER_ALLOW_FALLBACK_ANY", True)
+    fallback_min_sold_90d = max(0, _env_int("AUTO_MINER_FALLBACK_MIN_SOLD_90D", 5))
+    fallback_min_profit_usd = _env_float("AUTO_MINER_FALLBACK_MIN_PROFIT_USD", 20.0)
+    block_color_missing_market = _env_bool("AUTO_MINER_BLOCK_COLOR_MISSING_MARKET", True)
 
     if profit < min_profit_usd:
         issues.append("price")
@@ -461,11 +461,11 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Auto review active cycle.")
     parser.add_argument(
         "--active-manifest",
-        default=str(ROOT_DIR / "docs" / "review_cycle_active.json"),
+        default=str(ROOT_DIR / "docs" / "miner_cycle_active.json"),
     )
     parser.add_argument(
         "--output",
-        default=str(ROOT_DIR / "docs" / "review_cycle_auto_review_latest.json"),
+        default=str(ROOT_DIR / "docs" / "miner_cycle_auto_miner_latest.json"),
     )
     parser.add_argument("--min-profit-usd", type=float, default=0.01)
     parser.add_argument("--min-margin-rate", type=float, default=0.03)
@@ -479,10 +479,10 @@ def main() -> int:
 
     load_dotenv(ENV_PATH)
     auto_policy = {
-        "require_liquidity_signal": _env_bool("AUTO_REVIEW_REQUIRE_LIQUIDITY_SIGNAL", True),
-        "allow_fallback_any": _env_bool("AUTO_REVIEW_ALLOW_FALLBACK_ANY", True),
-        "fallback_min_sold_90d": max(0, _env_int("AUTO_REVIEW_FALLBACK_MIN_SOLD_90D", 5)),
-        "fallback_min_profit_usd": _env_float("AUTO_REVIEW_FALLBACK_MIN_PROFIT_USD", 20.0),
+        "require_liquidity_signal": _env_bool("AUTO_MINER_REQUIRE_LIQUIDITY_SIGNAL", True),
+        "allow_fallback_any": _env_bool("AUTO_MINER_ALLOW_FALLBACK_ANY", True),
+        "fallback_min_sold_90d": max(0, _env_int("AUTO_MINER_FALLBACK_MIN_SOLD_90D", 5)),
+        "fallback_min_profit_usd": _env_float("AUTO_MINER_FALLBACK_MIN_PROFIT_USD", 20.0),
     }
     manifest = load_manifest(Path(args.active_manifest))
     candidate_ids = [int(v) for v in (manifest.get("selected_candidate_ids") or [])]
@@ -508,14 +508,14 @@ def main() -> int:
         output_path = Path(args.output)
         output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
-        print(f"Saved auto review report: {output_path}")
+        print(f"Saved auto miner report: {output_path}")
         print(f"cycle={manifest.get('cycle_id')} approve=0 reject=0 skipped=0 (empty batch)")
         return 0
 
     decisions: List[Dict[str, Any]] = []
     counts = {"approve": 0, "reject": 0, "skipped": 0}
     for candidate_id in candidate_ids:
-        candidate = get_review_candidate(candidate_id)
+        candidate = get_miner_candidate(candidate_id)
         if candidate is None:
             counts["skipped"] += 1
             decisions.append({"id": candidate_id, "decision": "skip", "reason": "not_found"})
@@ -538,14 +538,14 @@ def main() -> int:
         )
         if not args.dry_run:
             if decision == "approve":
-                auto_approve_review_candidate(
+                auto_approve_miner_candidate(
                     candidate_id,
                     cycle_id=str(manifest.get("cycle_id", "") or ""),
                     decision_reason=reason,
                     decision_metrics=metrics,
                 )
             else:
-                reject_review_candidate(candidate_id, issue_targets=issues, reason_text=reason)
+                reject_miner_candidate(candidate_id, issue_targets=issues, reason_text=reason)
 
         counts[decision] += 1
         decisions.append(
@@ -581,7 +581,7 @@ def main() -> int:
     output_path = Path(args.output)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(f"Saved auto review report: {output_path}")
+    print(f"Saved auto miner report: {output_path}")
     print(
         f"cycle={manifest.get('cycle_id')} approve={counts['approve']} "
         f"reject={counts['reject']} skipped={counts['skipped']}"

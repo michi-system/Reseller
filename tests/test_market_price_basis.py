@@ -3,7 +3,7 @@ import inspect
 import os
 from unittest.mock import patch
 
-from reselling.live_review_fetch import (
+from reselling.live_miner_fetch import (
     MarketItem,
     _has_sold_sample_reference,
     _liquidity_signal_is_reliable_for_pair,
@@ -11,7 +11,7 @@ from reselling.live_review_fetch import (
     _is_implausible_sold_min,
     _query_skip_key,
     _sale_price_basis_from_signal,
-    fetch_live_review_candidates,
+    fetch_live_miner_candidates,
 )
 
 
@@ -364,7 +364,7 @@ class MarketPriceBasisTests(unittest.TestCase):
         self.assertNotEqual(key_on, key_off)
 
     def test_fetch_default_min_match_score_is_policy_floor(self) -> None:
-        signature = inspect.signature(fetch_live_review_candidates)
+        signature = inspect.signature(fetch_live_miner_candidates)
         default = signature.parameters["min_match_score"].default
         self.assertAlmostEqual(float(default), 0.75)
 

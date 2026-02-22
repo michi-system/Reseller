@@ -5,17 +5,17 @@
 
 ## 1. ルール
 - 生成物 (`docs/*.json`, `docs/autonomous_*`, `docs/cycle_diagnostics`) は手編集禁止。
-- 状態ファイル (`data/review_*`, `data/liquidity_*`) は原則手編集禁止。
+- 状態ファイル (`data/miner_*`, `data/liquidity_*`) は原則手編集禁止。
 - パス変更時はコード変更と同じコミットで本ファイルを更新する。
 
 ## 2. サイクル系の最新ポインタ
 | パス | 生成元 | 用途 |
 |---|---|---|
-| `docs/review_cycle_active.json` | `scripts/run_review_cycle.py` | 現在アクティブなサイクル情報 |
-| `docs/review_cycle_report_latest.json` | `scripts/run_review_cycle.py` | 最新の探索/候補化レポート |
-| `docs/review_cycle_auto_review_latest.json` | `scripts/auto_review_cycle.py` | 最新の自動レビュー結果 |
-| `docs/review_cycle_close_report_latest.json` | `scripts/close_review_cycle.py` | 最新の締めレポート |
-| `docs/review_cycle_validation_latest.json` | `scripts/run_autonomous_cycle.py` | 最新の整合性検証レポート |
+| `docs/miner_cycle_active.json` | `scripts/run_miner_cycle.py` | 現在アクティブなサイクル情報 |
+| `docs/miner_cycle_report_latest.json` | `scripts/run_miner_cycle.py` | 最新の探索/候補化レポート |
+| `docs/miner_cycle_auto_miner_latest.json` | `scripts/auto_miner_cycle.py` | 最新の自動レビュー結果 |
+| `docs/miner_cycle_close_report_latest.json` | `scripts/close_miner_cycle.py` | 最新の締めレポート |
+| `docs/miner_cycle_validation_latest.json` | `scripts/run_autonomous_cycle.py` | 最新の整合性検証レポート |
 
 ## 3. 自律実行の履歴
 | パス | 生成元 | 用途 |
@@ -29,8 +29,8 @@
 | パス | 生成元 | 用途 |
 |---|---|---|
 | `docs/cycle_diagnostics/*.json` | 検証スクリプト群 | 個別シナリオ診断 |
-| `docs/review_cycle_report_probe_*.json` | 検証実行 | プローブ結果 |
-| `docs/review_cycle_report_run_*.json` | 単発サイクル実行 | run単位の保存 |
+| `docs/miner_cycle_report_probe_*.json` | 検証実行 | プローブ結果 |
+| `docs/miner_cycle_report_run_*.json` | 単発サイクル実行 | run単位の保存 |
 | `docs/query_width_report*.json` | `scripts/query_width_pilot.py` | API探索幅検証 |
 | `docs/query_width_summary.json` | `scripts/summarize_query_width.py` | 幅検証の集約 |
 | `docs/fetch_autotune_report_latest.json` | fetch autotune処理 | 取得チューニング結果 |
@@ -47,16 +47,16 @@
 | `data/ebayminer.db` | API/スクリプト全体 | 旧DBパス (互換読み込み対象) |
 | `reselling.db` | API/スクリプト全体 | 旧ローカルDBパス (互換読み込み対象) |
 | `data/category_knowledge_seeds_v1.json` | 手動更新 + fetch参照 | カテゴリ展開ナレッジ正本 |
-| `data/review_blocklist.json` | `scripts/sync_rejected_blocklist.py`, `scripts/apply_cycle_improvements.py` | 否認由来の除外対象 |
-| `data/review_query_cache.json` | `reselling/live_review_fetch.py` | クエリ結果キャッシュ |
-| `data/review_query_skip.json` | `reselling/live_review_fetch.py` | 低収率スキップ状態 |
-| `data/review_fetch_cursor.json` | `reselling/live_review_fetch.py` | サイト別ページング継続位置 |
-| `data/review_fetch_tuner.json` | `reselling/live_review_fetch.py` | 取得チューニング状態 |
-| `data/review_api_usage.json` | `reselling/live_review_fetch.py` | API利用状況 |
-| `data/query_efficiency_stats.json` | `scripts/run_review_cycle.py` | クエリ歩留まり統計 |
-| `data/liquidity_backfill_targets.json` | `scripts/run_review_cycle.py` | 流動性欠損埋めターゲット |
-| `data/liquidity_rpa_progress.json` | `reselling/live_review_fetch.py` | Product Research進行状態 |
-| `data/liquidity_rpa_fetch_state.json` | `reselling/live_review_fetch.py` | RPA呼び出し間隔/状態 |
+| `data/miner_blocklist.json` | `scripts/sync_rejected_blocklist.py`, `scripts/apply_cycle_improvements.py` | 否認由来の除外対象 |
+| `data/miner_query_cache.json` | `reselling/live_miner_fetch.py` | クエリ結果キャッシュ |
+| `data/miner_query_skip.json` | `reselling/live_miner_fetch.py` | 低収率スキップ状態 |
+| `data/miner_fetch_cursor.json` | `reselling/live_miner_fetch.py` | サイト別ページング継続位置 |
+| `data/miner_fetch_tuner.json` | `reselling/live_miner_fetch.py` | 取得チューニング状態 |
+| `data/miner_api_usage.json` | `reselling/live_miner_fetch.py` | API利用状況 |
+| `data/query_efficiency_stats.json` | `scripts/run_miner_cycle.py` | クエリ歩留まり統計 |
+| `data/liquidity_backfill_targets.json` | `scripts/run_miner_cycle.py` | 流動性欠損埋めターゲット |
+| `data/liquidity_rpa_progress.json` | `reselling/live_miner_fetch.py` | Product Research進行状態 |
+| `data/liquidity_rpa_fetch_state.json` | `reselling/live_miner_fetch.py` | RPA呼び出し間隔/状態 |
 | `data/liquidity_rpa_signals.jsonl` | `scripts/rpa_market_research.py` | 90日売却シグナル入力 |
 | `data/operator_observations_template.jsonl` | `scripts/operator_export_observation_targets.py` | Operator監視入力のテンプレ |
 | `data/rpa/ebay_profile/` | Playwright persistent profile | eBayログインセッション保持 |

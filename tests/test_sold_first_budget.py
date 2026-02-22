@@ -2,7 +2,7 @@ import unittest
 import os
 from unittest.mock import patch
 
-from reselling.live_review_fetch import (
+from reselling.live_miner_fetch import (
     MarketItem,
     _build_sold_first_signal_lookup,
     _can_skip_source_fetch_after_preselection,
@@ -68,7 +68,7 @@ class SoldFirstBudgetTests(unittest.TestCase):
         ]
         with patch.dict(
             os.environ,
-            {"REVIEW_FETCH_EBAY_SOLD_FIRST_BUDGET_SLACK_RATIO": "1.0"},
+            {"MINER_FETCH_EBAY_SOLD_FIRST_BUDGET_SLACK_RATIO": "1.0"},
             clear=False,
         ):
             filtered, meta = _filter_source_items_by_purchase_ceiling(
@@ -99,7 +99,7 @@ class SoldFirstBudgetTests(unittest.TestCase):
         ]
         with patch.dict(
             os.environ,
-            {"REVIEW_FETCH_SOLD_FIRST_MIN_SOURCE_SITES_BEFORE_SKIP": "2"},
+            {"MINER_FETCH_SOLD_FIRST_MIN_SOURCE_SITES_BEFORE_SKIP": "2"},
             clear=False,
         ):
             skip = _can_skip_source_fetch_after_preselection(
@@ -141,7 +141,7 @@ class SoldFirstBudgetTests(unittest.TestCase):
         ]
         with patch.dict(
             os.environ,
-            {"REVIEW_FETCH_SOLD_FIRST_MIN_SOURCE_SITES_BEFORE_SKIP": "2"},
+            {"MINER_FETCH_SOLD_FIRST_MIN_SOURCE_SITES_BEFORE_SKIP": "2"},
             clear=False,
         ):
             skip = _can_skip_source_fetch_after_preselection(

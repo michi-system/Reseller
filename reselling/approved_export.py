@@ -163,11 +163,11 @@ def _risk_flags(metadata: Dict[str, Any]) -> List[str]:
 
 
 def _approved_by(metadata: Dict[str, Any], default_value: str) -> str:
-    auto_review = metadata.get("auto_review") if isinstance(metadata.get("auto_review"), dict) else {}
+    auto_miner = metadata.get("auto_miner") if isinstance(metadata.get("auto_miner"), dict) else {}
     return _first_non_empty(
         [
             metadata.get("approved_by"),
-            auto_review.get("approved_by"),
+            auto_miner.get("approved_by"),
             default_value,
         ]
     )
@@ -237,8 +237,8 @@ def _approved_record(row: Any, default_approved_by: str) -> Dict[str, Any]:
         "notes": _first_non_empty(
             [
                 metadata.get("notes"),
-                (metadata.get("auto_review") or {}).get("reason")
-                if isinstance(metadata.get("auto_review"), dict)
+                (metadata.get("auto_miner") or {}).get("reason")
+                if isinstance(metadata.get("auto_miner"), dict)
                 else None,
             ]
         ),
@@ -281,7 +281,7 @@ def export_approved_listing_jsonl(
                 created_at,
                 updated_at,
                 metadata_json
-            FROM review_candidates
+            FROM miner_candidates
             WHERE status IN ('approved', 'listed')
               AND COALESCE(approved_at, '') <> ''
             ORDER BY approved_at ASC, id ASC

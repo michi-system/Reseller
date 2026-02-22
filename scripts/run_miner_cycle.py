@@ -23,7 +23,7 @@ if str(ROOT_DIR) not in sys.path:
 
 from reselling.config import load_settings
 from reselling.env import load_dotenv
-from reselling.live_review_fetch import fetch_live_review_candidates
+from reselling.live_miner_fetch import fetch_live_miner_candidates
 from reselling.models import connect, init_db
 
 
@@ -119,7 +119,7 @@ def count_reviewable_pending(
         row = conn.execute(
             """
             SELECT COUNT(*) AS c
-            FROM review_candidates
+            FROM miner_candidates
             WHERE status = 'pending'
               AND expected_profit_usd >= ?
               AND expected_margin_rate >= ?
@@ -150,7 +150,7 @@ def select_reviewable_pending_ids(
         rows = conn.execute(
             """
             SELECT id
-            FROM review_candidates
+            FROM miner_candidates
             WHERE status = 'pending'
               AND expected_profit_usd >= ?
               AND expected_margin_rate >= ?
@@ -716,19 +716,19 @@ def main() -> int:
         "--cache-ttl-seconds",
         type=int,
         default=-1,
-        help="Override REVIEW_FETCH_CACHE_TTL_SECONDS when >=0.",
+        help="Override MINER_FETCH_CACHE_TTL_SECONDS when >=0.",
     )
     parser.add_argument("--daily-budget-ebay", type=int, default=-1, help="Override eBay daily call budget.")
     parser.add_argument("--daily-budget-rakuten", type=int, default=-1, help="Override Rakuten daily call budget.")
     parser.add_argument("--daily-budget-yahoo", type=int, default=-1, help="Override Yahoo daily call budget.")
     parser.add_argument(
         "--output",
-        default=str(ROOT_DIR / "docs" / "review_cycle_report_latest.json"),
+        default=str(ROOT_DIR / "docs" / "miner_cycle_report_latest.json"),
         help="JSON report path",
     )
     parser.add_argument(
         "--active-manifest",
-        default=str(ROOT_DIR / "docs" / "review_cycle_active.json"),
+        default=str(ROOT_DIR / "docs" / "miner_cycle_active.json"),
         help="Path to active cycle manifest JSON.",
     )
     parser.add_argument(
@@ -745,15 +745,15 @@ def main() -> int:
 
     load_dotenv(ENV_PATH)
     if args.cache_only:
-        os.environ["REVIEW_FETCH_CACHE_ONLY"] = "1"
+        os.environ["MINER_FETCH_CACHE_ONLY"] = "1"
     if int(args.cache_ttl_seconds) >= 0:
-        os.environ["REVIEW_FETCH_CACHE_TTL_SECONDS"] = str(int(args.cache_ttl_seconds))
+        os.environ["MINER_FETCH_CACHE_TTL_SECONDS"] = str(int(args.cache_ttl_seconds))
     if int(args.daily_budget_ebay) >= 0:
-        os.environ["REVIEW_FETCH_DAILY_CALL_BUDGET_EBAY"] = str(int(args.daily_budget_ebay))
+        os.environ["MINER_FETCH_DAILY_CALL_BUDGET_EBAY"] = str(int(args.daily_budget_ebay))
     if int(args.daily_budget_rakuten) >= 0:
-        os.environ["REVIEW_FETCH_DAILY_CALL_BUDGET_RAKUTEN"] = str(int(args.daily_budget_rakuten))
+        os.environ["MINER_FETCH_DAILY_CALL_BUDGET_RAKUTEN"] = str(int(args.daily_budget_rakuten))
     if int(args.daily_budget_yahoo) >= 0:
-        os.environ["REVIEW_FETCH_DAILY_CALL_BUDGET_YAHOO"] = str(int(args.daily_budget_yahoo))
+        os.environ["MINER_FETCH_DAILY_CALL_BUDGET_YAHOO"] = str(int(args.daily_budget_yahoo))
 
     raw_queries = [q.strip() for q in args.queries.split(",") if q.strip()] if args.queries else list(DEFAULT_QUERIES)
     stats_payload = _load_json(QUERY_STATS_PATH)
@@ -913,7 +913,7 @@ def main() -> int:
 
             round_had_fetch = True
             before_count = current_count
-            result = fetch_live_review_candidates(
+            result = fetch_live_miner_candidates(
                 query=query,
                 source_sites=["rakuten", "yahoo"],
                 market_site="ebay",

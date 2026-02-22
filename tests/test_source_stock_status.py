@@ -1,6 +1,6 @@
 import unittest
 
-from reselling.live_review_fetch import MarketItem, _source_stock_status
+from reselling.live_miner_fetch import MarketItem, _source_stock_status
 
 
 def _item(site: str, raw: dict) -> MarketItem:

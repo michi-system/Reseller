@@ -27,11 +27,11 @@
   },
   "generated_outputs": {
     "cycle_latest": [
-      "docs/review_cycle_active.json",
-      "docs/review_cycle_report_latest.json",
-      "docs/review_cycle_auto_review_latest.json",
-      "docs/review_cycle_close_report_latest.json",
-      "docs/review_cycle_validation_latest.json"
+      "docs/miner_cycle_active.json",
+      "docs/miner_cycle_report_latest.json",
+      "docs/miner_cycle_auto_miner_latest.json",
+      "docs/miner_cycle_close_report_latest.json",
+      "docs/miner_cycle_validation_latest.json"
     ],
     "autonomous_history_dirs": [
       "docs/autonomous_guarded_runs",
@@ -40,8 +40,8 @@
     ],
     "diagnostics": [
       "docs/cycle_diagnostics/*.json",
-      "docs/review_cycle_report_probe_*.json",
-      "docs/review_cycle_report_run_*.json",
+      "docs/miner_cycle_report_probe_*.json",
+      "docs/miner_cycle_report_run_*.json",
       "docs/query_width_report*.json",
       "docs/query_width_summary.json",
       "docs/fetch_autotune_report_latest.json",
@@ -53,12 +53,12 @@
     "data/reseller.db",
     "data/ebayminer.db",
     "reselling.db",
-    "data/review_blocklist.json",
-    "data/review_query_cache.json",
-    "data/review_query_skip.json",
-    "data/review_fetch_cursor.json",
-    "data/review_fetch_tuner.json",
-    "data/review_api_usage.json",
+    "data/miner_blocklist.json",
+    "data/miner_query_cache.json",
+    "data/miner_query_skip.json",
+    "data/miner_fetch_cursor.json",
+    "data/miner_fetch_tuner.json",
+    "data/miner_api_usage.json",
     "data/query_efficiency_stats.json",
     "data/liquidity_backfill_targets.json",
     "data/liquidity_rpa_progress.json",
@@ -71,10 +71,10 @@
     "When output path changes, update RECORDS_REGISTRY and README index."
   ],
   "manual_edit_forbidden_globs": [
-    "docs/review_cycle_*_latest.json",
+    "docs/miner_cycle_*_latest.json",
     "docs/autonomous_*",
     "docs/cycle_diagnostics/*",
-    "data/review_*",
+    "data/miner_*",
     "data/liquidity_*"
   ]
 }

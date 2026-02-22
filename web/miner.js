@@ -270,14 +270,18 @@ function resolveApiBase() {
     try {
       const url = new URL(fromQuery, window.location.origin);
       const normalized = `${url.protocol}//${url.host}`;
-      window.localStorage.setItem("review_api_base", normalized);
+      window.localStorage.setItem("miner_api_base", normalized);
       return normalized;
     } catch (_) {
       // ignore invalid apiBase param
     }
   }
 
-  const stored = (window.localStorage.getItem("review_api_base") || "").trim();
+  const stored = (
+    window.localStorage.getItem("miner_api_base")
+    || window.localStorage.getItem("review_api_base")
+    || ""
+  ).trim();
   if (stored) {
     return stored.replace(/\/+$/, "");
   }
@@ -863,7 +867,7 @@ function isColorMissingReason(reason) {
 
 function getColorRiskInfo(candidate) {
   const meta = (candidate && typeof candidate.metadata === "object" && candidate.metadata) ? candidate.metadata : {};
-  const autoReview = (meta && typeof meta.auto_review === "object" && meta.auto_review) ? meta.auto_review : null;
+  const autoReview = (meta && typeof meta.auto_miner === "object" && meta.auto_miner) ? meta.auto_miner : null;
   const autoMetrics = (autoReview && typeof autoReview.metrics === "object" && autoReview.metrics) ? autoReview.metrics : {};
   const fetchReason = String(meta.match_reason || "").trim();
   const rematchReason = String(autoMetrics.rematch_reason || "").trim();
@@ -1634,7 +1638,7 @@ function renderCandidate(candidate) {
 
   const v = normalize(candidate);
   const status = String(candidate.status || "").toLowerCase();
-  const autoReview = (v.meta && typeof v.meta.auto_review === "object") ? v.meta.auto_review : null;
+  const autoReview = (v.meta && typeof v.meta.auto_miner === "object") ? v.meta.auto_miner : null;
   const colorRisk = getColorRiskInfo(candidate);
   const latestRejection = getLatestRejection(candidate);
   const isAutoApproved = status === "approved" && Boolean(autoReview?.approved);

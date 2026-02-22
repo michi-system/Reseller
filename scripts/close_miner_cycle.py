@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Close an active review cycle and generate tuning-focused summary."""
+"""Close an active miner cycle and generate tuning-focused summary."""
 
 from __future__ import annotations
 
@@ -87,15 +87,15 @@ def _series_stats(values: List[float]) -> Dict[str, Any]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Close active review cycle.")
+    parser = argparse.ArgumentParser(description="Close active miner cycle.")
     parser.add_argument(
         "--active-manifest",
-        default=str(ROOT_DIR / "docs" / "review_cycle_active.json"),
+        default=str(ROOT_DIR / "docs" / "miner_cycle_active.json"),
         help="Path to active cycle manifest JSON.",
     )
     parser.add_argument(
         "--output",
-        default=str(ROOT_DIR / "docs" / "review_cycle_close_report_latest.json"),
+        default=str(ROOT_DIR / "docs" / "miner_cycle_close_report_latest.json"),
         help="Output report path.",
     )
     parser.add_argument(
@@ -123,9 +123,11 @@ def main() -> int:
         help="Minimum rejected records with issue targets required for ready_for_tuning.",
     )
     parser.add_argument(
+        "--auto-miner-report",
         "--auto-review-report",
-        default=str(ROOT_DIR / "docs" / "review_cycle_auto_review_latest.json"),
-        help="Auto-review report path for additional metrics.",
+        dest="auto_miner_report",
+        default=str(ROOT_DIR / "docs" / "miner_cycle_auto_miner_latest.json"),
+        help="Auto-miner report path for additional metrics.",
     )
     args = parser.parse_args()
 
@@ -134,7 +136,7 @@ def main() -> int:
     manifest = _load_json(manifest_path)
     candidate_ids = [int(v) for v in manifest.get("selected_candidate_ids", [])]
 
-    auto_report_path = Path(args.auto_review_report)
+    auto_report_path = Path(args.auto_miner_report)
     auto_report = _load_json(auto_report_path, required=False)
     auto_counts: Dict[str, Any] = auto_report.get("counts", {}) if isinstance(auto_report.get("counts"), dict) else {}
     auto_approve = int(auto_counts.get("approve", 0) or 0)
@@ -165,8 +167,8 @@ def main() -> int:
             "avg_rejected_issue_count": 0.0,
             "profit_usd_stats": _series_stats([]),
             "score_stats": _series_stats([]),
-            "auto_review_counts": auto_counts,
-            "auto_review_reject_rate": round(auto_reject_rate, 4),
+            "auto_miner_counts": auto_counts,
+            "auto_miner_reject_rate": round(auto_reject_rate, 4),
             "ready_for_tuning": False,
             "ready_for_light_tuning": False,
             "recommended_tuning_mode": "none",
@@ -193,7 +195,7 @@ def main() -> int:
             f"""
             SELECT id, status, expected_profit_usd, match_score, source_site, market_site,
                    source_title, market_title, updated_at
-            FROM review_candidates
+            FROM miner_candidates
             WHERE id IN ({placeholders})
             ORDER BY created_at DESC, id DESC
             """,
@@ -203,7 +205,7 @@ def main() -> int:
         rejection_rows = conn.execute(
             f"""
             SELECT candidate_id, issue_targets_json, reason_text, created_at, id
-            FROM review_rejections
+            FROM miner_rejections
             WHERE candidate_id IN ({placeholders})
             ORDER BY candidate_id, id DESC
             """,
@@ -321,8 +323,8 @@ def main() -> int:
         ),
         "profit_usd_stats": _series_stats(profits),
         "score_stats": _series_stats(scores),
-        "auto_review_counts": auto_counts,
-        "auto_review_reject_rate": round(auto_reject_rate, 4),
+        "auto_miner_counts": auto_counts,
+        "auto_miner_reject_rate": round(auto_reject_rate, 4),
         "ready_for_tuning": ready_for_tuning,
         "ready_for_light_tuning": ready_for_light_tuning,
         "recommended_tuning_mode": recommended_tuning_mode,

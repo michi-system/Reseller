@@ -1,4 +1,4 @@
-"""Live marketplace fetch for review candidates."""
+"""Live marketplace fetch for miner candidates."""
 
 from __future__ import annotations
 
@@ -25,16 +25,37 @@ from .config import Settings, load_settings
 from .liquidity import estimate_ev90, evaluate_liquidity_gate, get_liquidity_signal
 from .models import connect, init_db
 from .profit import ProfitInput, calculate_profit
-from .review import create_review_candidate
+from .miner import create_miner_candidate
 
 
 _EBAY_TOKEN_CACHE: Dict[str, Any] = {"token": None, "expires_at": 0.0}
-_BLOCKLIST_PATH = Path(__file__).resolve().parents[1] / "data" / "review_blocklist.json"
-_FETCH_CURSOR_PATH = Path(__file__).resolve().parents[1] / "data" / "review_fetch_cursor.json"
-_FETCH_TUNER_PATH = Path(__file__).resolve().parents[1] / "data" / "review_fetch_tuner.json"
-_API_CACHE_DIR = Path(__file__).resolve().parents[1] / "data" / "review_api_cache"
-_API_USAGE_PATH = Path(__file__).resolve().parents[1] / "data" / "review_api_usage.json"
-_QUERY_SKIP_PATH = Path(__file__).resolve().parents[1] / "data" / "review_query_skip.json"
+_DATA_DIR = Path(__file__).resolve().parents[1] / "data"
+
+
+def _promote_legacy_data_path(
+    new_name: str,
+    legacy_name: str,
+    *,
+    is_dir: bool = False,
+) -> Path:
+    new_path = _DATA_DIR / new_name
+    legacy_path = _DATA_DIR / legacy_name
+    if new_path.exists() or not legacy_path.exists():
+        return new_path
+    new_path.parent.mkdir(parents=True, exist_ok=True)
+    if is_dir:
+        shutil.copytree(legacy_path, new_path, dirs_exist_ok=True)
+    else:
+        shutil.copy2(legacy_path, new_path)
+    return new_path
+
+
+_BLOCKLIST_PATH = _promote_legacy_data_path("miner_blocklist.json", "review_blocklist.json")
+_FETCH_CURSOR_PATH = _promote_legacy_data_path("miner_fetch_cursor.json", "review_fetch_cursor.json")
+_FETCH_TUNER_PATH = _promote_legacy_data_path("miner_fetch_tuner.json", "review_fetch_tuner.json")
+_API_CACHE_DIR = _promote_legacy_data_path("miner_api_cache", "review_api_cache", is_dir=True)
+_API_USAGE_PATH = _promote_legacy_data_path("miner_api_usage.json", "review_api_usage.json")
+_QUERY_SKIP_PATH = _promote_legacy_data_path("miner_query_skip.json", "review_query_skip.json")
 _RPA_FETCH_STATE_PATH = Path(__file__).resolve().parents[1] / "data" / "liquidity_rpa_fetch_state.json"
 _RPA_PROGRESS_PATH = Path(__file__).resolve().parents[1] / "data" / "liquidity_rpa_progress.json"
 _CATEGORY_KNOWLEDGE_PATH = Path(__file__).resolve().parents[1] / "data" / "category_knowledge_seeds_v1.json"
@@ -479,22 +500,40 @@ def _to_int(value: Any, default: int = 0) -> int:
         return default
 
 
-def _env_int(key: str, default: int) -> int:
+def _legacy_env_key(key: str) -> str:
+    if key.startswith("AUTO_MINER_"):
+        return f"AUTO_REVIEW_{key[len('AUTO_MINER_'):]}"
+    if key.startswith("MINER_"):
+        return f"REVIEW_{key[len('MINER_'):]}"
+    return ""
+
+
+def _env_raw(key: str) -> str:
     raw = (os.getenv(key, "") or "").strip()
+    if raw:
+        return raw
+    legacy_key = _legacy_env_key(key)
+    if not legacy_key:
+        return ""
+    return (os.getenv(legacy_key, "") or "").strip()
+
+
+def _env_int(key: str, default: int) -> int:
+    raw = _env_raw(key)
     if not raw:
         return default
     return _to_int(raw, default)
 
 
 def _env_float(key: str, default: float) -> float:
-    raw = (os.getenv(key, "") or "").strip()
+    raw = _env_raw(key)
     if not raw:
         return default
     return _to_float(raw, default)
 
 
 def _env_bool(key: str, default: bool = False) -> bool:
-    raw = (os.getenv(key, "") or "").strip().lower()
+    raw = _env_raw(key).lower()
     if not raw:
         return default
     return raw in {"1", "true", "yes", "on"}
@@ -1327,7 +1366,7 @@ def _consume_daily_budget(site: str) -> Tuple[bool, int]:
     site_key = str(site or "").strip().lower()
     if not site_key:
         return True, -1
-    budget = max(0, _env_int(f"REVIEW_FETCH_DAILY_CALL_BUDGET_{site_key.upper()}", 0))
+    budget = max(0, _env_int(f"MINER_FETCH_DAILY_CALL_BUDGET_{site_key.upper()}", 0))
     if budget <= 0:
         return True, -1
     payload = _load_json_file(_API_USAGE_PATH)
@@ -1539,10 +1578,10 @@ def _request_json(
     use_cache = (
         method.upper() == "GET"
         and bool(normalized_site)
-        and _env_bool("REVIEW_FETCH_CACHE_ENABLED", True)
+        and _env_bool("MINER_FETCH_CACHE_ENABLED", True)
     )
-    cache_ttl_sec = max(0, _env_int("REVIEW_FETCH_CACHE_TTL_SECONDS", 21600))
-    cache_only = _env_bool("REVIEW_FETCH_CACHE_ONLY", False)
+    cache_ttl_sec = max(0, _env_int("MINER_FETCH_CACHE_TTL_SECONDS", 21600))
+    cache_only = _env_bool("MINER_FETCH_CACHE_ONLY", False)
     if use_cache:
         cached = _load_cached_api_response(
             site=normalized_site,
@@ -2490,7 +2529,7 @@ def _build_category_relevance_terms(category_row: Dict[str, Any]) -> Tuple[str, 
     if noun and len(noun) >= 3:
         terms.append(noun)
 
-    max_terms = max(8, min(80, _env_int("REVIEW_CATEGORY_RELEVANCE_MAX_TERMS", 32)))
+    max_terms = max(8, min(80, _env_int("MINER_CATEGORY_RELEVANCE_MAX_TERMS", 32)))
     seen: set[str] = set()
     out: List[str] = []
     for raw in terms:
@@ -2537,7 +2576,7 @@ def _build_category_seed_queries(
     models = [str(v).strip() for v in category_row.get("model_examples", []) if _is_specific_model_example(v)]
     month = int(time.gmtime().tm_mon)
     active_tags = _active_season_tags(category_row, month)
-    base_depth = max(1, min(6, _env_int("REVIEW_CATEGORY_KNOWLEDGE_DEPTH", 3)))
+    base_depth = max(1, min(6, _env_int("MINER_CATEGORY_KNOWLEDGE_DEPTH", 3)))
     if active_tags:
         base_depth = min(6, base_depth + 1)
     noun = _CATEGORY_NOUN_HINT.get(key, key.replace("_", " "))
@@ -2726,7 +2765,7 @@ def _apply_fetch_tuner(
     site: str,
     profile: SiteFetchProfile,
 ) -> Tuple[SiteFetchProfile, Dict[str, Any]]:
-    enabled = _env_bool("REVIEW_FETCH_AUTOTUNE_ENABLED", True)
+    enabled = _env_bool("MINER_FETCH_AUTOTUNE_ENABLED", True)
     if not enabled:
         return profile, {"enabled": False, "applied": False}
     entries = _load_fetch_tuner_entries()
@@ -2735,7 +2774,7 @@ def _apply_fetch_tuner(
     if not isinstance(row, dict):
         return profile, {"enabled": True, "applied": False}
 
-    max_age = max(600, _env_int("REVIEW_FETCH_AUTOTUNE_MAX_AGE_SECONDS", 604800))
+    max_age = max(600, _env_int("MINER_FETCH_AUTOTUNE_MAX_AGE_SECONDS", 604800))
     now_ts = int(time.time())
     updated_at = _to_int(row.get("updated_at"), 0)
     if updated_at <= 0 or (now_ts - updated_at) > max_age:
@@ -2774,7 +2813,7 @@ def _update_fetch_tuner(
     merged_count: int,
     stop_reason: str,
 ) -> Dict[str, Any]:
-    enabled = _env_bool("REVIEW_FETCH_AUTOTUNE_ENABLED", True)
+    enabled = _env_bool("MINER_FETCH_AUTOTUNE_ENABLED", True)
     if not enabled:
         return {"enabled": False}
     # キャッシュのみの実行は外部API効率の学習データにならないため更新しない。
@@ -3100,7 +3139,7 @@ def _build_ebay_sold_first_plan(
     packaging_usd: float,
     fixed_fee_usd: float,
 ) -> Dict[str, Any]:
-    enabled = _env_bool("REVIEW_FETCH_EBAY_SOLD_FIRST_ENABLED", True)
+    enabled = _env_bool("MINER_FETCH_EBAY_SOLD_FIRST_ENABLED", True)
     summary: Dict[str, Any] = {
         "enabled": bool(enabled),
         "applied": False,
@@ -3114,7 +3153,7 @@ def _build_ebay_sold_first_plan(
         summary["reason"] = "disabled"
         return {"summary": summary, "selected_codes": set(), "max_purchase_jpy_by_code": {}, "signals": {}}
 
-    max_codes = max(1, min(24, _env_int("REVIEW_FETCH_EBAY_SOLD_FIRST_MAX_CODES", 10)))
+    max_codes = max(1, min(24, _env_int("MINER_FETCH_EBAY_SOLD_FIRST_MAX_CODES", 10)))
     stats: Dict[str, Dict[str, Any]] = {}
     for code in query_specific_codes:
         stats[code] = {"count": 1000, "example": code}
@@ -3152,7 +3191,7 @@ def _build_ebay_sold_first_plan(
         return {"summary": summary, "selected_codes": set(), "max_purchase_jpy_by_code": {}, "signals": {}}
 
     fx_rate = _resolve_current_fx_rate(settings)
-    require_sold_sample = _env_bool("REVIEW_FETCH_EBAY_SOLD_FIRST_REQUIRE_SOLD_SAMPLE", True)
+    require_sold_sample = _env_bool("MINER_FETCH_EBAY_SOLD_FIRST_REQUIRE_SOLD_SAMPLE", True)
     selected_codes: set[str] = set()
     max_purchase_jpy_by_code: Dict[str, float] = {}
     signals_by_code: Dict[str, Dict[str, Any]] = {}
@@ -3258,7 +3297,7 @@ def _filter_source_items_by_purchase_ceiling(
 ) -> Tuple[List[MarketItem], Dict[str, Any]]:
     if not max_purchase_jpy_by_code:
         return list(items), {"enabled": False, "applied": False}
-    slack_ratio = max(1.0, _env_float("REVIEW_FETCH_EBAY_SOLD_FIRST_BUDGET_SLACK_RATIO", 2.0))
+    slack_ratio = max(1.0, _env_float("MINER_FETCH_EBAY_SOLD_FIRST_BUDGET_SLACK_RATIO", 2.0))
     kept: List[MarketItem] = []
     dropped_no_code = 0
     dropped_over_budget = 0
@@ -3356,7 +3395,7 @@ def _fetch_site_items_adaptive(
         queries = [_compact_query(query)]
     total_queries = len(queries)
     knowledge_applied = bool(knowledge_meta.get("applied"))
-    relevance_filter_enabled = _env_bool("REVIEW_CATEGORY_RELEVANCE_FILTER_ENABLED", True)
+    relevance_filter_enabled = _env_bool("MINER_CATEGORY_RELEVANCE_FILTER_ENABLED", True)
     relevance_terms: Tuple[str, ...] = ()
     if knowledge_applied and relevance_filter_enabled:
         category_row = _match_category_row(_compact_query(query))
@@ -3365,33 +3404,33 @@ def _fetch_site_items_adaptive(
     min_queries_before_target = 1
     if knowledge_applied:
         if site == "ebay":
-            min_calls_floor = max(1, min(6, _env_int("REVIEW_CATEGORY_FETCH_MIN_CALLS_EBAY", 3)))
-            per_call_cap = max(20, min(200, _env_int("REVIEW_CATEGORY_FETCH_PER_CALL_LIMIT_CAP_EBAY", 50)))
+            min_calls_floor = max(1, min(6, _env_int("MINER_CATEGORY_FETCH_MIN_CALLS_EBAY", 3)))
+            per_call_cap = max(20, min(200, _env_int("MINER_CATEGORY_FETCH_PER_CALL_LIMIT_CAP_EBAY", 50)))
             min_queries_before_target = max(
                 1,
                 min(
                     min_calls_floor,
-                    _env_int("REVIEW_CATEGORY_MIN_QUERIES_BEFORE_TARGET_EBAY", min_calls_floor),
+                    _env_int("MINER_CATEGORY_MIN_QUERIES_BEFORE_TARGET_EBAY", min_calls_floor),
                 ),
             )
         elif site == "rakuten":
-            min_calls_floor = max(1, min(5, _env_int("REVIEW_CATEGORY_FETCH_MIN_CALLS_RAKUTEN", 2)))
-            per_call_cap = max(10, min(30, _env_int("REVIEW_CATEGORY_FETCH_PER_CALL_LIMIT_CAP_RAKUTEN", 20)))
+            min_calls_floor = max(1, min(5, _env_int("MINER_CATEGORY_FETCH_MIN_CALLS_RAKUTEN", 2)))
+            per_call_cap = max(10, min(30, _env_int("MINER_CATEGORY_FETCH_PER_CALL_LIMIT_CAP_RAKUTEN", 20)))
             min_queries_before_target = max(
                 1,
                 min(
                     min_calls_floor,
-                    _env_int("REVIEW_CATEGORY_MIN_QUERIES_BEFORE_TARGET_RAKUTEN", min_calls_floor),
+                    _env_int("MINER_CATEGORY_MIN_QUERIES_BEFORE_TARGET_RAKUTEN", min_calls_floor),
                 ),
             )
         else:
-            min_calls_floor = max(1, min(5, _env_int("REVIEW_CATEGORY_FETCH_MIN_CALLS_YAHOO", 2)))
-            per_call_cap = max(20, min(100, _env_int("REVIEW_CATEGORY_FETCH_PER_CALL_LIMIT_CAP_YAHOO", 40)))
+            min_calls_floor = max(1, min(5, _env_int("MINER_CATEGORY_FETCH_MIN_CALLS_YAHOO", 2)))
+            per_call_cap = max(20, min(100, _env_int("MINER_CATEGORY_FETCH_PER_CALL_LIMIT_CAP_YAHOO", 40)))
             min_queries_before_target = max(
                 1,
                 min(
                     min_calls_floor,
-                    _env_int("REVIEW_CATEGORY_MIN_QUERIES_BEFORE_TARGET_YAHOO", min_calls_floor),
+                    _env_int("MINER_CATEGORY_MIN_QUERIES_BEFORE_TARGET_YAHOO", min_calls_floor),
                 ),
             )
         profile = SiteFetchProfile(
@@ -3409,7 +3448,7 @@ def _fetch_site_items_adaptive(
     cursor_row = entries.get(cursor_key) if isinstance(entries.get(cursor_key), dict) else {}
     start_query_index = _to_int((cursor_row or {}).get("query_index"), 0)
     start_page = _to_int((cursor_row or {}).get("page"), 1)
-    force_exact_model_query = _env_bool("REVIEW_FETCH_FORCE_EXACT_FOR_MODEL_QUERY", True)
+    force_exact_model_query = _env_bool("MINER_FETCH_FORCE_EXACT_FOR_MODEL_QUERY", True)
     if force_exact_model_query and _extract_codes(_compact_query(query)):
         start_query_index = 0
         start_page = 1
@@ -3563,7 +3602,7 @@ def _fetch_site_items_adaptive(
         stop_reason = "query_exhausted"
 
     now_ts = int(time.time())
-    retention_sec = max(3600, _env_int("REVIEW_FETCH_CURSOR_RETENTION_SECONDS", 604800))
+    retention_sec = max(3600, _env_int("MINER_FETCH_CURSOR_RETENTION_SECONDS", 604800))
     for key in list(entries.keys()):
         row = entries.get(key) if isinstance(entries.get(key), dict) else {}
         updated_at = _to_int((row or {}).get("updated_at"), 0)
@@ -4005,7 +4044,7 @@ def _query_specific_codes(query: str) -> set[str]:
 def _should_skip_model_backfill_for_query(query_specific_codes: set[str]) -> bool:
     if not query_specific_codes:
         return False
-    return _env_bool("REVIEW_FETCH_MODEL_BACKFILL_SKIP_ON_SPECIFIC_QUERY", True)
+    return _env_bool("MINER_FETCH_MODEL_BACKFILL_SKIP_ON_SPECIFIC_QUERY", True)
 
 
 def _is_related_model_code(candidate: str, query_code: str) -> bool:
@@ -4085,7 +4124,7 @@ def _can_skip_source_fetch_after_preselection(
         1,
         min(
             len(normalized_sources),
-            _env_int("REVIEW_FETCH_SOLD_FIRST_MIN_SOURCE_SITES_BEFORE_SKIP", 2),
+            _env_int("MINER_FETCH_SOLD_FIRST_MIN_SOURCE_SITES_BEFORE_SKIP", 2),
         ),
     )
     covered_sites = {
@@ -4309,7 +4348,7 @@ def _recover_model_code_conflict(
     variant_missing_source: bool,
     color_missing_market: bool,
 ) -> Optional[Tuple[float, str]]:
-    if not _env_bool("REVIEW_MATCH_MODEL_CONFLICT_RECOVERY_ENABLED", True):
+    if not _env_bool("MINER_MATCH_MODEL_CONFLICT_RECOVERY_ENABLED", True):
         return None
 
     source_token_list = _title_tokens(source.title)
@@ -4343,19 +4382,19 @@ def _recover_model_code_conflict(
     multi_code_side = len(source_specific_canon) >= 2 or len(market_specific_canon) >= 2
 
     if near_code:
-        min_common = max(1, _env_int("REVIEW_MATCH_MODEL_CONFLICT_RECOVERY_MIN_COMMON_TOKENS_NEAR_CODE", 1))
-        min_jaccard = _env_float("REVIEW_MATCH_MODEL_CONFLICT_RECOVERY_MIN_JACCARD_NEAR_CODE", 0.08)
+        min_common = max(1, _env_int("MINER_MATCH_MODEL_CONFLICT_RECOVERY_MIN_COMMON_TOKENS_NEAR_CODE", 1))
+        min_jaccard = _env_float("MINER_MATCH_MODEL_CONFLICT_RECOVERY_MIN_JACCARD_NEAR_CODE", 0.08)
         if len(common) < min_common or jaccard < max(0.0, min_jaccard):
             return None
         score = 0.78
         reason = "model_code_conflict_recovered_near_code"
     else:
-        if not _env_bool("REVIEW_MATCH_MODEL_CONFLICT_RECOVERY_ALLOW_MULTI_CODE", True):
+        if not _env_bool("MINER_MATCH_MODEL_CONFLICT_RECOVERY_ALLOW_MULTI_CODE", True):
             return None
         if not multi_code_side:
             return None
-        min_common = max(1, _env_int("REVIEW_MATCH_MODEL_CONFLICT_RECOVERY_MIN_COMMON_TOKENS", 4))
-        min_jaccard = _env_float("REVIEW_MATCH_MODEL_CONFLICT_RECOVERY_MIN_JACCARD", 0.40)
+        min_common = max(1, _env_int("MINER_MATCH_MODEL_CONFLICT_RECOVERY_MIN_COMMON_TOKENS", 4))
+        min_jaccard = _env_float("MINER_MATCH_MODEL_CONFLICT_RECOVERY_MIN_JACCARD", 0.40)
         if len(common) < min_common or jaccard < max(0.0, min_jaccard):
             return None
         score = 0.76
@@ -4376,7 +4415,7 @@ def _recover_model_code_conflict(
         score -= 0.02
         reason += "_color_missing_market"
 
-    min_score = _env_float("REVIEW_MATCH_MODEL_CONFLICT_RECOVERY_MIN_SCORE", 0.75)
+    min_score = _env_float("MINER_MATCH_MODEL_CONFLICT_RECOVERY_MIN_SCORE", 0.75)
     score = min(0.87, max(0.0, score))
     if score < max(0.0, min(1.0, min_score)):
         return None
@@ -4428,11 +4467,11 @@ def _match_score(source: MarketItem, market: MarketItem) -> Tuple[float, str]:
     source_ids = source.identifiers or {}
     market_ids = market.identifiers or {}
     allow_color_missing_with_identifier = _env_bool(
-        "REVIEW_MATCH_ALLOW_COLOR_MISSING_WITH_IDENTIFIER",
+        "MINER_MATCH_ALLOW_COLOR_MISSING_WITH_IDENTIFIER",
         True,
     )
     allow_color_missing_with_model_code = _env_bool(
-        "REVIEW_MATCH_ALLOW_COLOR_MISSING_WITH_MODEL_CODE",
+        "MINER_MATCH_ALLOW_COLOR_MISSING_WITH_MODEL_CODE",
         True,
     )
     for key in ("jan", "upc", "ean", "gtin"):
@@ -4781,17 +4820,17 @@ def _fetch_ebay_model_backfill(
     timeout: int,
     cap_site: int,
 ) -> Tuple[List[MarketItem], Dict[str, Any]]:
-    enabled = _env_bool("REVIEW_FETCH_MODEL_BACKFILL_ENABLED", True)
-    max_queries = max(1, min(10, _env_int("REVIEW_FETCH_MODEL_BACKFILL_MAX_QUERIES", 4)))
+    enabled = _env_bool("MINER_FETCH_MODEL_BACKFILL_ENABLED", True)
+    max_queries = max(1, min(10, _env_int("MINER_FETCH_MODEL_BACKFILL_MAX_QUERIES", 4)))
     queries = _collect_source_model_code_queries(source_items, base_query=base_query, max_queries=max_queries)
     if not enabled:
         return [], {"enabled": False, "ran": False, "reason": "disabled", "queries": queries}
     if not queries:
         return [], {"enabled": True, "ran": False, "reason": "no_model_queries", "queries": []}
 
-    max_calls = max(1, min(10, _env_int("REVIEW_FETCH_MODEL_BACKFILL_MAX_CALLS", 4)))
-    per_query_cap = max(5, min(80, _env_int("REVIEW_FETCH_MODEL_BACKFILL_CAP_SITE", min(20, cap_site))))
-    target_items = max(10, min(240, _env_int("REVIEW_FETCH_MODEL_BACKFILL_TARGET_ITEMS", 80)))
+    max_calls = max(1, min(10, _env_int("MINER_FETCH_MODEL_BACKFILL_MAX_CALLS", 4)))
+    per_query_cap = max(5, min(80, _env_int("MINER_FETCH_MODEL_BACKFILL_CAP_SITE", min(20, cap_site))))
+    target_items = max(10, min(240, _env_int("MINER_FETCH_MODEL_BACKFILL_TARGET_ITEMS", 80)))
     merged: List[MarketItem] = []
     seen_items: set[Tuple[str, str]] = set()
     fetch_logs: List[Dict[str, Any]] = []
@@ -4848,9 +4887,9 @@ def _fetch_source_model_backfill_from_market(
     cap_site: int,
     require_in_stock: bool,
 ) -> Tuple[List[MarketItem], Dict[str, Any]]:
-    enabled = _env_bool("REVIEW_FETCH_SOURCE_MODEL_BACKFILL_ENABLED", True)
-    max_codes = max(1, min(8, _env_int("REVIEW_FETCH_SOURCE_MODEL_BACKFILL_MAX_CODES", 3)))
-    max_items = max(10, min(120, _env_int("REVIEW_FETCH_SOURCE_MODEL_BACKFILL_MAX_ITEMS", 50)))
+    enabled = _env_bool("MINER_FETCH_SOURCE_MODEL_BACKFILL_ENABLED", True)
+    max_codes = max(1, min(8, _env_int("MINER_FETCH_SOURCE_MODEL_BACKFILL_MAX_CODES", 3)))
+    max_items = max(10, min(120, _env_int("MINER_FETCH_SOURCE_MODEL_BACKFILL_MAX_ITEMS", 50)))
     summary: Dict[str, Any] = {
         "enabled": bool(enabled),
         "ran": False,
@@ -4961,7 +5000,7 @@ def _existing_pairs(settings: Settings) -> set[Tuple[str, str, str, str]]:
         rows = conn.execute(
             """
             SELECT source_site, source_item_id, market_site, market_item_id
-            FROM review_candidates
+            FROM miner_candidates
             WHERE source_item_id IS NOT NULL
               AND market_item_id IS NOT NULL
               AND TRIM(source_item_id) <> ''
@@ -4987,7 +5026,7 @@ def _existing_pair_signatures(settings: Settings) -> set[str]:
         rows = conn.execute(
             """
             SELECT metadata_json
-            FROM review_candidates
+            FROM miner_candidates
             WHERE metadata_json IS NOT NULL
               AND TRIM(metadata_json) <> ''
             """
@@ -5008,7 +5047,7 @@ def _existing_pair_signatures(settings: Settings) -> set[str]:
     return signatures
 
 
-def fetch_live_review_candidates(
+def fetch_live_miner_candidates(
     *,
     query: str,
     source_sites: Sequence[str] | None = None,
@@ -5079,16 +5118,16 @@ def fetch_live_review_candidates(
     marketplace_fee_rate = _to_float(os.getenv("MARKETPLACE_FEE_RATE"), 0.13)
     payment_fee_rate = _to_float(os.getenv("PAYMENT_FEE_RATE"), 0.03)
     fixed_fee_usd = _to_float(os.getenv("FIXED_FEE_USD"), 0.0)
-    query_skip_ttl_sec = max(0, _env_int("REVIEW_QUERY_SKIP_TTL_SECONDS", 1800))
+    query_skip_ttl_sec = max(0, _env_int("MINER_QUERY_SKIP_TTL_SECONDS", 1800))
     query_skip_ttl_done_sec = max(
         query_skip_ttl_sec,
-        _env_int("REVIEW_QUERY_SKIP_TTL_DONE_SECONDS", 21600),
+        _env_int("MINER_QUERY_SKIP_TTL_DONE_SECONDS", 21600),
     )
     query_skip_ttl_no_gain_sec = max(
         query_skip_ttl_sec,
-        _env_int("REVIEW_QUERY_SKIP_TTL_NO_GAIN_SECONDS", 3600),
+        _env_int("MINER_QUERY_SKIP_TTL_NO_GAIN_SECONDS", 3600),
     )
-    query_skip_disabled = _env_bool("REVIEW_QUERY_SKIP_DISABLED", False)
+    query_skip_disabled = _env_bool("MINER_QUERY_SKIP_DISABLED", False)
     query_skip_key = _query_skip_key(
         query=text_query,
         market_site=market_site,
@@ -5288,9 +5327,9 @@ def fetch_live_review_candidates(
     # max_calls_reached / target_reached / low_yield_stop は途中打ち切りの可能性がある。
     query_specific_codes = _query_specific_codes(text_query)
     strict_query_code_match = bool(
-        _env_bool("REVIEW_FETCH_FORCE_EXACT_FOR_MODEL_QUERY", True) and query_specific_codes
+        _env_bool("MINER_FETCH_FORCE_EXACT_FOR_MODEL_QUERY", True) and query_specific_codes
     )
-    sold_first_required = _env_bool("REVIEW_FETCH_EBAY_SOLD_FIRST_REQUIRED", False)
+    sold_first_required = _env_bool("MINER_FETCH_EBAY_SOLD_FIRST_REQUIRED", False)
 
     ebay_items, ebay_info, ebay_error = _fetch_site_items_adaptive(
         site="ebay",
@@ -5413,7 +5452,7 @@ def fetch_live_review_candidates(
     sold_first_signal_lookup = _build_sold_first_signal_lookup(
         sold_first_plan.get("signals", {}) if isinstance(sold_first_plan, dict) else {}
     )
-    if sold_first_codes and query_specific_codes and _env_bool("REVIEW_FETCH_EBAY_SOLD_FIRST_FILTER_BY_QUERY_CODE", True):
+    if sold_first_codes and query_specific_codes and _env_bool("MINER_FETCH_EBAY_SOLD_FIRST_FILTER_BY_QUERY_CODE", True):
         before_count = len(sold_first_codes)
         sold_first_codes = _filter_sold_first_codes_for_query(sold_first_codes, query_specific_codes)
         if isinstance(sold_first_summary, dict):
@@ -5578,7 +5617,7 @@ def fetch_live_review_candidates(
             errors.append({"site": source, "message": fetch_error})
 
     if sold_first_ceiling:
-        require_code_match_for_budget = _env_bool("REVIEW_FETCH_EBAY_SOLD_FIRST_REQUIRE_CODE_MATCH", False) or bool(
+        require_code_match_for_budget = _env_bool("MINER_FETCH_EBAY_SOLD_FIRST_REQUIRE_CODE_MATCH", False) or bool(
             query_specific_codes
         )
         jp_items, source_budget_filter = _filter_source_items_by_purchase_ceiling(
@@ -5670,7 +5709,7 @@ def fetch_live_review_candidates(
     low_match_reason_counts = dict(analysis.get("low_match_reason_counts", {}))
     low_match_samples = list(analysis.get("low_match_samples", []))
 
-    model_backfill_summary: Dict[str, Any] = {"enabled": _env_bool("REVIEW_FETCH_MODEL_BACKFILL_ENABLED", True), "ran": False}
+    model_backfill_summary: Dict[str, Any] = {"enabled": _env_bool("MINER_FETCH_MODEL_BACKFILL_ENABLED", True), "ran": False}
     skip_model_backfill_for_query = _should_skip_model_backfill_for_query(query_specific_codes)
     if skip_model_backfill_for_query:
         model_backfill_summary["skipped_reason"] = "specific_query_codes"
@@ -5717,7 +5756,7 @@ def fetch_live_review_candidates(
         fetched["ebay"]["model_backfill"] = model_backfill_summary
 
     source_model_backfill_summary: Dict[str, Any] = {
-        "enabled": _env_bool("REVIEW_FETCH_SOURCE_MODEL_BACKFILL_ENABLED", True),
+        "enabled": _env_bool("MINER_FETCH_SOURCE_MODEL_BACKFILL_ENABLED", True),
         "ran": False,
     }
     if skip_model_backfill_for_query:
@@ -5865,7 +5904,7 @@ def fetch_live_review_candidates(
     liquidity_unavailable_model_codes: set[str] = set()
     seen_run_pairs: set[Tuple[str, str, str, str]] = set()
     seen_run_signatures: set[str] = set()
-    group_max = max(1, min(12, _env_int("REVIEW_FETCH_MAX_PER_GROUP", 4)))
+    group_max = max(1, min(12, _env_int("MINER_FETCH_MAX_PER_GROUP", 4)))
     group_counts: Dict[str, int] = {}
     ebay_active_count_hint = _to_int(ebay_info.get("raw_total"), -1) if isinstance(ebay_info, dict) else -1
 
@@ -6206,7 +6245,7 @@ def fetch_live_review_candidates(
             payload["metadata"]["ebay_sold_title"] = sold_sample.get("title")
             payload["metadata"]["ebay_sold_price_usd"] = sold_sample.get("sold_price_usd")
             payload["metadata"]["ebay_sold_sample_reference_ok"] = bool(has_sold_sample_reference)
-        created = create_review_candidate(payload, settings=settings)
+        created = create_miner_candidate(payload, settings=settings)
         candidate_id = int(created["id"])
         created_ids.append(candidate_id)
         created_summaries.append(

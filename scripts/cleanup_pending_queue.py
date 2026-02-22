@@ -14,8 +14,8 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 from reselling.env import load_dotenv
-from reselling.live_review_fetch import _is_accessory_title, _is_new_listing
-from reselling.review import list_review_queue, reject_review_candidate
+from reselling.live_miner_fetch import _is_accessory_title, _is_new_listing
+from reselling.miner import list_miner_queue, reject_miner_candidate
 
 
 def _to_float(v: Any, default: float = 0.0) -> float:
@@ -78,7 +78,7 @@ def main() -> int:
 
     load_dotenv(ENV_PATH)
 
-    queue = list_review_queue(status="pending", limit=max(1, int(args.limit)), offset=0)
+    queue = list_miner_queue(status="pending", limit=max(1, int(args.limit)), offset=0)
     items = queue.get("items", [])
     flagged: List[Tuple[int, List[str], str]] = []
     for item in items:
@@ -95,7 +95,7 @@ def main() -> int:
     for candidate_id, issue_targets, reason in flagged:
         print(f"- #{candidate_id} issues={issue_targets} reason={reason}")
         if args.apply:
-            reject_review_candidate(candidate_id, issue_targets=issue_targets, reason_text=reason)
+            reject_miner_candidate(candidate_id, issue_targets=issue_targets, reason_text=reason)
 
     return 0
 

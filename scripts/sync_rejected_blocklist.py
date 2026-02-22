@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Sync all rejected review candidates into review_blocklist.json."""
+"""Sync all rejected review candidates into miner_blocklist.json."""
 
 from __future__ import annotations
 
@@ -12,12 +12,12 @@ from typing import Any, Dict, List
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
 ENV_PATH = ROOT_DIR / ".env.local"
-BLOCKLIST_PATH = ROOT_DIR / "data" / "review_blocklist.json"
+BLOCKLIST_PATH = ROOT_DIR / "data" / "miner_blocklist.json"
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 from reselling.env import load_dotenv
-from reselling.live_review_fetch import _pair_signature
+from reselling.live_miner_fetch import _pair_signature
 from reselling.config import load_settings
 from reselling.models import connect, init_db
 
@@ -54,7 +54,7 @@ def main() -> int:
             """
             WITH latest_rej AS (
               SELECT candidate_id, MAX(id) AS max_id
-              FROM review_rejections
+              FROM miner_rejections
               GROUP BY candidate_id
             )
             SELECT
@@ -66,9 +66,9 @@ def main() -> int:
               rr.issue_targets_json,
               rr.reason_text,
               rr.created_at
-            FROM review_candidates rc
+            FROM miner_candidates rc
             JOIN latest_rej lr ON lr.candidate_id = rc.id
-            JOIN review_rejections rr ON rr.id = lr.max_id
+            JOIN miner_rejections rr ON rr.id = lr.max_id
             WHERE rc.status = 'rejected'
             ORDER BY rc.id ASC
             """

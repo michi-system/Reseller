@@ -53,7 +53,7 @@ curl -sS -X POST http://127.0.0.1:8000/v1/profit/calc \
 ### Create review candidate
 
 ```bash
-curl -sS -X POST http://127.0.0.1:8000/v1/review/candidates \
+curl -sS -X POST http://127.0.0.1:8000/v1/miner/candidates \
   -H "Content-Type: application/json" \
   -d '{
     "source_site": "rakuten",
@@ -73,25 +73,25 @@ curl -sS -X POST http://127.0.0.1:8000/v1/review/candidates \
 ### Review queue
 
 ```bash
-curl -sS "http://127.0.0.1:8000/v1/review/queue?status=pending&limit=50"
+curl -sS "http://127.0.0.1:8000/v1/miner/queue?status=pending&limit=50"
 ```
 
 Profit-positive / precision-first queue (recommended for manual review):
 
 ```bash
-curl -sS "http://127.0.0.1:8000/v1/review/queue?status=pending&limit=50&min_profit_usd=0.01&min_margin_rate=0.03&min_match_score=0.75&condition=new"
+curl -sS "http://127.0.0.1:8000/v1/miner/queue?status=pending&limit=50&min_profit_usd=0.01&min_margin_rate=0.03&min_match_score=0.75&condition=new"
 ```
 
 自動承認（最終確認待ち）キュー:
 
 ```bash
-curl -sS "http://127.0.0.1:8000/v1/review/queue?status=approved&limit=50"
+curl -sS "http://127.0.0.1:8000/v1/miner/queue?status=approved&limit=50"
 ```
 
 ### Review fetch (live APIs -> candidate auto-create)
 
 ```bash
-curl -sS -X POST http://127.0.0.1:8000/v1/review/fetch \
+curl -sS -X POST http://127.0.0.1:8000/v1/miner/fetch \
   -H "Content-Type: application/json" \
   -d '{
     "query": "watch",
@@ -150,7 +150,7 @@ LIQUIDITY_RPA_MAX_AGE_SECONDS=604800
 LIQUIDITY_REQUIRE_SIGNAL=1
 ```
 
-自動実行フロー（`run_review_cycle.py` 内で起動）:
+自動実行フロー（`run_miner_cycle.py` 内で起動）:
 - `LIQUIDITY_PROVIDER_MODE=rpa_json` かつ `LIQUIDITY_RPA_AUTO_REFRESH=1` のとき、fetch前にRPA収集を自動実行
 - 1st pass: `condition=new`（厳格）
 - 2nd pass: 1st passで `sold_90d_count` 未取得クエリのみ `condition=any` で再収集（欠損埋め）
@@ -167,13 +167,13 @@ LIQUIDITY_REQUIRE_SIGNAL=1
 - `>=0`: 取得成功（`0` は「90日内売却なし」）
 - `-1`: 未取得/判定不能（UI取得失敗、アクセス制約、要素未検出など）
 
-自動レビュー固定ポリシー（`scripts/auto_review_cycle.py`）:
-- `AUTO_REVIEW_REQUIRE_LIQUIDITY_SIGNAL=1` なら `sold_90d_count=-1` を自動承認しない
-- `AUTO_REVIEW_BLOCK_COLOR_MISSING_MARKET=1` なら eBay側色情報欠損マッチを自動承認しない
-- `AUTO_REVIEW_ALLOW_FALLBACK_ANY=1` でも、`fallback_any` は追加条件を満たす場合のみ承認
+自動レビュー固定ポリシー（`scripts/auto_miner_cycle.py`）:
+- `AUTO_MINER_REQUIRE_LIQUIDITY_SIGNAL=1` なら `sold_90d_count=-1` を自動承認しない
+- `AUTO_MINER_BLOCK_COLOR_MISSING_MARKET=1` なら eBay側色情報欠損マッチを自動承認しない
+- `AUTO_MINER_ALLOW_FALLBACK_ANY=1` でも、`fallback_any` は追加条件を満たす場合のみ承認
 - 追加条件:
-  - `AUTO_REVIEW_FALLBACK_MIN_SOLD_90D` 以上の売却件数
-  - `AUTO_REVIEW_FALLBACK_MIN_PROFIT_USD` 以上の期待利益
+  - `AUTO_MINER_FALLBACK_MIN_SOLD_90D` 以上の売却件数
+  - `AUTO_MINER_FALLBACK_MIN_PROFIT_USD` 以上の期待利益
   - `sold_price_min` が取得済み
 
 EV90（90日期待値）:
@@ -186,39 +186,39 @@ API節約重視のデフォルト方針:
 - 1クエリ内では `results/hits/limit` をサイト上限に寄せる（eBay最大200, Yahoo最大50, Rakuten最大30）
 - 同一クエリ内でページングしてから次のクエリに進む
 - `target_items` 到達か低歩留まりで早期停止
-- 直近完走済みで新規0件のクエリはTTL中スキップ（`REVIEW_QUERY_SKIP_TTL_SECONDS`）
+- 直近完走済みで新規0件のクエリはTTL中スキップ（`MINER_QUERY_SKIP_TTL_SECONDS`）
 - 1回の取得で重複比率が高いクエリは同一サイクル内で早期クールダウン（既定ON）
   - `--duplicate-heavy-ratio-threshold`（既定 `0.70`）
   - `--duplicate-heavy-min-evaluated`（既定 `12`）
   - `--duplicate-heavy-min-duplicates`（既定 `8`）
   - `--disable-duplicate-heavy-cooldown` で無効化可能
-- 型番入りクエリは毎回 narrow 先頭クエリから開始（`REVIEW_FETCH_FORCE_EXACT_FOR_MODEL_QUERY=1`）
+- 型番入りクエリは毎回 narrow 先頭クエリから開始（`MINER_FETCH_FORCE_EXACT_FOR_MODEL_QUERY=1`）
 - eBay側の色情報欠損でも、識別子/型番が強一致する場合は候補化して取りこぼしを抑制（既定ON）
-  - `REVIEW_MATCH_ALLOW_COLOR_MISSING_WITH_IDENTIFIER=1`
-  - `REVIEW_MATCH_ALLOW_COLOR_MISSING_WITH_MODEL_CODE=1`
+  - `MINER_MATCH_ALLOW_COLOR_MISSING_WITH_IDENTIFIER=1`
+  - `MINER_MATCH_ALLOW_COLOR_MISSING_WITH_MODEL_CODE=1`
   - 自動承認では色リスク理由として保持し、最終はレビューで確認
-- `review_cycle_report` の `low_match_reason_counts` / `low_match_samples` で一致不足の主因を確認可能
+- `miner_cycle_report` の `low_match_reason_counts` / `low_match_samples` で一致不足の主因を確認可能
 - `skipped_ambiguous_model_title` で複数型番列挙タイトルの除外数を確認可能
-- `review_cycle_report` の `liquidity_backfill` で、reason-target更新有無（`updated/added_entries/touched_entries`）を確認可能
+- `miner_cycle_report` の `liquidity_backfill` で、reason-target更新有無（`updated/added_entries/touched_entries`）を確認可能
 
 ## Cycle scripts
 
 Build queue up to target size (example: 20 candidates):
 
 ```bash
-python3 scripts/run_review_cycle.py --target-count 20
+python3 scripts/run_miner_cycle.py --target-count 20
 ```
 
 Recommended precision-first cycle (24 candidates + fixed manifest):
 
 ```bash
-python3 scripts/run_review_cycle.py --target-count 24 --hard-cap 30 --min-profit-usd 0.01 --min-margin-rate 0.03 --min-match-score 0.75 --require-full-batch
+python3 scripts/run_miner_cycle.py --target-count 24 --hard-cap 30 --min-profit-usd 0.01 --min-margin-rate 0.03 --min-match-score 0.75 --require-full-batch
 ```
 
 API制限を意識した検証モード（推奨）:
 
 ```bash
-python3 scripts/run_review_cycle.py \
+python3 scripts/run_miner_cycle.py \
   --target-count 24 \
   --hard-cap 30 \
   --max-zero-gain-strikes 2 \
@@ -233,21 +233,21 @@ python3 scripts/run_review_cycle.py \
 完全オフライン検証（キャッシュのみ利用）:
 
 ```bash
-python3 scripts/run_review_cycle.py --target-count 24 --cache-only --cache-ttl-seconds 86400
+python3 scripts/run_miner_cycle.py --target-count 24 --cache-only --cache-ttl-seconds 86400
 ```
 
-`review_cycle_report_latest.json` には `api_efficiency_summary`（network/cache比率）が出力されます。
+`miner_cycle_report_latest.json` には `api_efficiency_summary`（network/cache比率）が出力されます。
 
 Generate close report for the active cycle:
 
 ```bash
-python3 scripts/close_review_cycle.py --reject-floor 10 --min-reviewed-ratio 1.0 --min-reject-rate 0.10
+python3 scripts/close_miner_cycle.py --reject-floor 10 --min-reviewed-ratio 1.0 --min-reject-rate 0.10
 ```
 
 Get active cycle manifest:
 
 ```bash
-curl -sS http://127.0.0.1:8000/v1/review/cycle/active
+curl -sS http://127.0.0.1:8000/v1/miner/cycle/active
 ```
 
 Apply logic improvements from rejected items in active cycle:
@@ -270,13 +270,13 @@ python3 scripts/run_autonomous_cycle.py --target-count 24 --hard-cap 30 --min-ev
 
 Notes:
 - デフォルトはフルバッチ必須（`--require-full-batch` 相当）です。部分バッチで回す場合は `--allow-partial-batch` を付けます。
-- 自動レビューは `run_review_cycle` の保存スコアに加えて再マッチ判定を行い、同一商品根拠が弱いものは自動承認しません。
+- 自動レビューは `run_miner_cycle` の保存スコアに加えて再マッチ判定を行い、同一商品根拠が弱いものは自動承認しません。
 - `--skip-apply-when-not-ready` を付けると `ready_for_tuning=false` のとき通常は改善適用をスキップします。
 - ただし `ready_for_light_tuning=true` かつ `rejected_with_issue_count` が閾値以上なら light mode で改善適用します（既定ON）。
 - light mode を無効化する場合は `--disable-light-tuning` を指定します。
 - 既定で `/Users/tadamichikimura/Downloads/dev-HQ/ebayminer/docs/OPERATION_POLICY.json` を読み、閾値と運用条件（新品固定・流動性必須）を事前検証します。
 - 実験でのみ外す場合は `--skip-policy-check` を使います（本番運用では非推奨）。
-- 実行後に `review/auto/close` の整合性検証を行い、`docs/review_cycle_validation_latest.json` を出力します。
+- 実行後に `review/auto/close` の整合性検証を行い、`docs/miner_cycle_validation_latest.json` を出力します。
 - 履歴スキップを一時的に外して検証したい場合は `--historical-min-attempts 999 --historical-retry-every-runs 1` を指定します。
 
 Guarded multi-cycle (fail-fast) 実行:
@@ -304,13 +304,13 @@ python3 scripts/cleanup_pending_queue.py --apply
 ### Review approve (dummy listing)
 
 ```bash
-curl -sS -X POST http://127.0.0.1:8000/v1/review/candidates/1/approve
+curl -sS -X POST http://127.0.0.1:8000/v1/miner/candidates/1/approve
 ```
 
 ### Review reject (targets + reason)
 
 ```bash
-curl -sS -X POST http://127.0.0.1:8000/v1/review/candidates/1/reject \
+curl -sS -X POST http://127.0.0.1:8000/v1/miner/candidates/1/reject \
   -H "Content-Type: application/json" \
   -d '{
     "issue_targets": ["model", "price", "shipping"],
@@ -323,7 +323,7 @@ curl -sS -X POST http://127.0.0.1:8000/v1/review/candidates/1/reject \
 ### Review candidate detail
 
 ```bash
-curl -sS http://127.0.0.1:8000/v1/review/candidates/1
+curl -sS http://127.0.0.1:8000/v1/miner/candidates/1
 ```
 
 ## Operator API (MVP)

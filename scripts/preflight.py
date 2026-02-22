@@ -427,13 +427,13 @@ def check_operation_policy(policy_path: Path) -> bool:
     ok = ok and liq_ok
     print_result("POLICY:LIQUIDITY_REQUIRE_SIGNAL", liq_ok, f"{actual_liq} (expected {expected_liq})")
 
-    expected_auto_liq = str(env_req.get("AUTO_REVIEW_REQUIRE_LIQUIDITY_SIGNAL", "1") or "1").strip().lower() in {
+    expected_auto_liq = str(env_req.get("AUTO_MINER_REQUIRE_LIQUIDITY_SIGNAL", "1") or "1").strip().lower() in {
         "1",
         "true",
         "yes",
         "on",
     }
-    actual_auto_liq = (os.getenv("AUTO_REVIEW_REQUIRE_LIQUIDITY_SIGNAL", "0") or "0").strip().lower() in {
+    actual_auto_liq = (os.getenv("AUTO_MINER_REQUIRE_LIQUIDITY_SIGNAL", "0") or "0").strip().lower() in {
         "1",
         "true",
         "yes",
@@ -442,7 +442,7 @@ def check_operation_policy(policy_path: Path) -> bool:
     auto_liq_ok = (actual_auto_liq == expected_auto_liq) if isinstance(expected_auto_liq, bool) else True
     ok = ok and auto_liq_ok
     print_result(
-        "POLICY:AUTO_REVIEW_REQUIRE_LIQUIDITY_SIGNAL",
+        "POLICY:AUTO_MINER_REQUIRE_LIQUIDITY_SIGNAL",
         auto_liq_ok,
         f"{actual_auto_liq} (expected {expected_auto_liq})",
     )

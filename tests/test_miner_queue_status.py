@@ -3,11 +3,11 @@ import unittest
 from pathlib import Path
 
 from reselling.config import Settings
-from reselling.review import (
-    approve_review_candidate,
-    create_review_candidate,
-    list_review_queue,
-    reject_review_candidate,
+from reselling.miner import (
+    approve_miner_candidate,
+    create_miner_candidate,
+    list_miner_queue,
+    reject_miner_candidate,
 )
 
 
@@ -51,24 +51,24 @@ class ReviewQueueStatusTests(unittest.TestCase):
     def test_reviewed_status_returns_only_reviewed_rows_and_total(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             settings = _settings_for(Path(tmp) / "test.db")
-            pending = create_review_candidate(_candidate_payload(1), settings=settings)
-            listed = create_review_candidate(_candidate_payload(2), settings=settings)
-            rejected = create_review_candidate(_candidate_payload(3), settings=settings)
+            pending = create_miner_candidate(_candidate_payload(1), settings=settings)
+            listed = create_miner_candidate(_candidate_payload(2), settings=settings)
+            rejected = create_miner_candidate(_candidate_payload(3), settings=settings)
 
-            approve_review_candidate(int(listed["id"]), settings=settings)
-            reject_review_candidate(
+            approve_miner_candidate(int(listed["id"]), settings=settings)
+            reject_miner_candidate(
                 int(rejected["id"]),
                 issue_targets=["price"],
                 reason_text="too high",
                 settings=settings,
             )
 
-            reviewed_page = list_review_queue(status="reviewed", limit=1, settings=settings)
+            reviewed_page = list_miner_queue(status="reviewed", limit=1, settings=settings)
             self.assertEqual(int(reviewed_page["total"]), 2)
             self.assertEqual(len(reviewed_page["items"]), 1)
             self.assertIn(str(reviewed_page["items"][0]["status"]), {"listed", "approved", "rejected"})
 
-            pending_page = list_review_queue(status="pending", limit=10, settings=settings)
+            pending_page = list_miner_queue(status="pending", limit=10, settings=settings)
             self.assertEqual(int(pending_page["total"]), 1)
             self.assertEqual(int(pending_page["items"][0]["id"]), int(pending["id"]))
 
@@ -79,10 +79,10 @@ class ReviewQueueStatusTests(unittest.TestCase):
             bad_payload = _candidate_payload(11)
             bad_payload["metadata"] = {"market_price_basis_type": "sold_price_median_fallback_90d"}
 
-            keep = create_review_candidate(ok_payload, settings=settings)
-            create_review_candidate(bad_payload, settings=settings)
+            keep = create_miner_candidate(ok_payload, settings=settings)
+            create_miner_candidate(bad_payload, settings=settings)
 
-            pending_page = list_review_queue(status="pending", limit=10, settings=settings)
+            pending_page = list_miner_queue(status="pending", limit=10, settings=settings)
             self.assertEqual(int(pending_page["total"]), 1)
             self.assertEqual(int(pending_page["items"][0]["id"]), int(keep["id"]))
 
@@ -93,10 +93,10 @@ class ReviewQueueStatusTests(unittest.TestCase):
             bad_payload = _candidate_payload(21)
             bad_payload["metadata"] = {"market_price_basis_type": "sold_price_min_90d"}
 
-            keep = create_review_candidate(keep_payload, settings=settings)
-            create_review_candidate(bad_payload, settings=settings)
+            keep = create_miner_candidate(keep_payload, settings=settings)
+            create_miner_candidate(bad_payload, settings=settings)
 
-            pending_page = list_review_queue(status="pending", limit=10, settings=settings)
+            pending_page = list_miner_queue(status="pending", limit=10, settings=settings)
             self.assertEqual(int(pending_page["total"]), 1)
             self.assertEqual(int(pending_page["items"][0]["id"]), int(keep["id"]))
 

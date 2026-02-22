@@ -30,8 +30,8 @@ DB_TARGETS: tuple[DbTarget, ...] = (
         db_path=ROOT_DIR / "data" / "reseller.db",
         tables=(
             "fx_rate_states",
-            "review_candidates",
-            "review_rejections",
+            "miner_candidates",
+            "miner_rejections",
             "liquidity_signals",
         ),
     ),

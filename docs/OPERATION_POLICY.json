@@ -16,7 +16,7 @@
   "env_requirements": {
     "ITEM_CONDITION": "new",
     "LIQUIDITY_REQUIRE_SIGNAL": "1",
-    "AUTO_REVIEW_REQUIRE_LIQUIDITY_SIGNAL": "1",
+    "AUTO_MINER_REQUIRE_LIQUIDITY_SIGNAL": "1",
     "LIQUIDITY_PROVIDER_MODE_allowed": [
       "rpa_json",
       "ebay_marketplace_insights"

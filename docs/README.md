@@ -59,7 +59,7 @@
 
 ## 4. 生成物・状態ファイル
 生成物本体の一覧は `docs/RECORDS_REGISTRY.md` を参照。  
-`docs/review_cycle_*_latest.json` や `docs/autonomous_*` などは手編集禁止です。
+`docs/miner_cycle_*_latest.json` や `docs/autonomous_*` などは手編集禁止です。
 
 ## 5. アーカイブ
 - `docs/archive/manual/PROJECT_SUPREME_REPORT_2026-02-19.md`

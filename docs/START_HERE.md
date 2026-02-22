@@ -57,7 +57,7 @@
 
 ## 5. 引き継ぎ時の禁止事項
 - 生成物（`docs/*_latest.json`, `docs/autonomous_*`, `docs/cycle_diagnostics`）を手編集しない。
-- 実行状態（`data/review_*`, `data/liquidity_*`）を手編集しない。
+- 実行状態（`data/miner_*`, `data/liquidity_*`）を手編集しない。
 - 正本を増殖させない（同じ責務の新規mdを作らない）。
 - 要件変更時に `REQUIREMENTS -> DoD -> OPERATION_POLICY` の同期を省略しない。
 

@@ -111,4 +111,4 @@
 - 本要件を変更する場合は、以下を同時更新する。
 1. `docs/DEFINITION_OF_DONE.md`
 2. `docs/OPERATION_POLICY.json`
-3. UI文言/表示項目（`web/review.*`）
+3. UI文言/表示項目（`web/miner.*`）

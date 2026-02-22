@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch
 
-from reselling.live_review_fetch import (
+from reselling.live_miner_fetch import (
     backfill_candidate_market_images,
     _extract_image_url,
     _extract_primary_model_code,
@@ -40,8 +40,8 @@ class IdentifierImageFallbackTests(unittest.TestCase):
                 "market_image_url_active": "",
             },
         }
-        with patch("reselling.live_review_fetch._ebay_access_token", return_value="dummy-token"), patch(
-            "reselling.live_review_fetch._ebay_fetch_item_image",
+        with patch("reselling.live_miner_fetch._ebay_access_token", return_value="dummy-token"), patch(
+            "reselling.live_miner_fetch._ebay_fetch_item_image",
             return_value="https://i.ebayimg.com/images/g/fetched/s-l500.jpg",
         ):
             updated = backfill_candidate_market_images([candidate], timeout=8, max_calls=3)

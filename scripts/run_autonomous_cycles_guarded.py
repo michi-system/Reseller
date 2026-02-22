@@ -130,10 +130,10 @@ def main() -> int:
     results_dir = Path(args.results_dir)
     results_dir.mkdir(parents=True, exist_ok=True)
 
-    latest_review = ROOT_DIR / "docs" / "review_cycle_report_latest.json"
-    latest_auto = ROOT_DIR / "docs" / "review_cycle_auto_review_latest.json"
-    latest_close = ROOT_DIR / "docs" / "review_cycle_close_report_latest.json"
-    latest_validation = ROOT_DIR / "docs" / "review_cycle_validation_latest.json"
+    latest_review = ROOT_DIR / "docs" / "miner_cycle_report_latest.json"
+    latest_auto = ROOT_DIR / "docs" / "miner_cycle_auto_miner_latest.json"
+    latest_close = ROOT_DIR / "docs" / "miner_cycle_close_report_latest.json"
+    latest_validation = ROOT_DIR / "docs" / "miner_cycle_validation_latest.json"
 
     cycle_args = [tok for tok in shlex.split(str(args.cycle_args or "").strip()) if tok]
 
@@ -225,10 +225,10 @@ def main() -> int:
         runs.append(run_summary)
 
         run_dir = results_dir / f"run_{idx}_artifacts"
-        _snapshot_file(latest_review, run_dir / "review_cycle_report.json")
-        _snapshot_file(latest_auto, run_dir / "review_cycle_auto_review.json")
-        _snapshot_file(latest_close, run_dir / "review_cycle_close_report.json")
-        _snapshot_file(latest_validation, run_dir / "review_cycle_validation.json")
+        _snapshot_file(latest_review, run_dir / "miner_cycle_report.json")
+        _snapshot_file(latest_auto, run_dir / "miner_cycle_auto_miner.json")
+        _snapshot_file(latest_close, run_dir / "miner_cycle_close_report.json")
+        _snapshot_file(latest_validation, run_dir / "miner_cycle_validation.json")
 
         print(
             f"[guarded] cycle {idx} status={status} batch={batch_size} "

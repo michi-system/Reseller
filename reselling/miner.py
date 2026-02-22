@@ -51,7 +51,7 @@ def _parse_metadata(raw: Any) -> Dict[str, Any]:
         return {}
 
 
-def create_review_candidate(
+def create_miner_candidate(
     data: Dict[str, Any],
     settings: Optional[Settings] = None,
 ) -> Dict[str, Any]:
@@ -90,7 +90,7 @@ def create_review_candidate(
         if is_postgres_connection(conn):
             row = conn.execute(
                 """
-                INSERT INTO review_candidates (
+                INSERT INTO miner_candidates (
                     source_site, market_site, source_item_id, market_item_id,
                     source_title, market_title, condition, match_level, match_score,
                     expected_profit_usd, expected_margin_rate,
@@ -108,7 +108,7 @@ def create_review_candidate(
         else:
             cur = conn.execute(
                 """
-                INSERT INTO review_candidates (
+                INSERT INTO miner_candidates (
                     source_site, market_site, source_item_id, market_item_id,
                     source_title, market_title, condition, match_level, match_score,
                     expected_profit_usd, expected_margin_rate,
@@ -122,7 +122,7 @@ def create_review_candidate(
             candidate_id = int(cur.lastrowid)
         conn.commit()
         row = conn.execute(
-            "SELECT * FROM review_candidates WHERE id = ?",
+            "SELECT * FROM miner_candidates WHERE id = ?",
             (candidate_id,),
         ).fetchone()
         if row is None:
@@ -130,12 +130,12 @@ def create_review_candidate(
         return _row_to_candidate(row)
 
 
-def get_review_candidate(candidate_id: int, settings: Optional[Settings] = None) -> Optional[Dict[str, Any]]:
+def get_miner_candidate(candidate_id: int, settings: Optional[Settings] = None) -> Optional[Dict[str, Any]]:
     settings = settings or load_settings()
     with connect(settings.db_path) as conn:
         init_db(conn)
         row = conn.execute(
-            "SELECT * FROM review_candidates WHERE id = ?",
+            "SELECT * FROM miner_candidates WHERE id = ?",
             (candidate_id,),
         ).fetchone()
         if row is None:
@@ -144,7 +144,7 @@ def get_review_candidate(candidate_id: int, settings: Optional[Settings] = None)
         rej_rows = conn.execute(
             """
             SELECT id, issue_targets_json, reason_text, created_at
-            FROM review_rejections
+            FROM miner_rejections
             WHERE candidate_id = ?
             ORDER BY id DESC
             """,
@@ -162,7 +162,7 @@ def get_review_candidate(candidate_id: int, settings: Optional[Settings] = None)
         return candidate
 
 
-def list_review_queue(
+def list_miner_queue(
     *,
     status: str = "pending",
     limit: int = 50,
@@ -241,13 +241,13 @@ def list_review_queue(
 
         total = int(
             conn.execute(
-                f"SELECT COUNT(*) AS c FROM review_candidates {where_sql}",
+                f"SELECT COUNT(*) AS c FROM miner_candidates {where_sql}",
                 tuple(where_params),
             ).fetchone()["c"]
         )
         rows = conn.execute(
             f"""
-            SELECT * FROM review_candidates
+            SELECT * FROM miner_candidates
             {where_sql}
             ORDER BY created_at DESC, id DESC
             LIMIT ? OFFSET ?
@@ -271,7 +271,7 @@ def list_review_queue(
         }
 
 
-def approve_review_candidate(
+def approve_miner_candidate(
     candidate_id: int,
     settings: Optional[Settings] = None,
 ) -> Dict[str, Any]:
@@ -281,7 +281,7 @@ def approve_review_candidate(
     with connect(settings.db_path) as conn:
         init_db(conn)
         row = conn.execute(
-            "SELECT id, status FROM review_candidates WHERE id = ?",
+            "SELECT id, status FROM miner_candidates WHERE id = ?",
             (candidate_id,),
         ).fetchone()
         if row is None:
@@ -292,7 +292,7 @@ def approve_review_candidate(
 
         conn.execute(
             """
-            UPDATE review_candidates
+            UPDATE miner_candidates
             SET status = 'listed',
                 updated_at = ?,
                 approved_at = COALESCE(approved_at, ?),
@@ -304,7 +304,7 @@ def approve_review_candidate(
             (now, now, now, listing_ref, candidate_id),
         )
         conn.commit()
-    candidate = get_review_candidate(candidate_id, settings)
+    candidate = get_miner_candidate(candidate_id, settings)
     if candidate is None:
         raise RuntimeError("candidate disappeared")
     candidate["listing"] = {
@@ -315,7 +315,7 @@ def approve_review_candidate(
     return candidate
 
 
-def auto_approve_review_candidate(
+def auto_approve_miner_candidate(
     candidate_id: int,
     *,
     cycle_id: str = "",
@@ -331,7 +331,7 @@ def auto_approve_review_candidate(
     with connect(settings.db_path) as conn:
         init_db(conn)
         row = conn.execute(
-            "SELECT id, status, metadata_json FROM review_candidates WHERE id = ?",
+            "SELECT id, status, metadata_json FROM miner_candidates WHERE id = ?",
             (candidate_id,),
         ).fetchone()
         if row is None:
@@ -343,7 +343,7 @@ def auto_approve_review_candidate(
             raise ValueError("candidate already rejected")
 
         metadata = _parse_metadata(row["metadata_json"])
-        metadata["auto_review"] = {
+        metadata["auto_miner"] = {
             "approved": True,
             "approved_at": now,
             "cycle_id": str(cycle_id or "").strip(),
@@ -353,7 +353,7 @@ def auto_approve_review_candidate(
 
         conn.execute(
             """
-            UPDATE review_candidates
+            UPDATE miner_candidates
             SET status = 'approved',
                 updated_at = ?,
                 approved_at = COALESCE(approved_at, ?),
@@ -365,13 +365,13 @@ def auto_approve_review_candidate(
         )
         conn.commit()
 
-    candidate = get_review_candidate(candidate_id, settings)
+    candidate = get_miner_candidate(candidate_id, settings)
     if candidate is None:
         raise RuntimeError("candidate disappeared")
     return candidate
 
 
-def reject_review_candidate(
+def reject_miner_candidate(
     candidate_id: int,
     *,
     issue_targets: List[str],
@@ -388,7 +388,7 @@ def reject_review_candidate(
     with connect(settings.db_path) as conn:
         init_db(conn)
         row = conn.execute(
-            "SELECT id, status FROM review_candidates WHERE id = ?",
+            "SELECT id, status FROM miner_candidates WHERE id = ?",
             (candidate_id,),
         ).fetchone()
         if row is None:
@@ -399,14 +399,14 @@ def reject_review_candidate(
 
         conn.execute(
             """
-            INSERT INTO review_rejections (candidate_id, issue_targets_json, reason_text, created_at)
+            INSERT INTO miner_rejections (candidate_id, issue_targets_json, reason_text, created_at)
             VALUES (?, ?, ?, ?)
             """,
             (candidate_id, json.dumps(cleaned_targets, ensure_ascii=False), cleaned_reason, now),
         )
         conn.execute(
             """
-            UPDATE review_candidates
+            UPDATE miner_candidates
             SET status = 'rejected',
                 rejected_at = COALESCE(rejected_at, ?),
                 updated_at = ?
@@ -416,7 +416,7 @@ def reject_review_candidate(
         )
         conn.commit()
 
-    candidate = get_review_candidate(candidate_id, settings)
+    candidate = get_miner_candidate(candidate_id, settings)
     if candidate is None:
         raise RuntimeError("candidate disappeared")
     return candidate

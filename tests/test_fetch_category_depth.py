@@ -2,13 +2,13 @@ import unittest
 import os
 from unittest.mock import patch
 
-from reselling import live_review_fetch
+from reselling import live_miner_fetch
 
 
 class FetchCategoryDepthTests(unittest.TestCase):
     @staticmethod
-    def _make_item(query: str, idx: int) -> live_review_fetch.MarketItem:
-        return live_review_fetch.MarketItem(
+    def _make_item(query: str, idx: int) -> live_miner_fetch.MarketItem:
+        return live_miner_fetch.MarketItem(
             site="ebay",
             item_id=f"{query}-{idx}",
             title=f"{query} model {idx}",
@@ -23,7 +23,7 @@ class FetchCategoryDepthTests(unittest.TestCase):
         )
 
     def test_category_fetch_enforces_min_query_span_before_target(self) -> None:
-        profile = live_review_fetch.SiteFetchProfile(
+        profile = live_miner_fetch.SiteFetchProfile(
             site="ebay",
             max_calls=1,
             per_call_limit=80,
@@ -44,35 +44,35 @@ class FetchCategoryDepthTests(unittest.TestCase):
                 "raw_count": 200,
             }
 
-        with patch.dict(os.environ, {"REVIEW_CATEGORY_RELEVANCE_FILTER_ENABLED": "0"}, clear=False), patch.object(
-            live_review_fetch,
+        with patch.dict(os.environ, {"MINER_CATEGORY_RELEVANCE_FILTER_ENABLED": "0"}, clear=False), patch.object(
+            live_miner_fetch,
             "_site_fetch_profile",
             return_value=profile,
         ), patch.object(
-            live_review_fetch,
+            live_miner_fetch,
             "_apply_fetch_tuner",
             return_value=(profile, {"enabled": True, "applied": True}),
         ), patch.object(
-            live_review_fetch,
+            live_miner_fetch,
             "_build_site_queries_with_meta",
             return_value=(
                 ["Q1", "Q2", "Q3", "Q4"],
                 {"applied": True, "category_key": "watch", "category_name": "腕時計"},
             ),
         ), patch.object(
-            live_review_fetch,
+            live_miner_fetch,
             "_search_ebay",
             side_effect=fake_search,
         ), patch.object(
-            live_review_fetch,
+            live_miner_fetch,
             "_load_fetch_cursor_entries",
             return_value={},
         ), patch.object(
-            live_review_fetch,
+            live_miner_fetch,
             "_save_fetch_cursor_entries",
             return_value=None,
         ):
-            _items, details, err = live_review_fetch._fetch_site_items_adaptive(
+            _items, details, err = live_miner_fetch._fetch_site_items_adaptive(
                 site="ebay",
                 query="watch",
                 cap_site=5,
