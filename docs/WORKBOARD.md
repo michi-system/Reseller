@@ -28,6 +28,7 @@
 | WB-P1-005 | P1 | 移行 | done | legacy internal alias のサンセット実施（Issue #4） | 期限までに wrapper/互換ヘッダの撤去可否を確定 | 0.5-1日 |
 | WB-P0-011 | P0 | 移行 | done | Supabase一括移行向けローカル復帰チェックポイント運用を実装 | 切替前チェックポイント作成と復帰コマンドが固定化される | 0.5日 |
 | WB-P0-012 | P0 | 移行 | done | Supabase投入の初期スキーマSQLとSQLite CSV一括エクスポートを実装 | SQL適用とCSV出力手順が固定化される | 0.5日 |
+| WB-P0-013 | P0 | 移行 | done | CSVバンドルをSupabaseへ一括投入する実行スクリプトを実装 | dry-run/本実行の再現可能な投入コマンドが固定化される | 0.5日 |
 
 ## 3. Recently Completed
 | 日付 | ID | 内容 | 反映先 |
@@ -51,6 +52,7 @@
 | 2026-02-22 | WB-OPS-005 | Operatorコアロジック実装（取込/出品サイクル/監視判定/設定バージョン管理/API追加） | `listing_ops/*`, `scripts/operator_*.py`, `reselling/api_server.py`, `tests/test_operator_logic.py` |
 | 2026-02-22 | WB-MIG-001 | Supabase一括移行の事前安全策を実装（ローカル復帰チェックポイント作成/復元スクリプト + 手順書） | `scripts/create_local_checkpoint.py`, `scripts/restore_local_checkpoint.py`, `docs/SUPABASE_BIG_BANG_MIGRATION.md` |
 | 2026-02-22 | WB-MIG-002 | Supabase投入準備を実装（初期スキーマSQL + SQLite CSV一括エクスポート） | `docs/sql/reseller_supabase_schema.sql`, `scripts/export_sqlite_bundle.py`, `docs/SUPABASE_BIG_BANG_MIGRATION.md` |
+| 2026-02-22 | WB-MIG-003 | CSVバンドル投入スクリプトを実装（dry-run + truncate投入 + シーケンス同期） | `scripts/import_csv_bundle_to_postgres.py`, `docs/SUPABASE_BIG_BANG_MIGRATION.md` |
 | 2026-02-22 | WB-OPS-006 | Operator運用UIと手動介入APIを実装（一覧/詳細/ジョブ実行/手動状態遷移） | `web/operator.*`, `listing_ops/manual_actions.py`, `reselling/api_server.py`, `tests/test_operator_manual_actions.py` |
 
 ## 4. Backlog
@@ -90,6 +92,7 @@
 | 2026-02-22 | DEC-017 | 停止済み商品の復帰は自動再開せず、`manual-resume-ready` で再出品キューへ戻す運用に固定 | 自動再開の誤復帰リスクを抑えつつ、再出品判断を人間で管理するため |
 | 2026-02-22 | DEC-018 | Supabase移行は一括切替で実施し、PITR必須ではなくローカルチェックポイント復元をロールバック正本とする | 「最終的にMacへ戻せる」を主目的に、コストと運用速度を優先するため |
 | 2026-02-22 | DEC-019 | Supabase移行入力はSQLite全表のCSVバンドルを正本にし、手動テーブル投入手順を固定する | DB間差分を可視化しつつ、移行時の再実行性を確保するため |
+| 2026-02-22 | DEC-020 | CSV投入は `import_csv_bundle_to_postgres.py` を正本にし、`--dry-run` と `--truncate --apply` の2段運用に固定する | 投入ミスを防ぎ、毎回同じ手順で再現可能にするため |
 
 ## 7. 次エージェント向け起点
 1. `Now` の `in_progress` を上から順に処理。

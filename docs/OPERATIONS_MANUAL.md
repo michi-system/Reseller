@@ -121,6 +121,12 @@ python3 scripts/create_local_checkpoint.py --tag pre-supabase-bigbang
 python3 scripts/export_sqlite_bundle.py --tag pre-supabase-bigbang
 ```
 
+- CSVバンドルをPostgreSQLへ投入する（本実行時）。
+
+```bash
+python3 scripts/import_csv_bundle_to_postgres.py --bundle-dir backups/sqlite_exports/pre-supabase-bigbang_YYYYMMDD_HHMMSS --truncate --apply
+```
+
 - 不具合時の即時復帰は次を実行する。
 
 ```bash
