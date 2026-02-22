@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-import sqlite3
 import uuid
 from pathlib import Path
 from typing import Any, Dict, Tuple
@@ -44,7 +43,7 @@ def _validate_record(record: Dict[str, Any]) -> None:
 
 
 def _upsert_inbox(
-    conn: sqlite3.Connection,
+    conn: Any,
     *,
     record: Dict[str, Any],
     ingest_run_id: str,
@@ -54,7 +53,7 @@ def _upsert_inbox(
 ) -> bool:
     cur = conn.execute(
         """
-        INSERT OR IGNORE INTO approved_listing_inbox (
+        INSERT INTO approved_listing_inbox (
             approved_id,
             approved_at,
             approved_by,
@@ -66,6 +65,7 @@ def _upsert_inbox(
             source_file_hash,
             listing_status
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(approved_id) DO NOTHING
         """,
         (
             _to_text(record["approved_id"]),
@@ -83,10 +83,10 @@ def _upsert_inbox(
     return cur.rowcount > 0
 
 
-def _ensure_operator_listing(conn: sqlite3.Connection, record: Dict[str, Any], now_iso: str) -> bool:
+def _ensure_operator_listing(conn: Any, record: Dict[str, Any], now_iso: str) -> bool:
     cur = conn.execute(
         """
-        INSERT OR IGNORE INTO operator_listings (
+        INSERT INTO operator_listings (
             approved_id,
             listing_state,
             title,
@@ -106,6 +106,7 @@ def _ensure_operator_listing(conn: sqlite3.Connection, record: Dict[str, Any], n
             created_at,
             updated_at
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(approved_id) DO NOTHING
         """,
         (
             _to_text(record["approved_id"]),

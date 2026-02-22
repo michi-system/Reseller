@@ -1,20 +1,22 @@
-"""SQLite models for Operator runtime."""
+"""DB models for Operator runtime (SQLite / PostgreSQL)."""
 
 from __future__ import annotations
 
-import sqlite3
 from pathlib import Path
 from typing import Any, Dict, Iterable, Optional
 
-
-def connect(db_path: Path) -> sqlite3.Connection:
-    db_path.parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(str(db_path))
-    conn.row_factory = sqlite3.Row
-    return conn
+from reselling.db_runtime import DbConnection, connect_db, ensure_postgres_schema, is_postgres_connection
 
 
-def init_db(conn: sqlite3.Connection) -> None:
+def connect(db_path: Path) -> DbConnection:
+    return connect_db(db_path)
+
+
+def init_db(conn: DbConnection) -> None:
+    if is_postgres_connection(conn):
+        ensure_postgres_schema(conn)
+        return
+
     conn.execute(
         """
         CREATE TABLE IF NOT EXISTS approved_listing_inbox (
@@ -170,7 +172,7 @@ def init_db(conn: sqlite3.Connection) -> None:
     conn.commit()
 
 
-def insert_job_run(conn: sqlite3.Connection, run_id: str, job_type: str, started_at: str) -> None:
+def insert_job_run(conn: DbConnection, run_id: str, job_type: str, started_at: str) -> None:
     conn.execute(
         """
         INSERT INTO job_runs (
@@ -183,7 +185,7 @@ def insert_job_run(conn: sqlite3.Connection, run_id: str, job_type: str, started
 
 
 def finish_job_run(
-    conn: sqlite3.Connection,
+    conn: DbConnection,
     *,
     run_id: str,
     finished_at: str,
@@ -218,7 +220,7 @@ def finish_job_run(
 
 
 def seed_config_if_missing(
-    conn: sqlite3.Connection,
+    conn: DbConnection,
     *,
     config_version: str,
     min_profit_jpy: float,
@@ -233,7 +235,7 @@ def seed_config_if_missing(
 ) -> None:
     conn.execute(
         """
-        INSERT OR IGNORE INTO operator_config_versions (
+        INSERT INTO operator_config_versions (
             config_version,
             min_profit_jpy,
             min_profit_rate,
@@ -245,6 +247,7 @@ def seed_config_if_missing(
             created_at,
             created_by
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(config_version) DO NOTHING
         """,
         (
             config_version,
@@ -262,7 +265,7 @@ def seed_config_if_missing(
     conn.commit()
 
 
-def latest_config(conn: sqlite3.Connection) -> Optional[Dict[str, Any]]:
+def latest_config(conn: DbConnection) -> Optional[Dict[str, Any]]:
     row = conn.execute(
         """
         SELECT *
@@ -276,7 +279,7 @@ def latest_config(conn: sqlite3.Connection) -> Optional[Dict[str, Any]]:
     return dict(row)
 
 
-def fetch_listings_by_state(conn: sqlite3.Connection, states: Iterable[str], limit: int) -> list[sqlite3.Row]:
+def fetch_listings_by_state(conn: DbConnection, states: Iterable[str], limit: int) -> list[Any]:
     state_list = [str(s) for s in states]
     placeholders = ",".join("?" for _ in state_list)
     if not placeholders:

@@ -29,6 +29,7 @@
 SUPABASE_URL=https://vtspugzncsxmurzlhfyg.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=... # Supabase Settings > API
 SUPABASE_DB_URL=...           # Supabase Settings > Database > Connection string (URI)
+DB_BACKEND=postgres
 ```
 
 `scripts/import_csv_bundle_to_postgres.py` は `SUPABASE_DB_URL` または `DATABASE_URL` を自動参照します。
@@ -63,6 +64,8 @@ python3 scripts/import_csv_bundle_to_postgres.py \
 ```
 
 4. APIの読み書き先をSupabaseへ切替。
+   - `DB_BACKEND=postgres` で起動する。
+   - `scripts/run_api.py` は `.env.local` を読み込んで起動されるため、通常は追加設定不要。
 5. 主要API (`/healthz`, review, operator) の疎通確認。
 6. 監視サイクル・出品サイクルをdry-runで再実行し、整合性確認。
 
@@ -83,6 +86,7 @@ python3 scripts/restore_local_checkpoint.py --apply
 ```
 
 4. ローカル設定でAPI再起動し、疎通確認する。
+   - 例: `.env.local` で `DB_BACKEND=sqlite` に戻す（`SUPABASE_DB_URL` は空にしてもよい）。
 5. `docs/WORKBOARD.md` の `Decision Log` に復帰理由を記録する。
 
 ## 6. 注意点

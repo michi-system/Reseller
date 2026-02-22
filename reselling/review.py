@@ -11,6 +11,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from .config import Settings, load_settings
 from .fx_rate import get_current_usd_jpy_snapshot
 from .models import connect, init_db
+from .db_runtime import is_postgres_connection
 
 
 VALID_STATUSES = {"pending", "approved", "rejected", "listed"}
@@ -68,37 +69,57 @@ def create_review_candidate(
 
     with connect(settings.db_path) as conn:
         init_db(conn)
-        cur = conn.execute(
-            """
-            INSERT INTO review_candidates (
-                source_site, market_site, source_item_id, market_item_id,
-                source_title, market_title, condition, match_level, match_score,
-                expected_profit_usd, expected_margin_rate,
-                fx_rate, fx_source, status, listing_state, metadata_json,
-                created_at, updated_at
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'dummy_pending', ?, ?, ?)
-            """,
-            (
-                str(data["source_site"]).strip(),
-                str(data["market_site"]).strip(),
-                str(data.get("source_item_id", "")).strip() or None,
-                str(data.get("market_item_id", "")).strip() or None,
-                str(data["source_title"]).strip(),
-                str(data["market_title"]).strip(),
-                str(data.get("condition", "new")).strip() or "new",
-                str(data.get("match_level", "L2_precise")).strip() or "L2_precise",
-                float(data.get("match_score", 0.0)),
-                float(data.get("expected_profit_usd", 0.0)),
-                float(data.get("expected_margin_rate", 0.0)),
-                float(data.get("fx_rate", fx.rate)),
-                str(data.get("fx_source", fx.source)),
-                json.dumps(metadata, ensure_ascii=False),
-                now,
-                now,
-            ),
+        insert_params = (
+            str(data["source_site"]).strip(),
+            str(data["market_site"]).strip(),
+            str(data.get("source_item_id", "")).strip() or None,
+            str(data.get("market_item_id", "")).strip() or None,
+            str(data["source_title"]).strip(),
+            str(data["market_title"]).strip(),
+            str(data.get("condition", "new")).strip() or "new",
+            str(data.get("match_level", "L2_precise")).strip() or "L2_precise",
+            float(data.get("match_score", 0.0)),
+            float(data.get("expected_profit_usd", 0.0)),
+            float(data.get("expected_margin_rate", 0.0)),
+            float(data.get("fx_rate", fx.rate)),
+            str(data.get("fx_source", fx.source)),
+            json.dumps(metadata, ensure_ascii=False),
+            now,
+            now,
         )
-        candidate_id = int(cur.lastrowid)
+        if is_postgres_connection(conn):
+            row = conn.execute(
+                """
+                INSERT INTO review_candidates (
+                    source_site, market_site, source_item_id, market_item_id,
+                    source_title, market_title, condition, match_level, match_score,
+                    expected_profit_usd, expected_margin_rate,
+                    fx_rate, fx_source, status, listing_state, metadata_json,
+                    created_at, updated_at
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'dummy_pending', ?, ?, ?)
+                RETURNING id
+                """,
+                insert_params,
+            ).fetchone()
+            if row is None:
+                raise RuntimeError("failed to create candidate")
+            candidate_id = int(row["id"])
+        else:
+            cur = conn.execute(
+                """
+                INSERT INTO review_candidates (
+                    source_site, market_site, source_item_id, market_item_id,
+                    source_title, market_title, condition, match_level, match_score,
+                    expected_profit_usd, expected_margin_rate,
+                    fx_rate, fx_source, status, listing_state, metadata_json,
+                    created_at, updated_at
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'dummy_pending', ?, ?, ?)
+                """,
+                insert_params,
+            )
+            candidate_id = int(cur.lastrowid)
         conn.commit()
         row = conn.execute(
             "SELECT * FROM review_candidates WHERE id = ?",
@@ -186,16 +207,28 @@ def list_review_queue(
         # 安全性のため常時厳格化:
         # pending/approved で sold_price_min_90d を採用している候補は
         # 売却サンプルURL(ebay_sold_item_url)が存在するものだけ表示する。
-        where_clauses.append(
-            "(status NOT IN ('pending','approved') OR json_extract(metadata_json, '$.market_price_basis_type') = 'sold_price_min_90d')"
-        )
-        where_clauses.append(
-            "("
-            "status NOT IN ('pending','approved') "
-            "OR json_extract(metadata_json, '$.market_price_basis_type') <> 'sold_price_min_90d' "
-            "OR LENGTH(TRIM(COALESCE(json_extract(metadata_json, '$.ebay_sold_item_url'), ''))) > 0"
-            ")"
-        )
+        if is_postgres_connection(conn):
+            where_clauses.append(
+                "(status NOT IN ('pending','approved') OR (metadata_json::jsonb ->> 'market_price_basis_type') = 'sold_price_min_90d')"
+            )
+            where_clauses.append(
+                "("
+                "status NOT IN ('pending','approved') "
+                "OR (metadata_json::jsonb ->> 'market_price_basis_type') <> 'sold_price_min_90d' "
+                "OR LENGTH(TRIM(COALESCE(metadata_json::jsonb ->> 'ebay_sold_item_url', ''))) > 0"
+                ")"
+            )
+        else:
+            where_clauses.append(
+                "(status NOT IN ('pending','approved') OR json_extract(metadata_json, '$.market_price_basis_type') = 'sold_price_min_90d')"
+            )
+            where_clauses.append(
+                "("
+                "status NOT IN ('pending','approved') "
+                "OR json_extract(metadata_json, '$.market_price_basis_type') <> 'sold_price_min_90d' "
+                "OR LENGTH(TRIM(COALESCE(json_extract(metadata_json, '$.ebay_sold_item_url'), ''))) > 0"
+                ")"
+            )
         if candidate_ids:
             normalized_ids = sorted({int(v) for v in candidate_ids})
             placeholders = ",".join("?" for _ in normalized_ids)

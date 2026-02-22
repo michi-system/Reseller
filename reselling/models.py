@@ -1,20 +1,22 @@
-"""SQLite helpers for runtime state."""
+"""DB helpers for runtime state (SQLite / PostgreSQL)."""
 
 from __future__ import annotations
 
-import sqlite3
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-
-def connect(db_path: Path) -> sqlite3.Connection:
-    db_path.parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(str(db_path))
-    conn.row_factory = sqlite3.Row
-    return conn
+from .db_runtime import DbConnection, connect_db, ensure_postgres_schema, is_postgres_connection
 
 
-def init_db(conn: sqlite3.Connection) -> None:
+def connect(db_path: Path) -> DbConnection:
+    return connect_db(db_path)
+
+
+def init_db(conn: DbConnection) -> None:
+    if is_postgres_connection(conn):
+        ensure_postgres_schema(conn)
+        return
+
     conn.execute(
         """
         CREATE TABLE IF NOT EXISTS fx_rate_states (
@@ -106,7 +108,7 @@ def init_db(conn: sqlite3.Connection) -> None:
     conn.commit()
 
 
-def get_fx_rate_state(conn: sqlite3.Connection, pair: str) -> Optional[Dict[str, Any]]:
+def get_fx_rate_state(conn: DbConnection, pair: str) -> Optional[Dict[str, Any]]:
     row = conn.execute(
         """
         SELECT pair, rate, source, fetched_at, next_refresh_at
@@ -121,7 +123,7 @@ def get_fx_rate_state(conn: sqlite3.Connection, pair: str) -> Optional[Dict[str,
 
 
 def upsert_fx_rate_state(
-    conn: sqlite3.Connection,
+    conn: DbConnection,
     *,
     pair: str,
     rate: float,

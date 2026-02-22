@@ -109,6 +109,7 @@ python3 scripts/generate_daily_report.py --date YYYY-MM-DD --operator @github_id
 ## 14. 一括移行運用（Supabase）
 - 一括移行時は `docs/SUPABASE_BIG_BANG_MIGRATION.md` を正本にする。
 - スキーマ初期化は `docs/sql/reseller_supabase_schema.sql` を使う。
+- `.env.local` は `DB_BACKEND=postgres` を設定して起動する。
 - 切替前に必ず次を実行する。
 
 ```bash

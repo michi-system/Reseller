@@ -29,6 +29,7 @@
 | WB-P0-011 | P0 | 移行 | done | Supabase一括移行向けローカル復帰チェックポイント運用を実装 | 切替前チェックポイント作成と復帰コマンドが固定化される | 0.5日 |
 | WB-P0-012 | P0 | 移行 | done | Supabase投入の初期スキーマSQLとSQLite CSV一括エクスポートを実装 | SQL適用とCSV出力手順が固定化される | 0.5日 |
 | WB-P0-013 | P0 | 移行 | done | CSVバンドルをSupabaseへ一括投入する実行スクリプトを実装 | dry-run/本実行の再現可能な投入コマンドが固定化される | 0.5日 |
+| WB-P0-014 | P0 | 移行 | done | API/OperatorのDB接続をSQLite/PostgreSQL両対応化し、Supabase運用モードを実装 | `.env.local` で `DB_BACKEND=postgres` の実運用起動が可能 | 1日 |
 
 ## 3. Recently Completed
 | 日付 | ID | 内容 | 反映先 |
@@ -53,6 +54,7 @@
 | 2026-02-22 | WB-MIG-001 | Supabase一括移行の事前安全策を実装（ローカル復帰チェックポイント作成/復元スクリプト + 手順書） | `scripts/create_local_checkpoint.py`, `scripts/restore_local_checkpoint.py`, `docs/SUPABASE_BIG_BANG_MIGRATION.md` |
 | 2026-02-22 | WB-MIG-002 | Supabase投入準備を実装（初期スキーマSQL + SQLite CSV一括エクスポート） | `docs/sql/reseller_supabase_schema.sql`, `scripts/export_sqlite_bundle.py`, `docs/SUPABASE_BIG_BANG_MIGRATION.md` |
 | 2026-02-22 | WB-MIG-003 | CSVバンドル投入スクリプトを実装（dry-run + truncate投入 + シーケンス同期） | `scripts/import_csv_bundle_to_postgres.py`, `docs/SUPABASE_BIG_BANG_MIGRATION.md` |
+| 2026-02-22 | WB-MIG-004 | DBランタイムをSQLite/PostgreSQL両対応化し、Supabase切替運用を有効化 | `reselling/db_runtime.py`, `reselling/models.py`, `listing_ops/models.py`, `reselling/review.py`, `listing_ops/ingest.py`, `reselling/env.py` |
 | 2026-02-22 | WB-OPS-006 | Operator運用UIと手動介入APIを実装（一覧/詳細/ジョブ実行/手動状態遷移） | `web/operator.*`, `listing_ops/manual_actions.py`, `reselling/api_server.py`, `tests/test_operator_manual_actions.py` |
 
 ## 4. Backlog
@@ -93,6 +95,7 @@
 | 2026-02-22 | DEC-018 | Supabase移行は一括切替で実施し、PITR必須ではなくローカルチェックポイント復元をロールバック正本とする | 「最終的にMacへ戻せる」を主目的に、コストと運用速度を優先するため |
 | 2026-02-22 | DEC-019 | Supabase移行入力はSQLite全表のCSVバンドルを正本にし、手動テーブル投入手順を固定する | DB間差分を可視化しつつ、移行時の再実行性を確保するため |
 | 2026-02-22 | DEC-020 | CSV投入は `import_csv_bundle_to_postgres.py` を正本にし、`--dry-run` と `--truncate --apply` の2段運用に固定する | 投入ミスを防ぎ、毎回同じ手順で再現可能にするため |
+| 2026-02-22 | DEC-021 | DB接続は共通ラッパー (`reselling/db_runtime.py`) でSQLite/PG差分を吸収し、`.env.local` の `DB_BACKEND` / `SUPABASE_DB_URL` で切替する | 実装速度を維持したまま本番移行とローカル復帰を両立するため |
 
 ## 7. 次エージェント向け起点
 1. `Now` の `in_progress` を上から順に処理。
