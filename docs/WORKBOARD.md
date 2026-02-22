@@ -78,7 +78,7 @@
 | 2026-02-22 | DEC-013 | legacyラッパー `scripts/rpa_ebay_product_research.py` は 2026-03-31 以降に削除判断、互換ヘッダ設定は 2026-04-15 までに最終判断する | 日付付きで撤去条件を固定し、だらだら残る状態を防ぐため |
 | 2026-02-22 | DEC-014 | GitHub運用は Issue駆動を常用せず、ProjectのDraftカード + 日報 (`docs/daily_reports`) を正本にする | 実装速度を優先しつつ、作業履歴と作業者同定を日次で残すため |
 | 2026-02-22 | DEC-015 | ロードマップは `Reseller 工数表` で管理し、`Status=Todo` を未来、`Status=Done` を過去として扱う | 未来タスクと完了履歴を1枚で俯瞰するため |
-| 2026-02-22 | DEC-016 | 担当の初期割当は `michi-system: Operator/Shared`, `a28ngi: Miner効率向上` とする | 並列開発で詰まりを減らし、責任境界を明確にするため |
+| 2026-02-22 | DEC-016 | 担当の初期割当は `michi-system: 全体リード + Miner/Shared`, `a28ngi: Operator` とする | 並列開発で詰まりを減らし、責任境界を明確にするため |
 
 ## 7. 次エージェント向け起点
 1. `Now` の `in_progress` を上から順に処理。
