@@ -58,6 +58,7 @@
 | 2026-02-22 | WB-OPS-006 | Operator運用UIと手動介入APIを実装（一覧/詳細/ジョブ実行/手動状態遷移） | `web/operator.*`, `listing_ops/manual_actions.py`, `reselling/api_server.py`, `tests/test_operator_manual_actions.py` |
 | 2026-02-22 | WB-OPS-007 | 別Mac/別アカウントCodex向けの共同開発オンボーディング手順を整備 | `docs/CODEX_COLLAB_ONBOARDING.md`, `docs/README.md`, `docs/START_HERE.md`, `docs/OPERATIONS_MANUAL.md` |
 | 2026-02-22 | WB-SEC-001 | `.env`運用を安全化し、未使用のSupabase関連env要素を削除 | `.gitignore`, `.env.example`, `scripts/import_csv_bundle_to_postgres.py`, `reselling/db_runtime.py`, `docs/SUPABASE_BIG_BANG_MIGRATION.md`, `docs/CODEX_COLLAB_ONBOARDING.md` |
+| 2026-02-22 | WB-SEC-002 | API接続envの棚卸しを実施し、未使用の `EBAY_DEV_ID` を削除 | `.env.example` |
 
 ## 4. Backlog
 | ID | 優先 | 種別 | 内容 | 着手条件 |
@@ -100,6 +101,7 @@
 | 2026-02-22 | DEC-021 | DB接続は共通ラッパー (`reselling/db_runtime.py`) でSQLite/PG差分を吸収し、`.env.local` の `DB_BACKEND` / `SUPABASE_DB_URL` で切替する | 実装速度を維持したまま本番移行とローカル復帰を両立するため |
 | 2026-02-22 | DEC-022 | 共同開発の初回参加手順は `docs/CODEX_COLLAB_ONBOARDING.md` に一本化する | 別環境の参加準備を標準化し、設定漏れとアカウント混在を減らすため |
 | 2026-02-22 | DEC-023 | 接続envは `SUPABASE_DB_URL` に一本化し、未使用の `SUPABASE_ANON_KEY` / `SUPABASE_SERVICE_ROLE_KEY` / `DATABASE_URL` を撤去する | 共有時の誤設定と秘匿情報混在リスクを下げ、運用理解を単純化するため |
+| 2026-02-22 | DEC-024 | eBay接続envから未使用の `EBAY_DEV_ID` を削除し、実運用で使うキーを `EBAY_CLIENT_ID` / `EBAY_CLIENT_SECRET` に限定する | 設定ミスを減らし、共同作業者の初期設定を単純化するため |
 
 ## 7. 次エージェント向け起点
 1. `Now` の `in_progress` を上から順に処理。
