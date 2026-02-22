@@ -47,7 +47,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--database-url",
         default="",
-        help="PostgreSQL connection URL. If omitted, loads DATABASE_URL/SUPABASE_DB_URL.",
+        help="PostgreSQL connection URL. If omitted, loads SUPABASE_DB_URL.",
     )
     parser.add_argument(
         "--truncate",
@@ -101,17 +101,16 @@ def _parse_env_file(path: Path) -> Dict[str, str]:
 def _resolve_database_url(cli_value: str) -> str:
     if cli_value.strip():
         return cli_value.strip()
-    # Prefer project-local Supabase URL over ambient DATABASE_URL from shell profiles.
-    for key in ("SUPABASE_DB_URL", "DATABASE_URL"):
+    for key in ("SUPABASE_DB_URL",):
         value = os.getenv(key, "").strip()
         if value:
             return value
     env_map = _parse_env_file(ROOT_DIR / ".env.local")
-    for key in ("SUPABASE_DB_URL", "DATABASE_URL"):
+    for key in ("SUPABASE_DB_URL",):
         value = env_map.get(key, "").strip()
         if value:
             return value
-    raise RuntimeError("database url not found. set --database-url or DATABASE_URL/SUPABASE_DB_URL")
+    raise RuntimeError("database url not found. set --database-url or SUPABASE_DB_URL")
 
 
 def _load_manifest(bundle_dir: Path) -> Dict[str, object]:

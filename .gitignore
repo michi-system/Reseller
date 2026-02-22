@@ -1,4 +1,5 @@
-.env.local
+.env*
+!.env.example
 data/
 backups/checkpoints/
 backups/sqlite_exports/

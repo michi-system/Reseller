@@ -11,7 +11,6 @@
 3. Supabase運用の場合は、共有する値を決める。
 - 共有してよい: `SUPABASE_URL`
 - 共有してよい: `SUPABASE_DB_URL`（必要なら）
-- 共有注意: `SUPABASE_SERVICE_ROLE_KEY`（最小人数のみ）
 
 ## 2. 参加者が最初にやること（別Mac）
 1. リポジトリをcloneする。

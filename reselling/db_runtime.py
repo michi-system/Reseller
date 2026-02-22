@@ -36,11 +36,6 @@ def resolve_postgres_url() -> str:
     url = (os.getenv("SUPABASE_DB_URL", "") or "").strip()
     if url:
         return url
-    forced = _normalize_backend(os.getenv("DB_BACKEND", ""))
-    if forced == "postgres":
-        fallback = (os.getenv("DATABASE_URL", "") or "").strip()
-        if fallback:
-            return fallback
     return ""
 
 
