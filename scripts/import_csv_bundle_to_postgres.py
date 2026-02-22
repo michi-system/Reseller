@@ -101,12 +101,13 @@ def _parse_env_file(path: Path) -> Dict[str, str]:
 def _resolve_database_url(cli_value: str) -> str:
     if cli_value.strip():
         return cli_value.strip()
-    for key in ("DATABASE_URL", "SUPABASE_DB_URL"):
+    # Prefer project-local Supabase URL over ambient DATABASE_URL from shell profiles.
+    for key in ("SUPABASE_DB_URL", "DATABASE_URL"):
         value = os.getenv(key, "").strip()
         if value:
             return value
     env_map = _parse_env_file(ROOT_DIR / ".env.local")
-    for key in ("DATABASE_URL", "SUPABASE_DB_URL"):
+    for key in ("SUPABASE_DB_URL", "DATABASE_URL"):
         value = env_map.get(key, "").strip()
         if value:
             return value
@@ -198,7 +199,10 @@ def _run_import(
                     continue
 
                 column_list = sql.SQL(", ").join(sql.Identifier(c) for c in headers)
-                query = sql.SQL("COPY {} ({}) FROM STDIN WITH (FORMAT csv, HEADER true)").format(
+                # Keep empty CSV fields as empty strings; only '\N' is treated as NULL.
+                query = sql.SQL(
+                    "COPY {} ({}) FROM STDIN WITH (FORMAT csv, HEADER true, NULL '\\\\N')"
+                ).format(
                     sql.Identifier(table),
                     column_list,
                 )
