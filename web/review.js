@@ -209,6 +209,7 @@ const state = {
   optimisticProgress: 0,
   displayedProgress: 0,
   lastFetchProgressSource: "",
+  financeHeightRaf: null,
 };
 
 function openSettingsOverlay() {
@@ -226,6 +227,40 @@ function closeSettingsOverlay() {
 function setApproveHint(text) {
   if (!refs.approveHint) return;
   refs.approveHint.textContent = String(text || "");
+}
+
+function syncFinanceCellHeights() {
+  const grid = document.querySelector(".finance-grid");
+  if (!(grid instanceof HTMLElement)) return;
+  const cells = Array.from(grid.querySelectorAll(":scope > .summary-cell"));
+  if (cells.length === 0) return;
+
+  for (const cell of cells) {
+    if (!(cell instanceof HTMLElement)) continue;
+    cell.style.minHeight = "";
+  }
+
+  let maxHeight = 0;
+  for (const cell of cells) {
+    if (!(cell instanceof HTMLElement)) continue;
+    const h = Math.ceil(cell.getBoundingClientRect().height);
+    if (h > maxHeight) maxHeight = h;
+  }
+  if (!Number.isFinite(maxHeight) || maxHeight <= 0) return;
+
+  const target = maxHeight + 8;
+  for (const cell of cells) {
+    if (!(cell instanceof HTMLElement)) continue;
+    cell.style.minHeight = `${target}px`;
+  }
+}
+
+function scheduleFinanceCellHeightSync() {
+  if (state.financeHeightRaf) return;
+  state.financeHeightRaf = window.requestAnimationFrame(() => {
+    state.financeHeightRaf = null;
+    syncFinanceCellHeights();
+  });
 }
 
 function resolveApiBase() {
@@ -405,6 +440,24 @@ function setOptionalNoteHtml(el, html, fallback = "") {
   }
   el.textContent = "";
   el.style.display = "none";
+}
+
+function summaryLinesHtml(lines) {
+  if (!Array.isArray(lines)) return "";
+  return lines
+    .map((line) => String(line || "").trim())
+    .filter(Boolean)
+    .map((line) => {
+      // 既に summary-line を含むHTMLは二重ラップしない（CSS競合回避）
+      if (line.includes("summary-line")) return line;
+      const compact = line.includes("money-inline") ? " summary-line-compact" : "";
+      return `<span class="summary-line${compact}">${line}</span>`;
+    })
+    .join("");
+}
+
+function summaryMoneyLineHtml(label, { jpy, usd, fxRate, align = "left" }) {
+  return `<span class="summary-line summary-line-money"><span class="summary-line-label">${escapeHtml(label)}</span>${moneyDualInlineHtml({ jpy, usd, fxRate, align })}</span>`;
 }
 
 function normalizeIdentifierMap(value) {
@@ -1575,6 +1628,7 @@ function renderCandidate(candidate) {
     setApproveHint("承認するとダミー出品ステータスに遷移します。");
     refs.currentCandidateLabel.textContent = "候補を選択してください";
     markActiveCandidateInList(null);
+    scheduleFinanceCellHeightSync();
     return;
   }
 
@@ -1648,37 +1702,49 @@ function renderCandidate(candidate) {
 
   setMoneyCell(refs.sumRevenue, { jpy: null, usd: revenueUsd, fxRate: v.fxRate });
   if (refs.sumRevenueBreakdown) {
-    const base = `商品 ${moneyDualInlineHtml({ jpy: null, usd: v.ebay.priceUsd, fxRate: v.fxRate })} / 送料 ${shippingInlineHtml({ jpy: null, usd: v.ebay.shippingUsd, fxRate: v.fxRate })}`;
+    const lines = [
+      summaryMoneyLineHtml("商品", { jpy: null, usd: v.ebay.priceUsd, fxRate: v.fxRate }),
+      `<span class="summary-line summary-line-money"><span class="summary-line-label">送料</span>${shippingInlineHtml({ jpy: null, usd: v.ebay.shippingUsd, fxRate: v.fxRate })}</span>`,
+    ];
     const hasSpecialBasis = String(v.ebay.saleBasisType || "").toLowerCase() !== "active_listing_price";
-    const note = hasSpecialBasis ? ` / ${saleBasisLabel(v.ebay.saleBasisType)}` : "";
-    setOptionalNoteHtml(refs.sumRevenueBreakdown, `${base}${escapeHtml(note)}`);
+    if (hasSpecialBasis) lines.push(`売値基準: ${escapeHtml(saleBasisLabel(v.ebay.saleBasisType))}`);
+    setOptionalNoteHtml(refs.sumRevenueBreakdown, summaryLinesHtml(lines));
   }
   setMoneyCell(refs.sumPurchase, { jpy: v.jp.totalJpy, usd: purchaseUsd, fxRate: v.fxRate });
   if (refs.sumPurchaseBreakdown) {
-    setOptionalNoteHtml(
-      refs.sumPurchaseBreakdown,
-      `商品 ${moneyDualInlineHtml({ jpy: v.jp.priceJpy, usd: null, fxRate: v.fxRate })} / 国内送料 ${shippingInlineHtml({ jpy: v.jp.shippingJpy, usd: null, fxRate: v.fxRate })}`
-    );
+    const lines = [
+      summaryMoneyLineHtml("商品", { jpy: v.jp.priceJpy, usd: null, fxRate: v.fxRate }),
+      `<span class="summary-line summary-line-money"><span class="summary-line-label">国内送料</span>${shippingInlineHtml({ jpy: v.jp.shippingJpy, usd: null, fxRate: v.fxRate })}</span>`,
+    ];
+    setOptionalNoteHtml(refs.sumPurchaseBreakdown, summaryLinesHtml(lines));
   }
   setMoneyCell(refs.sumExpenses, { jpy: null, usd: expenseUsd, fxRate: v.fxRate });
   if (refs.sumExpensesBreakdown) {
-    const pieces = [];
-    if (Number.isFinite(v.calc?.variableFeeUsd)) pieces.push(`変動手数料 ${formatUsd(v.calc.variableFeeUsd)}`);
-    if (Number.isFinite(v.calc?.intlShippingUsd)) pieces.push(`国際送料 ${formatUsd(v.calc.intlShippingUsd)}`);
-    if (Number.isFinite(v.calc?.customsUsd)) pieces.push(`関税 ${formatUsd(v.calc.customsUsd)}`);
-    if (Number.isFinite(v.calc?.packagingUsd)) pieces.push(`梱包 ${formatUsd(v.calc.packagingUsd)}`);
-    if (Number.isFinite(v.calc?.fixedFeeUsd)) pieces.push(`固定費 ${formatUsd(v.calc.fixedFeeUsd)}`);
-    if (Number.isFinite(v.calc?.miscCostUsd)) pieces.push(`その他 ${formatUsd(v.calc.miscCostUsd)}`);
-    if (pieces.length === 0) setOptionalNote(refs.sumExpensesBreakdown, "", "未取得");
-    else if (pieces.length <= 2) setOptionalNote(refs.sumExpensesBreakdown, pieces.join(" / "));
-    else setOptionalNote(refs.sumExpensesBreakdown, `${pieces[0]} / ${pieces[1]} ほか${pieces.length - 2}件`);
+    const rows = [];
+    const addExpenseRow = (label, usdVal) => {
+      if (!Number.isFinite(usdVal) || usdVal <= 0) return;
+      rows.push(summaryMoneyLineHtml(label, { jpy: null, usd: usdVal, fxRate: v.fxRate }));
+    };
+    addExpenseRow("変動手数料", toNumber(v.calc?.variableFeeUsd));
+    addExpenseRow("国際送料", toNumber(v.calc?.intlShippingUsd));
+    addExpenseRow("関税", toNumber(v.calc?.customsUsd));
+    addExpenseRow("梱包", toNumber(v.calc?.packagingUsd));
+    addExpenseRow("固定費", toNumber(v.calc?.fixedFeeUsd));
+    addExpenseRow("その他", toNumber(v.calc?.miscCostUsd));
+    if (rows.length === 0) {
+      setOptionalNote(refs.sumExpensesBreakdown, "", "未取得");
+    } else {
+      setOptionalNoteHtml(refs.sumExpensesBreakdown, summaryLinesHtml(rows));
+    }
   }
   setMoneyCell(refs.sumProfit, { jpy: v.expectedProfitJpy, usd: v.expectedProfitUsd, fxRate: v.fxRate });
   if (refs.sumProfitBreakdown) {
-    const marginText = Number.isFinite(v.expectedMarginRate) ? `粗利率 ${formatPercent(v.expectedMarginRate)}` : "";
-    const grossText = Number.isFinite(grossDiffUsd) ? `粗差額 ${moneyDualText({ jpy: null, usd: grossDiffUsd, fxRate: v.fxRate })}` : "";
+    const marginText = Number.isFinite(v.expectedMarginRate) ? `粗利率 ${escapeHtml(formatPercent(v.expectedMarginRate))}` : "";
+    const grossText = Number.isFinite(grossDiffUsd)
+      ? summaryMoneyLineHtml("粗差額", { jpy: null, usd: grossDiffUsd, fxRate: v.fxRate })
+      : "";
     const rows = [marginText, grossText].filter(Boolean);
-    setOptionalNote(refs.sumProfitBreakdown, rows.join(" / "));
+    setOptionalNoteHtml(refs.sumProfitBreakdown, summaryLinesHtml(rows));
   }
   if (refs.financeFormula) {
     refs.financeFormula.textContent = "最終利益 = 売上見込み - 仕入原価 - 諸経費合計";
@@ -1907,6 +1973,7 @@ function renderCandidate(candidate) {
     return `<section class="calc-group"><h3>${title}</h3><ul class="calc-list">${rowsHtml}</ul></section>`;
   }).join("");
   refs.rawJson.textContent = JSON.stringify(candidate, null, 2);
+  scheduleFinanceCellHeightSync();
 }
 
 function escapeHtml(str) {
@@ -2584,6 +2651,10 @@ function bindEvents() {
     }
   });
 
+  window.addEventListener("resize", () => {
+    scheduleFinanceCellHeightSync();
+  });
+
   refs.reloadBtn.addEventListener("click", async () => {
     try {
       await refreshQueues({ preserveSelection: true });
@@ -2673,6 +2744,8 @@ async function init() {
   await loadCategoryOptions();
   try {
     await refreshQueues({ preserveSelection: false });
+    scheduleFinanceCellHeightSync();
+    window.setTimeout(() => scheduleFinanceCellHeightSync(), 180);
     showToast("レビュー画面を更新しました。");
   } catch (err) {
     showToast(`初期化エラー: ${err.message}`);

@@ -757,37 +757,97 @@ button:disabled {
 .summary-cell {
   border: 1px solid #ece4d6;
   border-radius: 9px;
-  padding: 7px;
+  padding: 9px;
   background: #fefbf6;
 }
 
-.summary-cell span {
+.summary-cell > span {
   display: block;
   font-size: 11px;
   color: var(--muted);
-  margin-bottom: 3px;
+  margin-bottom: 1px;
+  line-height: 1.2;
 }
 
 .summary-cell strong {
   font-size: 13px;
-  min-height: 24px;
   display: block;
+  min-height: 0;
+  line-height: 1.2;
+  margin-bottom: 7px;
+}
+
+.summary-cell > strong:last-child {
+  margin-bottom: 0;
 }
 
 .summary-cell strong .money-main {
   font-size: 13px;
+  line-height: 1.15;
 }
 
 .summary-cell strong .money-sub {
   font-size: 10px;
+  line-height: 1.1;
+}
+
+.summary-cell strong .money-stack {
+  gap: 2px;
 }
 
 .summary-cell small {
-  display: block;
-  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 0;
   font-size: 11px;
   color: #516173;
-  line-height: 1.35;
+  line-height: 1.45;
+  max-height: 96px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 2px;
+  scrollbar-width: thin;
+}
+
+.summary-cell small .summary-line {
+  display: block;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  line-height: 1.4;
+}
+
+.summary-cell small .summary-line-compact .money-inline {
+  white-space: nowrap;
+}
+
+.summary-cell small .summary-line-money {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  row-gap: 3px;
+  flex-wrap: wrap;
+  line-height: 1.38;
+}
+
+.summary-cell small .summary-line-label {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  line-height: 1.3;
+}
+
+.summary-cell small .summary-line-money .money-inline {
+  flex: 0 0 auto;
+  max-width: 100%;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+.summary-cell small .summary-line-money .money-inline .money-main,
+.summary-cell small .summary-line-money .money-inline .money-sep,
+.summary-cell small .summary-line-money .money-inline .money-sub {
+  display: inline;
+  white-space: nowrap;
 }
 
 .liquidity-grid {
@@ -805,7 +865,7 @@ button:disabled {
   gap: 8px;
 }
 
-.liquidity-grid .summary-cell span {
+.liquidity-grid .summary-cell > span {
   margin: 0;
   font-size: 10px;
   white-space: nowrap;
@@ -817,6 +877,16 @@ button:disabled {
   line-height: 1.2;
   text-align: right;
   white-space: nowrap;
+  margin-bottom: 0;
+}
+
+#sumSoldMin90d .money-main {
+  font-size: 12px;
+}
+
+#sumSoldMin90d .money-sub {
+  font-size: 9px;
+  color: #6a7888;
 }
 
 .risk-flags {
