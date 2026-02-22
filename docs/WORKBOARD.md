@@ -60,6 +60,7 @@
 | 2026-02-22 | WB-SEC-001 | `.env`運用を安全化し、未使用のSupabase関連env要素を削除 | `.gitignore`, `.env.example`, `scripts/import_csv_bundle_to_postgres.py`, `reselling/db_runtime.py`, `docs/SUPABASE_BIG_BANG_MIGRATION.md`, `docs/CODEX_COLLAB_ONBOARDING.md` |
 | 2026-02-22 | WB-SEC-002 | API接続envの棚卸しを実施し、未使用の `EBAY_DEV_ID` を削除 | `.env.example` |
 | 2026-02-22 | WB-OPS-008 | 別アカウント参加設定を1コマンド化（`setup_collab.py`） | `scripts/setup_collab.py`, `docs/CODEX_COLLAB_ONBOARDING.md`, `docs/OPERATIONS_MANUAL.md` |
+| 2026-02-22 | WB-MIG-005 | 運用経路（API/エクスポート/否認同期）のPostgreSQL対応を完了し、ローカルDB依存を除去 | `reselling/approved_export.py`, `scripts/export_approved_listings.py`, `scripts/sync_rejected_blocklist.py`, `reselling/db_runtime.py` |
 
 ## 4. Backlog
 | ID | 優先 | 種別 | 内容 | 着手条件 |
@@ -104,6 +105,7 @@
 | 2026-02-22 | DEC-023 | 接続envは `SUPABASE_DB_URL` に一本化し、未使用の `SUPABASE_ANON_KEY` / `SUPABASE_SERVICE_ROLE_KEY` / `DATABASE_URL` を撤去する | 共有時の誤設定と秘匿情報混在リスクを下げ、運用理解を単純化するため |
 | 2026-02-22 | DEC-024 | eBay接続envから未使用の `EBAY_DEV_ID` を削除し、実運用で使うキーを `EBAY_CLIENT_ID` / `EBAY_CLIENT_SECRET` に限定する | 設定ミスを減らし、共同作業者の初期設定を単純化するため |
 | 2026-02-22 | DEC-025 | 共同作業者の初期設定は `scripts/setup_collab.py` に集約し、手動設定手順を縮小する | 別アカウント参加の立ち上げ時間を短縮し、環境差分による詰まりを減らすため |
+| 2026-02-22 | DEC-026 | 運用スクリプトはPostgreSQLを正本とし、SQLite直接参照は移行/バックアップ用途の補助スクリプトに限定する | 本番運用のDB依存を一元化しつつ、復旧手段を維持するため |
 
 ## 7. 次エージェント向け起点
 1. `Now` の `in_progress` を上から順に処理。

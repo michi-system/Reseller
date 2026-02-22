@@ -10,8 +10,25 @@ from typing import Any, Iterable
 
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
+ENV_LOCAL_PATH = ROOT_DIR / ".env.local"
 POSTGRES_SCHEMA_PATH = ROOT_DIR / "docs" / "sql" / "reseller_supabase_schema.sql"
 _POSTGRES_SCHEMA_APPLIED = False
+
+
+def _parse_env_local() -> dict[str, str]:
+    out: dict[str, str] = {}
+    if not ENV_LOCAL_PATH.exists():
+        return out
+    for raw in ENV_LOCAL_PATH.read_text(encoding="utf-8").splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        key = key.strip()
+        value = value.strip().strip('"').strip("'")
+        if key:
+            out[key] = value
+    return out
 
 
 def _normalize_backend(raw: str) -> str:
@@ -24,15 +41,22 @@ def _normalize_backend(raw: str) -> str:
 
 
 def resolve_backend() -> str:
-    forced = _normalize_backend(os.getenv("DB_BACKEND", ""))
+    env_local = _parse_env_local()
+    forced = _normalize_backend(env_local.get("DB_BACKEND", "") or os.getenv("DB_BACKEND", ""))
     if forced:
         return forced
+    if (env_local.get("SUPABASE_DB_URL", "") or "").strip():
+        return "postgres"
     if (os.getenv("SUPABASE_DB_URL", "") or "").strip():
         return "postgres"
     return "sqlite"
 
 
 def resolve_postgres_url() -> str:
+    env_local = _parse_env_local()
+    url = (env_local.get("SUPABASE_DB_URL", "") or "").strip()
+    if url:
+        return url
     url = (os.getenv("SUPABASE_DB_URL", "") or "").strip()
     if url:
         return url

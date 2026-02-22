@@ -10,17 +10,20 @@ from pathlib import Path
 
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
+ENV_PATH = ROOT_DIR / ".env.local"
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 from reselling.approved_export import export_approved_listing_jsonl
 from reselling.config import load_settings
+from reselling.env import load_dotenv
 
 
 DEFAULT_OUTPUT_PATH = ROOT_DIR / "data" / "approved_listing_exports" / "latest.jsonl"
 
 
 def build_parser() -> argparse.ArgumentParser:
+    load_dotenv(ENV_PATH)
     settings = load_settings()
     parser = argparse.ArgumentParser(
         description="Export approved/listed records for Operator ingestion."
@@ -29,7 +32,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--db-path",
         type=Path,
         default=settings.db_path,
-        help=f"SQLite DB path (default: {settings.db_path})",
+        help=f"DB path hint for local mode (default: {settings.db_path})",
     )
     parser.add_argument(
         "--output-path",

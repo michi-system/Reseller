@@ -4,9 +4,10 @@ from __future__ import annotations
 
 import json
 import re
-import sqlite3
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Tuple
+
+from .models import connect, init_db
 
 REQUIRED_FIELDS = (
     "approved_id",
@@ -77,7 +78,7 @@ def _listing_status(status: str) -> str:
 
 
 def _brand_model(
-    row: sqlite3.Row,
+    row: Any,
     metadata: Dict[str, Any],
 ) -> Tuple[str, str]:
     source_ids = metadata.get("source_identifiers") if isinstance(metadata.get("source_identifiers"), dict) else {}
@@ -113,7 +114,7 @@ def _brand_model(
 
 
 def _sku_key(
-    row: sqlite3.Row,
+    row: Any,
     metadata: Dict[str, Any],
     model: str,
 ) -> str:
@@ -172,7 +173,7 @@ def _approved_by(metadata: Dict[str, Any], default_value: str) -> str:
     )
 
 
-def _approved_record(row: sqlite3.Row, default_approved_by: str) -> Dict[str, Any]:
+def _approved_record(row: Any, default_approved_by: str) -> Dict[str, Any]:
     metadata = _parse_json_object(row["metadata_json"])
     calc_breakdown = metadata.get("calc_breakdown") if isinstance(metadata.get("calc_breakdown"), dict) else {}
 
@@ -260,9 +261,8 @@ def export_approved_listing_jsonl(
     output_path: Path,
     default_approved_by: str = "human_reviewer",
 ) -> Dict[str, Any]:
-    conn = sqlite3.connect(str(db_path))
-    conn.row_factory = sqlite3.Row
-    try:
+    with connect(db_path) as conn:
+        init_db(conn)
         rows = conn.execute(
             """
             SELECT
@@ -287,8 +287,6 @@ def export_approved_listing_jsonl(
             ORDER BY approved_at ASC, id ASC
             """
         ).fetchall()
-    finally:
-        conn.close()
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     exported = 0

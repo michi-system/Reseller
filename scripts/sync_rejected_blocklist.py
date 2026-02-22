@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 import json
-import sqlite3
+import os
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -19,6 +19,7 @@ if str(ROOT_DIR) not in sys.path:
 from reselling.env import load_dotenv
 from reselling.live_review_fetch import _pair_signature
 from reselling.config import load_settings
+from reselling.models import connect, init_db
 
 
 def _now_iso() -> str:
@@ -43,34 +44,35 @@ def _save_json(path: Path, payload: Dict[str, Any]) -> None:
 def main() -> int:
     load_dotenv(ENV_PATH)
     db_path = load_settings().db_path
-    if not db_path.exists():
+    supabase_db_url = (os.getenv("SUPABASE_DB_URL", "") or "").strip()
+    if (not db_path.exists()) and (not supabase_db_url):
         raise FileNotFoundError(f"not found: {db_path}")
 
-    conn = sqlite3.connect(str(db_path))
-    conn.row_factory = sqlite3.Row
-    rows = conn.execute(
-        """
-        WITH latest_rej AS (
-          SELECT candidate_id, MAX(id) AS max_id
-          FROM review_rejections
-          GROUP BY candidate_id
-        )
-        SELECT
-          rc.id AS candidate_id,
-          rc.source_site,
-          rc.market_site,
-          rc.source_title,
-          rc.market_title,
-          rr.issue_targets_json,
-          rr.reason_text,
-          rr.created_at
-        FROM review_candidates rc
-        JOIN latest_rej lr ON lr.candidate_id = rc.id
-        JOIN review_rejections rr ON rr.id = lr.max_id
-        WHERE rc.status = 'rejected'
-        ORDER BY rc.id ASC
-        """
-    ).fetchall()
+    with connect(db_path) as conn:
+        init_db(conn)
+        rows = conn.execute(
+            """
+            WITH latest_rej AS (
+              SELECT candidate_id, MAX(id) AS max_id
+              FROM review_rejections
+              GROUP BY candidate_id
+            )
+            SELECT
+              rc.id AS candidate_id,
+              rc.source_site,
+              rc.market_site,
+              rc.source_title,
+              rc.market_title,
+              rr.issue_targets_json,
+              rr.reason_text,
+              rr.created_at
+            FROM review_candidates rc
+            JOIN latest_rej lr ON lr.candidate_id = rc.id
+            JOIN review_rejections rr ON rr.id = lr.max_id
+            WHERE rc.status = 'rejected'
+            ORDER BY rc.id ASC
+            """
+        ).fetchall()
 
     blocklist = _load_json(BLOCKLIST_PATH)
     blocked_pairs = blocklist.get("blocked_pairs", [])
