@@ -17,6 +17,9 @@
 | WB-P0-004 | P0 | 体制 | done | Reseller (Miner + Operator) のGitHub Project運用を日報中心へ切替（Today/Doing/Done/Reported） | 週次レビューで日報カードがProject管理される | 0.5日 |
 | WB-P0-005 | P0 | 体制 | done | 承認済み商品のデータ契約実装（JSONL最小出力, Issue #3） | Operatorで取り込み可能な契約データが固定化 | 1-2日 |
 | WB-P0-006 | P0 | 体制 | todo | internal名の段階移行（DB/識別子/ヘッダ互換） | `INTERNAL_NAME_MIGRATION` のPhase 1-2が完了 | 1-2日 |
+| WB-P0-007 | P0 | 実装 | todo | Operator 0->1骨格 + Miner JSONL取り込み | `apps/operator` の最小実行系と `latest.jsonl` 取り込みが通る | 2-3日 |
+| WB-P0-008 | P0 | 実装 | todo | Operator 自動出品ワーカー実装（dry-run優先） | dry-runでキュー消化と出品API呼び出し模擬が再現できる | 2-3日 |
+| WB-P0-009 | P0 | 実装 | todo | Operator 監視ジョブ + 利益低下時の自動停止 | 閾値割れ連続時に停止イベントが記録される | 2-4日 |
 | WB-P1-001 | P1 | 実装 | todo | `active_count` 取得実装（EFF-001） | 流動性にアクティブ件数が保存される | 3-5h |
 | WB-P1-002 | P1 | 実装 | todo | STR算出実装（EFF-002） | `sell_through_90d` が実値計算される | 1-2h |
 | WB-P1-003 | P1 | UI/判定 | todo | アクティブ/STRのUI連携（EFF-003） | UI表示と閾値判定が連動する | 1-2h |
@@ -40,6 +43,7 @@
 | 2026-02-22 | WB-P0-005 | 承認済み出品データJSONLエクスポートを実装（Issue #3） | `reselling/approved_export.py`, `scripts/export_approved_listings.py`, `tests/test_approved_listing_export.py`, `data/approved_listing_exports/latest.jsonl` |
 | 2026-02-22 | WB-P1-005 | legacy internal aliasサンセット方針を実装/文書化（Issue #4） | `scripts/rpa_ebay_product_research.py`, `scripts/rpa_market_research.py`, `reselling/live_review_fetch.py`, `docs/INTERNAL_NAME_MIGRATION.md` |
 | 2026-02-22 | WB-P0-004 | GitHub運用をIssue最小・日報中心へ切替 | `docs/OPERATIONS_MANUAL.md`, `docs/GITHUB_PROJECT_SETUP.md`, `docs/daily_reports/TEMPLATE.md`, `scripts/generate_daily_report.py` |
+| 2026-02-22 | WB-OPS-003 | Reseller Roadmapを工数表運用へ整備（Track/担当/見積/実績、未来+過去タスク登録） | `https://github.com/users/michi-system/projects/4` |
 
 ## 4. Backlog
 | ID | 優先 | 種別 | 内容 | 着手条件 |
@@ -73,6 +77,8 @@
 | 2026-02-22 | DEC-012 | legacyスクリプト `scripts/rpa_ebay_product_research.py` は canonical 実装への互換ラッパーに変更する | 既存ジョブの参照切れを防ぐため |
 | 2026-02-22 | DEC-013 | legacyラッパー `scripts/rpa_ebay_product_research.py` は 2026-03-31 以降に削除判断、互換ヘッダ設定は 2026-04-15 までに最終判断する | 日付付きで撤去条件を固定し、だらだら残る状態を防ぐため |
 | 2026-02-22 | DEC-014 | GitHub運用は Issue駆動を常用せず、ProjectのDraftカード + 日報 (`docs/daily_reports`) を正本にする | 実装速度を優先しつつ、作業履歴と作業者同定を日次で残すため |
+| 2026-02-22 | DEC-015 | ロードマップは `Reseller 工数表` で管理し、`Status=Todo` を未来、`Status=Done` を過去として扱う | 未来タスクと完了履歴を1枚で俯瞰するため |
+| 2026-02-22 | DEC-016 | 担当の初期割当は `michi-system: Operator/Shared`, `a28ngi: Miner効率向上` とする | 並列開発で詰まりを減らし、責任境界を明確にするため |
 
 ## 7. 次エージェント向け起点
 1. `Now` の `in_progress` を上から順に処理。
