@@ -18,6 +18,21 @@
 
 上記5点以外はCodex側で実行可能です。
 
+## 2.1 `.env.local` への反映（URL受領済み）
+このプロジェクトの `Project URL` は次を使用します。
+
+- `SUPABASE_URL=https://vtspugzncsxmurzlhfyg.supabase.co`
+
+`.env.local` には最低限次を設定します。
+
+```bash
+SUPABASE_URL=https://vtspugzncsxmurzlhfyg.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=... # Supabase Settings > API
+SUPABASE_DB_URL=...           # Supabase Settings > Database > Connection string (URI)
+```
+
+`scripts/import_csv_bundle_to_postgres.py` は `SUPABASE_DB_URL` または `DATABASE_URL` を自動参照します。
+
 ## 3. 移行直前チェック（必須）
 1. ローカルAPI/ジョブを停止する（書き込み停止）。
 2. 次を実行してチェックポイントを作成する。
