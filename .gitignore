@@ -4,3 +4,4 @@ data/
 scripts/__pycache__/
 reselling/__pycache__/
 tests/__pycache__/
+listing_ops/__pycache__/
