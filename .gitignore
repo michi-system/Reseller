@@ -3,3 +3,4 @@ data/
 .venv/
 scripts/__pycache__/
 reselling/__pycache__/
+tests/__pycache__/

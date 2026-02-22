@@ -25,6 +25,8 @@
 - `priority:P1`
 
 移行期間は旧ラベル（`research`, `listing-ops`）が残っていてもよい。新規Issueは `miner` / `operator` を使う。
+新規Issueで領域/優先度ラベルが未設定だった場合は、`.github/workflows/issue-default-labels.yml` が
+`shared-contract` と `priority:P1` を自動補完する。
 
 ## 4. GitHub Project作成
 1. `Projects -> New project -> Board`

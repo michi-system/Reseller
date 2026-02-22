@@ -14,14 +14,14 @@
 | WB-P0-001 | P0 | ロジック | in_progress | レビュー候補流入を安定化（sold-first起点 + 日本側照会順最適化） | 24件バッチを再現可能、0件停滞が連続しない | 1-2日 |
 | WB-P0-002 | P0 | 品質 | in_progress | 90日最低価格の異常安値混入を抑制（本体/付属品判定強化） | 明らかな異常安値候補がレビュー待ちに残らない | 0.5-1日 |
 | WB-P0-003 | P0 | UI/UX | in_progress | 探索進捗ゲージの一貫性改善（戻り/急完了表示の抑制） | 進捗表示が単調増加に近く、状態文言が段階一致 | 0.5日 |
-| WB-P0-004 | P0 | 体制 | todo | Reseller (Miner + Operator) のGitHub Project運用を開始（Backlog/Doing/Review/Done, Issue #2） | 週次レビューで全IssueがProject管理される | 0.5日 |
-| WB-P0-005 | P0 | 体制 | todo | 承認済み商品のデータ契約実装（JSONL最小出力, Issue #3） | Operatorで取り込み可能な契約データが固定化 | 1-2日 |
+| WB-P0-004 | P0 | 体制 | in_progress | Reseller (Miner + Operator) のGitHub Project運用を開始（Backlog/Doing/Review/Done, Issue #2） | 週次レビューで全IssueがProject管理される | 0.5日 |
+| WB-P0-005 | P0 | 体制 | done | 承認済み商品のデータ契約実装（JSONL最小出力, Issue #3） | Operatorで取り込み可能な契約データが固定化 | 1-2日 |
 | WB-P0-006 | P0 | 体制 | todo | internal名の段階移行（DB/識別子/ヘッダ互換） | `INTERNAL_NAME_MIGRATION` のPhase 1-2が完了 | 1-2日 |
 | WB-P1-001 | P1 | 実装 | todo | `active_count` 取得実装（EFF-001） | 流動性にアクティブ件数が保存される | 3-5h |
 | WB-P1-002 | P1 | 実装 | todo | STR算出実装（EFF-002） | `sell_through_90d` が実値計算される | 1-2h |
 | WB-P1-003 | P1 | UI/判定 | todo | アクティブ/STRのUI連携（EFF-003） | UI表示と閾値判定が連動する | 1-2h |
 | WB-P1-004 | P1 | 運用 | todo | 「取得ゼロ」時の自動診断出力（原因内訳） | ゼロ件時に停止理由が即時把握できる | 2-4h |
-| WB-P1-005 | P1 | 移行 | todo | legacy internal alias のサンセット実施（Issue #4） | 期限までに wrapper/互換ヘッダの撤去可否を確定 | 0.5-1日 |
+| WB-P1-005 | P1 | 移行 | done | legacy internal alias のサンセット実施（Issue #4） | 期限までに wrapper/互換ヘッダの撤去可否を確定 | 0.5-1日 |
 
 ## 3. Recently Completed
 | 日付 | ID | 内容 | 反映先 |
@@ -37,6 +37,8 @@
 | 2026-02-22 | WB-NAME-003 | internal名移行のPhase 2実装（レスポンスヘッダ新旧互換） | `reselling/live_review_fetch.py`, `docs/INTERNAL_NAME_MIGRATION.md` |
 | 2026-02-22 | WB-NAME-004 | internal名移行のPhase 3実装（RPAスクリプトcanonical入口追加） | `scripts/rpa_market_research.py`, `scripts/run_review_cycle.py`, `reselling/live_review_fetch.py` |
 | 2026-02-22 | WB-NAME-005 | internal名移行のPhase 4実装（DB実体を `data/reseller.db` へ移行） | `scripts/migrate_db_to_reseller.py`, `.env.local`, `reselling/config.py` |
+| 2026-02-22 | WB-P0-005 | 承認済み出品データJSONLエクスポートを実装（Issue #3） | `reselling/approved_export.py`, `scripts/export_approved_listings.py`, `tests/test_approved_listing_export.py`, `data/approved_listing_exports/latest.jsonl` |
+| 2026-02-22 | WB-P1-005 | legacy internal aliasサンセット方針を実装/文書化（Issue #4） | `scripts/rpa_ebay_product_research.py`, `scripts/rpa_market_research.py`, `reselling/live_review_fetch.py`, `docs/INTERNAL_NAME_MIGRATION.md` |
 
 ## 4. Backlog
 | ID | 優先 | 種別 | 内容 | 着手条件 |
