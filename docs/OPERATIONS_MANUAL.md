@@ -137,3 +137,8 @@ python3 scripts/restore_local_checkpoint.py --apply
 ## 15. 別アカウント参加手順
 - 別Mac / 別GitHubアカウントで参加する場合は、次を入口にする。
 - `docs/CODEX_COLLAB_ONBOARDING.md`
+- 最短セットアップは次を実行する。
+
+```bash
+python3 scripts/setup_collab.py --mode postgres --supabase-db-url 'postgresql://postgres:YOUR_PASSWORD@db.vtspugzncsxmurzlhfyg.supabase.co:5432/postgres'
+```

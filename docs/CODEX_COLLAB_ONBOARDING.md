@@ -20,35 +20,28 @@ git clone https://github.com/michi-system/ebayminer.git
 cd ebayminer
 ```
 
-2. Python仮想環境を作る。
+2. 初期設定を1コマンドで実行する（推奨）。
 
 ```bash
-python3 -m venv .venv
-.venv/bin/python -m pip install --upgrade pip
+python3 scripts/setup_collab.py --mode postgres --supabase-db-url 'postgresql://postgres:YOUR_PASSWORD@db.vtspugzncsxmurzlhfyg.supabase.co:5432/postgres'
 ```
 
-3. `.env.local` を作成する。
+このコマンドで次を自動実行します。
+- `.venv` 作成
+- 必要パッケージ導入（`psycopg[binary]`）
+- `.env.local` の必要キー設定（`DB_BACKEND`, `SUPABASE_DB_URL`, `API_HOST`, `API_PORT`）
+
+3. ローカルSQLiteで参加したい場合は次を実行する。
 
 ```bash
-cp .env.example .env.local
-```
-
-4. `.env.local` を編集する（最低限）。
-- Supabase運用: `DB_BACKEND=postgres`
-- ローカル運用: `DB_BACKEND=sqlite`
-- Supabase運用時は `SUPABASE_DB_URL` を設定
-
-5. PostgreSQL運用に必要なライブラリを入れる。
-
-```bash
-.venv/bin/python -m pip install "psycopg[binary]"
+python3 scripts/setup_collab.py --mode sqlite
 ```
 
 ## 3. 動作確認（参加直後）
 1. APIを起動する。
 
 ```bash
-python3 scripts/run_api.py --host 127.0.0.1 --port 8012
+python3 scripts/run_api.py
 ```
 
 2. 別ターミナルで確認する。
