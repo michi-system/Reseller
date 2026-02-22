@@ -15,6 +15,8 @@
 9. `docs/GITHUB_PROJECT_SETUP.md`
 10. `docs/INTERNAL_NAME_MIGRATION.md`
 11. `docs/daily_reports/TEMPLATE.md`
+12. `docs/OPERATOR_OPERATIONS_SPEC.md`
+13. `docs/OPERATOR_EFFORT_TABLE.md`
 
 ## 2. 正本（Single Source of Truth）
 | 種別 | 正本 | 用途 |
@@ -28,6 +30,8 @@
 | 運用手順 | `docs/OPERATIONS_MANUAL.md` | Codex/GitHubの進め方 |
 | GitHub初期設定 | `docs/GITHUB_PROJECT_SETUP.md` | 画面操作ベースのセットアップ |
 | 日報テンプレ | `docs/daily_reports/TEMPLATE.md` | 日次レポートの記録フォーマット |
+| Operator運用仕様 | `docs/OPERATOR_OPERATIONS_SPEC.md` | 出品/監視/停止判定の運用定義 |
+| Operator工数表 | `docs/OPERATOR_EFFORT_TABLE.md` | 0->1開発の工数見積と分解 |
 | DB戦略 | `docs/LOCAL_DB_STRATEGY.md` | ローカルDB継続と移行条件 |
 | internal名移行 | `docs/INTERNAL_NAME_MIGRATION.md` | 新旧internal名の段階移行計画 |
 | データ契約 | `docs/DATA_CONTRACT_APPROVED_LISTING.md` | Tool間の受け渡し仕様 |

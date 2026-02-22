@@ -19,6 +19,8 @@
 8. `docs/GITHUB_PROJECT_SETUP.md` を読む（GitHub画面の初期設定手順）。
 9. `docs/INTERNAL_NAME_MIGRATION.md` を読む（internal名の段階移行手順）。
 10. `docs/daily_reports/TEMPLATE.md` を読む（日報フォーマット）。
+11. `docs/OPERATOR_OPERATIONS_SPEC.md` を読む（Operator運用仕様）。
+12. `docs/OPERATOR_EFFORT_TABLE.md` を読む（Operator工数見積）。
 
 ## 3. 正本の責務（Single Source of Truth）
 | 種別 | 正本ファイル | 役割 |
@@ -32,6 +34,8 @@
 | 運用手順 | `docs/OPERATIONS_MANUAL.md` | GitHub/Codexの作業フロー |
 | GitHub設定 | `docs/GITHUB_PROJECT_SETUP.md` | リポジトリ/Projectの初期設定手順 |
 | 日報テンプレ | `docs/daily_reports/TEMPLATE.md` | 日次レポートの記録フォーマット |
+| Operator運用仕様 | `docs/OPERATOR_OPERATIONS_SPEC.md` | 出品/監視/停止判定の運用定義 |
+| Operator工数表 | `docs/OPERATOR_EFFORT_TABLE.md` | 0->1開発の工数見積と分解 |
 | DB方針 | `docs/LOCAL_DB_STRATEGY.md` | ローカルDB継続と移行基準 |
 | internal名移行 | `docs/INTERNAL_NAME_MIGRATION.md` | 新旧internal名の段階移行計画 |
 | データ契約 | `docs/DATA_CONTRACT_APPROVED_LISTING.md` | 承認済みデータ受け渡し定義 |

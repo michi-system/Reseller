@@ -44,6 +44,7 @@
 | 2026-02-22 | WB-P1-005 | legacy internal aliasサンセット方針を実装/文書化（Issue #4） | `scripts/rpa_ebay_product_research.py`, `scripts/rpa_market_research.py`, `reselling/live_review_fetch.py`, `docs/INTERNAL_NAME_MIGRATION.md` |
 | 2026-02-22 | WB-P0-004 | GitHub運用をIssue最小・日報中心へ切替 | `docs/OPERATIONS_MANUAL.md`, `docs/GITHUB_PROJECT_SETUP.md`, `docs/daily_reports/TEMPLATE.md`, `scripts/generate_daily_report.py` |
 | 2026-02-22 | WB-OPS-003 | Reseller Roadmapを工数表運用へ整備（Track/担当/見積/実績、未来+過去タスク登録） | `https://github.com/users/michi-system/projects/4` |
+| 2026-02-22 | WB-OPS-004 | Operator運用仕様v1と開発工数表を策定 | `docs/OPERATOR_OPERATIONS_SPEC.md`, `docs/OPERATOR_EFFORT_TABLE.md` |
 
 ## 4. Backlog
 | ID | 優先 | 種別 | 内容 | 着手条件 |
