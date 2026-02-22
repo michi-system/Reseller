@@ -27,11 +27,19 @@ from .review import (
     list_review_queue,
     reject_review_candidate,
 )
+from listing_ops.config import load_operator_settings
+from listing_ops.config_versions import create_config_version, load_or_default
+from listing_ops.ingest import ingest_approved_listing_jsonl
+from listing_ops.listing_cycle import run_listing_cycle
+from listing_ops.monitor_cycle import run_monitor_cycle
+from listing_ops.query import get_summary as get_operator_summary
+from listing_ops.query import list_operator_events, list_operator_listings
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
 WEB_DIR = ROOT_DIR / "web"
 ACTIVE_CYCLE_PATH = ROOT_DIR / "docs" / "review_cycle_active.json"
 CATEGORY_KNOWLEDGE_PATH = ROOT_DIR / "data" / "category_knowledge_seeds_v1.json"
+DEFAULT_APPROVED_JSONL_PATH = ROOT_DIR / "data" / "approved_listing_exports" / "latest.jsonl"
 _FETCH_PROGRESS_LOCK = threading.Lock()
 
 
@@ -94,6 +102,16 @@ def _to_float(value: Any, default: float) -> float:
         return float(value)
     except (TypeError, ValueError):
         return default
+
+
+def _resolve_local_path(value: Any, *, default_path: Path) -> Path:
+    text = str(value or "").strip()
+    if not text:
+        return default_path
+    path = Path(text)
+    if path.is_absolute():
+        return path
+    return ROOT_DIR / path
 
 
 def _set_fetch_progress(update: Dict[str, Any]) -> Dict[str, Any]:
@@ -602,6 +620,42 @@ class ApiHandler(BaseHTTPRequestHandler):
             self._send(HTTPStatus.OK, payload)
             return
 
+        if parsed.path == "/v1/operator/summary":
+            settings = load_operator_settings()
+            payload = get_operator_summary(settings.db_path)
+            payload["db_path"] = str(settings.db_path)
+            self._send(HTTPStatus.OK, payload)
+            return
+
+        if parsed.path == "/v1/operator/listings":
+            settings = load_operator_settings()
+            state = str((query.get("state", [""])[0] or "")).strip().lower()
+            limit = max(1, _to_int((query.get("limit", ["50"])[0] or "50"), 50))
+            offset = max(0, _to_int((query.get("offset", ["0"])[0] or "0"), 0))
+            payload = list_operator_listings(
+                settings.db_path,
+                listing_state=state,
+                limit=limit,
+                offset=offset,
+            )
+            self._send(HTTPStatus.OK, payload)
+            return
+
+        if parsed.path == "/v1/operator/events":
+            settings = load_operator_settings()
+            raw_listing_id = str((query.get("listing_id", [""])[0] or "")).strip()
+            listing_id = int(raw_listing_id) if raw_listing_id else None
+            limit = max(1, _to_int((query.get("limit", ["100"])[0] or "100"), 100))
+            offset = max(0, _to_int((query.get("offset", ["0"])[0] or "0"), 0))
+            payload = list_operator_events(
+                settings.db_path,
+                listing_id=listing_id,
+                limit=limit,
+                offset=offset,
+            )
+            self._send(HTTPStatus.OK, payload)
+            return
+
         self._send(
             HTTPStatus.NOT_FOUND,
             _json_error("route not found", code="not_found"),
@@ -778,6 +832,82 @@ class ApiHandler(BaseHTTPRequestHandler):
                     reason_text=reason_text,
                 )
                 self._send(HTTPStatus.OK, candidate)
+                return
+
+            if parsed.path == "/v1/operator/ingest":
+                settings = load_operator_settings()
+                input_path = _resolve_local_path(
+                    body.get("input_path", ""),
+                    default_path=DEFAULT_APPROVED_JSONL_PATH,
+                )
+                payload = ingest_approved_listing_jsonl(
+                    db_path=settings.db_path,
+                    input_path=input_path,
+                )
+                self._send(HTTPStatus.OK, payload)
+                return
+
+            if parsed.path == "/v1/operator/listing-cycle":
+                settings = load_operator_settings()
+                limit = max(1, _to_int(body.get("limit", 20), 20))
+                dry_run = _to_bool(body.get("dry_run", True), True)
+                actor_id = str(body.get("actor_id", "") or "").strip()
+                payload = run_listing_cycle(
+                    db_path=settings.db_path,
+                    limit=limit,
+                    dry_run=dry_run,
+                    actor_id=actor_id,
+                )
+                self._send(HTTPStatus.OK, payload)
+                return
+
+            if parsed.path == "/v1/operator/monitor-cycle":
+                settings = load_operator_settings()
+                check_type = str(body.get("check_type", "light") or "light").strip().lower()
+                limit = max(1, _to_int(body.get("limit", 300), 300))
+                actor_id = str(body.get("actor_id", "") or "").strip()
+                raw_obs = body.get("observation_jsonl_path", "")
+                obs_path = None
+                if str(raw_obs or "").strip():
+                    obs_path = _resolve_local_path(raw_obs, default_path=ROOT_DIR / "data" / "operator_observations.jsonl")
+                payload = run_monitor_cycle(
+                    db_path=settings.db_path,
+                    check_type=check_type,
+                    observation_jsonl_path=obs_path,
+                    limit=limit,
+                    actor_id=actor_id,
+                )
+                self._send(HTTPStatus.OK, payload)
+                return
+
+            if parsed.path == "/v1/operator/config":
+                settings = load_operator_settings()
+                active = load_or_default(settings.db_path)
+                payload = create_config_version(
+                    db_path=settings.db_path,
+                    config_version=str(body.get("config_version", "") or "").strip(),
+                    created_by=str(body.get("created_by", settings.default_actor_id) or settings.default_actor_id).strip(),
+                    min_profit_jpy=_to_float(body.get("min_profit_jpy"), float(active["min_profit_jpy"])),
+                    min_profit_rate=_to_float(body.get("min_profit_rate"), float(active["min_profit_rate"])),
+                    stop_consecutive_fail_count=_to_int(
+                        body.get("stop_consecutive_fail_count"),
+                        int(active["stop_consecutive_fail_count"]),
+                    ),
+                    light_interval_new_hours=_to_int(
+                        body.get("light_interval_new_hours"),
+                        int(active["light_interval_new_hours"]),
+                    ),
+                    light_interval_stable_hours=_to_int(
+                        body.get("light_interval_stable_hours"),
+                        int(active["light_interval_stable_hours"]),
+                    ),
+                    light_interval_stopped_hours=_to_int(
+                        body.get("light_interval_stopped_hours"),
+                        int(active["light_interval_stopped_hours"]),
+                    ),
+                    heavy_interval_days=_to_int(body.get("heavy_interval_days"), int(active["heavy_interval_days"])),
+                )
+                self._send(HTTPStatus.OK, {"db_path": str(settings.db_path), "active_config": payload})
                 return
 
             if parsed.path == "/v1/profit/calc":

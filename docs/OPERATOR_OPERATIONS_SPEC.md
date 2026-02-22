@@ -136,3 +136,30 @@
 - ポリシー:
   - https://www.ebay.com/help/duplicate-listings-policy/policies/duplicate-listings-policy?id=4255
   - https://www.ebay.com/sellercenter/resources/intellectual-property
+
+## 12. 実装済みMVPコマンド（2026-02-22）
+```bash
+# 1) DB初期化（config seed含む）
+python3 scripts/operator_init_db.py
+
+# 2) Miner承認JSONL取り込み
+python3 scripts/operator_ingest_approved.py --input-path data/approved_listing_exports/latest.jsonl
+
+# 3) 出品サイクル（既定: dry-run）
+python3 scripts/operator_run_listing_cycle.py --limit 20
+
+# 4) 監視サイクル（軽量）
+python3 scripts/operator_run_monitor_cycle.py --check-type light --limit 300
+
+# 5) 監視サイクル（重量）
+python3 scripts/operator_run_monitor_cycle.py --check-type heavy --observation-jsonl path/to/obs.jsonl
+
+# 6) 閾値/頻度設定を新バージョンで反映
+python3 scripts/operator_set_config.py --min-profit-jpy 2000 --min-profit-rate 0.1
+
+# 7) 現在の状態確認
+python3 scripts/operator_status_summary.py
+
+# 8) 監視入力テンプレを出力（手入力/外部取得連携の土台）
+python3 scripts/operator_export_observation_targets.py --check-type light
+```

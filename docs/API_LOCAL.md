@@ -326,6 +326,78 @@ curl -sS -X POST http://127.0.0.1:8000/v1/review/candidates/1/reject \
 curl -sS http://127.0.0.1:8000/v1/review/candidates/1
 ```
 
+## Operator API (MVP)
+
+### Operator summary
+
+```bash
+curl -sS http://127.0.0.1:8000/v1/operator/summary
+```
+
+### Operator listings
+
+```bash
+curl -sS "http://127.0.0.1:8000/v1/operator/listings?state=listed&limit=50"
+```
+
+### Operator events
+
+```bash
+curl -sS "http://127.0.0.1:8000/v1/operator/events?limit=100"
+```
+
+### Ingest approved JSONL
+
+```bash
+curl -sS -X POST http://127.0.0.1:8000/v1/operator/ingest \
+  -H "Content-Type: application/json" \
+  -d '{
+    "input_path": "data/approved_listing_exports/latest.jsonl"
+  }'
+```
+
+### Run listing cycle (dry-run default)
+
+```bash
+curl -sS -X POST http://127.0.0.1:8000/v1/operator/listing-cycle \
+  -H "Content-Type: application/json" \
+  -d '{
+    "limit": 20,
+    "dry_run": true,
+    "actor_id": "michi-system"
+  }'
+```
+
+### Run monitor cycle
+
+```bash
+curl -sS -X POST http://127.0.0.1:8000/v1/operator/monitor-cycle \
+  -H "Content-Type: application/json" \
+  -d '{
+    "check_type": "light",
+    "limit": 300,
+    "observation_jsonl_path": "data/operator_observations_template.jsonl"
+  }'
+```
+
+### Update Operator config version
+
+```bash
+curl -sS -X POST http://127.0.0.1:8000/v1/operator/config \
+  -H "Content-Type: application/json" \
+  -d '{
+    "config_version": "v1-tuning-002",
+    "created_by": "michi-system",
+    "min_profit_jpy": 1800,
+    "min_profit_rate": 0.09,
+    "stop_consecutive_fail_count": 2,
+    "light_interval_new_hours": 6,
+    "light_interval_stable_hours": 24,
+    "light_interval_stopped_hours": 72,
+    "heavy_interval_days": 7
+  }'
+```
+
 ## Scheduler
 
 ```bash

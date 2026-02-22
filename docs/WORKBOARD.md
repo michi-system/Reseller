@@ -45,6 +45,7 @@
 | 2026-02-22 | WB-P0-004 | GitHub運用をIssue最小・日報中心へ切替 | `docs/OPERATIONS_MANUAL.md`, `docs/GITHUB_PROJECT_SETUP.md`, `docs/daily_reports/TEMPLATE.md`, `scripts/generate_daily_report.py` |
 | 2026-02-22 | WB-OPS-003 | Reseller Roadmapを工数表運用へ整備（Track/担当/見積/実績、未来+過去タスク登録） | `https://github.com/users/michi-system/projects/4` |
 | 2026-02-22 | WB-OPS-004 | Operator運用仕様v1と開発工数表を策定 | `docs/OPERATOR_OPERATIONS_SPEC.md`, `docs/OPERATOR_EFFORT_TABLE.md` |
+| 2026-02-22 | WB-OPS-005 | Operatorコアロジック実装（取込/出品サイクル/監視判定/設定バージョン管理/API追加） | `listing_ops/*`, `scripts/operator_*.py`, `reselling/api_server.py`, `tests/test_operator_logic.py` |
 
 ## 4. Backlog
 | ID | 優先 | 種別 | 内容 | 着手条件 |
