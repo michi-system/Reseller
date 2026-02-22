@@ -92,7 +92,7 @@ class QueryModelCodeFilterTests(unittest.TestCase):
         )
         self.assertEqual(out, "GWM5610U1CJF")
 
-    def test_preferred_liquidity_query_falls_back_to_preferred_code(self) -> None:
+    def test_preferred_liquidity_query_does_not_fallback_to_unrelated_preferred_code(self) -> None:
         source = _mk("rakuten", "CASIO G-SHOCK 国内正規品")
         market = _mk("ebay", "CASIO G-SHOCK New")
         out = _preferred_liquidity_query(
@@ -101,7 +101,7 @@ class QueryModelCodeFilterTests(unittest.TestCase):
             base_query="watch",
             preferred_codes={"SBDC101"},
         )
-        self.assertEqual(out, "SBDC101")
+        self.assertEqual(out, "watch")
 
 
 if __name__ == "__main__":

@@ -1518,6 +1518,22 @@ def run(args: argparse.Namespace) -> int:
                 row["metadata"]["no_sales_in_window_inferred"] = True
                 row["metadata"]["early_no_sold_stage"] = str(early_no_sold_stage or "unknown")
             else:
+                strict_sold_tab_required = bool(
+                    _to_int(os.getenv("LIQUIDITY_RPA_REQUIRE_SOLD_TAB_FOR_POSITIVE", "1"), 1)
+                )
+                sold_count_now = int(row.get("sold_90d_count", -1))
+                sold_tab_selected = bool(filter_state.get("sold_tab_selected"))
+                lookback_selected = str(filter_state.get("lookback_selected", "")).lower().strip()
+                if strict_sold_tab_required and sold_count_now > 0 and (
+                    (not sold_tab_selected) or lookback_selected != "last 90 days"
+                ):
+                    row["sold_90d_count"] = -1
+                    row["active_count"] = -1
+                    row["sold_price_min"] = -1.0
+                    row["sold_price_median"] = -1.0
+                    row["confidence"] = min(_to_float(row.get("confidence"), 0.3), 0.2)
+                    row["metadata"]["strict_filter_reason"] = "sold_tab_or_lookback_not_confirmed"
+                    row["metadata"]["strict_filter_expected"] = "sold_tab_selected_last_90_days"
                 # Distinguish unknown (-1) from confirmed zero sales in the selected window.
                 if (
                     int(row.get("sold_90d_count", -1)) < 0

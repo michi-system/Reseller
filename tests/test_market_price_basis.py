@@ -6,6 +6,7 @@ from unittest.mock import patch
 from reselling.live_review_fetch import (
     MarketItem,
     _has_sold_sample_reference,
+    _liquidity_signal_is_reliable_for_pair,
     _is_strict_sold_min_basis_candidate,
     _is_implausible_sold_min,
     _query_skip_key,
@@ -15,6 +16,101 @@ from reselling.live_review_fetch import (
 
 
 class MarketPriceBasisTests(unittest.TestCase):
+    def test_liquidity_signal_rejects_unconfirmed_sold_filters(self) -> None:
+        source = MarketItem(
+            site="rakuten",
+            item_id="s1",
+            title="SEIKO SBSA005 新品",
+            item_url="",
+            image_url="",
+            price=34000.0,
+            shipping=0.0,
+            currency="JPY",
+            condition="new",
+            identifiers={},
+            raw={},
+        )
+        market = MarketItem(
+            site="ebay",
+            item_id="m1",
+            title="SEIKO SBSA005 Black Dial Automatic",
+            item_url="",
+            image_url="",
+            price=299.0,
+            shipping=0.0,
+            currency="USD",
+            condition="new",
+            identifiers={},
+            raw={},
+        )
+        ok, reason = _liquidity_signal_is_reliable_for_pair(
+            signal={
+                "sold_90d_count": 6,
+                "metadata": {
+                    "filter_state": {
+                        "sold_tab_selected": False,
+                        "lookback_selected": "Last 90 days",
+                    },
+                    "filtered_row_count": 0,
+                },
+            },
+            liquidity_query="SBSA005",
+            source=source,
+            market=market,
+        )
+        self.assertFalse(ok)
+        self.assertEqual(reason, "signal_unconfirmed_sold_last90")
+
+    def test_liquidity_signal_rejects_rpa_query_model_mismatch(self) -> None:
+        source = MarketItem(
+            site="rakuten",
+            item_id="s1",
+            title="SEIKO SBSA005 新品",
+            item_url="",
+            image_url="",
+            price=34000.0,
+            shipping=0.0,
+            currency="JPY",
+            condition="new",
+            identifiers={},
+            raw={},
+        )
+        market = MarketItem(
+            site="ebay",
+            item_id="m1",
+            title="SEIKO SBSA005 Black Dial Automatic",
+            item_url="",
+            image_url="",
+            price=299.0,
+            shipping=0.0,
+            currency="USD",
+            condition="new",
+            identifiers={},
+            raw={},
+        )
+        ok, reason = _liquidity_signal_is_reliable_for_pair(
+            signal={
+                "sold_90d_count": 4,
+                "metadata": {
+                    "filter_state": {
+                        "sold_tab_selected": True,
+                        "lookback_selected": "Last 90 days",
+                    },
+                    "filtered_row_count": 3,
+                    "rpa_query": "NB1060-12L",
+                    "sold_sample": {
+                        "item_url": "https://www.ebay.com/itm/123456789012",
+                        "sold_price": 300.0,
+                    },
+                },
+            },
+            liquidity_query="SBSA005",
+            source=source,
+            market=market,
+        )
+        self.assertFalse(ok)
+        self.assertEqual(reason, "signal_rpa_query_model_mismatch")
+
     def test_has_sold_sample_reference_requires_url_and_price(self) -> None:
         self.assertTrue(
             _has_sold_sample_reference(

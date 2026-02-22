@@ -576,21 +576,50 @@ def _resolve_rpa_row(
     def _norm(text: str) -> str:
         return re.sub(r"[^A-Z0-9]+", "", str(text or "").upper())
 
-    row_by_key = entries_by_key.get(signal_key) if signal_key in entries_by_key else None
-    row_by_query = None
-    normalized_query = _compact_query(query).lower()
-    if normalized_query in entries_by_query:
-        row_by_query = entries_by_query[normalized_query]
+    def _rank_row(row: Dict[str, Any]) -> tuple[int, float, int]:
+        sold_ok = 1 if _to_int(row.get("sold_90d_count"), -1) >= 0 else 0
+        conf = _to_float(row.get("confidence"), 0.0)
+        fetched = _iso_to_epoch(str(row.get("fetched_at", "") or row.get("updated_at", "") or ""))
+        return sold_ok, conf, fetched
 
-    if isinstance(row_by_key, dict):
-        sold_by_key = _to_int(row_by_key.get("sold_90d_count"), -1)
-        if sold_by_key >= 0:
-            return row_by_key
-        if isinstance(row_by_query, dict):
-            sold_by_query = _to_int(row_by_query.get("sold_90d_count"), -1)
-            if sold_by_query >= 0:
-                return row_by_query
-        return row_by_key
+    candidate_rows: list[Dict[str, Any]] = []
+    seen_ids: set[int] = set()
+
+    def _push_row(row: Any) -> None:
+        if not isinstance(row, dict):
+            return
+        marker = id(row)
+        if marker in seen_ids:
+            return
+        seen_ids.add(marker)
+        candidate_rows.append(row)
+
+    # まずは厳密一致（key/query）だけで解決する。
+    _push_row(entries_by_key.get(signal_key))
+    normalized_query = _compact_query(query).lower()
+    if normalized_query:
+        _push_row(entries_by_query.get(normalized_query))
+
+    head = str(signal_key or "").split(":", 1)
+    if len(head) == 2:
+        prefix = str(head[0] or "").strip().lower()
+        token = str(head[1] or "").strip().upper()
+        if token and prefix in {"model", "code"}:
+            token_norm = _norm(token)
+            for alt_prefix in ("model", "code"):
+                _push_row(entries_by_key.get(f"{alt_prefix}:{token}"))
+                if token_norm and token_norm != token:
+                    _push_row(entries_by_key.get(f"{alt_prefix}:{token_norm}"))
+
+    if candidate_rows:
+        candidate_rows.sort(key=_rank_row, reverse=True)
+        return candidate_rows[0]
+
+    # 互換維持のため、必要時のみ曖昧フォールバックを許可。
+    if not _env_bool("LIQUIDITY_RPA_ALLOW_FUZZY_KEY_FALLBACK", False):
+        return None
+
+    row_by_query = entries_by_query.get(normalized_query) if normalized_query else None
     if isinstance(row_by_query, dict):
         return row_by_query
     head = str(signal_key or "").split(":", 1)
@@ -640,6 +669,30 @@ def _resolve_rpa_row(
     return None
 
 
+def _specific_query_codes(text: str) -> set[str]:
+    out: set[str] = set()
+    for token in _extract_codes(text):
+        canon = re.sub(r"[^A-Z0-9]+", "", str(token or "").upper())
+        if not canon:
+            continue
+        alpha = sum(1 for ch in canon if "A" <= ch <= "Z")
+        digit = sum(1 for ch in canon if ch.isdigit())
+        if alpha >= 2 and digit >= 2 and len(canon) >= 6:
+            out.add(canon)
+    return out
+
+
+def _rpa_row_has_strict_sold_filters(row: Dict[str, Any]) -> bool:
+    metadata = row.get("metadata") if isinstance(row.get("metadata"), dict) else {}
+    filter_state = metadata.get("filter_state") if isinstance(metadata.get("filter_state"), dict) else {}
+    early_no_sold = bool(filter_state.get("early_no_sold_detected")) or bool(metadata.get("no_sales_in_window_inferred"))
+    if early_no_sold:
+        return True
+    sold_tab_selected = bool(filter_state.get("sold_tab_selected"))
+    lookback_selected = str(filter_state.get("lookback_selected", "") or "").strip().lower()
+    return sold_tab_selected and lookback_selected == "last 90 days"
+
+
 def _provider_rpa_json(
     *,
     query: str,
@@ -664,6 +717,32 @@ def _provider_rpa_json(
     )
     if not isinstance(row, dict):
         return None, "rpa_json_no_match"
+
+    require_strict_filters = _env_bool("LIQUIDITY_RPA_REQUIRE_STRICT_FILTERS", True)
+    if require_strict_filters and (not _rpa_row_has_strict_sold_filters(row)):
+        return None, "rpa_json_not_strict_sold_filters"
+
+    require_filtered_rows_for_positive = _env_bool("LIQUIDITY_RPA_REQUIRE_FILTERED_ROWS_FOR_POSITIVE_SOLD", True)
+    if require_filtered_rows_for_positive:
+        sold_probe = _to_int(row.get("sold_90d_count"), -1)
+        if sold_probe > 0:
+            metadata_probe = row.get("metadata") if isinstance(row.get("metadata"), dict) else {}
+            filtered_row_count = _to_int(metadata_probe.get("filtered_row_count"), -1)
+            sold_sample = metadata_probe.get("sold_sample") if isinstance(metadata_probe.get("sold_sample"), dict) else {}
+            has_sample = bool(
+                str(sold_sample.get("item_url", "") or "").strip()
+                and _to_float(sold_sample.get("sold_price"), -1.0) > 0
+            )
+            if filtered_row_count <= 0 and not has_sample:
+                return None, "rpa_json_positive_sold_without_filtered_rows"
+
+    # 型番クエリ時は、取得行のクエリ型番と整合している場合のみ採用する。
+    requested_codes = _specific_query_codes(query)
+    row_query = str(row.get("query", "") or "").strip()
+    row_codes = _specific_query_codes(row_query)
+    if requested_codes and row_codes:
+        if requested_codes.isdisjoint(row_codes):
+            return None, "rpa_json_query_code_mismatch"
 
     max_age = max(60, _env_int("LIQUIDITY_RPA_MAX_AGE_SECONDS", 259200))
     fetched_at = str(row.get("fetched_at", "") or row.get("updated_at", "") or "").strip()
