@@ -496,43 +496,44 @@ class ApiHandler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:
         parsed = urlparse(self.path)
         query = parse_qs(parsed.query)
-        if parsed.path == "/" or parsed.path == "/review":
+        path = parsed.path
+        if path in {"/", "/miner", "/review"}:
             self._send_file(WEB_DIR / "review.html", content_type="text/html; charset=utf-8")
             return
-        if parsed.path == "/operator":
+        if path == "/operator":
             self._send_file(WEB_DIR / "operator.html", content_type="text/html; charset=utf-8")
             return
-        if parsed.path == "/static/review.css":
+        if path in {"/static/review.css", "/static/miner.css"}:
             self._send_file(WEB_DIR / "review.css", content_type="text/css; charset=utf-8")
             return
-        if parsed.path == "/static/review.js":
+        if path in {"/static/review.js", "/static/miner.js"}:
             self._send_file(
                 WEB_DIR / "review.js",
                 content_type="application/javascript; charset=utf-8",
             )
             return
-        if parsed.path == "/static/operator.css":
+        if path == "/static/operator.css":
             self._send_file(WEB_DIR / "operator.css", content_type="text/css; charset=utf-8")
             return
-        if parsed.path == "/static/operator.js":
+        if path == "/static/operator.js":
             self._send_file(
                 WEB_DIR / "operator.js",
                 content_type="application/javascript; charset=utf-8",
             )
             return
-        if parsed.path == "/healthz":
+        if path == "/healthz":
             self._send(HTTPStatus.OK, {"ok": True})
             return
 
-        if parsed.path == "/v1/system/rpa-progress":
+        if path == "/v1/system/rpa-progress":
             self._send(HTTPStatus.OK, get_rpa_progress_snapshot())
             return
 
-        if parsed.path == "/v1/system/fetch-progress":
+        if path == "/v1/system/fetch-progress":
             self._send(HTTPStatus.OK, _get_fetch_progress_snapshot())
             return
 
-        if parsed.path == "/v1/system/fx-rate":
+        if path == "/v1/system/fx-rate":
             snap = get_current_usd_jpy_snapshot()
             self._send(
                 HTTPStatus.OK,
@@ -547,7 +548,11 @@ class ApiHandler(BaseHTTPRequestHandler):
             )
             return
 
-        if parsed.path == "/v1/review/queue":
+        review_api_path = path
+        if review_api_path.startswith("/v1/miner"):
+            review_api_path = "/v1/review" + review_api_path[len("/v1/miner") :]
+
+        if review_api_path == "/v1/review/queue":
             try:
                 status = (query.get("status", ["pending"])[0] or "pending").strip()
                 limit = int((query.get("limit", ["50"])[0] or "50").strip())
@@ -589,7 +594,7 @@ class ApiHandler(BaseHTTPRequestHandler):
                 )
             return
 
-        if parsed.path == "/v1/review/category-options":
+        if review_api_path == "/v1/review/category-options":
             items: list[Dict[str, str]] = []
             try:
                 if CATEGORY_KNOWLEDGE_PATH.exists():
@@ -609,7 +614,7 @@ class ApiHandler(BaseHTTPRequestHandler):
             self._send(HTTPStatus.OK, {"items": items})
             return
 
-        m = re.fullmatch(r"/v1/review/candidates/(\d+)", parsed.path)
+        m = re.fullmatch(r"/v1/review/candidates/(\d+)", review_api_path)
         if m:
             candidate_id = int(m.group(1))
             candidate = get_review_candidate(candidate_id)
@@ -623,7 +628,7 @@ class ApiHandler(BaseHTTPRequestHandler):
             self._send(HTTPStatus.OK, candidate)
             return
 
-        if parsed.path == "/v1/review/cycle/active":
+        if review_api_path == "/v1/review/cycle/active":
             if not ACTIVE_CYCLE_PATH.exists():
                 self._send(
                     HTTPStatus.NOT_FOUND,
@@ -643,14 +648,14 @@ class ApiHandler(BaseHTTPRequestHandler):
             self._send(HTTPStatus.OK, payload)
             return
 
-        if parsed.path == "/v1/operator/summary":
+        if path == "/v1/operator/summary":
             settings = load_operator_settings()
             payload = get_operator_summary(settings.db_path)
             payload["db_path"] = str(settings.db_path)
             self._send(HTTPStatus.OK, payload)
             return
 
-        if parsed.path == "/v1/operator/config":
+        if path == "/v1/operator/config":
             settings = load_operator_settings()
             payload = load_or_default(settings.db_path)
             self._send(
@@ -662,7 +667,7 @@ class ApiHandler(BaseHTTPRequestHandler):
             )
             return
 
-        if parsed.path == "/v1/operator/listings":
+        if path == "/v1/operator/listings":
             settings = load_operator_settings()
             state = str((query.get("state", [""])[0] or "")).strip().lower()
             limit = max(1, _to_int((query.get("limit", ["50"])[0] or "50"), 50))
@@ -676,7 +681,7 @@ class ApiHandler(BaseHTTPRequestHandler):
             self._send(HTTPStatus.OK, payload)
             return
 
-        m = re.fullmatch(r"/v1/operator/listings/(\d+)", parsed.path)
+        m = re.fullmatch(r"/v1/operator/listings/(\d+)", path)
         if m:
             settings = load_operator_settings()
             listing_id = int(m.group(1))
@@ -690,7 +695,7 @@ class ApiHandler(BaseHTTPRequestHandler):
             self._send(HTTPStatus.OK, row)
             return
 
-        if parsed.path == "/v1/operator/events":
+        if path == "/v1/operator/events":
             settings = load_operator_settings()
             raw_listing_id = str((query.get("listing_id", [""])[0] or "")).strip()
             listing_id = int(raw_listing_id) if raw_listing_id else None
@@ -705,7 +710,7 @@ class ApiHandler(BaseHTTPRequestHandler):
             self._send(HTTPStatus.OK, payload)
             return
 
-        if parsed.path == "/v1/operator/snapshots":
+        if path == "/v1/operator/snapshots":
             settings = load_operator_settings()
             raw_listing_id = str((query.get("listing_id", [""])[0] or "")).strip()
             listing_id = int(raw_listing_id) if raw_listing_id else None
@@ -728,6 +733,10 @@ class ApiHandler(BaseHTTPRequestHandler):
     def do_POST(self) -> None:
         parsed = urlparse(self.path)
         query = parse_qs(parsed.query)
+        path = parsed.path
+        review_api_path = path
+        if review_api_path.startswith("/v1/miner"):
+            review_api_path = "/v1/review" + review_api_path[len("/v1/miner") :]
 
         try:
             body = self._read_json()
@@ -739,7 +748,7 @@ class ApiHandler(BaseHTTPRequestHandler):
             return
 
         try:
-            if parsed.path == "/v1/system/fx-rate/refresh":
+            if path == "/v1/system/fx-rate/refresh":
                 force_q = (query.get("force", ["false"])[0] or "false").lower() in {
                     "1",
                     "true",
@@ -750,12 +759,12 @@ class ApiHandler(BaseHTTPRequestHandler):
                 self._send(HTTPStatus.OK, result)
                 return
 
-            if parsed.path == "/v1/review/candidates":
+            if review_api_path == "/v1/review/candidates":
                 candidate = create_review_candidate(body)
                 self._send(HTTPStatus.CREATED, candidate)
                 return
 
-            if parsed.path == "/v1/review/fetch":
+            if review_api_path == "/v1/review/fetch":
                 query_text = str(body.get("query", "") or "")
                 source_sites = body.get("source_sites", ["rakuten", "yahoo"])
                 if not isinstance(source_sites, list):
@@ -876,14 +885,14 @@ class ApiHandler(BaseHTTPRequestHandler):
                 self._send(HTTPStatus.OK, payload)
                 return
 
-            m = re.fullmatch(r"/v1/review/candidates/(\d+)/approve", parsed.path)
+            m = re.fullmatch(r"/v1/review/candidates/(\d+)/approve", review_api_path)
             if m:
                 candidate_id = int(m.group(1))
                 candidate = approve_review_candidate(candidate_id)
                 self._send(HTTPStatus.OK, candidate)
                 return
 
-            m = re.fullmatch(r"/v1/review/candidates/(\d+)/reject", parsed.path)
+            m = re.fullmatch(r"/v1/review/candidates/(\d+)/reject", review_api_path)
             if m:
                 candidate_id = int(m.group(1))
                 issue_targets = body.get("issue_targets", [])
@@ -898,7 +907,7 @@ class ApiHandler(BaseHTTPRequestHandler):
                 self._send(HTTPStatus.OK, candidate)
                 return
 
-            if parsed.path == "/v1/operator/ingest":
+            if path == "/v1/operator/ingest":
                 settings = load_operator_settings()
                 input_path = _resolve_local_path(
                     body.get("input_path", ""),
@@ -911,7 +920,7 @@ class ApiHandler(BaseHTTPRequestHandler):
                 self._send(HTTPStatus.OK, payload)
                 return
 
-            if parsed.path == "/v1/operator/listing-cycle":
+            if path == "/v1/operator/listing-cycle":
                 settings = load_operator_settings()
                 limit = max(1, _to_int(body.get("limit", 20), 20))
                 dry_run = _to_bool(body.get("dry_run", True), True)
@@ -925,7 +934,7 @@ class ApiHandler(BaseHTTPRequestHandler):
                 self._send(HTTPStatus.OK, payload)
                 return
 
-            if parsed.path == "/v1/operator/monitor-cycle":
+            if path == "/v1/operator/monitor-cycle":
                 settings = load_operator_settings()
                 check_type = str(body.get("check_type", "light") or "light").strip().lower()
                 limit = max(1, _to_int(body.get("limit", 300), 300))
@@ -944,7 +953,7 @@ class ApiHandler(BaseHTTPRequestHandler):
                 self._send(HTTPStatus.OK, payload)
                 return
 
-            m = re.fullmatch(r"/v1/operator/listings/(\d+)/manual-stop", parsed.path)
+            m = re.fullmatch(r"/v1/operator/listings/(\d+)/manual-stop", path)
             if m:
                 settings = load_operator_settings()
                 listing_id = int(m.group(1))
@@ -958,7 +967,7 @@ class ApiHandler(BaseHTTPRequestHandler):
                 self._send(HTTPStatus.OK, payload)
                 return
 
-            m = re.fullmatch(r"/v1/operator/listings/(\d+)/manual-alert", parsed.path)
+            m = re.fullmatch(r"/v1/operator/listings/(\d+)/manual-alert", path)
             if m:
                 settings = load_operator_settings()
                 listing_id = int(m.group(1))
@@ -972,7 +981,7 @@ class ApiHandler(BaseHTTPRequestHandler):
                 self._send(HTTPStatus.OK, payload)
                 return
 
-            m = re.fullmatch(r"/v1/operator/listings/(\d+)/manual-resume-ready", parsed.path)
+            m = re.fullmatch(r"/v1/operator/listings/(\d+)/manual-resume-ready", path)
             if m:
                 settings = load_operator_settings()
                 listing_id = int(m.group(1))
@@ -986,7 +995,7 @@ class ApiHandler(BaseHTTPRequestHandler):
                 self._send(HTTPStatus.OK, payload)
                 return
 
-            m = re.fullmatch(r"/v1/operator/listings/(\d+)/manual-keep-listed", parsed.path)
+            m = re.fullmatch(r"/v1/operator/listings/(\d+)/manual-keep-listed", path)
             if m:
                 settings = load_operator_settings()
                 listing_id = int(m.group(1))
@@ -1000,7 +1009,7 @@ class ApiHandler(BaseHTTPRequestHandler):
                 self._send(HTTPStatus.OK, payload)
                 return
 
-            if parsed.path == "/v1/operator/config":
+            if path == "/v1/operator/config":
                 settings = load_operator_settings()
                 active = load_or_default(settings.db_path)
                 payload = create_config_version(
@@ -1030,7 +1039,7 @@ class ApiHandler(BaseHTTPRequestHandler):
                 self._send(HTTPStatus.OK, {"db_path": str(settings.db_path), "active_config": payload})
                 return
 
-            if parsed.path == "/v1/profit/calc":
+            if path == "/v1/profit/calc":
                 refresh_fx = bool(body.get("refresh_fx", False))
                 force_refresh_fx = bool(body.get("force_refresh_fx", False))
                 refresh_info = None

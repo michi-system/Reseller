@@ -2086,7 +2086,7 @@ async function hydrateCandidateDetailIfNeeded(candidateId, candidate) {
   if (!Number.isFinite(id)) return;
   const seq = ++state.detailFetchSeq;
   try {
-    const detail = await api(`/v1/review/candidates/${id}`);
+    const detail = await api(`/v1/miner/candidates/${id}`);
     if (!detail || Number(detail.id) !== id) return;
     state.detailCache.set(id, detail);
     mergeCandidateIntoQueues(detail);
@@ -2114,7 +2114,7 @@ async function warmReviewedRejectionDetails(limit = 12) {
   if (ids.length === 0) return;
   await Promise.all(ids.map(async (id) => {
     try {
-      const detail = await api(`/v1/review/candidates/${id}`);
+      const detail = await api(`/v1/miner/candidates/${id}`);
       if (!detail || Number(detail.id) !== id) return;
       state.detailCache.set(id, detail);
       mergeCandidateIntoQueues(detail);
@@ -2260,7 +2260,7 @@ async function fetchPendingQueue() {
   params.set("min_margin_rate", "0.03");
   params.set("min_match_score", String(DEFAULT_MIN_MATCH_SCORE));
   params.set("condition", "new");
-  const data = await api(`/v1/review/queue?${params.toString()}`);
+  const data = await api(`/v1/miner/queue?${params.toString()}`);
   return {
     items: Array.isArray(data.items) ? data.items : [],
     total: Number(data.total || 0),
@@ -2269,7 +2269,7 @@ async function fetchPendingQueue() {
 
 async function fetchReviewedQueue() {
   const params = new URLSearchParams({ status: "reviewed", limit: "200" });
-  const data = await api(`/v1/review/queue?${params.toString()}`);
+  const data = await api(`/v1/miner/queue?${params.toString()}`);
   const items = Array.isArray(data.items) ? data.items : [];
   return {
     items: items.filter((item) => isReviewedStatus(item.status)),
@@ -2315,7 +2315,7 @@ async function selectCandidateById(candidateId, options = {}) {
   let selected = (cached && Number(cached.id) === id) ? cached : inMemory;
   if (!selected || fetchDetail) {
     try {
-      const detail = await api(`/v1/review/candidates/${id}`);
+      const detail = await api(`/v1/miner/candidates/${id}`);
       if (detail && Number(detail.id) === id) {
         selected = detail;
         state.detailCache.set(id, detail);
@@ -2411,7 +2411,7 @@ async function onApprove() {
   if (!state.current) return;
   const id = state.current.id;
   const wasAutoApproved = String(state.current.status || "").toLowerCase() === "approved";
-  await api(`/v1/review/candidates/${id}/approve`, { method: "POST" });
+  await api(`/v1/miner/candidates/${id}/approve`, { method: "POST" });
   showToast(
     wasAutoApproved
       ? `候補 #${id} を最終承認し、ダミー出品へ遷移しました。`
@@ -2429,7 +2429,7 @@ async function onReject() {
   if (!issueTargets.length) {
     throw new Error("指摘箇所を1つ以上選択してください。");
   }
-  await api(`/v1/review/candidates/${id}/reject`, {
+  await api(`/v1/miner/candidates/${id}/reject`, {
     method: "POST",
     body: JSON.stringify({ issue_targets: issueTargets, reason_text: reason }),
   });
@@ -2469,7 +2469,7 @@ function populateCategoryOptions(options) {
 
 async function loadCategoryOptions() {
   try {
-    const data = await api("/v1/review/category-options");
+    const data = await api("/v1/miner/category-options");
     const rows = Array.isArray(data?.items) ? data.items : [];
     const options = rows
       .map((row) => {
@@ -2497,7 +2497,7 @@ async function onFetchLiveCandidates() {
   refs.fetchBtn.textContent = "探索中... 0%";
   startRpaProgressPolling();
   try {
-    const payload = await api("/v1/review/fetch", {
+    const payload = await api("/v1/miner/fetch", {
       method: "POST",
       body: JSON.stringify({
         query,
@@ -2746,7 +2746,7 @@ async function init() {
     await refreshQueues({ preserveSelection: false });
     scheduleFinanceCellHeightSync();
     window.setTimeout(() => scheduleFinanceCellHeightSync(), 180);
-    showToast("レビュー画面を更新しました。");
+    showToast("Miner画面を更新しました。");
   } catch (err) {
     showToast(`初期化エラー: ${err.message}`);
   }

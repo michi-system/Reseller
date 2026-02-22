@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=M+PLUS+1p:wght@400;500;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;800&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="/static/operator.css" />
@@ -15,11 +15,12 @@
   <body>
     <header class="topbar">
       <div>
-        <p class="eyebrow">Reseller / オペレーター</p>
+        <p class="eyebrow">Reseller / Operator</p>
         <h1>出品運用コンソール</h1>
+        <p class="subtitle">使い方: 1. 取込 → 2. 出品 → 3. 監視 → 4. 必要時に手動調整</p>
       </div>
       <div class="topbar-actions">
-        <a class="ghost" href="/review">Minerレビュー画面に戻る</a>
+        <a class="ghost" href="/miner">Miner画面に戻る</a>
         <button id="refreshAllBtn" type="button">全体更新</button>
       </div>
     </header>
@@ -51,17 +52,21 @@
 
     <main class="layout">
       <section class="panel ops-panel">
-        <h2>運用ジョブ</h2>
-        <div class="ops-block">
-          <h3>取込（Miner承認データ）</h3>
+        <h2>運用ジョブ（左から順に実行）</h2>
+        <div class="ops-block step step-1">
+          <p class="step-label">STEP 1</p>
+          <h3>承認データを取り込む</h3>
+          <p class="helper-text">Minerで承認済みの商品をOperatorへ反映します。</p>
           <label>JSONLパス
             <input id="ingestPath" type="text" value="data/approved_listing_exports/latest.jsonl" />
           </label>
           <button id="ingestBtn" type="button">取込実行</button>
         </div>
 
-        <div class="ops-block">
-          <h3>出品サイクル</h3>
+        <div class="ops-block step step-2">
+          <p class="step-label">STEP 2</p>
+          <h3>出品サイクルを回す</h3>
+          <p class="helper-text">`ready` の商品を出品キューから処理します。</p>
           <div class="row">
             <label>件数
               <input id="listingLimit" type="number" min="1" max="500" step="1" value="20" />
@@ -77,8 +82,10 @@
           <button id="listingCycleBtn" type="button">出品サイクル実行</button>
         </div>
 
-        <div class="ops-block">
-          <h3>監視サイクル</h3>
+        <div class="ops-block step step-3">
+          <p class="step-label">STEP 3</p>
+          <h3>監視サイクルを回す</h3>
+          <p class="helper-text">軽量監視を基本に、必要なタイミングで重量監視を実行します。</p>
           <div class="row">
             <label>件数
               <input id="monitorLimit" type="number" min="1" max="2000" step="1" value="300" />
@@ -94,31 +101,33 @@
         </div>
 
         <div class="ops-block">
-          <h3>監視閾値（有効設定）</h3>
-          <div class="row two-col">
-            <label>最低利益(JPY)
-              <input id="cfgMinProfitJpy" type="number" min="1" step="100" />
-            </label>
-            <label>最低利益率
-              <input id="cfgMinProfitRate" type="number" min="0.01" max="1" step="0.01" />
-            </label>
-            <label>停止連続失敗回数
-              <input id="cfgStopStreak" type="number" min="1" max="10" step="1" />
-            </label>
-            <label>軽量監視間隔（新規・時間）
-              <input id="cfgLightNew" type="number" min="1" max="168" step="1" />
-            </label>
-            <label>軽量監視間隔（安定・時間）
-              <input id="cfgLightStable" type="number" min="1" max="336" step="1" />
-            </label>
-            <label>軽量監視間隔（停止中・時間）
-              <input id="cfgLightStopped" type="number" min="1" max="720" step="1" />
-            </label>
-            <label>重量監視間隔（日）
-              <input id="cfgHeavyDays" type="number" min="1" max="30" step="1" />
-            </label>
-          </div>
-          <button id="saveConfigBtn" type="button">新バージョン保存</button>
+          <details class="setting-detail">
+            <summary>監視閾値を調整する（通常は既定値のままで問題ありません）</summary>
+            <div class="row two-col">
+              <label>最低利益(JPY)
+                <input id="cfgMinProfitJpy" type="number" min="1" step="100" />
+              </label>
+              <label>最低利益率
+                <input id="cfgMinProfitRate" type="number" min="0.01" max="1" step="0.01" />
+              </label>
+              <label>停止連続失敗回数
+                <input id="cfgStopStreak" type="number" min="1" max="10" step="1" />
+              </label>
+              <label>軽量監視間隔（新規・時間）
+                <input id="cfgLightNew" type="number" min="1" max="168" step="1" />
+              </label>
+              <label>軽量監視間隔（安定・時間）
+                <input id="cfgLightStable" type="number" min="1" max="336" step="1" />
+              </label>
+              <label>軽量監視間隔（停止中・時間）
+                <input id="cfgLightStopped" type="number" min="1" max="720" step="1" />
+              </label>
+              <label>重量監視間隔（日）
+                <input id="cfgHeavyDays" type="number" min="1" max="30" step="1" />
+              </label>
+            </div>
+            <button id="saveConfigBtn" type="button">新バージョン保存</button>
+          </details>
         </div>
 
         <div class="ops-block">
@@ -131,7 +140,7 @@
       <section class="panel table-panel">
         <div class="table-head">
           <h2>出品一覧</h2>
-          <div class="row">
+          <div class="row table-filter-row">
             <label>状態
               <select id="stateFilter">
                 <option value="">すべて</option>
@@ -141,10 +150,26 @@
                 <option value="stopped">停止中 (stopped)</option>
               </select>
             </label>
+            <label>キーワード
+              <input id="keywordFilter" type="text" placeholder="SKU / タイトル / 承認IDで絞り込み" />
+            </label>
             <label>表示件数 (limit)
               <input id="listLimit" type="number" min="1" max="500" step="1" value="100" />
             </label>
             <button id="reloadListBtn" type="button">一覧更新</button>
+          </div>
+        </div>
+        <p id="listMeta" class="helper-text">表示: 0件</p>
+        <div id="quickActionBar" class="quick-action-bar" hidden>
+          <p id="quickActionTitle" class="quick-action-title">選択中: -</p>
+          <label>操作メモ（任意）
+            <input id="quickManualNote" type="text" placeholder="例: 仕入れ先在庫を確認済み" />
+          </label>
+          <div class="row actions-row">
+            <button id="quickManualAlertBtn" type="button" class="quick-btn secondary">要確認にする</button>
+            <button id="quickManualStopBtn" type="button" class="quick-btn warn">停止する</button>
+            <button id="quickManualKeepListedBtn" type="button" class="quick-btn primary">出品継続 (listed)</button>
+            <button id="quickManualResumeReadyBtn" type="button" class="quick-btn primary">準備中へ戻す (ready)</button>
           </div>
         </div>
         <div class="table-wrap">
@@ -167,24 +192,11 @@
       </section>
 
       <section class="panel detail-panel">
-        <h2>詳細 / 手動操作</h2>
-        <p id="detailTitle" class="detail-title">一覧から1件選択してね</p>
+        <h2>詳細</h2>
+        <p id="detailTitle" class="detail-title">一覧から1件選択してください。</p>
+        <p id="nextActionHint" class="next-action">次にやること: 一覧で対象を選んでください。</p>
 
         <div id="detailMetrics" class="metric-grid"></div>
-
-        <div class="manual-box">
-          <label>手動操作メモ
-            <input id="manualNote" type="text" placeholder="例: 仕入れ先在庫復活待ち" />
-          </label>
-          <div class="row actions-row">
-            <button id="manualAlertBtn" type="button">要確認にする</button>
-            <button id="manualStopBtn" type="button" class="warn">停止する</button>
-          </div>
-          <div class="row actions-row">
-            <button id="manualKeepListedBtn" type="button">出品継続 (listed)</button>
-            <button id="manualResumeReadyBtn" type="button">準備中へ戻す (ready)</button>
-          </div>
-        </div>
 
         <div class="history-block">
           <h3>イベント履歴</h3>
