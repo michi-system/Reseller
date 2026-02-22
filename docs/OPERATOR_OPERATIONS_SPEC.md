@@ -163,3 +163,15 @@ python3 scripts/operator_status_summary.py
 # 8) 監視入力テンプレを出力（手入力/外部取得連携の土台）
 python3 scripts/operator_export_observation_targets.py --check-type light
 ```
+
+## 13. 実装済みUI/API補足（2026-02-22）
+- Operator専用UI: `http://127.0.0.1:8000/operator`
+- 実装済み手動操作:
+  - `manual-stop`: 手動停止
+  - `manual-alert`: 要確認化
+  - `manual-keep-listed`: 出品継続判定
+  - `manual-resume-ready`: 再出品キュー（ready）へ戻す
+- 運用上の扱い:
+  - 停止済みの自動再開は引き続き無効（MVP方針維持）
+  - 再開時は `ready` へ戻し、Listing Cycleで再出品する
+  - すべて `listing_events` に `actor_id/reason_code/note` を保存

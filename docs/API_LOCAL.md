@@ -328,6 +328,12 @@ curl -sS http://127.0.0.1:8000/v1/review/candidates/1
 
 ## Operator API (MVP)
 
+### Operator UI
+
+```bash
+open http://127.0.0.1:8000/operator
+```
+
 ### Operator summary
 
 ```bash
@@ -340,10 +346,28 @@ curl -sS http://127.0.0.1:8000/v1/operator/summary
 curl -sS "http://127.0.0.1:8000/v1/operator/listings?state=listed&limit=50"
 ```
 
+### Operator listing detail
+
+```bash
+curl -sS http://127.0.0.1:8000/v1/operator/listings/1
+```
+
 ### Operator events
 
 ```bash
 curl -sS "http://127.0.0.1:8000/v1/operator/events?limit=100"
+```
+
+### Operator monitor snapshots
+
+```bash
+curl -sS "http://127.0.0.1:8000/v1/operator/snapshots?listing_id=1&limit=50"
+```
+
+### Operator active config
+
+```bash
+curl -sS http://127.0.0.1:8000/v1/operator/config
 ```
 
 ### Ingest approved JSONL
@@ -396,6 +420,32 @@ curl -sS -X POST http://127.0.0.1:8000/v1/operator/config \
     "light_interval_stopped_hours": 72,
     "heavy_interval_days": 7
   }'
+```
+
+### Manual listing actions
+
+```bash
+curl -sS -X POST http://127.0.0.1:8000/v1/operator/listings/1/manual-stop \
+  -H "Content-Type: application/json" \
+  -d '{"actor_id":"michi-system","note":"在庫切れ確認"}'
+```
+
+```bash
+curl -sS -X POST http://127.0.0.1:8000/v1/operator/listings/1/manual-alert \
+  -H "Content-Type: application/json" \
+  -d '{"actor_id":"michi-system","note":"型番ゆれ確認待ち"}'
+```
+
+```bash
+curl -sS -X POST http://127.0.0.1:8000/v1/operator/listings/1/manual-keep-listed \
+  -H "Content-Type: application/json" \
+  -d '{"actor_id":"michi-system","note":"軽微な差分なので継続"}'
+```
+
+```bash
+curl -sS -X POST http://127.0.0.1:8000/v1/operator/listings/1/manual-resume-ready \
+  -H "Content-Type: application/json" \
+  -d '{"actor_id":"michi-system","note":"再出品キューへ戻す"}'
 ```
 
 ## Scheduler

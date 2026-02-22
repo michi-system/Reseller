@@ -31,9 +31,20 @@ from listing_ops.config import load_operator_settings
 from listing_ops.config_versions import create_config_version, load_or_default
 from listing_ops.ingest import ingest_approved_listing_jsonl
 from listing_ops.listing_cycle import run_listing_cycle
+from listing_ops.manual_actions import (
+    manual_mark_alert_review,
+    manual_mark_listed,
+    manual_resume_to_ready,
+    manual_stop_listing,
+)
 from listing_ops.monitor_cycle import run_monitor_cycle
 from listing_ops.query import get_summary as get_operator_summary
-from listing_ops.query import list_operator_events, list_operator_listings
+from listing_ops.query import (
+    get_operator_listing,
+    list_operator_events,
+    list_operator_listings,
+    list_operator_snapshots,
+)
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
 WEB_DIR = ROOT_DIR / "web"
@@ -488,12 +499,24 @@ class ApiHandler(BaseHTTPRequestHandler):
         if parsed.path == "/" or parsed.path == "/review":
             self._send_file(WEB_DIR / "review.html", content_type="text/html; charset=utf-8")
             return
+        if parsed.path == "/operator":
+            self._send_file(WEB_DIR / "operator.html", content_type="text/html; charset=utf-8")
+            return
         if parsed.path == "/static/review.css":
             self._send_file(WEB_DIR / "review.css", content_type="text/css; charset=utf-8")
             return
         if parsed.path == "/static/review.js":
             self._send_file(
                 WEB_DIR / "review.js",
+                content_type="application/javascript; charset=utf-8",
+            )
+            return
+        if parsed.path == "/static/operator.css":
+            self._send_file(WEB_DIR / "operator.css", content_type="text/css; charset=utf-8")
+            return
+        if parsed.path == "/static/operator.js":
+            self._send_file(
+                WEB_DIR / "operator.js",
                 content_type="application/javascript; charset=utf-8",
             )
             return
@@ -627,6 +650,18 @@ class ApiHandler(BaseHTTPRequestHandler):
             self._send(HTTPStatus.OK, payload)
             return
 
+        if parsed.path == "/v1/operator/config":
+            settings = load_operator_settings()
+            payload = load_or_default(settings.db_path)
+            self._send(
+                HTTPStatus.OK,
+                {
+                    "db_path": str(settings.db_path),
+                    "active_config": payload,
+                },
+            )
+            return
+
         if parsed.path == "/v1/operator/listings":
             settings = load_operator_settings()
             state = str((query.get("state", [""])[0] or "")).strip().lower()
@@ -641,6 +676,20 @@ class ApiHandler(BaseHTTPRequestHandler):
             self._send(HTTPStatus.OK, payload)
             return
 
+        m = re.fullmatch(r"/v1/operator/listings/(\d+)", parsed.path)
+        if m:
+            settings = load_operator_settings()
+            listing_id = int(m.group(1))
+            row = get_operator_listing(settings.db_path, listing_id)
+            if row is None:
+                self._send(
+                    HTTPStatus.NOT_FOUND,
+                    _json_error("listing not found", code="listing_not_found"),
+                )
+                return
+            self._send(HTTPStatus.OK, row)
+            return
+
         if parsed.path == "/v1/operator/events":
             settings = load_operator_settings()
             raw_listing_id = str((query.get("listing_id", [""])[0] or "")).strip()
@@ -648,6 +697,21 @@ class ApiHandler(BaseHTTPRequestHandler):
             limit = max(1, _to_int((query.get("limit", ["100"])[0] or "100"), 100))
             offset = max(0, _to_int((query.get("offset", ["0"])[0] or "0"), 0))
             payload = list_operator_events(
+                settings.db_path,
+                listing_id=listing_id,
+                limit=limit,
+                offset=offset,
+            )
+            self._send(HTTPStatus.OK, payload)
+            return
+
+        if parsed.path == "/v1/operator/snapshots":
+            settings = load_operator_settings()
+            raw_listing_id = str((query.get("listing_id", [""])[0] or "")).strip()
+            listing_id = int(raw_listing_id) if raw_listing_id else None
+            limit = max(1, _to_int((query.get("limit", ["100"])[0] or "100"), 100))
+            offset = max(0, _to_int((query.get("offset", ["0"])[0] or "0"), 0))
+            payload = list_operator_snapshots(
                 settings.db_path,
                 listing_id=listing_id,
                 limit=limit,
@@ -876,6 +940,62 @@ class ApiHandler(BaseHTTPRequestHandler):
                     observation_jsonl_path=obs_path,
                     limit=limit,
                     actor_id=actor_id,
+                )
+                self._send(HTTPStatus.OK, payload)
+                return
+
+            m = re.fullmatch(r"/v1/operator/listings/(\d+)/manual-stop", parsed.path)
+            if m:
+                settings = load_operator_settings()
+                listing_id = int(m.group(1))
+                payload = manual_stop_listing(
+                    db_path=settings.db_path,
+                    listing_id=listing_id,
+                    actor_id=str(body.get("actor_id", "") or "").strip(),
+                    reason_code=str(body.get("reason_code", "manual_stop") or "manual_stop").strip(),
+                    note=str(body.get("note", "") or "").strip(),
+                )
+                self._send(HTTPStatus.OK, payload)
+                return
+
+            m = re.fullmatch(r"/v1/operator/listings/(\d+)/manual-alert", parsed.path)
+            if m:
+                settings = load_operator_settings()
+                listing_id = int(m.group(1))
+                payload = manual_mark_alert_review(
+                    db_path=settings.db_path,
+                    listing_id=listing_id,
+                    actor_id=str(body.get("actor_id", "") or "").strip(),
+                    reason_code=str(body.get("reason_code", "manual_alert_review") or "manual_alert_review").strip(),
+                    note=str(body.get("note", "") or "").strip(),
+                )
+                self._send(HTTPStatus.OK, payload)
+                return
+
+            m = re.fullmatch(r"/v1/operator/listings/(\d+)/manual-resume-ready", parsed.path)
+            if m:
+                settings = load_operator_settings()
+                listing_id = int(m.group(1))
+                payload = manual_resume_to_ready(
+                    db_path=settings.db_path,
+                    listing_id=listing_id,
+                    actor_id=str(body.get("actor_id", "") or "").strip(),
+                    reason_code=str(body.get("reason_code", "manual_resume_ready") or "manual_resume_ready").strip(),
+                    note=str(body.get("note", "") or "").strip(),
+                )
+                self._send(HTTPStatus.OK, payload)
+                return
+
+            m = re.fullmatch(r"/v1/operator/listings/(\d+)/manual-keep-listed", parsed.path)
+            if m:
+                settings = load_operator_settings()
+                listing_id = int(m.group(1))
+                payload = manual_mark_listed(
+                    db_path=settings.db_path,
+                    listing_id=listing_id,
+                    actor_id=str(body.get("actor_id", "") or "").strip(),
+                    reason_code=str(body.get("reason_code", "manual_keep_listed") or "manual_keep_listed").strip(),
+                    note=str(body.get("note", "") or "").strip(),
                 )
                 self._send(HTTPStatus.OK, payload)
                 return

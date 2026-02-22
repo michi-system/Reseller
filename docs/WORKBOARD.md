@@ -17,9 +17,10 @@
 | WB-P0-004 | P0 | 体制 | done | Reseller (Miner + Operator) のGitHub Project運用を日報中心へ切替（Today/Doing/Done/Reported） | 週次レビューで日報カードがProject管理される | 0.5日 |
 | WB-P0-005 | P0 | 体制 | done | 承認済み商品のデータ契約実装（JSONL最小出力, Issue #3） | Operatorで取り込み可能な契約データが固定化 | 1-2日 |
 | WB-P0-006 | P0 | 体制 | todo | internal名の段階移行（DB/識別子/ヘッダ互換） | `INTERNAL_NAME_MIGRATION` のPhase 1-2が完了 | 1-2日 |
-| WB-P0-007 | P0 | 実装 | todo | Operator 0->1骨格 + Miner JSONL取り込み | `apps/operator` の最小実行系と `latest.jsonl` 取り込みが通る | 2-3日 |
-| WB-P0-008 | P0 | 実装 | todo | Operator 自動出品ワーカー実装（dry-run優先） | dry-runでキュー消化と出品API呼び出し模擬が再現できる | 2-3日 |
-| WB-P0-009 | P0 | 実装 | todo | Operator 監視ジョブ + 利益低下時の自動停止 | 閾値割れ連続時に停止イベントが記録される | 2-4日 |
+| WB-P0-007 | P0 | 実装 | done | Operator 0->1骨格 + Miner JSONL取り込み | `apps/operator` の最小実行系と `latest.jsonl` 取り込みが通る | 2-3日 |
+| WB-P0-008 | P0 | 実装 | done | Operator 自動出品ワーカー実装（dry-run優先） | dry-runでキュー消化と出品API呼び出し模擬が再現できる | 2-3日 |
+| WB-P0-009 | P0 | 実装 | done | Operator 監視ジョブ + 利益低下時の自動停止 | 閾値割れ連続時に停止イベントが記録される | 2-4日 |
+| WB-P0-010 | P0 | UI/運用 | done | Operator専用UI + 手動介入API（停止/要確認/継続/ready復帰） | `/operator` 画面で日次運用と手動操作が完結できる | 1-2日 |
 | WB-P1-001 | P1 | 実装 | todo | `active_count` 取得実装（EFF-001） | 流動性にアクティブ件数が保存される | 3-5h |
 | WB-P1-002 | P1 | 実装 | todo | STR算出実装（EFF-002） | `sell_through_90d` が実値計算される | 1-2h |
 | WB-P1-003 | P1 | UI/判定 | todo | アクティブ/STRのUI連携（EFF-003） | UI表示と閾値判定が連動する | 1-2h |
@@ -46,6 +47,7 @@
 | 2026-02-22 | WB-OPS-003 | Reseller Roadmapを工数表運用へ整備（Track/担当/見積/実績、未来+過去タスク登録） | `https://github.com/users/michi-system/projects/4` |
 | 2026-02-22 | WB-OPS-004 | Operator運用仕様v1と開発工数表を策定 | `docs/OPERATOR_OPERATIONS_SPEC.md`, `docs/OPERATOR_EFFORT_TABLE.md` |
 | 2026-02-22 | WB-OPS-005 | Operatorコアロジック実装（取込/出品サイクル/監視判定/設定バージョン管理/API追加） | `listing_ops/*`, `scripts/operator_*.py`, `reselling/api_server.py`, `tests/test_operator_logic.py` |
+| 2026-02-22 | WB-OPS-006 | Operator運用UIと手動介入APIを実装（一覧/詳細/ジョブ実行/手動状態遷移） | `web/operator.*`, `listing_ops/manual_actions.py`, `reselling/api_server.py`, `tests/test_operator_manual_actions.py` |
 
 ## 4. Backlog
 | ID | 優先 | 種別 | 内容 | 着手条件 |
@@ -81,6 +83,7 @@
 | 2026-02-22 | DEC-014 | GitHub運用は Issue駆動を常用せず、ProjectのDraftカード + 日報 (`docs/daily_reports`) を正本にする | 実装速度を優先しつつ、作業履歴と作業者同定を日次で残すため |
 | 2026-02-22 | DEC-015 | ロードマップは `Reseller 工数表` で管理し、`Status=Todo` を未来、`Status=Done` を過去として扱う | 未来タスクと完了履歴を1枚で俯瞰するため |
 | 2026-02-22 | DEC-016 | 担当の初期割当は `michi-system: 全体リード + Miner/Shared`, `a28ngi: Operator` とする | 並列開発で詰まりを減らし、責任境界を明確にするため |
+| 2026-02-22 | DEC-017 | 停止済み商品の復帰は自動再開せず、`manual-resume-ready` で再出品キューへ戻す運用に固定 | 自動再開の誤復帰リスクを抑えつつ、再出品判断を人間で管理するため |
 
 ## 7. 次エージェント向け起点
 1. `Now` の `in_progress` を上から順に処理。

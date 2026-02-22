@@ -101,3 +101,44 @@ def list_operator_events(
     items = [dict(row) for row in rows]
     conn.close()
     return {"items": items, "total_count": total, "limit": max(1, int(limit)), "offset": max(0, int(offset))}
+
+
+def get_operator_listing(db_path: Path, listing_id: int) -> Optional[Dict[str, Any]]:
+    conn = connect(db_path)
+    init_db(conn)
+    row = conn.execute("SELECT * FROM operator_listings WHERE id = ?", (int(listing_id),)).fetchone()
+    conn.close()
+    if row is None:
+        return None
+    return dict(row)
+
+
+def list_operator_snapshots(
+    db_path: Path,
+    *,
+    listing_id: Optional[int] = None,
+    limit: int = 100,
+    offset: int = 0,
+) -> Dict[str, Any]:
+    conn = connect(db_path)
+    init_db(conn)
+    where_sql = ""
+    params: list[Any] = []
+    if listing_id is not None:
+        where_sql = "WHERE listing_id = ?"
+        params.append(int(listing_id))
+
+    total = int(conn.execute(f"SELECT COUNT(*) AS c FROM monitor_snapshots {where_sql}", params).fetchone()["c"])
+    rows = conn.execute(
+        f"""
+        SELECT *
+        FROM monitor_snapshots
+        {where_sql}
+        ORDER BY captured_at DESC, id DESC
+        LIMIT ? OFFSET ?
+        """,
+        [*params, max(1, int(limit)), max(0, int(offset))],
+    ).fetchall()
+    items = [dict(row) for row in rows]
+    conn.close()
+    return {"items": items, "total_count": total, "limit": max(1, int(limit)), "offset": max(0, int(offset))}

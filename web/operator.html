@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Operator Console | Reseller</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=M+PLUS+1p:wght@400;500;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/static/operator.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Reseller / Operator</p>
+        <h1>出品運用コンソール</h1>
+      </div>
+      <div class="topbar-actions">
+        <a class="ghost" href="/review">Minerレビュー画面へ</a>
+        <button id="refreshAllBtn" type="button">全体更新</button>
+      </div>
+    </header>
+
+    <p id="endpointLabel" class="endpoint">API接続先: -</p>
+
+    <section class="summary-grid">
+      <article class="summary-card total">
+        <span>総数</span>
+        <strong id="sumTotal">0</strong>
+      </article>
+      <article class="summary-card ready">
+        <span>Ready</span>
+        <strong id="sumReady">0</strong>
+      </article>
+      <article class="summary-card listed">
+        <span>Listed</span>
+        <strong id="sumListed">0</strong>
+      </article>
+      <article class="summary-card alert">
+        <span>Alert Review</span>
+        <strong id="sumAlert">0</strong>
+      </article>
+      <article class="summary-card stopped">
+        <span>Stopped</span>
+        <strong id="sumStopped">0</strong>
+      </article>
+    </section>
+
+    <main class="layout">
+      <section class="panel ops-panel">
+        <h2>運用ジョブ</h2>
+        <div class="ops-block">
+          <h3>Ingest（Miner承認データ取込）</h3>
+          <label>JSONLパス
+            <input id="ingestPath" type="text" value="data/approved_listing_exports/latest.jsonl" />
+          </label>
+          <button id="ingestBtn" type="button">取込実行</button>
+        </div>
+
+        <div class="ops-block">
+          <h3>Listing Cycle</h3>
+          <div class="row">
+            <label>件数
+              <input id="listingLimit" type="number" min="1" max="500" step="1" value="20" />
+            </label>
+            <label class="inline-check">
+              <input id="listingDryRun" type="checkbox" checked />
+              Dry Run
+            </label>
+          </div>
+          <label>actor_id
+            <input id="actorId" type="text" value="michi-system" />
+          </label>
+          <button id="listingCycleBtn" type="button">出品サイクル実行</button>
+        </div>
+
+        <div class="ops-block">
+          <h3>Monitor Cycle</h3>
+          <div class="row">
+            <label>件数
+              <input id="monitorLimit" type="number" min="1" max="2000" step="1" value="300" />
+            </label>
+            <label>観測JSONLパス（任意）
+              <input id="obsPath" type="text" placeholder="data/operator_observations_template.jsonl" />
+            </label>
+          </div>
+          <div class="row actions-row">
+            <button id="monitorLightBtn" type="button">Light監視実行</button>
+            <button id="monitorHeavyBtn" type="button">Heavy監視実行</button>
+          </div>
+        </div>
+
+        <div class="ops-block">
+          <h3>監視閾値（active config）</h3>
+          <div class="row two-col">
+            <label>最低利益(JPY)
+              <input id="cfgMinProfitJpy" type="number" min="1" step="100" />
+            </label>
+            <label>最低利益率
+              <input id="cfgMinProfitRate" type="number" min="0.01" max="1" step="0.01" />
+            </label>
+            <label>停止連続失敗回数
+              <input id="cfgStopStreak" type="number" min="1" max="10" step="1" />
+            </label>
+            <label>Light間隔(new/h)
+              <input id="cfgLightNew" type="number" min="1" max="168" step="1" />
+            </label>
+            <label>Light間隔(stable/h)
+              <input id="cfgLightStable" type="number" min="1" max="336" step="1" />
+            </label>
+            <label>Light間隔(stopped/h)
+              <input id="cfgLightStopped" type="number" min="1" max="720" step="1" />
+            </label>
+            <label>Heavy間隔(days)
+              <input id="cfgHeavyDays" type="number" min="1" max="30" step="1" />
+            </label>
+          </div>
+          <button id="saveConfigBtn" type="button">新バージョン保存</button>
+        </div>
+
+        <div class="ops-block">
+          <h3>最新ジョブ</h3>
+          <ul id="jobList" class="job-list"></ul>
+          <p id="jobEmpty" class="empty">ジョブ履歴なし</p>
+        </div>
+      </section>
+
+      <section class="panel table-panel">
+        <div class="table-head">
+          <h2>Listing一覧</h2>
+          <div class="row">
+            <label>状態
+              <select id="stateFilter">
+                <option value="">all</option>
+                <option value="ready">ready</option>
+                <option value="listed">listed</option>
+                <option value="alert_review">alert_review</option>
+                <option value="stopped">stopped</option>
+              </select>
+            </label>
+            <label>limit
+              <input id="listLimit" type="number" min="1" max="500" step="1" value="100" />
+            </label>
+            <button id="reloadListBtn" type="button">一覧更新</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>state</th>
+                <th>sku</th>
+                <th>利益(JPY)</th>
+                <th>利益率</th>
+                <th>次Light</th>
+                <th>更新</th>
+              </tr>
+            </thead>
+            <tbody id="listingBody"></tbody>
+          </table>
+        </div>
+        <p id="listingEmpty" class="empty">表示対象がありません</p>
+      </section>
+
+      <section class="panel detail-panel">
+        <h2>詳細 / 手動操作</h2>
+        <p id="detailTitle" class="detail-title">一覧から1件選択してね</p>
+
+        <div id="detailMetrics" class="metric-grid"></div>
+
+        <div class="manual-box">
+          <label>手動操作メモ
+            <input id="manualNote" type="text" placeholder="例: 仕入れ先在庫復活待ち" />
+          </label>
+          <div class="row actions-row">
+            <button id="manualAlertBtn" type="button">要確認にする</button>
+            <button id="manualStopBtn" type="button" class="warn">停止する</button>
+          </div>
+          <div class="row actions-row">
+            <button id="manualKeepListedBtn" type="button">出品継続(listed)</button>
+            <button id="manualResumeReadyBtn" type="button">readyへ戻す</button>
+          </div>
+        </div>
+
+        <div class="history-block">
+          <h3>Event履歴</h3>
+          <ul id="eventList"></ul>
+          <p id="eventEmpty" class="empty">イベントなし</p>
+        </div>
+
+        <div class="history-block">
+          <h3>Monitor Snapshot</h3>
+          <ul id="snapshotList"></ul>
+          <p id="snapshotEmpty" class="empty">スナップショットなし</p>
+        </div>
+      </section>
+    </main>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script src="/static/operator.js"></script>
+  </body>
+</html>
