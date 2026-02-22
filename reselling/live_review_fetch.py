@@ -47,6 +47,21 @@ _RPA_DAILY_LIMIT_PATTERNS = (
     re.compile(r"number\s+of\s+requests\s+allowed\s+in\s+one\s+day", re.IGNORECASE),
 )
 
+_HEADER_ERROR_KEY = "x-reseller-error"
+_HEADER_CACHE_HIT_KEY = "x-reseller-cache-hit"
+_HEADER_CACHE_AGE_SEC_KEY = "x-reseller-cache-age-sec"
+_HEADER_BUDGET_REMAINING_KEY = "x-reseller-budget-remaining"
+
+_HEADER_LEGACY_ERROR_KEY = "x-ebayminer-error"
+_HEADER_LEGACY_CACHE_HIT_KEY = "x-ebayminer-cache-hit"
+_HEADER_LEGACY_CACHE_AGE_SEC_KEY = "x-ebayminer-cache-age-sec"
+_HEADER_LEGACY_BUDGET_REMAINING_KEY = "x-ebayminer-budget-remaining"
+
+_HEADER_ERROR_KEYS = (_HEADER_ERROR_KEY, _HEADER_LEGACY_ERROR_KEY)
+_HEADER_CACHE_HIT_KEYS = (_HEADER_CACHE_HIT_KEY, _HEADER_LEGACY_CACHE_HIT_KEY)
+_HEADER_CACHE_AGE_SEC_KEYS = (_HEADER_CACHE_AGE_SEC_KEY, _HEADER_LEGACY_CACHE_AGE_SEC_KEY)
+_HEADER_BUDGET_REMAINING_KEYS = (_HEADER_BUDGET_REMAINING_KEY, _HEADER_LEGACY_BUDGET_REMAINING_KEY)
+
 _STOPWORDS = {
     "THE",
     "WITH",
@@ -663,7 +678,7 @@ def _run_rpa_collect_for_fetch(queries: Sequence[str]) -> Dict[str, Any]:
     max_queries = max(1, _env_int("LIQUIDITY_RPA_FETCH_MAX_QUERIES", 3))
     query_list = query_list[:max_queries]
     project_root = Path(__file__).resolve().parents[1]
-    script_path = project_root / "scripts" / "rpa_ebay_product_research.py"
+    script_path = project_root / "scripts" / "rpa_market_research.py"
     if not script_path.exists():
         _save_rpa_progress(
             {
@@ -1186,6 +1201,66 @@ def _api_cache_path(site: str, method: str, url: str) -> Path:
     return _API_CACHE_DIR / site_key / f"{hash_key}.json"
 
 
+def _header_read(headers: Dict[str, str], keys: Sequence[str], default: str = "") -> str:
+    if not isinstance(headers, dict):
+        return default
+    for key in keys:
+        value = str(headers.get(key, "") or "").strip()
+        if value:
+            return value
+    return default
+
+
+def _emit_legacy_internal_headers() -> bool:
+    return _env_bool("INTERNAL_EMIT_LEGACY_EBAYMINER_HEADERS", False)
+
+
+def _set_internal_response_headers(
+    headers: Dict[str, str],
+    *,
+    cache_hit: str,
+    cache_age_sec: str,
+    budget_remaining: str,
+    error: str = "",
+) -> Dict[str, str]:
+    out = dict(headers or {})
+    out[_HEADER_CACHE_HIT_KEY] = str(cache_hit)
+    out[_HEADER_CACHE_AGE_SEC_KEY] = str(cache_age_sec)
+    out[_HEADER_BUDGET_REMAINING_KEY] = str(budget_remaining)
+    if error:
+        out[_HEADER_ERROR_KEY] = str(error)
+
+    if _emit_legacy_internal_headers():
+        out[_HEADER_LEGACY_CACHE_HIT_KEY] = str(cache_hit)
+        out[_HEADER_LEGACY_CACHE_AGE_SEC_KEY] = str(cache_age_sec)
+        out[_HEADER_LEGACY_BUDGET_REMAINING_KEY] = str(budget_remaining)
+        if error:
+            out[_HEADER_LEGACY_ERROR_KEY] = str(error)
+    return out
+
+
+def _make_internal_error_headers(*, error: str, budget_remaining: str) -> Dict[str, str]:
+    return _set_internal_response_headers(
+        {},
+        cache_hit="0",
+        cache_age_sec="-1",
+        budget_remaining=budget_remaining,
+        error=error,
+    )
+
+
+def _header_cache_hit(headers: Dict[str, str]) -> bool:
+    return _header_read(headers, _HEADER_CACHE_HIT_KEYS, "0").lower() in {"1", "true", "yes"}
+
+
+def _header_cache_age_sec(headers: Dict[str, str]) -> int:
+    return _to_int(_header_read(headers, _HEADER_CACHE_AGE_SEC_KEYS, "-1"), -1)
+
+
+def _header_budget_remaining(headers: Dict[str, str]) -> int:
+    return _to_int(_header_read(headers, _HEADER_BUDGET_REMAINING_KEYS, "-1"), -1)
+
+
 def _load_cached_api_response(
     *,
     site: str,
@@ -1211,9 +1286,12 @@ def _load_cached_api_response(
     if status <= 0 or not isinstance(headers, dict) or not isinstance(body, dict):
         return None
     out_headers = {str(k): str(v) for k, v in headers.items()}
-    out_headers["x-ebayminer-cache-hit"] = "1"
-    out_headers["x-ebayminer-cache-age-sec"] = str(age_sec)
-    out_headers["x-ebayminer-budget-remaining"] = "-1"
+    out_headers = _set_internal_response_headers(
+        out_headers,
+        cache_hit="1",
+        cache_age_sec=str(age_sec),
+        budget_remaining="-1",
+    )
     return status, out_headers, body, age_sec
 
 
@@ -1476,23 +1554,15 @@ def _request_json(
             status, cached_headers, cached_payload, _age = cached
             return status, cached_headers, cached_payload
         if cache_only:
-            return 0, {
-                "x-ebayminer-error": "cache_miss",
-                "x-ebayminer-cache-hit": "0",
-                "x-ebayminer-cache-age-sec": "-1",
-                "x-ebayminer-budget-remaining": "-1",
-            }, {"error": "cache_miss"}
+            return 0, _make_internal_error_headers(error="cache_miss", budget_remaining="-1"), {"error": "cache_miss"}
 
     budget_remaining = -1
     if normalized_site:
         can_call, budget_remaining = _consume_daily_budget(normalized_site)
         if not can_call:
-            return 0, {
-                "x-ebayminer-error": "daily_budget_exhausted",
-                "x-ebayminer-cache-hit": "0",
-                "x-ebayminer-cache-age-sec": "-1",
-                "x-ebayminer-budget-remaining": "0",
-            }, {"error": "daily_budget_exhausted"}
+            return 0, _make_internal_error_headers(error="daily_budget_exhausted", budget_remaining="0"), {
+                "error": "daily_budget_exhausted"
+            }
 
     req = urllib.request.Request(url=url, data=data, method=method)
     for key, value in (headers or {}).items():
@@ -1505,9 +1575,12 @@ def _request_json(
             if not isinstance(payload, dict):
                 payload = {"data": payload}
             out_headers = dict(resp.headers.items())
-            out_headers["x-ebayminer-cache-hit"] = "0"
-            out_headers["x-ebayminer-cache-age-sec"] = "-1"
-            out_headers["x-ebayminer-budget-remaining"] = str(budget_remaining)
+            out_headers = _set_internal_response_headers(
+                out_headers,
+                cache_hit="0",
+                cache_age_sec="-1",
+                budget_remaining=str(budget_remaining),
+            )
             if use_cache:
                 _save_cached_api_response(
                     site=normalized_site,
@@ -1527,16 +1600,20 @@ def _request_json(
         except json.JSONDecodeError:
             payload = {"raw": body[:600]}
         out_headers = dict(err.headers.items())
-        out_headers["x-ebayminer-cache-hit"] = "0"
-        out_headers["x-ebayminer-cache-age-sec"] = "-1"
-        out_headers["x-ebayminer-budget-remaining"] = str(budget_remaining)
+        out_headers = _set_internal_response_headers(
+            out_headers,
+            cache_hit="0",
+            cache_age_sec="-1",
+            budget_remaining=str(budget_remaining),
+        )
         return int(err.code), out_headers, payload
     except urllib.error.URLError as err:
-        return 0, {
-            "x-ebayminer-cache-hit": "0",
-            "x-ebayminer-cache-age-sec": "-1",
-            "x-ebayminer-budget-remaining": str(budget_remaining),
-        }, {"error": str(err)}
+        return 0, _set_internal_response_headers(
+            {},
+            cache_hit="0",
+            cache_age_sec="-1",
+            budget_remaining=str(budget_remaining),
+        ), {"error": str(err)}
 
 
 def _request_text(
@@ -1941,9 +2018,9 @@ def _search_ebay(
         "raw_total": payload.get("total"),
         "page": safe_page,
         "offset": offset,
-        "cache_hit": str(res_headers.get("x-ebayminer-cache-hit", "0")).strip() in {"1", "true", "yes"},
-        "cache_age_sec": _to_int(res_headers.get("x-ebayminer-cache-age-sec"), -1),
-        "budget_remaining": _to_int(res_headers.get("x-ebayminer-budget-remaining"), -1),
+        "cache_hit": _header_cache_hit(res_headers),
+        "cache_age_sec": _header_cache_age_sec(res_headers),
+        "budget_remaining": _header_budget_remaining(res_headers),
         "image_fallback_calls": image_fallback_calls,
         "image_fallback_hits": image_fallback_hits,
     }
@@ -2044,9 +2121,9 @@ def _search_rakuten(
         "http": status,
         "raw_count": payload.get("count"),
         "page": safe_page,
-        "cache_hit": str(res_headers.get("x-ebayminer-cache-hit", "0")).strip() in {"1", "true", "yes"},
-        "cache_age_sec": _to_int(res_headers.get("x-ebayminer-cache-age-sec"), -1),
-        "budget_remaining": _to_int(res_headers.get("x-ebayminer-budget-remaining"), -1),
+        "cache_hit": _header_cache_hit(res_headers),
+        "cache_age_sec": _header_cache_age_sec(res_headers),
+        "budget_remaining": _header_budget_remaining(res_headers),
     }
 
 
@@ -2152,9 +2229,9 @@ def _search_yahoo(
         "raw_total": payload.get("totalResultsAvailable"),
         "page": safe_page,
         "start": start,
-        "cache_hit": str(headers.get("x-ebayminer-cache-hit", "0")).strip() in {"1", "true", "yes"},
-        "cache_age_sec": _to_int(headers.get("x-ebayminer-cache-age-sec"), -1),
-        "budget_remaining": _to_int(headers.get("x-ebayminer-budget-remaining"), -1),
+        "cache_hit": _header_cache_hit(headers),
+        "cache_age_sec": _header_cache_age_sec(headers),
+        "budget_remaining": _header_budget_remaining(headers),
     }
 
 
@@ -5793,7 +5870,10 @@ def fetch_live_review_candidates(
     ebay_active_count_hint = _to_int(ebay_info.get("raw_total"), -1) if isinstance(ebay_info, dict) else -1
 
     require_sold_min_basis = _env_bool("LIQUIDITY_REQUIRE_SOLD_MIN_PRICE", True)
-    require_sold_sample_item = _env_bool("LIQUIDITY_REQUIRE_SOLD_SAMPLE_ITEM", True)
+    require_sold_sample_item_env = _env_bool("LIQUIDITY_REQUIRE_SOLD_SAMPLE_ITEM", True)
+    # 90日最低成約価格を売値基準にする場合は、売却サンプルURLを常に必須にする。
+    # （設定値がfalseでもここは強制）
+    require_sold_sample_item = True if require_sold_min_basis else require_sold_sample_item_env
     liquidity_signal_cache_by_query: Dict[str, Dict[str, Any]] = {}
     liquidity_signal_reuse_sold_first = 0
     liquidity_signal_reuse_query_cache = 0

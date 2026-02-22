@@ -6,10 +6,10 @@ import unittest
 
 def _load_rpa_module():
     root = pathlib.Path(__file__).resolve().parents[1]
-    script_path = root / "scripts" / "rpa_ebay_product_research.py"
-    spec = importlib.util.spec_from_file_location("rpa_ebay_product_research", script_path)
+    script_path = root / "scripts" / "rpa_market_research.py"
+    spec = importlib.util.spec_from_file_location("rpa_market_research", script_path)
     if spec is None or spec.loader is None:
-        raise RuntimeError("failed to load rpa_ebay_product_research.py")
+        raise RuntimeError("failed to load rpa_market_research.py")
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)

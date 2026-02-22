@@ -129,7 +129,7 @@ python3 -m venv .venv
 .venv/bin/python -m pip install playwright
 .venv/bin/playwright install chromium
 
-.venv/bin/python scripts/rpa_ebay_product_research.py \
+.venv/bin/python scripts/rpa_market_research.py \
   --query "seiko sbdc101" \
   --query "citizen nb1050" \
   --lookback-days 90 \

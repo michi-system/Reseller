@@ -1,0 +1,12 @@
+{
+  "cycle_id": "pending-revalidate-20260222T030535Z",
+  "selected_candidate_ids": [
+    500,
+    501,
+    502,
+    503,
+    504
+  ],
+  "created_at": "2026-02-22T03:05:35Z",
+  "source": "manual_pending_revalidate"
+}

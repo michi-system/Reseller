@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Operations Manual
+    url: https://github.com/michi-system/ebayminer/blob/HEAD/docs/OPERATIONS_MANUAL.md
+    about: GitHub/Codexの運用手順はこちら
+  - name: Program Overview
+    url: https://github.com/michi-system/ebayminer/blob/HEAD/docs/PROGRAM_OVERVIEW.md
+    about: Reseller (Miner + Operator) の全体像はこちら

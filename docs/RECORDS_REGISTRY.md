@@ -42,7 +42,9 @@
 ## 5. 実行状態ファイル（`data/`）
 | パス | 更新元 | 用途 |
 |---|---|---|
-| `data/ebayminer.db` | API/スクリプト全体 | 候補・レビュー・設定の主DB |
+| `data/reseller.db` | API/スクリプト全体 | 候補・レビュー・設定の主DB (canonical) |
+| `data/ebayminer.db` | API/スクリプト全体 | 旧DBパス (互換読み込み対象) |
+| `reselling.db` | API/スクリプト全体 | 旧ローカルDBパス (互換読み込み対象) |
 | `data/category_knowledge_seeds_v1.json` | 手動更新 + fetch参照 | カテゴリ展開ナレッジ正本 |
 | `data/review_blocklist.json` | `scripts/sync_rejected_blocklist.py`, `scripts/apply_cycle_improvements.py` | 否認由来の除外対象 |
 | `data/review_query_cache.json` | `reselling/live_review_fetch.py` | クエリ結果キャッシュ |
@@ -54,7 +56,7 @@
 | `data/liquidity_backfill_targets.json` | `scripts/run_review_cycle.py` | 流動性欠損埋めターゲット |
 | `data/liquidity_rpa_progress.json` | `reselling/live_review_fetch.py` | Product Research進行状態 |
 | `data/liquidity_rpa_fetch_state.json` | `reselling/live_review_fetch.py` | RPA呼び出し間隔/状態 |
-| `data/liquidity_rpa_signals.jsonl` | `scripts/rpa_ebay_product_research.py` | 90日売却シグナル入力 |
+| `data/liquidity_rpa_signals.jsonl` | `scripts/rpa_market_research.py` | 90日売却シグナル入力 |
 | `data/rpa/ebay_profile/` | Playwright persistent profile | eBayログインセッション保持 |
 
 ## 6. その他の運用記録

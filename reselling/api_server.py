@@ -413,7 +413,8 @@ def _fetch_live_review_candidates_timed(
 
 
 class ApiHandler(BaseHTTPRequestHandler):
-    server_version = "ebayminer-api/0.1"
+    # Legacy identifier was "ebayminer-api/0.1".
+    server_version = "reseller-api/0.1"
 
     def _send_bytes(
         self,

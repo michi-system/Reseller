@@ -1,0 +1,47 @@
+name: Feature request
+description: New capability or improvement
+title: "[Feature] "
+labels:
+  - feature
+body:
+  - type: markdown
+    attributes:
+      value: |
+        変更内容と完了条件を先に固定してください。
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: 何を達成したいか
+      placeholder: 例) 承認済み商品のJSONL出力を追加する
+    validations:
+      required: true
+  - type: textarea
+    id: done
+    attributes:
+      label: Definition of done
+      description: 完了条件（テスト/確認方法込み）
+      placeholder: |
+        - [ ] JSONLに必須項目が出力される
+        - [ ] 既存フローが壊れていない
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: 変更対象ファイルや領域
+      placeholder: 例) reselling/review.py, scripts/run_review_cycle.py
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Miner
+        - Operator
+        - Shared contract
+        - Docs only
+    validations:
+      required: true

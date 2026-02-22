@@ -8,6 +8,11 @@ from pathlib import Path
 
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
+CANONICAL_DB_PATH = ROOT_DIR / "data" / "reseller.db"
+LEGACY_DB_PATHS = (
+    ROOT_DIR / "data" / "ebayminer.db",
+    ROOT_DIR / "reselling.db",
+)
 
 
 @dataclass(frozen=True)
@@ -45,9 +50,30 @@ def _get_int(name: str, default: int) -> int:
         return default
 
 
+def _resolve_db_path() -> Path:
+    raw = (os.getenv("DB_PATH", "") or "").strip()
+    if raw:
+        configured = Path(raw)
+        # Keep explicit DB_PATH support, but auto-upgrade legacy defaults when canonical DB exists.
+        if CANONICAL_DB_PATH.exists():
+            for legacy in LEGACY_DB_PATHS:
+                if configured == legacy:
+                    return CANONICAL_DB_PATH
+        return configured
+
+    if CANONICAL_DB_PATH.exists():
+        return CANONICAL_DB_PATH
+
+    for legacy in LEGACY_DB_PATHS:
+        if legacy.exists():
+            return legacy
+
+    # New installs default to canonical path.
+    return CANONICAL_DB_PATH
+
+
 def load_settings() -> Settings:
-    db_default = ROOT_DIR / "data" / "ebayminer.db"
-    db_path = Path((os.getenv("DB_PATH", "") or "").strip() or db_default)
+    db_path = _resolve_db_path()
     return Settings(
         db_path=db_path,
         fx_provider=(os.getenv("FX_PROVIDER", "open_er_api") or "open_er_api").strip(),
@@ -63,4 +89,3 @@ def load_settings() -> Settings:
         fx_refresh_seconds=max(60, _get_int("FX_REFRESH_SECONDS", 3600)),
         fx_cache_seconds=max(0, _get_int("FX_CACHE_SECONDS", 900)),
     )
-

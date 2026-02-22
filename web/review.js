@@ -943,6 +943,19 @@ function normalize(candidate) {
   const grossDiffUsd = (Number.isFinite(revenueUsd) && Number.isFinite(jpCostUsd))
     ? revenueUsd - jpCostUsd
     : (Number.isFinite(ebayTotal) && Number.isFinite(jpTotalUsd) ? ebayTotal - jpTotalUsd : null);
+  const ebayItemIdRaw = String(candidate.market_item_id || "").trim();
+  const ebayActiveItemIdRaw = String(pick(meta, ["market_item_id_active"], "") || "").trim();
+  const ebayItemId = ebayItemIdFromAny(ebayItemIdRaw) || ebayItemIdFromAny(ebayActiveItemIdRaw);
+  const ebayRawItemUrl = soldBasisRequiresSoldUrl
+    ? (soldReferenceLinkAvailable
+      ? soldItemUrl
+      : pick(meta, ["market_item_url_active", "market_item_url", "ebay_item_url", "market_url"], null))
+    : ((hasSoldItemReference && soldItemUrl)
+      ? soldItemUrl
+      : pick(meta, ["market_item_url_active", "ebay_item_url", "market_item_url", "market_url"], null));
+  const ebayItemUrl = ebayRawItemUrl
+    ? canonicalEbayItemUrl(ebayRawItemUrl, ebayItemIdRaw || ebayActiveItemIdRaw)
+    : (ebayItemId ? `https://www.ebay.com/itm/${ebayItemId}` : null);
 
   return {
     meta,
@@ -950,13 +963,9 @@ function normalize(candidate) {
     ebay: {
       title: (hasSoldItemReference && soldItemTitle) ? soldItemTitle : (candidate.market_title || "-"),
       site: candidate.market_site || "ebay",
-      itemId: String(candidate.market_item_id || "").trim(),
+      itemId: ebayItemId || ebayItemIdRaw || ebayActiveItemIdRaw,
       imageUrl: (hasSoldItemReference && soldImageUrl) ? soldImageUrl : pickImage(meta, "ebay"),
-      itemUrl: soldBasisRequiresSoldUrl
-        ? (soldReferenceLinkAvailable ? soldItemUrl : null)
-        : ((hasSoldItemReference && soldItemUrl)
-          ? soldItemUrl
-          : pick(meta, ["ebay_item_url", "market_item_url", "market_url"], null)),
+      itemUrl: ebayItemUrl,
       condition: String(pick(meta, ["market_condition"], candidate.condition || "") || ""),
       identifiers: marketIdentifiers,
       priceUsd: ebayPrice,
@@ -1417,30 +1426,73 @@ function isLikelyInvalidEbayItemUrl(url) {
     if (!u.hostname.includes("ebay.")) return false;
     if (u.hostname.includes("example.")) return true;
     const path = u.pathname || "";
-    const m = path.match(/\/itm\/(?:[^/]+\/)?(\d+)/);
-    if (!m) return false;
+    const m = path.match(/\/itm\/(?:[^/]+\/)?(\d{9,15})/);
+    if (!m) {
+      // 検索/リサーチ一覧は商品ページとしては無効扱いにする
+      return /\/sch\/i\.html|\/sh\/research|\/srp\//i.test(path);
+    }
     const itemId = m[1] || "";
-    return itemId.length !== 12;
+    return itemId.length < 9 || itemId.length > 15;
   } catch {
     return true;
   }
 }
 
-function resolveDisplayLink(url, site, title, { allowFallback = true } = {}) {
+function ebayItemIdFromAny(raw) {
+  const text = String(raw || "").trim();
+  if (!text) return "";
+  const m = text.match(/(?:^|[|/])(\d{9,15})(?:$|[|/?#&])/);
+  return m ? String(m[1] || "") : "";
+}
+
+function canonicalEbayItemUrl(url, itemIdHint = "") {
   const raw = String(url || "").trim();
+  const hintId = ebayItemIdFromAny(itemIdHint);
+  try {
+    const u = new URL(raw);
+    if (!u.hostname.includes("ebay.")) return raw;
+    const id = ebayItemIdFromAny(u.pathname || "") || hintId;
+    if (id) return `https://www.ebay.com/itm/${id}`;
+    return raw;
+  } catch {
+    if (hintId) return `https://www.ebay.com/itm/${hintId}`;
+    return raw;
+  }
+}
+
+function resolveDisplayLink(url, site, title, { allowFallback = true, itemIdHint = "" } = {}) {
+  const raw = String(url || "").trim();
+  const siteKey = String(site || "").toLowerCase();
+  const ebayHintId = siteKey === "ebay" ? ebayItemIdFromAny(itemIdHint) : "";
   if (!raw) {
+    if (siteKey === "ebay" && ebayHintId) {
+      return { href: `https://www.ebay.com/itm/${ebayHintId}`, fallbackUsed: false };
+    }
     return { href: allowFallback ? buildSearchUrl(site, title) : null, fallbackUsed: true };
   }
   try {
     const u = new URL(raw);
     if (!/^https?:$/.test(u.protocol)) {
+      if (siteKey === "ebay" && ebayHintId) {
+        return { href: `https://www.ebay.com/itm/${ebayHintId}`, fallbackUsed: false };
+      }
       return { href: allowFallback ? buildSearchUrl(site, title) : null, fallbackUsed: true };
     }
-    if (String(site || "").toLowerCase() === "ebay" && isLikelyInvalidEbayItemUrl(raw)) {
-      return { href: allowFallback ? buildSearchUrl(site, title) : null, fallbackUsed: true };
+    if (siteKey === "ebay") {
+      if (isLikelyInvalidEbayItemUrl(raw)) {
+        if (ebayHintId) {
+          return { href: `https://www.ebay.com/itm/${ebayHintId}`, fallbackUsed: false };
+        }
+        return { href: allowFallback ? buildSearchUrl(site, title) : null, fallbackUsed: true };
+      }
+      const canonical = canonicalEbayItemUrl(raw, itemIdHint);
+      return { href: canonical || raw, fallbackUsed: false };
     }
     return { href: raw, fallbackUsed: false };
   } catch {
+    if (siteKey === "ebay" && ebayHintId) {
+      return { href: `https://www.ebay.com/itm/${ebayHintId}`, fallbackUsed: false };
+    }
     return { href: allowFallback ? buildSearchUrl(site, title) : null, fallbackUsed: true };
   }
 }
@@ -1581,7 +1633,7 @@ function renderCandidate(candidate) {
     v.ebay.itemUrl,
     v.ebay.site,
     v.ebay.title,
-    { allowFallback: !v.ebay.soldBasisRequiresSoldUrl }
+    { allowFallback: !v.ebay.soldBasisRequiresSoldUrl, itemIdHint: v.ebay.itemId }
   );
   const jpHref = renderLink(refs.jpLink, v.jp.itemUrl, v.jp.site, v.jp.title);
   renderImage(refs.ebayImage, v.ebay.imageUrl, ebayHref, v.ebay.title);
@@ -2053,7 +2105,10 @@ function renderReviewList() {
     const jpShipping = shippingInlineHtml({ jpy: v.jp.shippingJpy, usd: null, fxRate: v.fxRate });
     const marketExtracted = buildExtractedSnapshot(v.ebay);
     const sourceExtracted = buildExtractedSnapshot(v.jp);
-    const marketHref = resolveDisplayLink(v.ebay.itemUrl, v.ebay.site, v.ebay.title).href;
+    const marketHref = resolveDisplayLink(v.ebay.itemUrl, v.ebay.site, v.ebay.title, {
+      allowFallback: false,
+      itemIdHint: v.ebay.itemId,
+    }).href;
     const sourceHref = resolveDisplayLink(v.jp.itemUrl, v.jp.site, v.jp.title).href;
     const marketThumbBody = v.ebay.imageUrl
       ? `<img class="pair-thumb" src="${escapeHtml(v.ebay.imageUrl)}" alt="eBay商品画像" />`

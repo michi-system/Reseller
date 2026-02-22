@@ -14,10 +14,14 @@
 | WB-P0-001 | P0 | ロジック | in_progress | レビュー候補流入を安定化（sold-first起点 + 日本側照会順最適化） | 24件バッチを再現可能、0件停滞が連続しない | 1-2日 |
 | WB-P0-002 | P0 | 品質 | in_progress | 90日最低価格の異常安値混入を抑制（本体/付属品判定強化） | 明らかな異常安値候補がレビュー待ちに残らない | 0.5-1日 |
 | WB-P0-003 | P0 | UI/UX | in_progress | 探索進捗ゲージの一貫性改善（戻り/急完了表示の抑制） | 進捗表示が単調増加に近く、状態文言が段階一致 | 0.5日 |
+| WB-P0-004 | P0 | 体制 | todo | Reseller (Miner + Operator) のGitHub Project運用を開始（Backlog/Doing/Review/Done, Issue #2） | 週次レビューで全IssueがProject管理される | 0.5日 |
+| WB-P0-005 | P0 | 体制 | todo | 承認済み商品のデータ契約実装（JSONL最小出力, Issue #3） | Operatorで取り込み可能な契約データが固定化 | 1-2日 |
+| WB-P0-006 | P0 | 体制 | todo | internal名の段階移行（DB/識別子/ヘッダ互換） | `INTERNAL_NAME_MIGRATION` のPhase 1-2が完了 | 1-2日 |
 | WB-P1-001 | P1 | 実装 | todo | `active_count` 取得実装（EFF-001） | 流動性にアクティブ件数が保存される | 3-5h |
 | WB-P1-002 | P1 | 実装 | todo | STR算出実装（EFF-002） | `sell_through_90d` が実値計算される | 1-2h |
 | WB-P1-003 | P1 | UI/判定 | todo | アクティブ/STRのUI連携（EFF-003） | UI表示と閾値判定が連動する | 1-2h |
 | WB-P1-004 | P1 | 運用 | todo | 「取得ゼロ」時の自動診断出力（原因内訳） | ゼロ件時に停止理由が即時把握できる | 2-4h |
+| WB-P1-005 | P1 | 移行 | todo | legacy internal alias のサンセット実施（Issue #4） | 期限までに wrapper/互換ヘッダの撤去可否を確定 | 0.5-1日 |
 
 ## 3. Recently Completed
 | 日付 | ID | 内容 | 反映先 |
@@ -25,6 +29,14 @@
 | 2026-02-21 | WB-DOC-001 | ドキュメント導線の一本化（`START_HERE` 追加） | `docs/START_HERE.md` |
 | 2026-02-21 | WB-DOC-002 | docs運用ルールの明文化 | `docs/DOCS_GOVERNANCE.md` |
 | 2026-02-21 | WB-DOC-003 | docs索引/状態ファイル整理の開始 | `docs/README.md`, `docs/STATUS_CURRENT.md` |
+| 2026-02-22 | WB-DOC-004 | 2ツール全体像/運用手順/DB方針/データ契約ドキュメント追加 | `docs/PROGRAM_OVERVIEW.md`, `docs/OPERATIONS_MANUAL.md`, `docs/LOCAL_DB_STRATEGY.md`, `docs/DATA_CONTRACT_APPROVED_LISTING.md` |
+| 2026-02-22 | WB-DOC-005 | GitHub運用テンプレ導入（Issue/PR/CODEOWNERS） | `.github/ISSUE_TEMPLATE/*`, `.github/PULL_REQUEST_TEMPLATE.md`, `.github/CODEOWNERS` |
+| 2026-02-22 | WB-OPS-001 | ローカルDBバックアップ運用スクリプト追加 | `scripts/backup_local_db.py`, `docs/LOCAL_DB_STRATEGY.md` |
+| 2026-02-22 | WB-NAME-001 | 表示名を Reseller / Miner / Operator に統一（internal名は維持） | `README.md`, `docs/*.md`, `.github/ISSUE_TEMPLATE/*` |
+| 2026-02-22 | WB-NAME-002 | internal名移行のPhase 1実装（DB canonical化 + legacy fallback） | `reselling/config.py`, `scripts/sync_rejected_blocklist.py`, `scripts/backup_local_db.py`, `docs/INTERNAL_NAME_MIGRATION.md` |
+| 2026-02-22 | WB-NAME-003 | internal名移行のPhase 2実装（レスポンスヘッダ新旧互換） | `reselling/live_review_fetch.py`, `docs/INTERNAL_NAME_MIGRATION.md` |
+| 2026-02-22 | WB-NAME-004 | internal名移行のPhase 3実装（RPAスクリプトcanonical入口追加） | `scripts/rpa_market_research.py`, `scripts/run_review_cycle.py`, `reselling/live_review_fetch.py` |
+| 2026-02-22 | WB-NAME-005 | internal名移行のPhase 4実装（DB実体を `data/reseller.db` へ移行） | `scripts/migrate_db_to_reseller.py`, `.env.local`, `reselling/config.py` |
 
 ## 4. Backlog
 | ID | 優先 | 種別 | 内容 | 着手条件 |
@@ -48,6 +60,15 @@
 | 2026-02-20 | DEC-002 | 90日売却シグナル未取得 (`-1`) は原則除外 | 流動性不明候補の混入防止 |
 | 2026-02-20 | DEC-003 | 自動レビュー承認後も最終は人間確認 | 出品誤りリスクを運用で抑えるため |
 | 2026-02-21 | DEC-004 | ドキュメント正本を固定し、記録先の分散を禁止 | 引き継ぎコストと判断ブレを抑えるため |
+| 2026-02-22 | DEC-005 | Miner + Operator は当面モノレポで運用する | 共通ドメインロジックの再利用と仕様ズレ防止のため |
+| 2026-02-22 | DEC-006 | 共有DB移行前はローカルDB + 契約データ出力で連携する | いきなりDB移行せず、安全に段階導入するため |
+| 2026-02-22 | DEC-007 | 表示名は Reseller / Miner / Operator を採用し、internal名は段階移行で後追い変更する | 既存コード互換を保ちながら運用認知を統一するため |
+| 2026-02-22 | DEC-008 | DB internal名は `data/reseller.db` をcanonicalとし、`data/ebayminer.db` / `reselling.db` をlegacy fallbackで吸収する | 無停止で移行するため |
+| 2026-02-22 | DEC-009 | APIレスポンスヘッダは `x-reseller-*` をcanonical化し、`x-ebayminer-*` は env で互換併記を有効化する | クライアント無停止で段階移行するため |
+| 2026-02-22 | DEC-010 | RPAスクリプト入口は `scripts/rpa_market_research.py` をcanonicalとし、legacyスクリプトは互換のため維持する | 段階移行中の実行互換を保つため |
+| 2026-02-22 | DEC-011 | `.env.local` の `DB_PATH` を canonical (`data/reseller.db`) に更新し、実行時の優先DBを新名へ固定する | 設定値による逆戻りを防ぐため |
+| 2026-02-22 | DEC-012 | legacyスクリプト `scripts/rpa_ebay_product_research.py` は canonical 実装への互換ラッパーに変更する | 既存ジョブの参照切れを防ぐため |
+| 2026-02-22 | DEC-013 | legacyラッパー `scripts/rpa_ebay_product_research.py` は 2026-03-31 以降に削除判断、互換ヘッダ設定は 2026-04-15 までに最終判断する | 日付付きで撤去条件を固定し、だらだら残る状態を防ぐため |
 
 ## 7. 次エージェント向け起点
 1. `Now` の `in_progress` を上から順に処理。

@@ -461,7 +461,7 @@ def _run_rpa_collect(
             "stderr_tail": [],
         }
     runner = _resolve_rpa_python()
-    script_path = ROOT_DIR / "scripts" / "rpa_ebay_product_research.py"
+    script_path = ROOT_DIR / "scripts" / "rpa_market_research.py"
     cmd: list[str] = [
         runner,
         str(script_path),

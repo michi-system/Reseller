@@ -1,0 +1,9 @@
+# Update owners if team member IDs change.
+* @tadamichikimura
+
+# Domain-specific ownership hints
+/docs/ @tadamichikimura
+/reselling/ @tadamichikimura
+/scripts/ @tadamichikimura
+/tests/ @tadamichikimura
+

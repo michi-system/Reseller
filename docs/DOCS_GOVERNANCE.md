@@ -19,6 +19,12 @@
 | 閾値/ガード変更 | `docs/OPERATION_POLICY.json` |
 | 進行管理・工数・決定事項 | `docs/WORKBOARD.md` |
 | 現在の運用スナップショット | `docs/STATUS_CURRENT.md` |
+| Reseller全体像とロードマップ | `docs/PROGRAM_OVERVIEW.md` |
+| Codex/GitHub運用手順 | `docs/OPERATIONS_MANUAL.md` |
+| GitHub画面での初期設定手順 | `docs/GITHUB_PROJECT_SETUP.md` |
+| DB運用/移行計画 | `docs/LOCAL_DB_STRATEGY.md` |
+| internal名の段階移行計画 | `docs/INTERNAL_NAME_MIGRATION.md` |
+| 承認済み商品の受け渡し仕様 | `docs/DATA_CONTRACT_APPROVED_LISTING.md` |
 | ナレッジ確定版 | `docs/KNOWLEDGE_LIBRARY.md` + `data/category_knowledge_seeds_v1.json` |
 | 未確定調査メモ | `docs/RESEARCH_NOTES.md` |
 | 生成物の所在/意味 | `docs/RECORDS_REGISTRY.md` |
@@ -30,11 +36,13 @@
 3. `docs/OPERATION_POLICY.json` を同期
 4. `docs/WORKBOARD.md` の Decision Log に理由を追記
 5. `docs/STATUS_CURRENT.md` を必要箇所だけ更新
+6. 2ツールに影響がある場合は `docs/PROGRAM_OVERVIEW.md` も同期
 
 ### 3.2 実装変更時
 1. `docs/WORKBOARD.md` のタスク状態を更新
 2. 運用影響があるなら `docs/STATUS_CURRENT.md` 更新
 3. 出力パスを追加/変更したら `docs/RECORDS_REGISTRY.md` 更新
+4. Miner/Operator間データに影響があるなら `docs/DATA_CONTRACT_APPROVED_LISTING.md` 更新
 
 ### 3.3 新規ドキュメント追加時
 1. 既存正本で代替不可であることを確認

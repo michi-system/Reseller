@@ -1,0 +1,230 @@
+{
+  "cycle_id": "pending-revalidate-20260222T030535Z",
+  "ran_at": "2026-02-22T03:05:57Z",
+  "dry_run": true,
+  "thresholds": {
+    "min_profit_usd": 0.01,
+    "min_margin_rate": 0.03,
+    "min_ev90_usd": 0.0,
+    "min_match_score": 0.75,
+    "min_auto_approve_score": 0.9,
+    "min_token_jaccard": 0.62,
+    "max_score_drift": 0.25,
+    "auto_policy": {
+      "require_liquidity_signal": true,
+      "allow_fallback_any": true,
+      "fallback_min_sold_90d": 5,
+      "fallback_min_profit_usd": 20.0
+    }
+  },
+  "counts": {
+    "approve": 5,
+    "reject": 0,
+    "skipped": 0
+  },
+  "decisions": [
+    {
+      "id": 500,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 365.1725,
+        "margin": 0.522421,
+        "ev90_score": 80.6313,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "BN0156-05E"
+        ],
+        "common_specific_codes": [
+          "BN0156-05E"
+        ],
+        "token_jaccard": 0.2,
+        "source_colors": [],
+        "market_colors": [],
+        "source_auto_parts": [],
+        "market_auto_parts": [],
+        "auto_part_conflict": false,
+        "auto_part_missing_market": false,
+        "auto_part_missing_source": false,
+        "liquidity_sold_90d": 5,
+        "liquidity_pass_label": "fetch_refresh",
+        "liquidity_sold_price_min": 699.0,
+        "liquidity_sold_price_min_raw": 699.0,
+        "liquidity_sold_price_min_outlier": false
+      },
+      "source_title": "CITIZEN シチズン BN0156-05E",
+      "market_title": "CITIZEN PROMASTER  BN0156-05E [Eco-Drive GLOBAL MARINE Series Standard Diver]"
+    },
+    {
+      "id": 501,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 354.7396,
+        "margin": 0.507496,
+        "ev90_score": 77.431,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "EO2021-05L"
+        ],
+        "common_specific_codes": [
+          "EO2021-05L"
+        ],
+        "token_jaccard": 0.4,
+        "source_colors": [],
+        "market_colors": [],
+        "source_auto_parts": [],
+        "market_auto_parts": [],
+        "auto_part_conflict": false,
+        "auto_part_missing_market": false,
+        "auto_part_missing_source": false,
+        "liquidity_sold_90d": 5,
+        "liquidity_pass_label": "fetch_refresh",
+        "liquidity_sold_price_min": 699.0,
+        "liquidity_sold_price_min_raw": 699.0,
+        "liquidity_sold_price_min_outlier": false
+      },
+      "source_title": "シチズン EO2021-05L PROMASTER MARINE エコ・ドライブ 200m潜水用防水 ソーラー時計",
+      "market_title": "Watch Citizen EO2021-05L  Promaster Photovoltaic Eco-Drive Diver 200m F/S wTrack"
+    },
+    {
+      "id": 502,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 354.7396,
+        "margin": 0.507496,
+        "ev90_score": 77.431,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "EO2020-08E"
+        ],
+        "common_specific_codes": [
+          "EO2020-08E"
+        ],
+        "token_jaccard": 0.4,
+        "source_colors": [],
+        "market_colors": [],
+        "source_auto_parts": [],
+        "market_auto_parts": [],
+        "auto_part_conflict": false,
+        "auto_part_missing_market": false,
+        "auto_part_missing_source": false,
+        "liquidity_sold_90d": 5,
+        "liquidity_pass_label": "fetch_refresh",
+        "liquidity_sold_price_min": 699.0,
+        "liquidity_sold_price_min_raw": 699.0,
+        "liquidity_sold_price_min_outlier": false
+      },
+      "source_title": "シチズン EO2020-08E PROMASTER MARINE エコ・ドライブ 200m潜水用防水 ソーラー時計",
+      "market_title": "CITIZEN PROMASTER EO2020-08E Eco-Drive Diver 200m 36.5mm Unisex Watch Japan"
+    },
+    {
+      "id": 503,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 354.7396,
+        "margin": 0.507496,
+        "ev90_score": 77.431,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "BN0156-05E"
+        ],
+        "common_specific_codes": [
+          "BN0156-05E"
+        ],
+        "token_jaccard": 0.2727,
+        "source_colors": [
+          "black"
+        ],
+        "market_colors": [
+          "black"
+        ],
+        "source_auto_parts": [],
+        "market_auto_parts": [],
+        "auto_part_conflict": false,
+        "auto_part_missing_market": false,
+        "auto_part_missing_source": false,
+        "liquidity_sold_90d": 5,
+        "liquidity_pass_label": "fetch_refresh",
+        "liquidity_sold_price_min": 699.0,
+        "liquidity_sold_price_min_raw": 699.0,
+        "liquidity_sold_price_min_outlier": false
+      },
+      "source_title": "【ポイント最大53倍＆最大2000円OFFクーポン】シチズン プロマスター マリンシリーズ エコ・ドライブ ダイバー 200m BN0156-05E メンズ 腕時計 ソーラー ウレタンバンド ブラック",
+      "market_title": "NEW CITIZEN PROMASTER Eco-Drive Black 200m Diver JDM Watch BN0156-05E"
+    },
+    {
+      "id": 504,
+      "decision": "approve",
+      "issues": [],
+      "reason": "同一商品かつ利益条件を満たす (specific_model_code)",
+      "metrics": {
+        "profit": 354.7396,
+        "margin": 0.507496,
+        "ev90_score": 77.431,
+        "score": 0.92,
+        "rematch_score": 0.92,
+        "rematch_reason": "model_code",
+        "fetch_match_reason": "model_code",
+        "identifier_exact_key": null,
+        "identifier_exact_value": null,
+        "confidence_tag": "specific_model_code",
+        "common_codes": [
+          "EO2020-08E"
+        ],
+        "common_specific_codes": [
+          "EO2020-08E"
+        ],
+        "token_jaccard": 0.2857,
+        "source_colors": [
+          "black"
+        ],
+        "market_colors": [
+          "black"
+        ],
+        "source_auto_parts": [],
+        "market_auto_parts": [],
+        "auto_part_conflict": false,
+        "auto_part_missing_market": false,
+        "auto_part_missing_source": false,
+        "liquidity_sold_90d": 5,
+        "liquidity_pass_label": "fetch_refresh",
+        "liquidity_sold_price_min": 699.0,
+        "liquidity_sold_price_min_raw": 699.0,
+        "liquidity_sold_price_min_outlier": false
+      },
+      "source_title": "＼2000円OFF+さらに13倍／ シチズン プロマスター MARINEシリーズ 光発電エコ・ドライブ ダイバー200m ボーイズサイズ 光発電エコドライブ 腕時計 ブランド メンズ レディース ダイバーズウォッチ ソーラー CITIZEN PROMASTER EO2020-08E アナログ ブラック 黒",
+      "market_title": "Citizen EO2020-08E Promaster Eco-Drive Diver 200m Boy's Size Black Men's F/S NEW"
+    }
+  ]
+}

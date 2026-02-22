@@ -18,6 +18,7 @@ if str(ROOT_DIR) not in sys.path:
 
 from reselling.env import load_dotenv
 from reselling.live_review_fetch import _pair_signature
+from reselling.config import load_settings
 
 
 def _now_iso() -> str:
@@ -41,7 +42,7 @@ def _save_json(path: Path, payload: Dict[str, Any]) -> None:
 
 def main() -> int:
     load_dotenv(ENV_PATH)
-    db_path = ROOT_DIR / "data" / "ebayminer.db"
+    db_path = load_settings().db_path
     if not db_path.exists():
         raise FileNotFoundError(f"not found: {db_path}")
 
@@ -124,4 +125,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

@@ -693,6 +693,64 @@ def _rpa_row_has_strict_sold_filters(row: Dict[str, Any]) -> bool:
     return sold_tab_selected and lookback_selected == "last 90 days"
 
 
+def _has_signal_sold_sample_reference(metadata: Dict[str, Any]) -> bool:
+    if not isinstance(metadata, dict):
+        return False
+    sold_sample = metadata.get("sold_sample") if isinstance(metadata.get("sold_sample"), dict) else {}
+    item_url = str(sold_sample.get("item_url", "") or "").strip()
+    sold_price = _to_float(sold_sample.get("sold_price"), _to_float(sold_sample.get("sold_price_usd"), -1.0))
+    return bool(item_url and sold_price > 0)
+
+
+def _sanitize_unreliable_rpa_signal(signal: Dict[str, Any]) -> Dict[str, Any]:
+    if not isinstance(signal, dict) or not signal:
+        return signal
+    sold_90d_count = _to_int(signal.get("sold_90d_count"), -1)
+    if sold_90d_count <= 0:
+        return signal
+    source = str(signal.get("source", "") or "")
+    metadata = signal.get("metadata") if isinstance(signal.get("metadata"), dict) else {}
+    looks_rpa = (
+        ("rpa" in source.lower())
+        or bool(metadata.get("rpa_query"))
+        or bool(metadata.get("filter_state"))
+        or bool(metadata.get("rpa_json_path"))
+    )
+    if not looks_rpa:
+        return signal
+
+    filter_state = metadata.get("filter_state") if isinstance(metadata.get("filter_state"), dict) else {}
+    sold_tab_selected = bool(filter_state.get("sold_tab_selected"))
+    lookback_selected = str(filter_state.get("lookback_selected", "") or "").strip().lower()
+    strict_ok = sold_tab_selected and lookback_selected == "last 90 days"
+    filtered_row_count = _to_int(metadata.get("filtered_row_count"), -1)
+    has_sample = _has_signal_sold_sample_reference(metadata)
+
+    if strict_ok and (filtered_row_count > 0 or has_sample):
+        return signal
+
+    reason = "rpa_signal_not_strict_sold_last90"
+    if strict_ok and filtered_row_count <= 0 and not has_sample:
+        reason = "rpa_signal_positive_without_filtered_rows_or_sample"
+    metadata_next = dict(metadata)
+    metadata_next["invalidated_reason"] = reason
+    metadata_next["invalidated_at"] = _utc_iso()
+    return _to_signal_dict(
+        signal_key=str(signal.get("signal_key", "") or ""),
+        sold_90d_count=-1,
+        active_count=_to_int(signal.get("active_count"), -1),
+        sold_price_median=-1.0,
+        sold_price_currency=str(signal.get("sold_price_currency", "USD") or "USD"),
+        source=f"{source}:invalidated",
+        confidence=0.0,
+        unavailable_reason=reason,
+        metadata=metadata_next,
+        fetched_at_ts=float(_iso_to_epoch(str(signal.get("fetched_at", "") or "")) or time.time()),
+        next_refresh_ts=float(_iso_to_epoch(str(signal.get("next_refresh_at", "") or "")) or time.time()),
+        from_cache=bool(signal.get("from_cache")),
+    )
+
+
 def _provider_rpa_json(
     *,
     query: str,
@@ -986,7 +1044,7 @@ def get_liquidity_signal(
     if _env_bool("LIQUIDITY_CACHE_ENABLED", True) and mode not in {"rpa_json", "rpa"}:
         cached = _load_cached_signal(settings, signal_key)
         if cached is not None:
-            return cached
+            return _sanitize_unreliable_rpa_signal(cached)
 
     signal: Optional[Dict[str, Any]] = None
     unavailable_reason = "provider_disabled"
@@ -1056,6 +1114,7 @@ def get_liquidity_signal(
             metadata={"mode": mode or "none"},
         )
 
+    signal = _sanitize_unreliable_rpa_signal(signal)
     _save_signal(settings, signal)
     return signal
 
