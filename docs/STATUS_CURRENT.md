@@ -1,6 +1,6 @@
 # STATUS CURRENT
 
-最終更新: 2026-02-21 (JST)  
+最終更新: 2026-02-22 (JST)  
 このファイルは「現時点の運用スナップショット」専用です。  
 計画/工数/実装タスクは `docs/WORKBOARD.md` に集約します。
 
@@ -44,3 +44,4 @@
 - 作業計画: `docs/WORKBOARD.md`
 - 記録先ルール: `docs/DOCS_GOVERNANCE.md`
 - 生成物の所在: `docs/RECORDS_REGISTRY.md`
+- 日次レポート: `docs/daily_reports/`

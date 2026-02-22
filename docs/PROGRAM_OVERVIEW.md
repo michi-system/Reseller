@@ -63,7 +63,7 @@ docs/
 
 ## 6. 90日ロードマップ（管理単位）
 1. Phase 1 (1-2週): 管理基盤
-- GitHub Project, Issue/PRテンプレ, CODEOWNERS を導入。
+- GitHub Project（Draftカード中心）, 日報運用, PRテンプレ, CODEOWNERS を導入。
 - 本ドキュメント群を正本として固定。
 
 2. Phase 2 (2-4週): データ接続最小実装

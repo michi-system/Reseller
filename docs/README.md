@@ -14,6 +14,7 @@
 8. `docs/OPERATIONS_MANUAL.md`
 9. `docs/GITHUB_PROJECT_SETUP.md`
 10. `docs/INTERNAL_NAME_MIGRATION.md`
+11. `docs/daily_reports/TEMPLATE.md`
 
 ## 2. 正本（Single Source of Truth）
 | 種別 | 正本 | 用途 |
@@ -26,6 +27,7 @@
 | 全体設計 | `docs/PROGRAM_OVERVIEW.md` | Reseller (Miner + Operator) の境界とロードマップ |
 | 運用手順 | `docs/OPERATIONS_MANUAL.md` | Codex/GitHubの進め方 |
 | GitHub初期設定 | `docs/GITHUB_PROJECT_SETUP.md` | 画面操作ベースのセットアップ |
+| 日報テンプレ | `docs/daily_reports/TEMPLATE.md` | 日次レポートの記録フォーマット |
 | DB戦略 | `docs/LOCAL_DB_STRATEGY.md` | ローカルDB継続と移行条件 |
 | internal名移行 | `docs/INTERNAL_NAME_MIGRATION.md` | 新旧internal名の段階移行計画 |
 | データ契約 | `docs/DATA_CONTRACT_APPROVED_LISTING.md` | Tool間の受け渡し仕様 |

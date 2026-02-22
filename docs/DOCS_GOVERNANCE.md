@@ -22,6 +22,7 @@
 | Reseller全体像とロードマップ | `docs/PROGRAM_OVERVIEW.md` |
 | Codex/GitHub運用手順 | `docs/OPERATIONS_MANUAL.md` |
 | GitHub画面での初期設定手順 | `docs/GITHUB_PROJECT_SETUP.md` |
+| 日次の作業記録 | `docs/daily_reports/*.md` |
 | DB運用/移行計画 | `docs/LOCAL_DB_STRATEGY.md` |
 | internal名の段階移行計画 | `docs/INTERNAL_NAME_MIGRATION.md` |
 | 承認済み商品の受け渡し仕様 | `docs/DATA_CONTRACT_APPROVED_LISTING.md` |

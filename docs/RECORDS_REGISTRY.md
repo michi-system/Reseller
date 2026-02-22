@@ -63,6 +63,7 @@
 | パス | 用途 |
 |---|---|
 | `docs/fx_rate_cache.json` | FX最新取得キャッシュ |
+| `docs/daily_reports/*.md` | 日次作業レポート（`scripts/generate_daily_report.py` で生成） |
 | `logs/` | 実行ログ置き場 |
 | `backups/` | 手動バックアップ置き場 |
 | `docs/archive/manual/` | 手動作成レポートの退避先 |
