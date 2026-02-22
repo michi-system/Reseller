@@ -1,0 +1,3295 @@
+{
+  "cycle_id": "cycle-20260221-120304",
+  "started_at": "2026-02-21T11:57:51Z",
+  "ended_at": "2026-02-21T12:03:04Z",
+  "run_seq": 92,
+  "target_count": 6,
+  "hard_cap": 8,
+  "batch_size": 0,
+  "cycle_ready": false,
+  "initial_reviewable_pending": 0,
+  "final_reviewable_pending": 0,
+  "delta_reviewable_pending": 0,
+  "min_match_score": 0.7,
+  "min_profit_usd": 0.01,
+  "min_margin_rate": 0.03,
+  "condition": "new",
+  "stopped_reason": "completed_rounds",
+  "selected_candidate_ids": [],
+  "cache_only": false,
+  "query_reordered": true,
+  "query_order": [
+    "citizen nb1050 watch",
+    "casio gwm5610-1jf watch",
+    "casio ga-b2100 watch",
+    "seiko spb143 watch",
+    "orient fac00009n watch",
+    "seiko sbdc101 watch"
+  ],
+  "max_zero_gain_strikes": 9999,
+  "historical_min_attempts": 3,
+  "historical_min_network_calls": 6,
+  "historical_min_gain_per_network_call": 0.0,
+  "historical_retry_every_runs": 4,
+  "duplicate_heavy_cooldown_enabled": false,
+  "duplicate_heavy_ratio_threshold": 0.7,
+  "duplicate_heavy_min_evaluated": 12,
+  "duplicate_heavy_min_duplicates": 8,
+  "rpa_refresh": {
+    "enabled": true,
+    "mode": "rpa_json",
+    "cache_only": false,
+    "ran": true,
+    "output_path": "/Users/tadamichikimura/Downloads/dev-HQ/ebayminer/data/liquidity_rpa_signals.jsonl",
+    "primary": {
+      "ran": true,
+      "reason": "ok",
+      "query_count": 6,
+      "queries": [
+        "citizen nb1050 watch",
+        "casio gwm5610-1jf watch",
+        "casio ga-b2100 watch",
+        "seiko spb143 watch",
+        "orient fac00009n watch",
+        "seiko sbdc101 watch"
+      ],
+      "condition": "new",
+      "strict_condition": true,
+      "fixed_price_only": false,
+      "pass_label": "primary_new",
+      "started_at": "2026-02-21T11:56:17Z",
+      "ended_at": "2026-02-21T11:57:34Z",
+      "returncode": 0,
+      "stdout_tail": [
+        "[1/6] query=citizen nb1050 watch",
+        "  -> sold_90d=10 min=317.95 median=368.685 ccy=USD conf=0.95",
+        "[2/6] query=casio gwm5610-1jf watch",
+        "  -> sold_90d=0 min=-1.0 median=-1.0 ccy=USD conf=0.55",
+        "[3/6] query=casio ga-b2100 watch",
+        "  -> sold_90d=23 min=18.19 median=125.0 ccy=USD conf=0.95",
+        "[4/6] query=seiko spb143 watch",
+        "  -> sold_90d=5 min=95.0 median=914.95 ccy=USD conf=0.95",
+        "[5/6] query=orient fac00009n watch",
+        "  -> sold_90d=0 min=-1.0 median=-1.0 ccy=USD conf=0.55",
+        "[6/6] query=seiko sbdc101 watch",
+        "  -> sold_90d=-1 min=-1.0 median=-1.0 ccy=USD conf=0.1",
+        "saved 167 rows -> /Users/tadamichikimura/Downloads/dev-HQ/ebayminer/data/liquidity_rpa_signals.jsonl"
+      ],
+      "stderr_tail": []
+    },
+    "fallback": {
+      "ran": true,
+      "reason": "ok",
+      "query_count": 1,
+      "queries": [
+        "seiko sbdc101 watch"
+      ],
+      "condition": "any",
+      "strict_condition": false,
+      "fixed_price_only": false,
+      "pass_label": "fallback_any",
+      "started_at": "2026-02-21T11:57:34Z",
+      "ended_at": "2026-02-21T11:57:51Z",
+      "returncode": 0,
+      "stdout_tail": [
+        "[1/1] query=seiko sbdc101 watch",
+        "  -> sold_90d=3 min=599.0 median=625.0 ccy=USD conf=0.77",
+        "saved 167 rows -> /Users/tadamichikimura/Downloads/dev-HQ/ebayminer/data/liquidity_rpa_signals.jsonl"
+      ],
+      "stderr_tail": []
+    },
+    "model_backfill": {},
+    "missing_before": 6,
+    "missing_after_primary": 1,
+    "missing_after_fallback": 0,
+    "missing_after_model_backfill": 0,
+    "reason": "fallback_completed"
+  },
+  "liquidity_backfill": {
+    "updated": true,
+    "added_entries": 1,
+    "touched_entries": 1,
+    "total_entries": 7
+  },
+  "query_skipped_count": 0,
+  "duplicate_heavy_cooldown_count": 0,
+  "query_efficiency_snapshot": [
+    {
+      "query": "citizen nb1050 watch",
+      "attempts": 34,
+      "network_calls": 38,
+      "queue_gain_total": 77,
+      "gain_per_network_call": 2.0263,
+      "zero_gain_streak": 6
+    },
+    {
+      "query": "casio gwm5610-1jf watch",
+      "attempts": 4,
+      "network_calls": 16,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 0.0,
+      "zero_gain_streak": 3
+    },
+    {
+      "query": "casio ga-b2100 watch",
+      "attempts": 4,
+      "network_calls": 8,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 0.0,
+      "zero_gain_streak": 4
+    },
+    {
+      "query": "seiko spb143 watch",
+      "attempts": 7,
+      "network_calls": 26,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 0.0,
+      "zero_gain_streak": 7
+    },
+    {
+      "query": "orient fac00009n watch",
+      "attempts": 9,
+      "network_calls": 24,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 0.0,
+      "zero_gain_streak": 6
+    },
+    {
+      "query": "seiko sbdc101 watch",
+      "attempts": 23,
+      "network_calls": 44,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 0.0,
+      "zero_gain_streak": 12
+    }
+  ],
+  "api_efficiency_summary": {
+    "total_calls": 27,
+    "cache_hits": 22,
+    "network_calls": 5,
+    "by_site": {
+      "ebay": {
+        "calls_made": 6,
+        "cache_hits": 6,
+        "network_calls": 0,
+        "budget_remaining": -1
+      },
+      "sold_first_source_backfill": {
+        "calls_made": 0,
+        "cache_hits": 0,
+        "network_calls": 0,
+        "budget_remaining": -1
+      },
+      "rakuten": {
+        "calls_made": 9,
+        "cache_hits": 4,
+        "network_calls": 5,
+        "budget_remaining": -1
+      },
+      "yahoo": {
+        "calls_made": 12,
+        "cache_hits": 12,
+        "network_calls": 0,
+        "budget_remaining": -1
+      },
+      "source_budget_filter": {
+        "calls_made": 0,
+        "cache_hits": 0,
+        "network_calls": 0,
+        "budget_remaining": -1
+      },
+      "source_model_backfill": {
+        "calls_made": 0,
+        "cache_hits": 0,
+        "network_calls": 0,
+        "budget_remaining": -1
+      }
+    },
+    "cache_hit_rate": 0.8148
+  },
+  "runs": [
+    {
+      "round": 1,
+      "query": "citizen nb1050 watch",
+      "created_count": 0,
+      "added_to_reviewable_queue": 0,
+      "queue_before": 0,
+      "queue_after": 0,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 69,
+          "calls_made": 1,
+          "cache_hits": 1,
+          "network_calls": 0,
+          "budget_remaining": -1,
+          "max_calls": 1,
+          "per_call_limit": 70,
+          "target_items": 12,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "require_in_stock": true,
+          "autotune_in": {
+            "enabled": true,
+            "applied": true,
+            "updated_at": 1771673831,
+            "updated_at_iso": "2026-02-21T11:37:11Z",
+            "ema_efficiency": 48.1581,
+            "min_new_items": 1
+          },
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 0,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "CITIZEN NB1050 NEW",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 69,
+              "new_count": 69,
+              "duration_ms": 350,
+              "info": {
+                "http": 200,
+                "raw_total": 201,
+                "page": 1,
+                "offset": 0,
+                "cache_hit": true,
+                "cache_age_sec": 1511,
+                "budget_remaining": -1
+              }
+            }
+          ],
+          "knowledge": {
+            "applied": false,
+            "category_key": "",
+            "category_name": "",
+            "active_season_tags": [],
+            "query_count": 0
+          },
+          "category_relevance_filter_enabled": false,
+          "category_relevance_term_count": 0,
+          "category_relevance_filtered_out": 0,
+          "min_queries_before_target": 1,
+          "touched_query_count": 1,
+          "autotune_out": {
+            "enabled": true,
+            "saved": false,
+            "reason": "no_network_calls"
+          },
+          "query_model_code_filter": {
+            "enabled": true,
+            "applied": true,
+            "query_codes": [
+              "NB1050"
+            ],
+            "before": 69,
+            "after": 69,
+            "dropped": 0,
+            "fallback_no_match": false
+          },
+          "rpa_prefetch_queries": [
+            "NB1050-59E",
+            "NB1050-59A",
+            "NB1050-59H"
+          ],
+          "sold_first": {
+            "enabled": true,
+            "applied": true,
+            "codes_considered": 5,
+            "codes_passed": 1,
+            "selected_codes": [
+              "NB105059A"
+            ],
+            "reason": "ok",
+            "rows": [
+              {
+                "code": "NB1050",
+                "signal_key": "code:NB1050",
+                "sold_90d_count": 2,
+                "sold_price_median": 427.9,
+                "sold_price_min": 396.75,
+                "sale_basis_usd": 396.75,
+                "sale_basis_type": "sold_price_min_90d",
+                "gate_pass": false,
+                "gate_reason": "liquidity_sold_90d_below_threshold",
+                "max_purchase_total_jpy": 46844.88,
+                "pass": false
+              },
+              {
+                "code": "NB1050-59E",
+                "signal_key": "model:NB1050-59E",
+                "sold_90d_count": 1,
+                "sold_price_median": 356.0,
+                "sold_price_min": 356.0,
+                "sale_basis_usd": 356.0,
+                "sale_basis_type": "sold_price_min_90d",
+                "gate_pass": false,
+                "gate_reason": "liquidity_sold_90d_below_threshold",
+                "max_purchase_total_jpy": 41747.99,
+                "pass": false
+              },
+              {
+                "code": "NB1050-59A",
+                "signal_key": "model:NB1050-59A",
+                "sold_90d_count": 5,
+                "sold_price_median": 360.98,
+                "sold_price_min": 317.95,
+                "sale_basis_usd": 317.95,
+                "sale_basis_type": "sold_price_min_90d",
+                "gate_pass": true,
+                "gate_reason": "liquidity_sold_based_pass",
+                "max_purchase_total_jpy": 36988.8,
+                "pass": true
+              },
+              {
+                "code": "NB1050-59H",
+                "signal_key": "model:NB1050-59H",
+                "sold_90d_count": 2,
+                "sold_price_median": 427.9,
+                "sold_price_min": 396.75,
+                "sale_basis_usd": 396.75,
+                "sale_basis_type": "sold_price_min_90d",
+                "gate_pass": false,
+                "gate_reason": "liquidity_sold_90d_below_threshold",
+                "max_purchase_total_jpy": 46844.88,
+                "pass": false
+              },
+              {
+                "code": "NB1050-59L",
+                "signal_key": "model:NB1050-59L",
+                "sold_90d_count": 2,
+                "sold_price_median": 427.9,
+                "sold_price_min": 396.75,
+                "sale_basis_usd": 396.75,
+                "sale_basis_type": "sold_price_min_90d",
+                "gate_pass": false,
+                "gate_reason": "liquidity_sold_90d_below_threshold",
+                "max_purchase_total_jpy": 46844.88,
+                "pass": false
+              }
+            ],
+            "query_code_filter_applied": true,
+            "query_code_filter_before": 1,
+            "query_code_filter_after": 1
+          },
+          "sold_first_market_filter": {
+            "enabled": true,
+            "applied": true,
+            "query_codes": [
+              "NB105059A"
+            ],
+            "before": 69,
+            "after": 69,
+            "dropped": 0,
+            "fallback_no_match": false
+          },
+          "model_backfill": {
+            "enabled": true,
+            "ran": false,
+            "skipped_reason": "specific_query_codes",
+            "query_specific_code_count": 1
+          }
+        },
+        "sold_first_source_backfill": {
+          "enabled": true,
+          "ran": true,
+          "reason": "ok",
+          "model_code_count": 1,
+          "queries": [
+            {
+              "site": "rakuten",
+              "query": "NB105059A",
+              "ok": true,
+              "count": 8,
+              "info": {
+                "http": 200,
+                "raw_total": -1,
+                "cache_hit": true,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "site": "yahoo",
+              "query": "NB105059A",
+              "ok": true,
+              "count": 3,
+              "info": {
+                "http": 200,
+                "raw_total": 3,
+                "cache_hit": true,
+                "budget_remaining": -1
+              }
+            }
+          ],
+          "added_items": 11,
+          "errors": []
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 26,
+          "calls_made": 2,
+          "cache_hits": 2,
+          "network_calls": 0,
+          "budget_remaining": -1,
+          "max_calls": 4,
+          "per_call_limit": 30,
+          "target_items": 10,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "require_in_stock": true,
+          "autotune_in": {
+            "enabled": true,
+            "applied": true,
+            "updated_at": 1771674570,
+            "updated_at_iso": "2026-02-21T11:49:30Z",
+            "ema_efficiency": 12.5544,
+            "min_new_items": 0
+          },
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 1,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "citizen nb1050 watch",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 3,
+              "new_count": 3,
+              "duration_ms": 3,
+              "info": {
+                "http": 200,
+                "raw_count": 3,
+                "page": 1,
+                "cache_hit": true,
+                "cache_age_sec": 815,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "query": "CITIZEN NB1050",
+              "query_index": 1,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 23,
+              "new_count": 23,
+              "duration_ms": 30,
+              "info": {
+                "http": 200,
+                "raw_count": 189,
+                "page": 1,
+                "cache_hit": true,
+                "cache_age_sec": 815,
+                "budget_remaining": -1
+              }
+            }
+          ],
+          "knowledge": {
+            "applied": false,
+            "category_key": "",
+            "category_name": "",
+            "active_season_tags": [],
+            "query_count": 0
+          },
+          "category_relevance_filter_enabled": false,
+          "category_relevance_term_count": 0,
+          "category_relevance_filtered_out": 0,
+          "min_queries_before_target": 1,
+          "touched_query_count": 2,
+          "autotune_out": {
+            "enabled": true,
+            "saved": false,
+            "reason": "no_network_calls"
+          },
+          "query_model_code_filter": {
+            "enabled": true,
+            "applied": true,
+            "query_codes": [
+              "NB1050"
+            ],
+            "before": 26,
+            "after": 26,
+            "dropped": 0,
+            "fallback_no_match": false
+          }
+        },
+        "yahoo": {
+          "ok": true,
+          "count": 0,
+          "calls_made": 0,
+          "cache_hits": 0,
+          "network_calls": 0,
+          "budget_remaining": -1,
+          "stop_reason": "skipped_by_sold_first_preselection",
+          "require_in_stock": true
+        },
+        "source_budget_filter": {
+          "enabled": true,
+          "applied": true,
+          "before": 37,
+          "after": 17,
+          "dropped_no_code": 19,
+          "dropped_over_budget": 1,
+          "slack_ratio": 2.0
+        },
+        "source_model_backfill": {
+          "enabled": true,
+          "ran": false,
+          "skipped_reason": "specific_query_codes",
+          "query_specific_code_count": 1
+        }
+      },
+      "errors": [],
+      "skipped_duplicates": 2,
+      "skipped_low_match": 0,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 0,
+      "skipped_low_margin": 0,
+      "skipped_low_ev90": 0,
+      "skipped_low_liquidity": 1,
+      "skipped_liquidity_unavailable": 0,
+      "skipped_ambiguous_model_title": 0,
+      "liquidity_unavailable_model_codes": [],
+      "low_match_reason_counts": {},
+      "low_match_samples": [],
+      "hints": [
+        "Product Research(RPA)を実行しました: queries=3, rc=0",
+        "同一候補は既に取り込み済みです。別の型番やシリーズで検索してください。",
+        "90日売却流動性の閾値で除外されています。回転率の高い型番で再検索してください。"
+      ],
+      "api_efficiency": {
+        "total_calls": 3,
+        "cache_hits": 3,
+        "network_calls": 0,
+        "by_site": {
+          "ebay": {
+            "calls_made": 1,
+            "cache_hits": 1,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "sold_first_source_backfill": {
+            "calls_made": 0,
+            "cache_hits": 0,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "rakuten": {
+            "calls_made": 2,
+            "cache_hits": 2,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "yahoo": {
+            "calls_made": 0,
+            "cache_hits": 0,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "source_budget_filter": {
+            "calls_made": 0,
+            "cache_hits": 0,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "source_model_backfill": {
+            "calls_made": 0,
+            "cache_hits": 0,
+            "network_calls": 0,
+            "budget_remaining": -1
+          }
+        }
+      },
+      "evaluated_candidate_count": 3,
+      "duplicate_ratio": 0.6667,
+      "duplicate_heavy_cooldown_applied": false
+    },
+    {
+      "round": 1,
+      "query": "casio gwm5610-1jf watch",
+      "created_count": 0,
+      "added_to_reviewable_queue": 0,
+      "queue_before": 0,
+      "queue_after": 0,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 68,
+          "calls_made": 1,
+          "cache_hits": 1,
+          "network_calls": 0,
+          "budget_remaining": -1,
+          "max_calls": 1,
+          "per_call_limit": 70,
+          "target_items": 12,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "require_in_stock": true,
+          "autotune_in": {
+            "enabled": true,
+            "applied": true,
+            "updated_at": 1771673831,
+            "updated_at_iso": "2026-02-21T11:37:11Z",
+            "ema_efficiency": 48.1581,
+            "min_new_items": 1
+          },
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 0,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "CASIO GWM5610-1JF NEW",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 68,
+              "new_count": 68,
+              "duration_ms": 4,
+              "info": {
+                "http": 200,
+                "raw_total": 105,
+                "page": 1,
+                "offset": 0,
+                "cache_hit": true,
+                "cache_age_sec": 1466,
+                "budget_remaining": -1
+              }
+            }
+          ],
+          "knowledge": {
+            "applied": false,
+            "category_key": "",
+            "category_name": "",
+            "active_season_tags": [],
+            "query_count": 0
+          },
+          "category_relevance_filter_enabled": false,
+          "category_relevance_term_count": 0,
+          "category_relevance_filtered_out": 0,
+          "min_queries_before_target": 1,
+          "touched_query_count": 1,
+          "autotune_out": {
+            "enabled": true,
+            "saved": false,
+            "reason": "no_network_calls"
+          },
+          "query_model_code_filter": {
+            "enabled": true,
+            "applied": true,
+            "query_codes": [
+              "GWM56101JF"
+            ],
+            "before": 68,
+            "after": 58,
+            "dropped": 10,
+            "fallback_no_match": false
+          },
+          "rpa_prefetch_queries": [
+            "GW-M5610U-1CJF",
+            "GW-M5610UBC-1JF",
+            "GW-M5610U-1BJF"
+          ],
+          "sold_first": {
+            "enabled": true,
+            "applied": true,
+            "codes_considered": 10,
+            "codes_passed": 7,
+            "selected_codes": [
+              "GWM56101BJF",
+              "GWM5610U",
+              "GWM5610U1",
+              "GWM5610U1BER",
+              "GWM5610U1BJF",
+              "GWM5610U1CJF",
+              "GWM5610U1ER"
+            ],
+            "reason": "ok",
+            "rows": [
+              {
+                "code": "GW-M5610-1JF",
+                "signal_key": "model:GW-M5610-1JF",
+                "sold_90d_count": 1,
+                "sold_price_median": 140.0,
+                "sold_price_min": 140.0,
+                "sale_basis_usd": 140.0,
+                "sale_basis_type": "sold_price_min_90d",
+                "gate_pass": false,
+                "gate_reason": "liquidity_sold_90d_below_threshold",
+                "max_purchase_total_jpy": 14731.31,
+                "pass": false
+              },
+              {
+                "code": "GW-M5610U-1CJF",
+                "signal_key": "model:GW-M5610U-1CJF",
+                "sold_90d_count": 14,
+                "sold_price_median": 145.9,
+                "sold_price_min": 55.0,
+                "sale_basis_usd": 105.048,
+                "sale_basis_type": "sold_price_median_fallback_90d",
+                "gate_pass": true,
+                "gate_reason": "liquidity_sold_based_pass",
+                "max_purchase_total_jpy": 10359.62,
+                "pass": true
+              },
+              {
+                "code": "GW-M5610UBC-1JF",
+                "signal_key": "model:GW-M5610UBC-1JF",
+                "sold_90d_count": 1,
+                "sold_price_median": 182.0,
+                "sold_price_min": 182.0,
+                "sale_basis_usd": 182.0,
+                "sale_basis_type": "sold_price_min_90d",
+                "gate_pass": false,
+                "gate_reason": "liquidity_sold_90d_below_threshold",
+                "max_purchase_total_jpy": 19984.56,
+                "pass": false
+              },
+              {
+                "code": "GW-M5610U-1BJF",
+                "signal_key": "model:GW-M5610U-1BJF",
+                "sold_90d_count": 3,
+                "sold_price_median": 131.5,
+                "sold_price_min": 130.0,
+                "sale_basis_usd": 130.0,
+                "sale_basis_type": "sold_price_min_90d",
+                "gate_pass": true,
+                "gate_reason": "liquidity_sold_based_pass",
+                "max_purchase_total_jpy": 13480.54,
+                "pass": true
+              },
+              {
+                "code": "GW-M5610U-1JF",
+                "signal_key": "model:GW-M5610U-1JF",
+                "sold_90d_count": 0,
+                "sold_price_median": -1.0,
+                "sold_price_min": -1.0,
+                "sale_basis_usd": -1.0,
+                "sale_basis_type": "active_listing_price",
+                "gate_pass": false,
+                "gate_reason": "liquidity_sold_90d_below_threshold",
+                "max_purchase_total_jpy": -1.0,
+                "pass": false
+              },
+              {
+                "code": "GW-M5610U",
+                "signal_key": "model:GW-M5610U",
+                "sold_90d_count": 3,
+                "sold_price_median": 131.5,
+                "sold_price_min": 130.0,
+                "sale_basis_usd": 130.0,
+                "sale_basis_type": "sold_price_min_90d",
+                "gate_pass": true,
+                "gate_reason": "liquidity_sold_based_pass",
+                "max_purchase_total_jpy": 13480.54,
+                "pass": true
+              },
+              {
+                "code": "GW-M5610U-1ER",
+                "signal_key": "model:GW-M5610U-1ER",
+                "sold_90d_count": 3,
+                "sold_price_median": 131.5,
+                "sold_price_min": 130.0,
+                "sale_basis_usd": 130.0,
+                "sale_basis_type": "sold_price_min_90d",
+                "gate_pass": true,
+                "gate_reason": "liquidity_sold_based_pass",
+                "max_purchase_total_jpy": 13480.54,
+                "pass": true
+              },
+              {
+                "code": "GW-M5610U-1",
+                "signal_key": "model:GW-M5610U-1",
+                "sold_90d_count": 5,
+                "sold_price_median": 142.49,
+                "sold_price_min": 119.98,
+                "sale_basis_usd": 119.98,
+                "sale_basis_type": "sold_price_min_90d",
+                "gate_pass": true,
+                "gate_reason": "liquidity_sold_based_pass",
+                "max_purchase_total_jpy": 12227.27,
+                "pass": true
+              },
+              {
+                "code": "GW-M5610U-1BER",
+                "signal_key": "model:GW-M5610U-1BER",
+                "sold_90d_count": 3,
+                "sold_price_median": 131.5,
+                "sold_price_min": 130.0,
+                "sale_basis_usd": 130.0,
+                "sale_basis_type": "sold_price_min_90d",
+                "gate_pass": true,
+                "gate_reason": "liquidity_sold_based_pass",
+                "max_purchase_total_jpy": 13480.54,
+                "pass": true
+              },
+              {
+                "code": "GW-M5610-1BJF",
+                "signal_key": "model:GW-M5610-1BJF",
+                "sold_90d_count": 3,
+                "sold_price_median": 131.5,
+                "sold_price_min": 130.0,
+                "sale_basis_usd": 130.0,
+                "sale_basis_type": "sold_price_min_90d",
+                "gate_pass": true,
+                "gate_reason": "liquidity_sold_based_pass",
+                "max_purchase_total_jpy": 13480.54,
+                "pass": true
+              }
+            ],
+            "query_code_filter_applied": true,
+            "query_code_filter_before": 7,
+            "query_code_filter_after": 7
+          },
+          "sold_first_market_filter": {
+            "enabled": true,
+            "applied": true,
+            "query_codes": [
+              "GWM56101BJF",
+              "GWM5610U",
+              "GWM5610U1",
+              "GWM5610U1BER",
+              "GWM5610U1BJF",
+              "GWM5610U1CJF",
+              "GWM5610U1ER"
+            ],
+            "before": 58,
+            "after": 58,
+            "dropped": 0,
+            "fallback_no_match": false
+          },
+          "model_backfill": {
+            "enabled": true,
+            "ran": false,
+            "skipped_reason": "specific_query_codes",
+            "query_specific_code_count": 1
+          }
+        },
+        "sold_first_source_backfill": {
+          "enabled": true,
+          "ran": true,
+          "reason": "ok",
+          "model_code_count": 3,
+          "queries": [
+            {
+              "site": "rakuten",
+              "query": "GWM5610U1BER",
+              "ok": true,
+              "count": 3,
+              "info": {
+                "http": 200,
+                "raw_total": -1,
+                "cache_hit": false,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "site": "rakuten",
+              "query": "GWM5610U1BJF",
+              "ok": true,
+              "count": 8,
+              "info": {
+                "http": 200,
+                "raw_total": -1,
+                "cache_hit": false,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "site": "rakuten",
+              "query": "GWM5610U1CJF",
+              "ok": true,
+              "count": 8,
+              "info": {
+                "http": 200,
+                "raw_total": -1,
+                "cache_hit": false,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "site": "yahoo",
+              "query": "GWM5610U1BER",
+              "ok": true,
+              "count": 0,
+              "info": {
+                "http": 200,
+                "raw_total": 0,
+                "cache_hit": false,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "site": "yahoo",
+              "query": "GWM5610U1BJF",
+              "ok": true,
+              "count": 8,
+              "info": {
+                "http": 200,
+                "raw_total": 15,
+                "cache_hit": false,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "site": "yahoo",
+              "query": "GWM5610U1CJF",
+              "ok": true,
+              "count": 5,
+              "info": {
+                "http": 200,
+                "raw_total": 5,
+                "cache_hit": false,
+                "budget_remaining": -1
+              }
+            }
+          ],
+          "added_items": 32,
+          "errors": []
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 0,
+          "calls_made": 0,
+          "cache_hits": 0,
+          "network_calls": 0,
+          "budget_remaining": -1,
+          "stop_reason": "skipped_by_sold_first_preselection",
+          "require_in_stock": true
+        },
+        "yahoo": {
+          "ok": true,
+          "count": 0,
+          "calls_made": 0,
+          "cache_hits": 0,
+          "network_calls": 0,
+          "budget_remaining": -1,
+          "stop_reason": "skipped_by_sold_first_preselection",
+          "require_in_stock": true
+        },
+        "source_budget_filter": {
+          "enabled": true,
+          "applied": true,
+          "before": 32,
+          "after": 28,
+          "dropped_no_code": 3,
+          "dropped_over_budget": 1,
+          "slack_ratio": 2.0
+        },
+        "source_model_backfill": {
+          "enabled": true,
+          "ran": false,
+          "skipped_reason": "specific_query_codes",
+          "query_specific_code_count": 1
+        }
+      },
+      "errors": [],
+      "skipped_duplicates": 0,
+      "skipped_low_match": 0,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 0,
+      "skipped_low_margin": 0,
+      "skipped_low_ev90": 0,
+      "skipped_low_liquidity": 3,
+      "skipped_liquidity_unavailable": 0,
+      "skipped_ambiguous_model_title": 0,
+      "liquidity_unavailable_model_codes": [],
+      "low_match_reason_counts": {},
+      "low_match_samples": [],
+      "hints": [
+        "Product Research(RPA)を実行しました: queries=3, rc=0",
+        "90日売却流動性の閾値で除外されています。回転率の高い型番で再検索してください。"
+      ],
+      "api_efficiency": {
+        "total_calls": 1,
+        "cache_hits": 1,
+        "network_calls": 0,
+        "by_site": {
+          "ebay": {
+            "calls_made": 1,
+            "cache_hits": 1,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "sold_first_source_backfill": {
+            "calls_made": 0,
+            "cache_hits": 0,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "rakuten": {
+            "calls_made": 0,
+            "cache_hits": 0,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "yahoo": {
+            "calls_made": 0,
+            "cache_hits": 0,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "source_budget_filter": {
+            "calls_made": 0,
+            "cache_hits": 0,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "source_model_backfill": {
+            "calls_made": 0,
+            "cache_hits": 0,
+            "network_calls": 0,
+            "budget_remaining": -1
+          }
+        }
+      },
+      "evaluated_candidate_count": 3,
+      "duplicate_ratio": 0.0,
+      "duplicate_heavy_cooldown_applied": false
+    },
+    {
+      "round": 1,
+      "query": "casio ga-b2100 watch",
+      "created_count": 0,
+      "added_to_reviewable_queue": 0,
+      "queue_before": 0,
+      "queue_after": 0,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 67,
+          "calls_made": 1,
+          "cache_hits": 1,
+          "network_calls": 0,
+          "budget_remaining": -1,
+          "max_calls": 1,
+          "per_call_limit": 70,
+          "target_items": 12,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "require_in_stock": true,
+          "autotune_in": {
+            "enabled": true,
+            "applied": true,
+            "updated_at": 1771673831,
+            "updated_at_iso": "2026-02-21T11:37:11Z",
+            "ema_efficiency": 48.1581,
+            "min_new_items": 1
+          },
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 0,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "CASIO GA-B2100 NEW",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 67,
+              "new_count": 67,
+              "duration_ms": 4,
+              "info": {
+                "http": 200,
+                "raw_total": 670,
+                "page": 1,
+                "offset": 0,
+                "cache_hit": true,
+                "cache_age_sec": 1480,
+                "budget_remaining": -1
+              }
+            }
+          ],
+          "knowledge": {
+            "applied": false,
+            "category_key": "",
+            "category_name": "",
+            "active_season_tags": [],
+            "query_count": 0
+          },
+          "category_relevance_filter_enabled": false,
+          "category_relevance_term_count": 0,
+          "category_relevance_filtered_out": 0,
+          "min_queries_before_target": 1,
+          "touched_query_count": 1,
+          "autotune_out": {
+            "enabled": true,
+            "saved": false,
+            "reason": "no_network_calls"
+          },
+          "query_model_code_filter": {
+            "enabled": true,
+            "applied": true,
+            "query_codes": [
+              "GAB2100"
+            ],
+            "before": 67,
+            "after": 67,
+            "dropped": 0,
+            "fallback_no_match": false
+          },
+          "rpa_prefetch_queries": [
+            "GA-B2100",
+            "GA-B2100-1A",
+            "GA-B2100-1A1JF"
+          ],
+          "sold_first": {
+            "enabled": true,
+            "applied": true,
+            "codes_considered": 10,
+            "codes_passed": 7,
+            "selected_codes": [
+              "GAB2100",
+              "GAB21001A",
+              "GAB21001A1JF",
+              "GAB2100CT5A",
+              "GAB2100CT5AJF",
+              "GAB2100CY1AER",
+              "GAB2100LUU5AJF"
+            ],
+            "reason": "ok",
+            "rows": [
+              {
+                "code": "GA-B2100",
+                "signal_key": "model:GA-B2100",
+                "sold_90d_count": 30,
+                "sold_price_median": 128.45,
+                "sold_price_min": -1.0,
+                "sale_basis_usd": 92.484,
+                "sale_basis_type": "sold_price_median_fallback_90d",
+                "gate_pass": true,
+                "gate_reason": "liquidity_sold_based_pass",
+                "max_purchase_total_jpy": 8788.15,
+                "pass": true
+              },
+              {
+                "code": "GA-B2100-1A",
+                "signal_key": "model:GA-B2100-1A",
+                "sold_90d_count": 8,
+                "sold_price_median": 135.97,
+                "sold_price_min": 105.0,
+                "sale_basis_usd": 105.0,
+                "sale_basis_type": "sold_price_min_90d",
+                "gate_pass": true,
+                "gate_reason": "liquidity_sold_based_pass",
+                "max_purchase_total_jpy": 10353.61,
+                "pass": true
+              },
+              {
+                "code": "GA-B2100-1A1JF",
+                "signal_key": "model:GA-B2100-1A1JF",
+                "sold_90d_count": 3,
+                "sold_price_median": 140.0,
+                "sold_price_min": 118.7,
+                "sale_basis_usd": 118.7,
+                "sale_basis_type": "sold_price_min_90d",
+                "gate_pass": true,
+                "gate_reason": "liquidity_sold_based_pass",
+                "max_purchase_total_jpy": 12067.17,
+                "pass": true
+              },
+              {
+                "code": "GA-B2100-1AJF",
+                "signal_key": "model:GA-B2100-1AJF",
+                "sold_90d_count": 1,
+                "sold_price_median": 133.57,
+                "sold_price_min": 133.57,
+                "sale_basis_usd": 133.57,
+                "sale_basis_type": "sold_price_min_90d",
+                "gate_pass": false,
+                "gate_reason": "liquidity_sold_90d_below_threshold",
+                "max_purchase_total_jpy": 13927.07,
+                "pass": false
+              },
+              {
+                "code": "GA-B2100LUU-8AJF",
+                "signal_key": "model:GA-B2100LUU-8AJF",
+                "sold_90d_count": 0,
+                "sold_price_median": -1.0,
+                "sold_price_min": -1.0,
+                "sale_basis_usd": -1.0,
+                "sale_basis_type": "active_listing_price",
+                "gate_pass": false,
+                "gate_reason": "liquidity_sold_90d_below_threshold",
+                "max_purchase_total_jpy": -1.0,
+                "pass": false
+              },
+              {
+                "code": "GA-B2100CY-1AER",
+                "signal_key": "model:GA-B2100CY-1AER",
+                "sold_90d_count": 3,
+                "sold_price_median": 140.0,
+                "sold_price_min": 118.7,
+                "sale_basis_usd": 118.7,
+                "sale_basis_type": "sold_price_min_90d",
+                "gate_pass": true,
+                "gate_reason": "liquidity_sold_based_pass",
+                "max_purchase_total_jpy": 12067.17,
+                "pass": true
+              },
+              {
+                "code": "GA-B2100CT-5A",
+                "signal_key": "model:GA-B2100CT-5A",
+                "sold_90d_count": 3,
+                "sold_price_median": 140.0,
+                "sold_price_min": 118.7,
+                "sale_basis_usd": 118.7,
+                "sale_basis_type": "sold_price_min_90d",
+                "gate_pass": true,
+                "gate_reason": "liquidity_sold_based_pass",
+                "max_purchase_total_jpy": 12067.17,
+                "pass": true
+              },
+              {
+                "code": "GA-B2100C-9A",
+                "signal_key": "model:GA-B2100C-9A",
+                "sold_90d_count": 0,
+                "sold_price_median": -1.0,
+                "sold_price_min": -1.0,
+                "sale_basis_usd": -1.0,
+                "sale_basis_type": "active_listing_price",
+                "gate_pass": false,
+                "gate_reason": "liquidity_sold_90d_below_threshold",
+                "max_purchase_total_jpy": -1.0,
+                "pass": false
+              },
+              {
+                "code": "GA-B2100LUU-5AJF",
+                "signal_key": "model:GA-B2100LUU-5AJF",
+                "sold_90d_count": 3,
+                "sold_price_median": 140.0,
+                "sold_price_min": 118.7,
+                "sale_basis_usd": 118.7,
+                "sale_basis_type": "sold_price_min_90d",
+                "gate_pass": true,
+                "gate_reason": "liquidity_sold_based_pass",
+                "max_purchase_total_jpy": 12067.17,
+                "pass": true
+              },
+              {
+                "code": "GA-B2100CT-5AJF",
+                "signal_key": "model:GA-B2100CT-5AJF",
+                "sold_90d_count": 3,
+                "sold_price_median": 140.0,
+                "sold_price_min": 118.7,
+                "sale_basis_usd": 118.7,
+                "sale_basis_type": "sold_price_min_90d",
+                "gate_pass": true,
+                "gate_reason": "liquidity_sold_based_pass",
+                "max_purchase_total_jpy": 12067.17,
+                "pass": true
+              }
+            ],
+            "query_code_filter_applied": true,
+            "query_code_filter_before": 7,
+            "query_code_filter_after": 7
+          },
+          "sold_first_market_filter": {
+            "enabled": true,
+            "applied": true,
+            "query_codes": [
+              "GAB2100",
+              "GAB21001A",
+              "GAB21001A1JF",
+              "GAB2100CT5A",
+              "GAB2100CT5AJF",
+              "GAB2100CY1AER",
+              "GAB2100LUU5AJF"
+            ],
+            "before": 67,
+            "after": 67,
+            "dropped": 0,
+            "fallback_no_match": false
+          },
+          "model_backfill": {
+            "enabled": true,
+            "ran": false,
+            "skipped_reason": "specific_query_codes",
+            "query_specific_code_count": 1
+          }
+        },
+        "sold_first_source_backfill": {
+          "enabled": true,
+          "ran": true,
+          "reason": "ok",
+          "model_code_count": 3,
+          "queries": [
+            {
+              "site": "rakuten",
+              "query": "GAB2100LUU5AJF",
+              "ok": true,
+              "count": 6,
+              "info": {
+                "http": 200,
+                "raw_total": -1,
+                "cache_hit": false,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "site": "rakuten",
+              "query": "GAB2100CT5AJF",
+              "ok": true,
+              "count": 0,
+              "info": {
+                "http": 200,
+                "raw_total": -1,
+                "cache_hit": false,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "site": "rakuten",
+              "query": "GAB2100CY1AER",
+              "ok": true,
+              "count": 0,
+              "info": {
+                "http": 200,
+                "raw_total": -1,
+                "cache_hit": false,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "site": "yahoo",
+              "query": "GAB2100LUU5AJF",
+              "ok": true,
+              "count": 2,
+              "info": {
+                "http": 200,
+                "raw_total": 2,
+                "cache_hit": false,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "site": "yahoo",
+              "query": "GAB2100CT5AJF",
+              "ok": true,
+              "count": 0,
+              "info": {
+                "http": 200,
+                "raw_total": 0,
+                "cache_hit": false,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "site": "yahoo",
+              "query": "GAB2100CY1AER",
+              "ok": true,
+              "count": 0,
+              "info": {
+                "http": 200,
+                "raw_total": 0,
+                "cache_hit": false,
+                "budget_remaining": -1
+              }
+            }
+          ],
+          "added_items": 8,
+          "errors": []
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 30,
+          "calls_made": 1,
+          "cache_hits": 0,
+          "network_calls": 1,
+          "budget_remaining": -1,
+          "max_calls": 4,
+          "per_call_limit": 30,
+          "target_items": 10,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "require_in_stock": true,
+          "autotune_in": {
+            "enabled": true,
+            "applied": true,
+            "updated_at": 1771674570,
+            "updated_at_iso": "2026-02-21T11:49:30Z",
+            "ema_efficiency": 12.5544,
+            "min_new_items": 0
+          },
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 0,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "casio ga-b2100 watch",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 30,
+              "new_count": 30,
+              "duration_ms": 2332,
+              "info": {
+                "http": 200,
+                "raw_count": 62,
+                "page": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": -1
+              }
+            }
+          ],
+          "knowledge": {
+            "applied": false,
+            "category_key": "",
+            "category_name": "",
+            "active_season_tags": [],
+            "query_count": 0
+          },
+          "category_relevance_filter_enabled": false,
+          "category_relevance_term_count": 0,
+          "category_relevance_filtered_out": 0,
+          "min_queries_before_target": 1,
+          "touched_query_count": 1,
+          "autotune_out": {
+            "enabled": true,
+            "saved": true,
+            "max_calls": 3,
+            "per_call_limit": 30,
+            "min_new_items": 0,
+            "ema_efficiency": 17.7881,
+            "updated_at": 1771675206,
+            "updated_at_iso": "2026-02-21T12:00:06Z"
+          },
+          "query_model_code_filter": {
+            "enabled": true,
+            "applied": true,
+            "query_codes": [
+              "GAB2100"
+            ],
+            "before": 30,
+            "after": 30,
+            "dropped": 0,
+            "fallback_no_match": false
+          }
+        },
+        "yahoo": {
+          "ok": true,
+          "count": 0,
+          "calls_made": 0,
+          "cache_hits": 0,
+          "network_calls": 0,
+          "budget_remaining": -1,
+          "stop_reason": "skipped_by_sold_first_preselection",
+          "require_in_stock": true
+        },
+        "source_budget_filter": {
+          "enabled": true,
+          "applied": true,
+          "before": 38,
+          "after": 8,
+          "dropped_no_code": 23,
+          "dropped_over_budget": 7,
+          "slack_ratio": 2.0
+        },
+        "source_model_backfill": {
+          "enabled": true,
+          "ran": false,
+          "skipped_reason": "specific_query_codes",
+          "query_specific_code_count": 1
+        }
+      },
+      "errors": [],
+      "skipped_duplicates": 0,
+      "skipped_low_match": 0,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 0,
+      "skipped_low_margin": 0,
+      "skipped_low_ev90": 0,
+      "skipped_low_liquidity": 1,
+      "skipped_liquidity_unavailable": 1,
+      "skipped_ambiguous_model_title": 0,
+      "liquidity_unavailable_model_codes": [
+        "GAB2100LUU5AJF"
+      ],
+      "low_match_reason_counts": {},
+      "low_match_samples": [],
+      "hints": [
+        "Product Research(RPA)を実行しました: queries=3, rc=0",
+        "90日売却流動性の閾値で除外されています。回転率の高い型番で再検索してください。",
+        "流動性データ未取得のため除外されています（LIQUIDITY_REQUIRE_SIGNAL=1）。"
+      ],
+      "api_efficiency": {
+        "total_calls": 2,
+        "cache_hits": 1,
+        "network_calls": 1,
+        "by_site": {
+          "ebay": {
+            "calls_made": 1,
+            "cache_hits": 1,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "sold_first_source_backfill": {
+            "calls_made": 0,
+            "cache_hits": 0,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "rakuten": {
+            "calls_made": 1,
+            "cache_hits": 0,
+            "network_calls": 1,
+            "budget_remaining": -1
+          },
+          "yahoo": {
+            "calls_made": 0,
+            "cache_hits": 0,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "source_budget_filter": {
+            "calls_made": 0,
+            "cache_hits": 0,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "source_model_backfill": {
+            "calls_made": 0,
+            "cache_hits": 0,
+            "network_calls": 0,
+            "budget_remaining": -1
+          }
+        }
+      },
+      "evaluated_candidate_count": 2,
+      "duplicate_ratio": 0.0,
+      "duplicate_heavy_cooldown_applied": false
+    },
+    {
+      "round": 1,
+      "query": "seiko spb143 watch",
+      "created_count": 0,
+      "added_to_reviewable_queue": 0,
+      "queue_before": 0,
+      "queue_after": 0,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 26,
+          "calls_made": 1,
+          "cache_hits": 1,
+          "network_calls": 0,
+          "budget_remaining": -1,
+          "max_calls": 1,
+          "per_call_limit": 70,
+          "target_items": 12,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "require_in_stock": true,
+          "autotune_in": {
+            "enabled": true,
+            "applied": true,
+            "updated_at": 1771673831,
+            "updated_at_iso": "2026-02-21T11:37:11Z",
+            "ema_efficiency": 48.1581,
+            "min_new_items": 1
+          },
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 0,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "SEIKO SPB143 NEW",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 26,
+              "new_count": 26,
+              "duration_ms": 3,
+              "info": {
+                "http": 200,
+                "raw_total": 58,
+                "page": 1,
+                "offset": 0,
+                "cache_hit": true,
+                "cache_age_sec": 1440,
+                "budget_remaining": -1
+              }
+            }
+          ],
+          "knowledge": {
+            "applied": false,
+            "category_key": "",
+            "category_name": "",
+            "active_season_tags": [],
+            "query_count": 0
+          },
+          "category_relevance_filter_enabled": false,
+          "category_relevance_term_count": 0,
+          "category_relevance_filtered_out": 0,
+          "min_queries_before_target": 1,
+          "touched_query_count": 1,
+          "autotune_out": {
+            "enabled": true,
+            "saved": false,
+            "reason": "no_network_calls"
+          },
+          "query_model_code_filter": {
+            "enabled": true,
+            "applied": true,
+            "query_codes": [
+              "SPB143"
+            ],
+            "before": 26,
+            "after": 26,
+            "dropped": 0,
+            "fallback_no_match": false
+          },
+          "rpa_prefetch_queries": [
+            "SPB143",
+            "SPB143J1",
+            "SBDC101"
+          ],
+          "sold_first": {
+            "enabled": true,
+            "applied": true,
+            "codes_considered": 10,
+            "codes_passed": 2,
+            "selected_codes": [
+              "SPB143",
+              "SPB143J1"
+            ],
+            "reason": "ok",
+            "rows": [
+              {
+                "code": "SPB143",
+                "signal_key": "code:SPB143",
+                "sold_90d_count": 9,
+                "sold_price_median": 839.5,
+                "sold_price_min": -1.0,
+                "sale_basis_usd": 604.44,
+                "sale_basis_type": "sold_price_median_fallback_90d",
+                "gate_pass": true,
+                "gate_reason": "liquidity_sold_based_pass",
+                "max_purchase_total_jpy": 72822.17,
+                "pass": true
+              },
+              {
+                "code": "SPB143J1",
+                "signal_key": "model:SPB143J1",
+                "sold_90d_count": 5,
+                "sold_price_median": 750.0,
+                "sold_price_min": 699.0,
+                "sale_basis_usd": 699.0,
+                "sale_basis_type": "sold_price_min_90d",
+                "gate_pass": true,
+                "gate_reason": "liquidity_sold_based_pass",
+                "max_purchase_total_jpy": 84649.47,
+                "pass": true
+              },
+              {
+                "code": "SBDC101",
+                "signal_key": "code:SBDC101",
+                "sold_90d_count": 1,
+                "sold_price_median": 98.0,
+                "sold_price_min": 98.0,
+                "sale_basis_usd": 98.0,
+                "sale_basis_type": "sold_price_min_90d",
+                "gate_pass": false,
+                "gate_reason": "liquidity_sold_90d_below_threshold",
+                "max_purchase_total_jpy": 9478.07,
+                "pass": false
+              },
+              {
+                "code": "L0N3012J0",
+                "signal_key": "model:L0N3012J0",
+                "sold_90d_count": 0,
+                "sold_price_median": -1.0,
+                "sold_price_min": -1.0,
+                "sale_basis_usd": -1.0,
+                "sale_basis_type": "active_listing_price",
+                "gate_pass": false,
+                "gate_reason": "liquidity_sold_90d_below_threshold",
+                "max_purchase_total_jpy": -1.0,
+                "pass": false
+              },
+              {
+                "code": "SBDC169",
+                "signal_key": "code:SBDC169",
+                "sold_90d_count": -1,
+                "sold_price_median": -1.0,
+                "sold_price_min": -1.0,
+                "sale_basis_usd": -1.0,
+                "sale_basis_type": "active_listing_price",
+                "gate_pass": false,
+                "gate_reason": "liquidity_unavailable_required",
+                "max_purchase_total_jpy": -1.0,
+                "pass": false
+              },
+              {
+                "code": "SPB151",
+                "signal_key": "code:SPB151",
+                "sold_90d_count": -1,
+                "sold_price_median": -1.0,
+                "sold_price_min": -1.0,
+                "sale_basis_usd": -1.0,
+                "sale_basis_type": "active_listing_price",
+                "gate_pass": false,
+                "gate_reason": "liquidity_unavailable_required",
+                "max_purchase_total_jpy": -1.0,
+                "pass": false
+              },
+              {
+                "code": "SPB185",
+                "signal_key": "code:SPB185",
+                "sold_90d_count": -1,
+                "sold_price_median": -1.0,
+                "sold_price_min": -1.0,
+                "sale_basis_usd": -1.0,
+                "sale_basis_type": "active_listing_price",
+                "gate_pass": false,
+                "gate_reason": "liquidity_unavailable_required",
+                "max_purchase_total_jpy": -1.0,
+                "pass": false
+              },
+              {
+                "code": "SPB187",
+                "signal_key": "code:SPB187",
+                "sold_90d_count": -1,
+                "sold_price_median": -1.0,
+                "sold_price_min": -1.0,
+                "sale_basis_usd": -1.0,
+                "sale_basis_type": "active_listing_price",
+                "gate_pass": false,
+                "gate_reason": "liquidity_unavailable_required",
+                "max_purchase_total_jpy": -1.0,
+                "pass": false
+              },
+              {
+                "code": "SPB301",
+                "signal_key": "code:SPB301",
+                "sold_90d_count": -1,
+                "sold_price_median": -1.0,
+                "sold_price_min": -1.0,
+                "sale_basis_usd": -1.0,
+                "sale_basis_type": "active_listing_price",
+                "gate_pass": false,
+                "gate_reason": "liquidity_unavailable_required",
+                "max_purchase_total_jpy": -1.0,
+                "pass": false
+              },
+              {
+                "code": "SKX007",
+                "signal_key": "code:SKX007",
+                "sold_90d_count": -1,
+                "sold_price_median": -1.0,
+                "sold_price_min": -1.0,
+                "sale_basis_usd": -1.0,
+                "sale_basis_type": "active_listing_price",
+                "gate_pass": false,
+                "gate_reason": "liquidity_unavailable_required",
+                "max_purchase_total_jpy": -1.0,
+                "pass": false
+              }
+            ],
+            "query_code_filter_applied": true,
+            "query_code_filter_before": 2,
+            "query_code_filter_after": 2
+          },
+          "sold_first_market_filter": {
+            "enabled": true,
+            "applied": true,
+            "query_codes": [
+              "SPB143",
+              "SPB143J1"
+            ],
+            "before": 26,
+            "after": 26,
+            "dropped": 0,
+            "fallback_no_match": false
+          }
+        },
+        "sold_first_source_backfill": {
+          "enabled": true,
+          "ran": true,
+          "reason": "ok",
+          "model_code_count": 2,
+          "queries": [
+            {
+              "site": "rakuten",
+              "query": "SPB143J1",
+              "ok": true,
+              "count": 1,
+              "info": {
+                "http": 200,
+                "raw_total": -1,
+                "cache_hit": true,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "site": "rakuten",
+              "query": "SPB143",
+              "ok": true,
+              "count": 1,
+              "info": {
+                "http": 200,
+                "raw_total": -1,
+                "cache_hit": true,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "site": "yahoo",
+              "query": "SPB143J1",
+              "ok": true,
+              "count": 1,
+              "info": {
+                "http": 200,
+                "raw_total": 9,
+                "cache_hit": true,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "site": "yahoo",
+              "query": "SPB143",
+              "ok": true,
+              "count": 2,
+              "info": {
+                "http": 200,
+                "raw_total": 16,
+                "cache_hit": true,
+                "budget_remaining": -1
+              }
+            }
+          ],
+          "added_items": 3,
+          "errors": []
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 1,
+          "calls_made": 2,
+          "cache_hits": 0,
+          "network_calls": 2,
+          "budget_remaining": -1,
+          "max_calls": 3,
+          "per_call_limit": 30,
+          "target_items": 10,
+          "max_pages_per_query": 2,
+          "stop_reason": "low_yield_stop",
+          "require_in_stock": true,
+          "autotune_in": {
+            "enabled": true,
+            "applied": true,
+            "updated_at": 1771675206,
+            "updated_at_iso": "2026-02-21T12:00:06Z",
+            "ema_efficiency": 17.7881,
+            "min_new_items": 0
+          },
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 2,
+            "page": 1
+          },
+          "queries": [
+            {
+              "query": "seiko spb143 watch",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 1,
+              "new_count": 1,
+              "duration_ms": 160,
+              "info": {
+                "http": 200,
+                "raw_count": 1,
+                "page": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "query": "SEIKO SPB143",
+              "query_index": 1,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 1,
+              "new_count": 0,
+              "duration_ms": 174,
+              "info": {
+                "http": 200,
+                "raw_count": 1,
+                "page": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": -1
+              }
+            }
+          ],
+          "knowledge": {
+            "applied": false,
+            "category_key": "",
+            "category_name": "",
+            "active_season_tags": [],
+            "query_count": 0
+          },
+          "category_relevance_filter_enabled": false,
+          "category_relevance_term_count": 0,
+          "category_relevance_filtered_out": 0,
+          "min_queries_before_target": 1,
+          "touched_query_count": 2,
+          "autotune_out": {
+            "enabled": true,
+            "saved": true,
+            "max_calls": 2,
+            "per_call_limit": 25,
+            "min_new_items": 1,
+            "ema_efficiency": 12.6017,
+            "updated_at": 1771675249,
+            "updated_at_iso": "2026-02-21T12:00:49Z"
+          },
+          "query_model_code_filter": {
+            "enabled": true,
+            "applied": true,
+            "query_codes": [
+              "SPB143"
+            ],
+            "before": 1,
+            "after": 1,
+            "dropped": 0,
+            "fallback_no_match": false
+          }
+        },
+        "yahoo": {
+          "ok": true,
+          "count": 83,
+          "calls_made": 4,
+          "cache_hits": 4,
+          "network_calls": 0,
+          "budget_remaining": -1,
+          "max_calls": 4,
+          "per_call_limit": 100,
+          "target_items": 10,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "require_in_stock": true,
+          "autotune_in": {
+            "enabled": true,
+            "applied": true,
+            "updated_at": 1771674112,
+            "updated_at_iso": "2026-02-21T11:41:52Z",
+            "ema_efficiency": 18.719,
+            "min_new_items": 0
+          },
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 3,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "seiko spb143 watch",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 1,
+              "new_count": 1,
+              "duration_ms": 0,
+              "info": {
+                "http": 200,
+                "raw_total": 1,
+                "page": 1,
+                "start": 1,
+                "cache_hit": true,
+                "cache_age_sec": 1438,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "query": "SEIKO SPB143",
+              "query_index": 1,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 1,
+              "new_count": 0,
+              "duration_ms": 0,
+              "info": {
+                "http": 200,
+                "raw_total": 9,
+                "page": 1,
+                "start": 1,
+                "cache_hit": true,
+                "cache_age_sec": 1437,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "query": "SPB143",
+              "query_index": 2,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 8,
+              "new_count": 7,
+              "duration_ms": 3,
+              "info": {
+                "http": 200,
+                "raw_total": 16,
+                "page": 1,
+                "start": 1,
+                "cache_hit": true,
+                "cache_age_sec": 1437,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "query": "SEIKO WATCH",
+              "query_index": 3,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 75,
+              "new_count": 75,
+              "duration_ms": 16,
+              "info": {
+                "http": 200,
+                "raw_total": 1524,
+                "page": 1,
+                "start": 1,
+                "cache_hit": true,
+                "cache_age_sec": 1437,
+                "budget_remaining": -1
+              }
+            }
+          ],
+          "knowledge": {
+            "applied": false,
+            "category_key": "",
+            "category_name": "",
+            "active_season_tags": [],
+            "query_count": 0
+          },
+          "category_relevance_filter_enabled": false,
+          "category_relevance_term_count": 0,
+          "category_relevance_filtered_out": 0,
+          "min_queries_before_target": 1,
+          "touched_query_count": 4,
+          "autotune_out": {
+            "enabled": true,
+            "saved": false,
+            "reason": "no_network_calls"
+          },
+          "query_model_code_filter": {
+            "enabled": true,
+            "applied": true,
+            "query_codes": [
+              "SPB143"
+            ],
+            "before": 83,
+            "after": 1,
+            "dropped": 82,
+            "fallback_no_match": false
+          }
+        },
+        "source_budget_filter": {
+          "enabled": true,
+          "applied": true,
+          "before": 5,
+          "after": 0,
+          "dropped_no_code": 1,
+          "dropped_over_budget": 4,
+          "slack_ratio": 2.0
+        }
+      },
+      "errors": [],
+      "skipped_duplicates": 0,
+      "skipped_low_match": 0,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 0,
+      "skipped_low_margin": 0,
+      "skipped_low_ev90": 0,
+      "skipped_low_liquidity": 0,
+      "skipped_liquidity_unavailable": 0,
+      "skipped_ambiguous_model_title": 0,
+      "liquidity_unavailable_model_codes": [],
+      "low_match_reason_counts": {},
+      "low_match_samples": [],
+      "hints": [
+        "日本側のヒットがありません。キーワードを少し広げるか、在庫フィルタを解除して再検索してください。"
+      ],
+      "api_efficiency": {
+        "total_calls": 7,
+        "cache_hits": 5,
+        "network_calls": 2,
+        "by_site": {
+          "ebay": {
+            "calls_made": 1,
+            "cache_hits": 1,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "sold_first_source_backfill": {
+            "calls_made": 0,
+            "cache_hits": 0,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "rakuten": {
+            "calls_made": 2,
+            "cache_hits": 0,
+            "network_calls": 2,
+            "budget_remaining": -1
+          },
+          "yahoo": {
+            "calls_made": 4,
+            "cache_hits": 4,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "source_budget_filter": {
+            "calls_made": 0,
+            "cache_hits": 0,
+            "network_calls": 0,
+            "budget_remaining": -1
+          }
+        }
+      },
+      "evaluated_candidate_count": 0,
+      "duplicate_ratio": 0.0,
+      "duplicate_heavy_cooldown_applied": false
+    },
+    {
+      "round": 1,
+      "query": "orient fac00009n watch",
+      "created_count": 0,
+      "added_to_reviewable_queue": 0,
+      "queue_before": 0,
+      "queue_after": 0,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 69,
+          "calls_made": 1,
+          "cache_hits": 1,
+          "network_calls": 0,
+          "budget_remaining": -1,
+          "max_calls": 1,
+          "per_call_limit": 70,
+          "target_items": 12,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "require_in_stock": true,
+          "autotune_in": {
+            "enabled": true,
+            "applied": true,
+            "updated_at": 1771673831,
+            "updated_at_iso": "2026-02-21T11:37:11Z",
+            "ema_efficiency": 48.1581,
+            "min_new_items": 1
+          },
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 0,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "ORIENT FAC00009N NEW",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 69,
+              "new_count": 69,
+              "duration_ms": 6,
+              "info": {
+                "http": 200,
+                "raw_total": 70,
+                "page": 1,
+                "offset": 0,
+                "cache_hit": true,
+                "cache_age_sec": 1936,
+                "budget_remaining": -1
+              }
+            }
+          ],
+          "knowledge": {
+            "applied": false,
+            "category_key": "",
+            "category_name": "",
+            "active_season_tags": [],
+            "query_count": 0
+          },
+          "category_relevance_filter_enabled": false,
+          "category_relevance_term_count": 0,
+          "category_relevance_filtered_out": 0,
+          "min_queries_before_target": 1,
+          "touched_query_count": 1,
+          "autotune_out": {
+            "enabled": true,
+            "saved": false,
+            "reason": "no_network_calls"
+          },
+          "query_model_code_filter": {
+            "enabled": true,
+            "applied": true,
+            "query_codes": [
+              "FAC00009N"
+            ],
+            "before": 69,
+            "after": 5,
+            "dropped": 64,
+            "fallback_no_match": false
+          },
+          "rpa_prefetch_queries": [
+            "FAC00009N0",
+            "FAC00009W0",
+            "FAC0000DB"
+          ],
+          "sold_first": {
+            "enabled": true,
+            "applied": true,
+            "codes_considered": 5,
+            "codes_passed": 1,
+            "selected_codes": [
+              "FAC00009N0"
+            ],
+            "reason": "ok",
+            "rows": [
+              {
+                "code": "FAC00009N",
+                "signal_key": "model:FAC00009N",
+                "sold_90d_count": 0,
+                "sold_price_median": -1.0,
+                "sold_price_min": -1.0,
+                "sale_basis_usd": -1.0,
+                "sale_basis_type": "active_listing_price",
+                "gate_pass": false,
+                "gate_reason": "liquidity_sold_90d_below_threshold",
+                "max_purchase_total_jpy": -1.0,
+                "pass": false
+              },
+              {
+                "code": "FAC00009N0",
+                "signal_key": "model:FAC00009N0",
+                "sold_90d_count": 4,
+                "sold_price_median": 212.345,
+                "sold_price_min": 190.0,
+                "sale_basis_usd": 190.0,
+                "sale_basis_type": "sold_price_min_90d",
+                "gate_pass": true,
+                "gate_reason": "liquidity_sold_based_pass",
+                "max_purchase_total_jpy": 20985.17,
+                "pass": true
+              },
+              {
+                "code": "FAC00009W0",
+                "signal_key": "model:FAC00009W0",
+                "sold_90d_count": 1,
+                "sold_price_median": 200.0,
+                "sold_price_min": 200.0,
+                "sale_basis_usd": 200.0,
+                "sale_basis_type": "sold_price_min_90d",
+                "gate_pass": false,
+                "gate_reason": "liquidity_sold_90d_below_threshold",
+                "max_purchase_total_jpy": 22235.95,
+                "pass": false
+              },
+              {
+                "code": "FAC0000DD",
+                "signal_key": "model:FAC0000DD",
+                "sold_90d_count": -1,
+                "sold_price_median": -1.0,
+                "sold_price_min": -1.0,
+                "sale_basis_usd": -1.0,
+                "sale_basis_type": "active_listing_price",
+                "gate_pass": false,
+                "gate_reason": "liquidity_unavailable_required",
+                "max_purchase_total_jpy": -1.0,
+                "pass": false
+              },
+              {
+                "code": "FAC0000DB",
+                "signal_key": "model:FAC0000DB",
+                "sold_90d_count": 0,
+                "sold_price_median": -1.0,
+                "sold_price_min": -1.0,
+                "sale_basis_usd": -1.0,
+                "sale_basis_type": "active_listing_price",
+                "gate_pass": false,
+                "gate_reason": "liquidity_sold_90d_below_threshold",
+                "max_purchase_total_jpy": -1.0,
+                "pass": false
+              }
+            ],
+            "query_code_filter_applied": true,
+            "query_code_filter_before": 1,
+            "query_code_filter_after": 1
+          },
+          "sold_first_market_filter": {
+            "enabled": true,
+            "applied": true,
+            "query_codes": [
+              "FAC00009N0"
+            ],
+            "before": 5,
+            "after": 5,
+            "dropped": 0,
+            "fallback_no_match": false
+          }
+        },
+        "sold_first_source_backfill": {
+          "enabled": true,
+          "ran": true,
+          "reason": "ok",
+          "model_code_count": 1,
+          "queries": [
+            {
+              "site": "rakuten",
+              "query": "FAC00009N0",
+              "ok": true,
+              "count": 2,
+              "info": {
+                "http": 200,
+                "raw_total": -1,
+                "cache_hit": true,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "site": "yahoo",
+              "query": "FAC00009N0",
+              "ok": true,
+              "count": 1,
+              "info": {
+                "http": 200,
+                "raw_total": 1,
+                "cache_hit": true,
+                "budget_remaining": -1
+              }
+            }
+          ],
+          "added_items": 3,
+          "errors": []
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 3,
+          "calls_made": 2,
+          "cache_hits": 2,
+          "network_calls": 0,
+          "budget_remaining": -1,
+          "max_calls": 2,
+          "per_call_limit": 25,
+          "target_items": 10,
+          "max_pages_per_query": 2,
+          "stop_reason": "max_calls_reached",
+          "require_in_stock": true,
+          "autotune_in": {
+            "enabled": true,
+            "applied": true,
+            "updated_at": 1771675249,
+            "updated_at_iso": "2026-02-21T12:00:49Z",
+            "ema_efficiency": 12.6017,
+            "min_new_items": 1
+          },
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 2,
+            "page": 1
+          },
+          "queries": [
+            {
+              "query": "orient fac00009n watch",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 3,
+              "new_count": 3,
+              "duration_ms": 1,
+              "info": {
+                "http": 200,
+                "raw_count": 3,
+                "page": 1,
+                "cache_hit": true,
+                "cache_age_sec": 1198,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "query": "ORIENT FAC00009N",
+              "query_index": 1,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 3,
+              "new_count": 0,
+              "duration_ms": 2,
+              "info": {
+                "http": 200,
+                "raw_count": 6,
+                "page": 1,
+                "cache_hit": true,
+                "cache_age_sec": 1198,
+                "budget_remaining": -1
+              }
+            }
+          ],
+          "knowledge": {
+            "applied": false,
+            "category_key": "",
+            "category_name": "",
+            "active_season_tags": [],
+            "query_count": 0
+          },
+          "category_relevance_filter_enabled": false,
+          "category_relevance_term_count": 0,
+          "category_relevance_filtered_out": 0,
+          "min_queries_before_target": 1,
+          "touched_query_count": 3,
+          "autotune_out": {
+            "enabled": true,
+            "saved": false,
+            "reason": "no_network_calls"
+          },
+          "query_model_code_filter": {
+            "enabled": true,
+            "applied": true,
+            "query_codes": [
+              "FAC00009N"
+            ],
+            "before": 3,
+            "after": 3,
+            "dropped": 0,
+            "fallback_no_match": false
+          }
+        },
+        "yahoo": {
+          "ok": true,
+          "count": 98,
+          "calls_made": 4,
+          "cache_hits": 4,
+          "network_calls": 0,
+          "budget_remaining": -1,
+          "max_calls": 4,
+          "per_call_limit": 100,
+          "target_items": 10,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "require_in_stock": true,
+          "autotune_in": {
+            "enabled": true,
+            "applied": true,
+            "updated_at": 1771674112,
+            "updated_at_iso": "2026-02-21T11:41:52Z",
+            "ema_efficiency": 18.719,
+            "min_new_items": 0
+          },
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 3,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "orient fac00009n watch",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 2,
+              "new_count": 2,
+              "duration_ms": 0,
+              "info": {
+                "http": 200,
+                "raw_total": 2,
+                "page": 1,
+                "start": 1,
+                "cache_hit": true,
+                "cache_age_sec": 1196,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "query": "ORIENT FAC00009N",
+              "query_index": 1,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 2,
+              "new_count": 0,
+              "duration_ms": 0,
+              "info": {
+                "http": 200,
+                "raw_total": 2,
+                "page": 1,
+                "start": 1,
+                "cache_hit": true,
+                "cache_age_sec": 1196,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "query": "FAC00009N",
+              "query_index": 2,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 2,
+              "new_count": 0,
+              "duration_ms": 0,
+              "info": {
+                "http": 200,
+                "raw_total": 2,
+                "page": 1,
+                "start": 1,
+                "cache_hit": true,
+                "cache_age_sec": 1196,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "query": "ORIENT WATCH",
+              "query_index": 3,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 97,
+              "new_count": 96,
+              "duration_ms": 14,
+              "info": {
+                "http": 200,
+                "raw_total": 370,
+                "page": 1,
+                "start": 1,
+                "cache_hit": true,
+                "cache_age_sec": 1195,
+                "budget_remaining": -1
+              }
+            }
+          ],
+          "knowledge": {
+            "applied": false,
+            "category_key": "",
+            "category_name": "",
+            "active_season_tags": [],
+            "query_count": 0
+          },
+          "category_relevance_filter_enabled": false,
+          "category_relevance_term_count": 0,
+          "category_relevance_filtered_out": 0,
+          "min_queries_before_target": 1,
+          "touched_query_count": 4,
+          "autotune_out": {
+            "enabled": true,
+            "saved": false,
+            "reason": "no_network_calls"
+          },
+          "query_model_code_filter": {
+            "enabled": true,
+            "applied": true,
+            "query_codes": [
+              "FAC00009N"
+            ],
+            "before": 98,
+            "after": 2,
+            "dropped": 96,
+            "fallback_no_match": false
+          }
+        },
+        "source_budget_filter": {
+          "enabled": true,
+          "applied": true,
+          "before": 8,
+          "after": 0,
+          "dropped_no_code": 2,
+          "dropped_over_budget": 6,
+          "slack_ratio": 2.0
+        }
+      },
+      "errors": [],
+      "skipped_duplicates": 0,
+      "skipped_low_match": 0,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 0,
+      "skipped_low_margin": 0,
+      "skipped_low_ev90": 0,
+      "skipped_low_liquidity": 0,
+      "skipped_liquidity_unavailable": 0,
+      "skipped_ambiguous_model_title": 0,
+      "liquidity_unavailable_model_codes": [],
+      "low_match_reason_counts": {},
+      "low_match_samples": [],
+      "hints": [
+        "日本側のヒットがありません。キーワードを少し広げるか、在庫フィルタを解除して再検索してください。"
+      ],
+      "api_efficiency": {
+        "total_calls": 7,
+        "cache_hits": 7,
+        "network_calls": 0,
+        "by_site": {
+          "ebay": {
+            "calls_made": 1,
+            "cache_hits": 1,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "sold_first_source_backfill": {
+            "calls_made": 0,
+            "cache_hits": 0,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "rakuten": {
+            "calls_made": 2,
+            "cache_hits": 2,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "yahoo": {
+            "calls_made": 4,
+            "cache_hits": 4,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "source_budget_filter": {
+            "calls_made": 0,
+            "cache_hits": 0,
+            "network_calls": 0,
+            "budget_remaining": -1
+          }
+        }
+      },
+      "evaluated_candidate_count": 0,
+      "duplicate_ratio": 0.0,
+      "duplicate_heavy_cooldown_applied": false
+    },
+    {
+      "round": 1,
+      "query": "seiko sbdc101 watch",
+      "created_count": 0,
+      "added_to_reviewable_queue": 0,
+      "queue_before": 0,
+      "queue_after": 0,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 39,
+          "calls_made": 1,
+          "cache_hits": 1,
+          "network_calls": 0,
+          "budget_remaining": -1,
+          "max_calls": 1,
+          "per_call_limit": 70,
+          "target_items": 12,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "require_in_stock": true,
+          "autotune_in": {
+            "enabled": true,
+            "applied": true,
+            "updated_at": 1771673831,
+            "updated_at_iso": "2026-02-21T11:37:11Z",
+            "ema_efficiency": 48.1581,
+            "min_new_items": 1
+          },
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 0,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "SEIKO SBDC101 NEW",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 39,
+              "new_count": 39,
+              "duration_ms": 6,
+              "info": {
+                "http": 200,
+                "raw_total": 76,
+                "page": 1,
+                "offset": 0,
+                "cache_hit": true,
+                "cache_age_sec": 1494,
+                "budget_remaining": -1
+              }
+            }
+          ],
+          "knowledge": {
+            "applied": false,
+            "category_key": "",
+            "category_name": "",
+            "active_season_tags": [],
+            "query_count": 0
+          },
+          "category_relevance_filter_enabled": false,
+          "category_relevance_term_count": 0,
+          "category_relevance_filtered_out": 0,
+          "min_queries_before_target": 1,
+          "touched_query_count": 1,
+          "autotune_out": {
+            "enabled": true,
+            "saved": false,
+            "reason": "no_network_calls"
+          },
+          "query_model_code_filter": {
+            "enabled": true,
+            "applied": true,
+            "query_codes": [
+              "SBDC101"
+            ],
+            "before": 39,
+            "after": 9,
+            "dropped": 30,
+            "fallback_no_match": false
+          },
+          "rpa_prefetch_queries": [
+            "SBDC101",
+            "SPB143",
+            "SPB143J1"
+          ],
+          "sold_first": {
+            "enabled": true,
+            "applied": true,
+            "codes_considered": 9,
+            "codes_passed": 2,
+            "selected_codes": [
+              "SPB143",
+              "SPB143J1"
+            ],
+            "reason": "ok",
+            "rows": [
+              {
+                "code": "SBDC101",
+                "signal_key": "code:SBDC101",
+                "sold_90d_count": 1,
+                "sold_price_median": 98.0,
+                "sold_price_min": 98.0,
+                "sale_basis_usd": 98.0,
+                "sale_basis_type": "sold_price_min_90d",
+                "gate_pass": false,
+                "gate_reason": "liquidity_sold_90d_below_threshold",
+                "max_purchase_total_jpy": 9478.07,
+                "pass": false
+              },
+              {
+                "code": "SPB143",
+                "signal_key": "code:SPB143",
+                "sold_90d_count": 9,
+                "sold_price_median": 839.5,
+                "sold_price_min": -1.0,
+                "sale_basis_usd": 604.44,
+                "sale_basis_type": "sold_price_median_fallback_90d",
+                "gate_pass": true,
+                "gate_reason": "liquidity_sold_based_pass",
+                "max_purchase_total_jpy": 72822.17,
+                "pass": true
+              },
+              {
+                "code": "SPB143J1",
+                "signal_key": "model:SPB143J1",
+                "sold_90d_count": 5,
+                "sold_price_median": 750.0,
+                "sold_price_min": 699.0,
+                "sale_basis_usd": 699.0,
+                "sale_basis_type": "sold_price_min_90d",
+                "gate_pass": true,
+                "gate_reason": "liquidity_sold_based_pass",
+                "max_purchase_total_jpy": 84649.47,
+                "pass": true
+              },
+              {
+                "code": "SBDC169",
+                "signal_key": "code:SBDC169",
+                "sold_90d_count": -1,
+                "sold_price_median": -1.0,
+                "sold_price_min": -1.0,
+                "sale_basis_usd": -1.0,
+                "sale_basis_type": "active_listing_price",
+                "gate_pass": false,
+                "gate_reason": "liquidity_unavailable_required",
+                "max_purchase_total_jpy": -1.0,
+                "pass": false
+              },
+              {
+                "code": "SPB151",
+                "signal_key": "code:SPB151",
+                "sold_90d_count": -1,
+                "sold_price_median": -1.0,
+                "sold_price_min": -1.0,
+                "sale_basis_usd": -1.0,
+                "sale_basis_type": "active_listing_price",
+                "gate_pass": false,
+                "gate_reason": "liquidity_unavailable_required",
+                "max_purchase_total_jpy": -1.0,
+                "pass": false
+              },
+              {
+                "code": "SPB185",
+                "signal_key": "code:SPB185",
+                "sold_90d_count": -1,
+                "sold_price_median": -1.0,
+                "sold_price_min": -1.0,
+                "sale_basis_usd": -1.0,
+                "sale_basis_type": "active_listing_price",
+                "gate_pass": false,
+                "gate_reason": "liquidity_unavailable_required",
+                "max_purchase_total_jpy": -1.0,
+                "pass": false
+              },
+              {
+                "code": "SPB187",
+                "signal_key": "code:SPB187",
+                "sold_90d_count": -1,
+                "sold_price_median": -1.0,
+                "sold_price_min": -1.0,
+                "sale_basis_usd": -1.0,
+                "sale_basis_type": "active_listing_price",
+                "gate_pass": false,
+                "gate_reason": "liquidity_unavailable_required",
+                "max_purchase_total_jpy": -1.0,
+                "pass": false
+              },
+              {
+                "code": "SPB301",
+                "signal_key": "code:SPB301",
+                "sold_90d_count": -1,
+                "sold_price_median": -1.0,
+                "sold_price_min": -1.0,
+                "sale_basis_usd": -1.0,
+                "sale_basis_type": "active_listing_price",
+                "gate_pass": false,
+                "gate_reason": "liquidity_unavailable_required",
+                "max_purchase_total_jpy": -1.0,
+                "pass": false
+              },
+              {
+                "code": "6R3501A0XB13",
+                "signal_key": "model:6R3501A0XB13",
+                "sold_90d_count": -1,
+                "sold_price_median": -1.0,
+                "sold_price_min": -1.0,
+                "sale_basis_usd": -1.0,
+                "sale_basis_type": "active_listing_price",
+                "gate_pass": false,
+                "gate_reason": "liquidity_unavailable_required",
+                "max_purchase_total_jpy": -1.0,
+                "pass": false
+              }
+            ],
+            "query_code_filter_applied": true,
+            "query_code_filter_before": 2,
+            "query_code_filter_after": 2
+          },
+          "sold_first_market_filter": {
+            "enabled": true,
+            "applied": true,
+            "query_codes": [
+              "SPB143",
+              "SPB143J1"
+            ],
+            "before": 9,
+            "after": 7,
+            "dropped": 2,
+            "fallback_no_match": false
+          }
+        },
+        "sold_first_source_backfill": {
+          "enabled": true,
+          "ran": true,
+          "reason": "ok",
+          "model_code_count": 2,
+          "queries": [
+            {
+              "site": "rakuten",
+              "query": "SPB143J1",
+              "ok": true,
+              "count": 1,
+              "info": {
+                "http": 200,
+                "raw_total": -1,
+                "cache_hit": true,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "site": "rakuten",
+              "query": "SPB143",
+              "ok": true,
+              "count": 1,
+              "info": {
+                "http": 200,
+                "raw_total": -1,
+                "cache_hit": true,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "site": "yahoo",
+              "query": "SPB143J1",
+              "ok": true,
+              "count": 1,
+              "info": {
+                "http": 200,
+                "raw_total": 9,
+                "cache_hit": true,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "site": "yahoo",
+              "query": "SPB143",
+              "ok": true,
+              "count": 2,
+              "info": {
+                "http": 200,
+                "raw_total": 16,
+                "cache_hit": true,
+                "budget_remaining": -1
+              }
+            }
+          ],
+          "added_items": 3,
+          "errors": []
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 1,
+          "calls_made": 2,
+          "cache_hits": 0,
+          "network_calls": 2,
+          "budget_remaining": -1,
+          "max_calls": 2,
+          "per_call_limit": 25,
+          "target_items": 10,
+          "max_pages_per_query": 2,
+          "stop_reason": "max_calls_reached",
+          "require_in_stock": true,
+          "autotune_in": {
+            "enabled": true,
+            "applied": true,
+            "updated_at": 1771675249,
+            "updated_at_iso": "2026-02-21T12:00:49Z",
+            "ema_efficiency": 12.6017,
+            "min_new_items": 1
+          },
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 2,
+            "page": 1
+          },
+          "queries": [
+            {
+              "query": "seiko sbdc101 watch",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 0,
+              "new_count": 0,
+              "duration_ms": 304,
+              "info": {
+                "http": 200,
+                "raw_count": 1,
+                "page": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "query": "SEIKO SBDC101",
+              "query_index": 1,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 1,
+              "new_count": 1,
+              "duration_ms": 209,
+              "info": {
+                "http": 200,
+                "raw_count": 22,
+                "page": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": -1
+              }
+            }
+          ],
+          "knowledge": {
+            "applied": false,
+            "category_key": "",
+            "category_name": "",
+            "active_season_tags": [],
+            "query_count": 0
+          },
+          "category_relevance_filter_enabled": false,
+          "category_relevance_term_count": 0,
+          "category_relevance_filtered_out": 0,
+          "min_queries_before_target": 1,
+          "touched_query_count": 3,
+          "autotune_out": {
+            "enabled": true,
+            "saved": true,
+            "max_calls": 3,
+            "per_call_limit": 30,
+            "min_new_items": 1,
+            "ema_efficiency": 8.9712,
+            "updated_at": 1771675367,
+            "updated_at_iso": "2026-02-21T12:02:47Z"
+          },
+          "query_model_code_filter": {
+            "enabled": true,
+            "applied": true,
+            "query_codes": [
+              "SBDC101"
+            ],
+            "before": 1,
+            "after": 1,
+            "dropped": 0,
+            "fallback_no_match": false
+          }
+        },
+        "yahoo": {
+          "ok": true,
+          "count": 82,
+          "calls_made": 4,
+          "cache_hits": 4,
+          "network_calls": 0,
+          "budget_remaining": -1,
+          "max_calls": 4,
+          "per_call_limit": 100,
+          "target_items": 10,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "require_in_stock": true,
+          "autotune_in": {
+            "enabled": true,
+            "applied": true,
+            "updated_at": 1771674112,
+            "updated_at_iso": "2026-02-21T11:41:52Z",
+            "ema_efficiency": 18.719,
+            "min_new_items": 0
+          },
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 3,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "seiko sbdc101 watch",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 0,
+              "new_count": 0,
+              "duration_ms": 0,
+              "info": {
+                "http": 200,
+                "raw_total": 0,
+                "page": 1,
+                "start": 1,
+                "cache_hit": true,
+                "cache_age_sec": 1494,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "query": "SEIKO SBDC101",
+              "query_index": 1,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 6,
+              "new_count": 6,
+              "duration_ms": 4,
+              "info": {
+                "http": 200,
+                "raw_total": 33,
+                "page": 1,
+                "start": 1,
+                "cache_hit": true,
+                "cache_age_sec": 1494,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "query": "SBDC101",
+              "query_index": 2,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 7,
+              "new_count": 1,
+              "duration_ms": 4,
+              "info": {
+                "http": 200,
+                "raw_total": 34,
+                "page": 1,
+                "start": 1,
+                "cache_hit": true,
+                "cache_age_sec": 1493,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "query": "SEIKO WATCH",
+              "query_index": 3,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 75,
+              "new_count": 75,
+              "duration_ms": 15,
+              "info": {
+                "http": 200,
+                "raw_total": 1524,
+                "page": 1,
+                "start": 1,
+                "cache_hit": true,
+                "cache_age_sec": 1555,
+                "budget_remaining": -1
+              }
+            }
+          ],
+          "knowledge": {
+            "applied": false,
+            "category_key": "",
+            "category_name": "",
+            "active_season_tags": [],
+            "query_count": 0
+          },
+          "category_relevance_filter_enabled": false,
+          "category_relevance_term_count": 0,
+          "category_relevance_filtered_out": 0,
+          "min_queries_before_target": 1,
+          "touched_query_count": 4,
+          "autotune_out": {
+            "enabled": true,
+            "saved": false,
+            "reason": "no_network_calls"
+          },
+          "query_model_code_filter": {
+            "enabled": true,
+            "applied": true,
+            "query_codes": [
+              "SBDC101"
+            ],
+            "before": 82,
+            "after": 0,
+            "dropped": 82,
+            "fallback_no_match": false,
+            "strict_drop_all": true
+          }
+        },
+        "source_budget_filter": {
+          "enabled": true,
+          "applied": true,
+          "before": 4,
+          "after": 0,
+          "dropped_no_code": 2,
+          "dropped_over_budget": 2,
+          "slack_ratio": 2.0
+        }
+      },
+      "errors": [],
+      "skipped_duplicates": 0,
+      "skipped_low_match": 0,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 0,
+      "skipped_low_margin": 0,
+      "skipped_low_ev90": 0,
+      "skipped_low_liquidity": 0,
+      "skipped_liquidity_unavailable": 0,
+      "skipped_ambiguous_model_title": 0,
+      "liquidity_unavailable_model_codes": [],
+      "low_match_reason_counts": {},
+      "low_match_samples": [],
+      "hints": [
+        "日本側のヒットがありません。キーワードを少し広げるか、在庫フィルタを解除して再検索してください。"
+      ],
+      "api_efficiency": {
+        "total_calls": 7,
+        "cache_hits": 5,
+        "network_calls": 2,
+        "by_site": {
+          "ebay": {
+            "calls_made": 1,
+            "cache_hits": 1,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "sold_first_source_backfill": {
+            "calls_made": 0,
+            "cache_hits": 0,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "rakuten": {
+            "calls_made": 2,
+            "cache_hits": 0,
+            "network_calls": 2,
+            "budget_remaining": -1
+          },
+          "yahoo": {
+            "calls_made": 4,
+            "cache_hits": 4,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "source_budget_filter": {
+            "calls_made": 0,
+            "cache_hits": 0,
+            "network_calls": 0,
+            "budget_remaining": -1
+          }
+        }
+      },
+      "evaluated_candidate_count": 0,
+      "duplicate_ratio": 0.0,
+      "duplicate_heavy_cooldown_applied": false
+    }
+  ]
+}

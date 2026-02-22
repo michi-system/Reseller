@@ -1,20 +1,26 @@
 const ISSUE_TARGET_OPTIONS = [
-  ["brand", "ブランド"],
   ["model", "型番"],
+  ["brand", "ブランド"],
   ["color", "色"],
-  ["size", "サイズ"],
-  ["accessories", "付属"],
   ["condition", "状態"],
   ["price", "価格"],
-  ["shipping", "送料"],
-  ["fees", "手数料"],
-  ["fx", "為替"],
+  ["accessory_source", "付属品"],
+  ["bundle_market", "同梱差分"],
+  ["shipping", "送料/配送"],
   ["other", "その他"],
 ];
-const ISSUE_TARGET_LABEL_MAP = Object.fromEntries(ISSUE_TARGET_OPTIONS);
+const ISSUE_TARGET_LABEL_MAP = {
+  ...Object.fromEntries(ISSUE_TARGET_OPTIONS),
+  // 過去データ表示用（現在は選択肢として出さない）
+  size: "サイズ",
+  accessories: "付属品（旧）",
+  fees: "手数料",
+  fx: "為替",
+};
 
 const LIVE_FETCH_SOURCE_SITES = ["rakuten", "yahoo"];
-const DEFAULT_MIN_MATCH_SCORE = 0.75;
+const DEFAULT_MIN_MATCH_SCORE = 0.72;
+const TAB_COUNT_CAP = 9999;
 
 const STATUS_LABELS = {
   pending: "未レビュー",
@@ -83,6 +89,9 @@ const MODEL_CODE_STOPWORDS = new Set([
   "WATCH", "JAPAN", "JAPANESE", "NEW", "UNUSED", "AUTHENTIC", "SHIPPING",
   "SOLAR", "ATOMIC", "DIGITAL", "ANALOG", "MODEL", "MENS", "LADIES", "WOMENS",
 ]);
+const MODEL_PROMO_CONTEXT_MARKERS = [
+  "OFF", "COUPON", "SALE", "POINT", "クーポン", "割引", "値引", "ポイント", "円", "%", "％", "倍",
+];
 
 const FALLBACK_CATEGORIES = [
   { value: "watch", label: "腕時計" },
@@ -155,7 +164,6 @@ const refs = {
   financeFormula: document.getElementById("financeFormula"),
   sumSoldCount90d: document.getElementById("sumSoldCount90d"),
   sumSoldMin90d: document.getElementById("sumSoldMin90d"),
-  sumLiquidityActiveStr: document.getElementById("sumLiquidityActiveStr"),
   sumLiquidityGate: document.getElementById("sumLiquidityGate"),
   sumFeeRates: document.getElementById("sumFeeRates"),
   sumOtherCosts: document.getElementById("sumOtherCosts"),
@@ -166,6 +174,11 @@ const refs = {
   riskFlags: document.getElementById("riskFlags"),
   fetchStatusHeadline: document.getElementById("fetchStatusHeadline"),
   fetchStatsRows: document.getElementById("fetchStatsRows"),
+  rpaProgressWrap: document.getElementById("rpaProgressWrap"),
+  rpaProgressLabel: document.getElementById("rpaProgressLabel"),
+  rpaProgressPercent: document.getElementById("rpaProgressPercent"),
+  rpaProgressFill: document.getElementById("rpaProgressFill"),
+  rpaProgressDetail: document.getElementById("rpaProgressDetail"),
   calcDigest: document.getElementById("calcDigest"),
   calcData: document.getElementById("calcData"),
   rawJson: document.getElementById("rawJson"),
@@ -176,6 +189,10 @@ const state = {
     pending: [],
     reviewed: [],
   },
+  queueTotals: {
+    pending: 0,
+    reviewed: 0,
+  },
   activeTab: "pending",
   current: null,
   lastFetch: null,
@@ -183,6 +200,15 @@ const state = {
   detailFetchSeq: 0,
   scrollSelectRaf: null,
   selectingFromScroll: false,
+  fetchInFlight: false,
+  rpaProgressPollTimer: null,
+  fetchStartedAtMs: 0,
+  fetchStartedAtEpochSec: 0,
+  fetchProgressRunId: "",
+  fetchProgressSawRunning: false,
+  optimisticProgress: 0,
+  displayedProgress: 0,
+  lastFetchProgressSource: "",
 };
 
 function openSettingsOverlay() {
@@ -285,19 +311,29 @@ function moneyPair({ jpy, usd, fxRate }) {
   };
 }
 
-function moneyDualHtml({ jpy, usd, fxRate, align = "right" }) {
+function moneyDualHtml({ jpy, usd, fxRate, align = "right", layout = "stack" }) {
   const pair = moneyPair({ jpy, usd, fxRate });
   if (!Number.isFinite(pair.jpy) && !Number.isFinite(pair.usd)) {
     return "-";
   }
-  const main = Number.isFinite(pair.jpy) ? formatJpy(pair.jpy) : "-";
-  const sub = Number.isFinite(pair.usd) ? formatUsd(pair.usd) : "-";
-  return `<span class="money-stack ${align === "left" ? "left" : "right"}"><span class="money-main">${escapeHtml(main)}</span><small class="money-sub">${escapeHtml(sub)}</small></span>`;
+  const alignClass = align === "left" ? "left" : "right";
+  const hasJpy = Number.isFinite(pair.jpy);
+  const hasUsd = Number.isFinite(pair.usd);
+  const main = hasJpy ? formatJpy(pair.jpy) : "-";
+  const sub = hasUsd ? formatUsd(pair.usd) : "-";
+  if (layout === "inline") {
+    if (hasJpy && hasUsd) {
+      return `<span class="money-inline ${alignClass}"><span class="money-main">${escapeHtml(main)}</span><span class="money-sep">/</span><small class="money-sub">${escapeHtml(sub)}</small></span>`;
+    }
+    const single = hasJpy ? main : sub;
+    return `<span class="money-inline ${alignClass}"><span class="money-main">${escapeHtml(single)}</span></span>`;
+  }
+  return `<span class="money-stack ${alignClass}"><span class="money-main">${escapeHtml(main)}</span><small class="money-sub">${escapeHtml(sub)}</small></span>`;
 }
 
-function setMoneyCell(el, { jpy, usd, fxRate, align = "right" }) {
+function setMoneyCell(el, { jpy, usd, fxRate, align = "right", layout = "stack" }) {
   if (!el) return;
-  el.innerHTML = moneyDualHtml({ jpy, usd, fxRate, align });
+  el.innerHTML = moneyDualHtml({ jpy, usd, fxRate, align, layout });
 }
 
 function moneyDualText({ jpy, usd, fxRate }) {
@@ -310,11 +346,22 @@ function moneyDualText({ jpy, usd, fxRate }) {
   return `${main} / ${sub}`;
 }
 
+function moneyDualInlineHtml({ jpy, usd, fxRate, align = "left" }) {
+  return moneyDualHtml({ jpy, usd, fxRate, align, layout: "inline" });
+}
+
 function shippingText({ jpy, usd, fxRate }) {
   if ((Number.isFinite(usd) && usd === 0) || (Number.isFinite(jpy) && jpy === 0)) {
     return "送料無料";
   }
   return moneyDualText({ jpy, usd, fxRate });
+}
+
+function shippingInlineHtml({ jpy, usd, fxRate, align = "left" }) {
+  if ((Number.isFinite(usd) && usd === 0) || (Number.isFinite(jpy) && jpy === 0)) {
+    return "送料無料";
+  }
+  return moneyDualInlineHtml({ jpy, usd, fxRate, align });
 }
 
 function setShippingCell(el, { jpy, usd, fxRate }) {
@@ -331,6 +378,23 @@ function setOptionalNote(el, text, fallback = "") {
   const value = String(text || "").trim();
   if (value) {
     el.textContent = value;
+    el.style.display = "block";
+    return;
+  }
+  if (fallback) {
+    el.textContent = String(fallback);
+    el.style.display = "block";
+    return;
+  }
+  el.textContent = "";
+  el.style.display = "none";
+}
+
+function setOptionalNoteHtml(el, html, fallback = "") {
+  if (!el) return;
+  const value = String(html || "").trim();
+  if (value) {
+    el.innerHTML = value;
     el.style.display = "block";
     return;
   }
@@ -386,15 +450,21 @@ function extractColorFromTitle(title) {
 
 function extractModelCodesFromTitle(title) {
   const upper = String(title || "").normalize("NFKC").toUpperCase();
-  const matches = upper.match(/[A-Z0-9][A-Z0-9-]{3,}/g) || [];
+  const re = /[A-Z0-9][A-Z0-9-]{3,}/g;
   const out = [];
   const seen = new Set();
-  for (const token of matches) {
+  for (const m of upper.matchAll(re)) {
+    const token = String(m[0] || "");
     const norm = token.replace(/^-+|-+$/g, "");
     if (!norm) continue;
     if (MODEL_CODE_STOPWORDS.has(norm)) continue;
     if (norm.length < 4) continue;
+    if (!/[A-Z]/.test(norm)) continue;
     if (!/[0-9]/.test(norm)) continue;
+    const start = Number.isFinite(m.index) ? Number(m.index) : upper.indexOf(token);
+    const safeStart = Number.isFinite(start) && start >= 0 ? start : 0;
+    const context = upper.slice(Math.max(0, safeStart - 10), Math.min(upper.length, safeStart + norm.length + 10));
+    if (MODEL_PROMO_CONTEXT_MARKERS.some((marker) => context.includes(marker))) continue;
     if (seen.has(norm)) continue;
     seen.add(norm);
     out.push(norm);
@@ -536,6 +606,7 @@ function stopReasonLabel(reason) {
     max_calls_reached: "API呼び出し上限に到達",
     low_yield_stop: "増分が少ないため停止",
     skipped_no_market_hits: "eBayヒット0でスキップ",
+    rpa_daily_limit_reached: "Product Research上限で停止",
     error: "APIエラーで停止",
   };
   return map[key] || key;
@@ -554,8 +625,23 @@ function stopReasonDetail(info) {
   if (reason === "query_exhausted") return "設定した検索語とページ範囲を最後まで探索";
   if (reason === "low_yield_stop") return "新規取得が少ない状態が続いたため早期停止";
   if (reason === "skipped_no_market_hits") return "eBayヒット0のため日本側取得をスキップ";
+  if (reason === "rpa_daily_limit_reached") return "Product Researchの1日上限に到達したため停止";
   if (reason === "error") return "APIエラー発生のため停止";
   return "";
+}
+
+function isRpaDailyLimitReached(payload) {
+  if (!payload || typeof payload !== "object") return false;
+  if (Boolean(payload.rpa_daily_limit_reached)) return true;
+  const refresh = (payload.liquidity_rpa_refresh && typeof payload.liquidity_rpa_refresh === "object")
+    ? payload.liquidity_rpa_refresh
+    : null;
+  const reason = String(refresh?.reason || "").trim().toLowerCase();
+  if (reason === "daily_limit_reached") return true;
+  if (Boolean(refresh?.daily_limit_reached)) return true;
+  const timedReason = String(payload?.timed_fetch?.stop_reason || "").trim().toLowerCase();
+  if (timedReason === "rpa_daily_limit_reached") return true;
+  return false;
 }
 
 function saleBasisLabel(basis) {
@@ -648,9 +734,15 @@ function buildDecisionReasons(candidate, normalized, colorRisk) {
 
   if (Number.isFinite(profitUsd)) {
     if (profitUsd > 0) {
-      reasons.push({ text: `最終利益 ${moneyDualText({ jpy: normalized?.expectedProfitJpy, usd: profitUsd, fxRate: normalized?.fxRate })}`, tone: "good" });
+      reasons.push({
+        html: `最終利益 ${moneyDualInlineHtml({ jpy: normalized?.expectedProfitJpy, usd: profitUsd, fxRate: normalized?.fxRate })}`,
+        tone: "good",
+      });
     } else {
-      reasons.push({ text: `最終利益が赤字 ${moneyDualText({ jpy: normalized?.expectedProfitJpy, usd: profitUsd, fxRate: normalized?.fxRate })}`, tone: "warn" });
+      reasons.push({
+        html: `最終利益が赤字 ${moneyDualInlineHtml({ jpy: normalized?.expectedProfitJpy, usd: profitUsd, fxRate: normalized?.fxRate })}`,
+        tone: "warn",
+      });
     }
   } else {
     reasons.push({ text: "最終利益データ未取得", tone: "warn" });
@@ -808,8 +900,8 @@ function normalize(candidate) {
     null
   );
   const ebayShipping = pickNumber(meta, ["market_shipping_basis_usd", "ebay_shipping_usd", "market_shipping_usd"], 0);
-  const jpPrice = pickNumber(meta, ["jp_price_jpy", "source_price_jpy", "purchase_price_jpy"], null);
-  const jpShipping = pickNumber(meta, ["jp_shipping_jpy", "source_shipping_jpy", "domestic_shipping_jpy"], 0);
+  const jpPrice = pickNumber(meta, ["source_price_basis_jpy", "jp_price_jpy", "source_price_jpy", "purchase_price_jpy"], null);
+  const jpShipping = pickNumber(meta, ["source_shipping_basis_jpy", "jp_shipping_jpy", "source_shipping_jpy", "domestic_shipping_jpy"], 0);
 
   const ebayTotal = (ebayPrice ?? 0) + (ebayShipping ?? 0);
   const jpTotalJpy = (jpPrice ?? 0) + (jpShipping ?? 0);
@@ -825,6 +917,9 @@ function normalize(candidate) {
   const soldCount90d = toNumber(liquidity?.sold_90d_count);
   const soldMin90d = toNumber(liqMeta?.sold_price_min ?? liqMeta?.sold_price_min_raw);
   const saleBasisType = String(pick(meta, ["market_price_basis_type"], "active_listing_price") || "active_listing_price");
+  const soldBasisRequiresSoldUrl = saleBasisType === "sold_price_min_90d";
+  const soldItemUrlText = String(soldItemUrl || "").trim();
+  const soldReferenceLinkAvailable = soldItemUrlText.length > 0;
   const sourceStockStatusRaw = pick(meta, ["source_stock_status"], "");
   const sourceStockStatus = String(sourceStockStatusRaw || "").trim();
   const calcInput = (meta && typeof meta.calc_input === "object") ? meta.calc_input : {};
@@ -857,9 +952,11 @@ function normalize(candidate) {
       site: candidate.market_site || "ebay",
       itemId: String(candidate.market_item_id || "").trim(),
       imageUrl: (hasSoldItemReference && soldImageUrl) ? soldImageUrl : pickImage(meta, "ebay"),
-      itemUrl: (hasSoldItemReference && soldItemUrl)
-        ? soldItemUrl
-        : pick(meta, ["ebay_item_url", "market_item_url", "market_url"], null),
+      itemUrl: soldBasisRequiresSoldUrl
+        ? (soldReferenceLinkAvailable ? soldItemUrl : null)
+        : ((hasSoldItemReference && soldItemUrl)
+          ? soldItemUrl
+          : pick(meta, ["ebay_item_url", "market_item_url", "market_url"], null)),
       condition: String(pick(meta, ["market_condition"], candidate.condition || "") || ""),
       identifiers: marketIdentifiers,
       priceUsd: ebayPrice,
@@ -869,6 +966,8 @@ function normalize(candidate) {
       soldMin90d,
       saleBasisType,
       isSoldItemReference: hasSoldItemReference,
+      soldReferenceLinkAvailable,
+      soldBasisRequiresSoldUrl,
     },
     jp: {
       title: candidate.source_title || "-",
@@ -908,11 +1007,280 @@ function normalize(candidate) {
   };
 }
 
+function phaseToJa(phase) {
+  const key = String(phase || "").trim().toLowerCase();
+  const map = {
+    idle: "待機中",
+    running: "実行中",
+    skipped: "スキップ",
+    cooldown_skip: "クールダウン中",
+    starting: "起動中",
+    startup: "準備中",
+    login_url_loaded: "画面遷移",
+    login_pause_completed: "ログイン待機完了",
+    query_start: "検索開始",
+    search_done: "検索完了",
+    filters_applying: "条件設定中",
+    filters_done: "条件設定完了",
+    query_done: "検索完了",
+    timed_fetch_start: "探索開始",
+    pass_running: "探索中",
+    pass_completed: "探索中",
+    timed_fetch_finalize: "結果集計中",
+    single_pass_running: "探索中",
+    completed: "完了",
+    stopped: "停止",
+    timeout: "タイムアウト",
+    failed: "失敗",
+    error: "エラー",
+    daily_limit_reached: "上限到達",
+  };
+  return map[key] || key || "進行中";
+}
+
+function compactQueryText(raw, maxLen = 22) {
+  const text = String(raw || "").trim();
+  if (!text) return "";
+  if (text.length <= maxLen) return text;
+  return `${text.slice(0, maxLen - 1)}…`;
+}
+
+function clampPercent(raw) {
+  const n = Number(raw);
+  if (!Number.isFinite(n)) return 0;
+  return Math.min(100, Math.max(0, n));
+}
+
+function setFetchHeadline(text, { warn = false, running = false } = {}) {
+  if (!refs.fetchStatusHeadline) return;
+  refs.fetchStatusHeadline.textContent = String(text || "");
+  refs.fetchStatusHeadline.classList.toggle("warn", Boolean(warn));
+  refs.fetchStatusHeadline.classList.toggle("running", Boolean(running));
+}
+
+function renderRpaProgress(snapshot, { running = false } = {}) {
+  if (!refs.rpaProgressWrap) return;
+  const data = (snapshot && typeof snapshot === "object") ? snapshot : {};
+  const percent = clampPercent(data.progress_percent);
+  const status = String(data.status || "").trim().toLowerCase();
+  const phase = String(data.phase || "").trim();
+  const message = String(data.message || "").trim();
+  const query = String(data.query || "").trim();
+  const passIndex = Number(data.pass_index || 0);
+  const maxPasses = Number(data.max_passes || 0);
+  const createdCount = Number(data.created_count || 0);
+  const rpa = (data.rpa && typeof data.rpa === "object") ? data.rpa : null;
+  const qIndex = Number(data.query_index || 0);
+  const qTotal = Number(data.total_queries || 0);
+  const updatedAgoSec = Number(data.updated_ago_sec || 0);
+  const runLabel = (passIndex > 0 && maxPasses > 0)
+    ? ` (pass ${passIndex}/${maxPasses})`
+    : ((qIndex > 0 && qTotal > 0) ? ` (${qIndex}/${qTotal})` : "");
+  const statusJa = phaseToJa(phase || status);
+  const detailBits = [];
+  detailBits.push(`探索:${statusJa}`);
+  if (query) detailBits.push(`探索語:${compactQueryText(query)}`);
+  if (Number.isFinite(createdCount) && createdCount > 0) detailBits.push(`候補:${createdCount}件`);
+  if (rpa && typeof rpa === "object") {
+    const rpaStatus = String(rpa.status || "").trim().toLowerCase();
+    const rpaPhase = String(rpa.phase || "").trim();
+    const rpaPhaseJa = phaseToJa(rpaPhase || rpaStatus);
+    const rpaPct = clampPercent(rpa.progress_percent);
+    const rpaQuery = String(rpa.query || "").trim();
+    const rpaQueryIndex = Number(rpa.query_index || 0);
+    const rpaTotalQueries = Number(rpa.total_queries || 0);
+    if (rpaStatus && rpaStatus !== "idle") {
+      const rpaRunLabel = rpaQueryIndex > 0 && rpaTotalQueries > 0 ? `(${rpaQueryIndex}/${rpaTotalQueries})` : "";
+      detailBits.push(`PR:${rpaPhaseJa}${rpaRunLabel} ${Math.round(rpaPct)}%`);
+      if (rpaQuery) detailBits.push(`PR語:${compactQueryText(rpaQuery)}`);
+    }
+  }
+  if (!detailBits.length && message) detailBits.push(compactQueryText(message, 36));
+  if (Number.isFinite(updatedAgoSec) && updatedAgoSec >= 0) detailBits.push(`更新:${updatedAgoSec}s`);
+  const detail = detailBits.join(" / ") || "進捗データ待機中";
+
+  refs.rpaProgressWrap.hidden = false;
+  if (refs.rpaProgressLabel) refs.rpaProgressLabel.textContent = `${statusJa}${runLabel}`;
+  if (refs.rpaProgressPercent) refs.rpaProgressPercent.textContent = `${Math.round(percent)}%`;
+  if (refs.rpaProgressFill) refs.rpaProgressFill.style.width = `${percent.toFixed(1)}%`;
+  if (refs.rpaProgressDetail) refs.rpaProgressDetail.textContent = detail;
+
+  if (running) {
+    if (refs.fetchBtn && refs.fetchBtn.disabled) {
+      refs.fetchBtn.textContent = `探索中... ${Math.round(percent)}%`;
+    }
+    const runText = runLabel ? runLabel.replace(/[()]/g, "") : "";
+    const head = runText ? `探索中 ${Math.round(percent)}% / ${runText}` : `探索中 ${Math.round(percent)}%`;
+    setFetchHeadline(head, {
+      warn: Boolean(data.daily_limit_reached),
+      running: true,
+    });
+  }
+}
+
+function hideRpaProgress() {
+  if (!refs.rpaProgressWrap) return;
+  refs.rpaProgressWrap.hidden = true;
+}
+
+async function pollRpaProgressOnce() {
+  try {
+    let snap = null;
+    let source = "fetch-progress";
+    try {
+      snap = await api("/v1/system/fetch-progress");
+    } catch (_) {
+      const rpaOnly = await api("/v1/system/rpa-progress");
+      source = "rpa-progress-fallback";
+      snap = {
+        status: state.fetchInFlight ? "running" : "idle",
+        phase: state.fetchInFlight ? "running" : "idle",
+        message: "探索進捗の取得待ち（RPAのみ受信）",
+        progress_percent: state.displayedProgress,
+        query: "",
+        pass_index: 0,
+        max_passes: 0,
+        created_count: 0,
+        updated_ago_sec: Number(rpaOnly?.updated_ago_sec || 0),
+        rpa: rpaOnly,
+      };
+    }
+    const status = String(snap?.status || "").trim().toLowerCase();
+    const runId = String(snap?.run_id || "").trim();
+    const updatedAtEpoch = Number(snap?.updated_at_epoch || 0);
+    const isFreshForCurrentFetch = updatedAtEpoch > 0 && updatedAtEpoch >= (state.fetchStartedAtEpochSec - 1);
+    let staleSnapshot = false;
+
+    if (state.fetchInFlight) {
+      if (!state.fetchProgressSawRunning) {
+        if (status === "running" && isFreshForCurrentFetch) {
+          state.fetchProgressSawRunning = true;
+          if (runId) state.fetchProgressRunId = runId;
+        } else {
+          staleSnapshot = true;
+        }
+      } else {
+        if (!state.fetchProgressRunId && runId && status === "running") {
+          state.fetchProgressRunId = runId;
+        }
+        if (state.fetchProgressRunId && runId && runId !== state.fetchProgressRunId) {
+          staleSnapshot = true;
+        }
+      }
+    }
+
+    const now = Date.now();
+    const elapsedSec = state.fetchStartedAtMs > 0 ? (now - state.fetchStartedAtMs) / 1000 : 0;
+    const optimistic = Math.min(92, 4 + elapsedSec * 2.05);
+    const rawServerPercent = Number.isFinite(Number(snap?.progress_percent))
+      ? clampPercent(Number(snap?.progress_percent))
+      : 0;
+    const serverPercent = staleSnapshot ? 0 : rawServerPercent;
+    let targetPercent = serverPercent;
+    if (state.fetchInFlight) {
+      targetPercent = Math.max(serverPercent, optimistic);
+      // 実行中は逆戻りさせない。
+      targetPercent = Math.max(targetPercent, state.optimisticProgress);
+    }
+    state.optimisticProgress = clampPercent(targetPercent);
+    const prevDisplay = clampPercent(state.displayedProgress);
+    let displayPercent = state.optimisticProgress;
+    if (state.fetchInFlight) {
+      if (displayPercent < prevDisplay) displayPercent = prevDisplay;
+      // 急なジャンプを軽減し、段階的に追随させる。
+      if (displayPercent > prevDisplay) {
+        const delta = displayPercent - prevDisplay;
+        const step = Math.max(1.4, Math.min(8.0, delta * 0.55));
+        displayPercent = Math.min(displayPercent, prevDisplay + step);
+      }
+    }
+    state.displayedProgress = clampPercent(displayPercent);
+    const merged = {
+      ...snap,
+      progress_percent: state.displayedProgress,
+    };
+    if (state.fetchInFlight && staleSnapshot) {
+      merged.status = "running";
+      merged.phase = "startup";
+      merged.message = "探索リクエスト送信中（前回進捗を無視）";
+    }
+    state.lastFetchProgressSource = source;
+    renderRpaProgress(merged, { running: state.fetchInFlight });
+    if (!state.fetchInFlight && ["completed", "failed", "stopped", "idle"].includes(status)) {
+      stopRpaProgressPolling();
+    }
+  } catch (_) {
+    if (state.fetchInFlight) {
+      const now = Date.now();
+      const elapsedSec = state.fetchStartedAtMs > 0 ? (now - state.fetchStartedAtMs) / 1000 : 0;
+      const optimistic = Math.min(82, 4 + elapsedSec * 1.9);
+      state.optimisticProgress = Math.max(state.optimisticProgress, optimistic);
+      state.displayedProgress = Math.max(state.displayedProgress, Math.min(state.optimisticProgress, state.displayedProgress + 2.2));
+      renderRpaProgress(
+        {
+          status: "running",
+          phase: "starting",
+          message: "探索処理中（進捗取得待ち）",
+          progress_percent: state.displayedProgress,
+          query_index: 0,
+          total_queries: 0,
+          updated_ago_sec: 0,
+        },
+        { running: true }
+      );
+    }
+  }
+}
+
+function startRpaProgressPolling() {
+  stopRpaProgressPolling();
+  state.fetchInFlight = true;
+  state.fetchStartedAtMs = Date.now();
+  state.fetchStartedAtEpochSec = Math.floor(state.fetchStartedAtMs / 1000);
+  state.fetchProgressRunId = "";
+  state.fetchProgressSawRunning = false;
+  state.optimisticProgress = 2;
+  state.displayedProgress = 2;
+  state.lastFetchProgressSource = "";
+  renderRpaProgress(
+    {
+      status: "running",
+      phase: "startup",
+      message: "探索全体を開始しました",
+      progress_percent: state.displayedProgress,
+      query_index: 0,
+      total_queries: 0,
+      updated_ago_sec: 0,
+    },
+    { running: true }
+  );
+  state.rpaProgressPollTimer = window.setInterval(() => {
+    void pollRpaProgressOnce();
+  }, 850);
+  void pollRpaProgressOnce();
+}
+
+function stopRpaProgressPolling({ finalMessage = "" } = {}) {
+  state.fetchInFlight = false;
+  state.fetchProgressSawRunning = false;
+  state.fetchProgressRunId = "";
+  if (state.rpaProgressPollTimer) {
+    window.clearInterval(state.rpaProgressPollTimer);
+    state.rpaProgressPollTimer = null;
+  }
+  if (finalMessage) {
+    setFetchHeadline(finalMessage, { running: false });
+  } else if (refs.fetchStatusHeadline) {
+    refs.fetchStatusHeadline.classList.remove("running");
+  }
+}
+
 function renderFetchStats(payload) {
   if (!refs.fetchStatusHeadline || !refs.fetchStatsRows) return;
   if (!payload || typeof payload !== "object") {
-    refs.fetchStatusHeadline.textContent = "まだ探索を実行していません。";
+    setFetchHeadline("まだ探索を実行していません。", { warn: false, running: false });
     refs.fetchStatsRows.innerHTML = "";
+    hideRpaProgress();
     return;
   }
 
@@ -925,6 +1293,7 @@ function renderFetchStats(payload) {
     ? payload.applied_filters
     : {};
   const fetched = (payload.fetched && typeof payload.fetched === "object") ? payload.fetched : {};
+  const dailyLimitReached = isRpaDailyLimitReached(payload);
 
   let headline = `今回の探索: 追加 ${createdCount}件`;
   if (searchScopeDone) headline += " / 探索完走";
@@ -934,12 +1303,21 @@ function renderFetchStats(payload) {
       : " / 同条件スキップ中";
   }
   headline += Boolean(appliedFilters.require_in_stock) ? " / 在庫あり必須" : " / 在庫条件なし";
+  if (dailyLimitReached) headline += " / Product Research上限到達";
   if (errors.length > 0) headline += ` / エラー${errors.length}件`;
-  refs.fetchStatusHeadline.textContent = headline;
+  setFetchHeadline(headline, { warn: dailyLimitReached, running: false });
 
   const rows = Object.entries(fetched);
   if (rows.length === 0) {
+    const alertHtml = dailyLimitReached
+      ? `
+      <div class="fetch-alert warn">
+        Product Researchの1日上限に到達したため、探索を停止しました。翌日に再開してください。
+      </div>
+    `
+      : "";
     refs.fetchStatsRows.innerHTML = `
+      ${alertHtml}
       <div class="fetch-row">
         <div class="head"><span>探索ログなし</span><span class="fetch-stop">-</span></div>
         <p class="fetch-note">この探索ではサイト別の取得データがありませんでした。</p>
@@ -948,7 +1326,15 @@ function renderFetchStats(payload) {
     return;
   }
 
-  refs.fetchStatsRows.innerHTML = rows.map(([site, info]) => {
+  const warningBlock = dailyLimitReached
+    ? `
+      <div class="fetch-alert warn">
+        Product Researchの1日上限に到達したため、探索を停止しました。翌日に再開してください。
+      </div>
+    `
+    : "";
+
+  refs.fetchStatsRows.innerHTML = warningBlock + rows.map(([site, info]) => {
     const calls = Number(info?.calls_made || 0);
     const networkCalls = Number(info?.network_calls || 0);
     const cacheHits = Number(info?.cache_hits || 0);
@@ -1040,27 +1426,27 @@ function isLikelyInvalidEbayItemUrl(url) {
   }
 }
 
-function resolveDisplayLink(url, site, title) {
+function resolveDisplayLink(url, site, title, { allowFallback = true } = {}) {
   const raw = String(url || "").trim();
   if (!raw) {
-    return { href: buildSearchUrl(site, title), fallbackUsed: true };
+    return { href: allowFallback ? buildSearchUrl(site, title) : null, fallbackUsed: true };
   }
   try {
     const u = new URL(raw);
     if (!/^https?:$/.test(u.protocol)) {
-      return { href: buildSearchUrl(site, title), fallbackUsed: true };
+      return { href: allowFallback ? buildSearchUrl(site, title) : null, fallbackUsed: true };
     }
     if (String(site || "").toLowerCase() === "ebay" && isLikelyInvalidEbayItemUrl(raw)) {
-      return { href: buildSearchUrl(site, title), fallbackUsed: true };
+      return { href: allowFallback ? buildSearchUrl(site, title) : null, fallbackUsed: true };
     }
     return { href: raw, fallbackUsed: false };
   } catch {
-    return { href: buildSearchUrl(site, title), fallbackUsed: true };
+    return { href: allowFallback ? buildSearchUrl(site, title) : null, fallbackUsed: true };
   }
 }
 
-function renderLink(aEl, url, site, title) {
-  const resolved = resolveDisplayLink(url, site, title);
+function renderLink(aEl, url, site, title, options = {}) {
+  const resolved = resolveDisplayLink(url, site, title, options);
   if (resolved.href) {
     aEl.href = resolved.href;
     aEl.style.pointerEvents = "auto";
@@ -1103,7 +1489,6 @@ function renderCandidate(candidate) {
     if (refs.financeFormula) refs.financeFormula.textContent = "最終利益 = 売上見込み - 仕入原価 - 諸経費合計";
     refs.sumSoldCount90d.textContent = "-";
     refs.sumSoldMin90d.textContent = "-";
-    if (refs.sumLiquidityActiveStr) refs.sumLiquidityActiveStr.textContent = "-";
     if (refs.sumLiquidityGate) refs.sumLiquidityGate.textContent = "-";
     if (refs.sumFeeRates) refs.sumFeeRates.textContent = "-";
     if (refs.sumOtherCosts) refs.sumOtherCosts.textContent = "-";
@@ -1191,7 +1576,13 @@ function renderCandidate(candidate) {
       : "国内送料別";
   }
 
-  const ebayHref = renderLink(refs.ebayLink, v.ebay.itemUrl, v.ebay.site, v.ebay.title);
+  const ebayHref = renderLink(
+    refs.ebayLink,
+    v.ebay.itemUrl,
+    v.ebay.site,
+    v.ebay.title,
+    { allowFallback: !v.ebay.soldBasisRequiresSoldUrl }
+  );
   const jpHref = renderLink(refs.jpLink, v.jp.itemUrl, v.jp.site, v.jp.title);
   renderImage(refs.ebayImage, v.ebay.imageUrl, ebayHref, v.ebay.title);
   renderImage(refs.jpImage, v.jp.imageUrl, jpHref, v.jp.title);
@@ -1205,16 +1596,16 @@ function renderCandidate(candidate) {
 
   setMoneyCell(refs.sumRevenue, { jpy: null, usd: revenueUsd, fxRate: v.fxRate });
   if (refs.sumRevenueBreakdown) {
-    const base = `商品 ${moneyDualText({ jpy: null, usd: v.ebay.priceUsd, fxRate: v.fxRate })} / 送料 ${shippingText({ jpy: null, usd: v.ebay.shippingUsd, fxRate: v.fxRate })}`;
+    const base = `商品 ${moneyDualInlineHtml({ jpy: null, usd: v.ebay.priceUsd, fxRate: v.fxRate })} / 送料 ${shippingInlineHtml({ jpy: null, usd: v.ebay.shippingUsd, fxRate: v.fxRate })}`;
     const hasSpecialBasis = String(v.ebay.saleBasisType || "").toLowerCase() !== "active_listing_price";
     const note = hasSpecialBasis ? ` / ${saleBasisLabel(v.ebay.saleBasisType)}` : "";
-    setOptionalNote(refs.sumRevenueBreakdown, `${base}${note}`);
+    setOptionalNoteHtml(refs.sumRevenueBreakdown, `${base}${escapeHtml(note)}`);
   }
   setMoneyCell(refs.sumPurchase, { jpy: v.jp.totalJpy, usd: purchaseUsd, fxRate: v.fxRate });
   if (refs.sumPurchaseBreakdown) {
-    setOptionalNote(
+    setOptionalNoteHtml(
       refs.sumPurchaseBreakdown,
-      `商品 ${moneyDualText({ jpy: v.jp.priceJpy, usd: null, fxRate: v.fxRate })} / 国内送料 ${shippingText({ jpy: v.jp.shippingJpy, usd: null, fxRate: v.fxRate })}`
+      `商品 ${moneyDualInlineHtml({ jpy: v.jp.priceJpy, usd: null, fxRate: v.fxRate })} / 国内送料 ${shippingInlineHtml({ jpy: v.jp.shippingJpy, usd: null, fxRate: v.fxRate })}`
     );
   }
   setMoneyCell(refs.sumExpenses, { jpy: null, usd: expenseUsd, fxRate: v.fxRate });
@@ -1248,13 +1639,6 @@ function renderCandidate(candidate) {
   } else {
     refs.sumSoldMin90d.textContent = "未取得";
   }
-  const liqActive = toNumber(v.liquidity?.active_count);
-  const liqStr = toNumber(v.liquidity?.sell_through_90d);
-  if (refs.sumLiquidityActiveStr) {
-    const activeText = Number.isFinite(liqActive) && liqActive >= 0 ? `${liqActive}件` : "未取得";
-    const strText = Number.isFinite(liqStr) && liqStr >= 0 ? formatPercent(liqStr) : "未取得";
-    refs.sumLiquidityActiveStr.textContent = `${activeText} / ${strText}`;
-  }
   if (refs.sumLiquidityGate) {
     const gatePassed = Boolean(v.liquidity?.gate_passed);
     const gateReason = String(v.liquidity?.gate_reason || "").trim();
@@ -1287,7 +1671,12 @@ function renderCandidate(candidate) {
   const decisionReasons = buildDecisionReasons(candidate, v, colorRisk);
   if (refs.decisionReasons) {
     refs.decisionReasons.innerHTML = decisionReasons.length
-      ? decisionReasons.map((row) => `<span class="reason-chip ${row.tone === "warn" ? "warn" : "good"}">${escapeHtml(row.text)}</span>`).join("")
+      ? decisionReasons.map((row) => {
+        const body = (typeof row.html === "string" && row.html.trim().length > 0)
+          ? row.html
+          : escapeHtml(row.text);
+        return `<span class="reason-chip ${row.tone === "warn" ? "warn" : "good"}">${body}</span>`;
+      }).join("")
       : '<span class="reason-chip">判定理由なし</span>';
   }
 
@@ -1295,22 +1684,22 @@ function renderCandidate(candidate) {
     const scoreText = toNumber(candidate.match_score)?.toFixed(3) ?? "-";
     const soldText = Number.isFinite(v.ebay.soldCount90d) && v.ebay.soldCount90d >= 0 ? `${v.ebay.soldCount90d}件` : "未取得";
     const soldMinText = Number.isFinite(v.ebay.soldMin90d) && v.ebay.soldMin90d > 0
-      ? moneyDualText({ jpy: null, usd: v.ebay.soldMin90d, fxRate: v.fxRate })
+      ? moneyDualInlineHtml({ jpy: null, usd: v.ebay.soldMin90d, fxRate: v.fxRate })
       : "未取得";
     const profitText = moneyDualHtml({ jpy: v.expectedProfitJpy, usd: v.expectedProfitUsd, fxRate: v.fxRate, align: "left" });
-    const grossDiffText = moneyDualText({ jpy: null, usd: grossDiffUsd, fxRate: v.fxRate });
-    const variableFeeText = moneyDualText({ jpy: null, usd: toNumber(v.calc?.variableFeeUsd), fxRate: v.fxRate });
+    const grossDiffText = moneyDualInlineHtml({ jpy: null, usd: grossDiffUsd, fxRate: v.fxRate });
+    const variableFeeText = moneyDualInlineHtml({ jpy: null, usd: toNumber(v.calc?.variableFeeUsd), fxRate: v.fxRate });
     const profitEquation = Number.isFinite(revenueUsd) && Number.isFinite(costTotalUsd)
-      ? `${formatUsd(revenueUsd)} - ${formatUsd(costTotalUsd)}`
+      ? `${moneyDualInlineHtml({ jpy: null, usd: revenueUsd, fxRate: v.fxRate })} - ${moneyDualInlineHtml({ jpy: null, usd: costTotalUsd, fxRate: v.fxRate })}`
       : "-";
     refs.calcDigest.innerHTML = `
       <span class="digest-row">
         <span class="digest-chip"><strong>一致スコア</strong>${escapeHtml(scoreText)}</span>
         <span class="digest-chip"><strong>90日売却</strong>${escapeHtml(soldText)}</span>
-        <span class="digest-chip"><strong>90日最低</strong>${escapeHtml(soldMinText)}</span>
-        <span class="digest-chip"><strong>粗差額</strong>${escapeHtml(grossDiffText)}</span>
-        <span class="digest-chip"><strong>変動手数料</strong>${escapeHtml(variableFeeText)}</span>
-        <span class="digest-chip"><strong>利益式</strong>${escapeHtml(profitEquation)}</span>
+        <span class="digest-chip"><strong>90日最低</strong>${soldMinText}</span>
+        <span class="digest-chip"><strong>粗差額</strong>${grossDiffText}</span>
+        <span class="digest-chip"><strong>変動手数料</strong>${variableFeeText}</span>
+        <span class="digest-chip"><strong>利益式</strong>${profitEquation}</span>
         <span class="digest-chip"><strong>期待利益</strong>${profitText}</span>
         ${latestRejection ? `<span class="digest-chip"><strong>否認箇所</strong>${escapeHtml(formatIssueTargetsJa(latestRejection.issue_targets))}</span>` : ""}
       </span>
@@ -1394,12 +1783,8 @@ function renderCandidate(candidate) {
   const liquidityRows = [];
   if (v.liquidity) {
     const sold90d = toNumber(v.liquidity.sold_90d_count);
-    const activeCount = toNumber(v.liquidity.active_count);
-    const sellThrough = toNumber(v.liquidity.sell_through_90d);
     const soldMinInfo = getSoldMinOutlierInfo(v.liquidity);
     liquidityRows.push({ key: "90日売却件数", val: Number.isFinite(sold90d) && sold90d >= 0 ? `${sold90d}件` : "未取得" });
-    liquidityRows.push({ key: "アクティブ件数", val: Number.isFinite(activeCount) && activeCount >= 0 ? `${activeCount}件` : "未取得" });
-    liquidityRows.push({ key: "90日STR", val: Number.isFinite(sellThrough) && sellThrough >= 0 ? formatPercent(sellThrough) : "未取得" });
     if (soldMinInfo.isOutlier) {
       const rawText = moneyDualText({ jpy: null, usd: soldMinInfo.soldMinRaw, fxRate: v.fxRate });
       const ratioText = Number.isFinite(soldMinInfo.ratio) ? ` (ratio=${soldMinInfo.ratio.toFixed(3)})` : "";
@@ -1512,8 +1897,19 @@ function renderTabState() {
   refs.tabReviewed.classList.toggle("active", !isPending);
   refs.tabPending.setAttribute("aria-selected", isPending ? "true" : "false");
   refs.tabReviewed.setAttribute("aria-selected", isPending ? "false" : "true");
-  refs.countPending.textContent = String(state.queues.pending.length);
-  refs.countReviewed.textContent = String(state.queues.reviewed.length);
+  const pendingCount = Number.isFinite(Number(state.queueTotals.pending))
+    ? Number(state.queueTotals.pending)
+    : state.queues.pending.length;
+  const reviewedCount = Number.isFinite(Number(state.queueTotals.reviewed))
+    ? Number(state.queueTotals.reviewed)
+    : state.queues.reviewed.length;
+  refs.countPending.textContent = formatTabCount(pendingCount);
+  refs.countReviewed.textContent = formatTabCount(reviewedCount);
+}
+
+function formatTabCount(value) {
+  const n = Math.max(0, Math.floor(Number(value || 0)));
+  return n > TAB_COUNT_CAP ? `${TAB_COUNT_CAP}+` : String(n);
 }
 
 function pickDominantCandidateIdInViewport() {
@@ -1640,21 +2036,21 @@ function renderReviewList() {
     const isActive = id === currentId;
     const colorRisk = getColorRiskInfo(item);
     const v = normalize(item);
-    const profitText = moneyDualText({ jpy: v.expectedProfitJpy, usd: v.expectedProfitUsd, fxRate: v.fxRate });
+    const profitText = moneyDualInlineHtml({ jpy: v.expectedProfitJpy, usd: v.expectedProfitUsd, fxRate: v.fxRate });
     const score = toNumber(item.match_score);
     const soldCount = Number.isFinite(v.ebay.soldCount90d) && v.ebay.soldCount90d >= 0 ? `${v.ebay.soldCount90d}件` : "未取得";
     const soldMin = Number.isFinite(v.ebay.soldMin90d) && v.ebay.soldMin90d > 0
-      ? moneyDualText({ jpy: null, usd: v.ebay.soldMin90d, fxRate: v.fxRate })
+      ? moneyDualInlineHtml({ jpy: null, usd: v.ebay.soldMin90d, fxRate: v.fxRate })
       : "未取得";
     const rejection = getLatestRejection(item);
     const rejectionTargets = rejection ? formatIssueTargetsJa(rejection.issue_targets) : "";
     const rejectionReason = rejection ? compactText(rejection.reason_text, 38) : "";
-    const ebayTotal = moneyDualText({ jpy: null, usd: v.ebay.totalUsd, fxRate: v.fxRate });
-    const ebayPrice = moneyDualText({ jpy: null, usd: v.ebay.priceUsd, fxRate: v.fxRate });
-    const ebayShipping = shippingText({ jpy: null, usd: v.ebay.shippingUsd, fxRate: v.fxRate });
-    const jpTotal = moneyDualText({ jpy: v.jp.totalJpy, usd: v.jp.totalUsd, fxRate: v.fxRate });
-    const jpPrice = moneyDualText({ jpy: v.jp.priceJpy, usd: null, fxRate: v.fxRate });
-    const jpShipping = shippingText({ jpy: v.jp.shippingJpy, usd: null, fxRate: v.fxRate });
+    const ebayTotal = moneyDualInlineHtml({ jpy: null, usd: v.ebay.totalUsd, fxRate: v.fxRate });
+    const ebayPrice = moneyDualInlineHtml({ jpy: null, usd: v.ebay.priceUsd, fxRate: v.fxRate });
+    const ebayShipping = shippingInlineHtml({ jpy: null, usd: v.ebay.shippingUsd, fxRate: v.fxRate });
+    const jpTotal = moneyDualInlineHtml({ jpy: v.jp.totalJpy, usd: v.jp.totalUsd, fxRate: v.fxRate });
+    const jpPrice = moneyDualInlineHtml({ jpy: v.jp.priceJpy, usd: null, fxRate: v.fxRate });
+    const jpShipping = shippingInlineHtml({ jpy: v.jp.shippingJpy, usd: null, fxRate: v.fxRate });
     const marketExtracted = buildExtractedSnapshot(v.ebay);
     const sourceExtracted = buildExtractedSnapshot(v.jp);
     const marketHref = resolveDisplayLink(v.ebay.itemUrl, v.ebay.site, v.ebay.title).href;
@@ -1693,9 +2089,9 @@ function renderReviewList() {
               </div>
               <div class="candidate-meta">
                 <p>状態: ${escapeHtml(marketExtracted.condition)}</p>
-                <p>商品: ${escapeHtml(ebayPrice)}</p>
-                <p>送料: ${escapeHtml(ebayShipping)}</p>
-                <p>合計: ${escapeHtml(ebayTotal)}</p>
+                <p>商品: ${ebayPrice}</p>
+                <p>送料: ${ebayShipping}</p>
+                <p>合計: ${ebayTotal}</p>
                 <p>90日売却: ${escapeHtml(soldCount)}</p>
               </div>
             </section>
@@ -1712,17 +2108,17 @@ function renderReviewList() {
               </div>
               <div class="candidate-meta">
                 <p>状態: ${escapeHtml(sourceExtracted.condition)}</p>
-                <p>商品: ${escapeHtml(jpPrice)}</p>
-                <p>送料: ${escapeHtml(jpShipping)}</p>
-                <p>合計: ${escapeHtml(jpTotal)}</p>
+                <p>商品: ${jpPrice}</p>
+                <p>送料: ${jpShipping}</p>
+                <p>合計: ${jpTotal}</p>
                 ${stockLabel ? `<p>在庫: ${escapeHtml(stockLabel)}</p>` : ""}
               </div>
             </section>
           </div>
           <div class="pair-footer">
-            <span class="pair-chip strong">利益 ${escapeHtml(profitText)}</span>
+            <span class="pair-chip strong">利益 ${profitText}</span>
             <span class="pair-chip">90日売却 ${escapeHtml(soldCount)}</span>
-            <span class="pair-chip">90日最低 ${escapeHtml(soldMin)}</span>
+            <span class="pair-chip">90日最低 ${soldMin}</span>
             <span class="pair-chip muted">score ${Number.isFinite(score) ? score.toFixed(3) : "-"}</span>
             ${warnChip}
             ${rejectedChip}
@@ -1743,14 +2139,20 @@ async function fetchPendingQueue() {
   params.set("min_match_score", String(DEFAULT_MIN_MATCH_SCORE));
   params.set("condition", "new");
   const data = await api(`/v1/review/queue?${params.toString()}`);
-  return Array.isArray(data.items) ? data.items : [];
+  return {
+    items: Array.isArray(data.items) ? data.items : [],
+    total: Number(data.total || 0),
+  };
 }
 
 async function fetchReviewedQueue() {
-  const params = new URLSearchParams({ status: "all", limit: "200" });
+  const params = new URLSearchParams({ status: "reviewed", limit: "200" });
   const data = await api(`/v1/review/queue?${params.toString()}`);
-  const allItems = Array.isArray(data.items) ? data.items : [];
-  return allItems.filter((item) => isReviewedStatus(item.status));
+  const items = Array.isArray(data.items) ? data.items : [];
+  return {
+    items: items.filter((item) => isReviewedStatus(item.status)),
+    total: Number(data.total || 0),
+  };
 }
 
 function firstCandidateId(items) {
@@ -1815,9 +2217,12 @@ async function selectCandidateById(candidateId, options = {}) {
 
 async function refreshQueues({ preserveSelection = true } = {}) {
   const prevId = preserveSelection ? Number(state.current?.id || 0) : null;
-  const [pending, reviewed] = await Promise.all([fetchPendingQueue(), fetchReviewedQueue()]);
-  state.queues.pending = pending;
-  state.queues.reviewed = reviewed;
+  const pendingPayload = await fetchPendingQueue();
+  const reviewedPayload = await fetchReviewedQueue();
+  state.queues.pending = pendingPayload.items;
+  state.queues.reviewed = reviewedPayload.items;
+  state.queueTotals.pending = Math.max(0, Number(pendingPayload.total || 0));
+  state.queueTotals.reviewed = Math.max(0, Number(reviewedPayload.total || 0));
   void warmReviewedRejectionDetails();
 
   renderTabState();
@@ -1967,7 +2372,8 @@ async function onFetchLiveCandidates() {
   const cfg = buildFetchConfig();
 
   refs.fetchBtn.disabled = true;
-  refs.fetchBtn.textContent = "探索中...";
+  refs.fetchBtn.textContent = "探索中... 0%";
+  startRpaProgressPolling();
   try {
     const payload = await api("/v1/review/fetch", {
       method: "POST",
@@ -1975,6 +2381,11 @@ async function onFetchLiveCandidates() {
         query,
         source_sites: LIVE_FETCH_SOURCE_SITES,
         market_site: "ebay",
+        timed_mode: true,
+        target_min_candidates: 3,
+        fetch_timebox_sec: 60,
+        fetch_max_passes: 4,
+        continue_after_target: true,
         require_in_stock: cfg.requireInStock,
         limit_per_site: cfg.limitPerSite,
         max_candidates: cfg.maxCandidates,
@@ -1985,6 +2396,20 @@ async function onFetchLiveCandidates() {
     });
 
     state.lastFetch = payload;
+    await pollRpaProgressOnce();
+    state.optimisticProgress = Math.max(state.displayedProgress, 96);
+    state.displayedProgress = Math.max(state.displayedProgress, 96);
+    renderRpaProgress(
+      {
+        status: "running",
+        phase: "timed_fetch_finalize",
+        message: "探索結果を画面へ反映中",
+        progress_percent: state.displayedProgress,
+        updated_ago_sec: 0,
+      },
+      { running: true }
+    );
+    stopRpaProgressPolling();
     renderFetchStats(payload);
 
     state.activeTab = "pending";
@@ -1996,28 +2421,50 @@ async function onFetchLiveCandidates() {
       await selectCandidateById(createdIds[0]);
     }
 
+    state.optimisticProgress = 100;
+    state.displayedProgress = 100;
+    renderRpaProgress(
+      {
+        status: "completed",
+        phase: "completed",
+        message: "探索処理が完了しました",
+        progress_percent: 100,
+        updated_ago_sec: 0,
+      },
+      { running: false }
+    );
+
     const createdCount = Number(payload.created_count || 0);
     const duplicateCount = Number(payload.skipped_duplicates || 0);
     const unprofitableCount = Number(payload.skipped_unprofitable || 0);
     const lowMarginCount = Number(payload.skipped_low_margin || 0);
     const missingSoldMinCount = Number(payload.skipped_missing_sold_min || 0);
+    const nonMinBasisCount = Number(payload.skipped_non_min_basis || 0);
     const missingSoldSampleCount = Number(payload.skipped_missing_sold_sample || 0);
     const belowSoldMinCount = Number(payload.skipped_below_sold_min || 0);
     const implausibleSoldMinCount = Number(payload.skipped_implausible_sold_min || 0);
+    const unresolvedVariantPriceCount = Number(payload.skipped_source_variant_unresolved || 0);
     const lowLiquidityCount = Number(payload.skipped_low_liquidity || 0);
     const liquidityUnavailableCount = Number(payload.skipped_liquidity_unavailable || 0);
     const queryCacheSkip = Boolean(payload.query_cache_skip);
     const queryCacheTtlSec = Number(payload.query_cache_ttl_sec || 0);
     const hints = Array.isArray(payload.hints) ? payload.hints : [];
+    const timedFetch = (payload && typeof payload.timed_fetch === "object") ? payload.timed_fetch : null;
+    const timedPasses = Number(timedFetch?.passes_run || 0);
+    const timedReason = String(timedFetch?.stop_reason || "").trim();
+    const dailyLimitReached = isRpaDailyLimitReached(payload);
 
     let msg = `探索完了: ${createdCount}件追加`;
+    if (timedPasses > 1) msg += ` / ${timedPasses}パス`;
     if (duplicateCount > 0) msg += ` / 重複${duplicateCount}件スキップ`;
     if (unprofitableCount > 0) msg += ` / 低利益${unprofitableCount}件除外`;
     if (lowMarginCount > 0) msg += ` / 低粗利率${lowMarginCount}件除外`;
     if (missingSoldMinCount > 0) msg += ` / 90日最低未取得${missingSoldMinCount}件除外`;
+    if (nonMinBasisCount > 0) msg += ` / 90日最低基準外${nonMinBasisCount}件除外`;
     if (missingSoldSampleCount > 0) msg += ` / 売却済み参照欠損${missingSoldSampleCount}件除外`;
     if (belowSoldMinCount > 0) msg += ` / 仕入>=90日最低${belowSoldMinCount}件除外`;
     if (implausibleSoldMinCount > 0) msg += ` / 90日最低異常値${implausibleSoldMinCount}件除外`;
+    if (unresolvedVariantPriceCount > 0) msg += ` / 型番別価格未特定${unresolvedVariantPriceCount}件除外`;
     if (lowLiquidityCount > 0) msg += ` / 低流動性${lowLiquidityCount}件除外`;
     if (liquidityUnavailableCount > 0) msg += ` / 流動性未取得${liquidityUnavailableCount}件除外`;
     if (queryCacheSkip) {
@@ -2025,9 +2472,26 @@ async function onFetchLiveCandidates() {
         ? ` / 同条件スキップ中(${queryCacheTtlSec}秒)`
         : " / 同条件スキップ中";
     }
+    if (dailyLimitReached) msg += " / Product Research上限到達";
+    if (timedReason) msg += ` / 停止理由:${timedReason}`;
     if (hints.length > 0) msg += ` / ${hints[0]}`;
     showToast(msg);
+  } catch (err) {
+    state.optimisticProgress = 100;
+    state.displayedProgress = 100;
+    renderRpaProgress(
+      {
+        status: "failed",
+        phase: "failed",
+        message: `探索失敗: ${err instanceof Error ? err.message : "unknown"}`,
+        progress_percent: 100,
+        updated_ago_sec: 0,
+      },
+      { running: false }
+    );
+    throw err;
   } finally {
+    stopRpaProgressPolling();
     refs.fetchBtn.disabled = false;
     refs.fetchBtn.textContent = "探索開始";
   }

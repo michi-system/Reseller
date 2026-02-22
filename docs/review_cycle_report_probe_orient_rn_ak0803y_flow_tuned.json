@@ -1,0 +1,579 @@
+{
+  "cycle_id": "cycle-20260221-205810",
+  "started_at": "2026-02-21T20:57:23Z",
+  "ended_at": "2026-02-21T20:58:10Z",
+  "run_seq": 95,
+  "target_count": 2,
+  "hard_cap": 3,
+  "batch_size": 0,
+  "cycle_ready": false,
+  "initial_reviewable_pending": 0,
+  "final_reviewable_pending": 0,
+  "delta_reviewable_pending": 0,
+  "min_match_score": 0.7,
+  "min_profit_usd": 0.01,
+  "min_margin_rate": 0.03,
+  "condition": "new",
+  "stopped_reason": "completed_rounds",
+  "selected_candidate_ids": [],
+  "cache_only": false,
+  "query_reordered": true,
+  "query_order": [
+    "ORIENT RN-AK0803Y"
+  ],
+  "max_zero_gain_strikes": 9999,
+  "historical_min_attempts": 3,
+  "historical_min_network_calls": 6,
+  "historical_min_gain_per_network_call": 0.0,
+  "historical_retry_every_runs": 4,
+  "duplicate_heavy_cooldown_enabled": false,
+  "duplicate_heavy_ratio_threshold": 0.7,
+  "duplicate_heavy_min_evaluated": 12,
+  "duplicate_heavy_min_duplicates": 8,
+  "rpa_refresh": {
+    "enabled": true,
+    "mode": "rpa_json",
+    "cache_only": false,
+    "ran": true,
+    "output_path": "/Users/tadamichikimura/Downloads/dev-HQ/ebayminer/data/liquidity_rpa_signals.jsonl",
+    "primary": {
+      "ran": true,
+      "reason": "ok",
+      "query_count": 1,
+      "queries": [
+        "ORIENT RN-AK0803Y"
+      ],
+      "condition": "new",
+      "strict_condition": true,
+      "fixed_price_only": false,
+      "pass_label": "primary_new",
+      "started_at": "2026-02-21T20:57:05Z",
+      "ended_at": "2026-02-21T20:57:23Z",
+      "returncode": 0,
+      "stdout_tail": [
+        "[1/1] query=ORIENT RN-AK0803Y",
+        "  -> sold_90d=9 min=282.88 median=301.0 ccy=USD conf=0.95",
+        "saved 175 rows -> /Users/tadamichikimura/Downloads/dev-HQ/ebayminer/data/liquidity_rpa_signals.jsonl"
+      ],
+      "stderr_tail": []
+    },
+    "fallback": {},
+    "model_backfill": {},
+    "missing_before": 1,
+    "missing_after_primary": 0,
+    "missing_after_fallback": 0,
+    "missing_after_model_backfill": 0,
+    "reason": "no_missing_after_primary"
+  },
+  "liquidity_backfill": {
+    "updated": false,
+    "added_entries": 0,
+    "touched_entries": 0,
+    "total_entries": 7
+  },
+  "query_skipped_count": 0,
+  "duplicate_heavy_cooldown_count": 0,
+  "query_efficiency_snapshot": [
+    {
+      "query": "ORIENT RN-AK0803Y",
+      "attempts": 2,
+      "network_calls": 5,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 0.0,
+      "zero_gain_streak": 2
+    }
+  ],
+  "api_efficiency_summary": {
+    "total_calls": 3,
+    "cache_hits": 0,
+    "network_calls": 3,
+    "by_site": {
+      "ebay": {
+        "calls_made": 1,
+        "cache_hits": 0,
+        "network_calls": 1,
+        "budget_remaining": -1
+      },
+      "sold_first_source_backfill": {
+        "calls_made": 0,
+        "cache_hits": 0,
+        "network_calls": 0,
+        "budget_remaining": -1
+      },
+      "rakuten": {
+        "calls_made": 1,
+        "cache_hits": 0,
+        "network_calls": 1,
+        "budget_remaining": -1
+      },
+      "yahoo": {
+        "calls_made": 1,
+        "cache_hits": 0,
+        "network_calls": 1,
+        "budget_remaining": -1
+      },
+      "source_budget_filter": {
+        "calls_made": 0,
+        "cache_hits": 0,
+        "network_calls": 0,
+        "budget_remaining": -1
+      },
+      "source_model_backfill": {
+        "calls_made": 0,
+        "cache_hits": 0,
+        "network_calls": 0,
+        "budget_remaining": -1
+      }
+    },
+    "cache_hit_rate": 0.0
+  },
+  "runs": [
+    {
+      "round": 1,
+      "query": "ORIENT RN-AK0803Y",
+      "created_count": 0,
+      "added_to_reviewable_queue": 0,
+      "queue_before": 0,
+      "queue_after": 0,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 70,
+          "calls_made": 1,
+          "cache_hits": 0,
+          "network_calls": 1,
+          "budget_remaining": -1,
+          "max_calls": 3,
+          "per_call_limit": 70,
+          "target_items": 12,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "require_in_stock": true,
+          "autotune_in": {
+            "enabled": true,
+            "applied": true,
+            "updated_at": 1771707413,
+            "updated_at_iso": "2026-02-21T20:56:53Z",
+            "ema_efficiency": 23.1494,
+            "min_new_items": 1
+          },
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 0,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "ORIENT RN-AK0803Y NEW",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 70,
+              "new_count": 70,
+              "duration_ms": 1478,
+              "info": {
+                "http": 200,
+                "raw_total": 81,
+                "page": 1,
+                "offset": 0,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": -1
+              }
+            }
+          ],
+          "knowledge": {
+            "applied": false,
+            "category_key": "",
+            "category_name": "",
+            "active_season_tags": [],
+            "query_count": 0
+          },
+          "category_relevance_filter_enabled": false,
+          "category_relevance_term_count": 0,
+          "category_relevance_filtered_out": 0,
+          "min_queries_before_target": 1,
+          "touched_query_count": 1,
+          "autotune_out": {
+            "enabled": true,
+            "saved": true,
+            "max_calls": 2,
+            "per_call_limit": 70,
+            "min_new_items": 1,
+            "ema_efficiency": 37.2046,
+            "updated_at": 1771707444,
+            "updated_at_iso": "2026-02-21T20:57:24Z"
+          },
+          "query_model_code_filter": {
+            "enabled": true,
+            "applied": true,
+            "query_codes": [
+              "RNAK0803Y"
+            ],
+            "before": 70,
+            "after": 66,
+            "dropped": 4,
+            "fallback_no_match": false
+          },
+          "rpa_prefetch_queries": [
+            "RN-AK0803Y",
+            "RN-AK0807R",
+            "22JEWELS"
+          ],
+          "sold_first": {
+            "enabled": true,
+            "applied": true,
+            "codes_considered": 3,
+            "codes_passed": 1,
+            "selected_codes": [
+              "RNAK0803Y"
+            ],
+            "reason": "ok",
+            "rows": [
+              {
+                "code": "RN-AK0803Y",
+                "signal_key": "model:RN-AK0803Y",
+                "sold_90d_count": 9,
+                "sold_price_median": 301.0,
+                "sold_price_min": 282.88,
+                "sale_basis_usd": 282.88,
+                "sale_basis_type": "sold_price_min_90d",
+                "gate_pass": true,
+                "gate_reason": "liquidity_sold_based_pass",
+                "max_purchase_total_jpy": 32602.34,
+                "pass": true
+              },
+              {
+                "code": "RN-AK0807R",
+                "signal_key": "model:RN-AK0807R",
+                "sold_90d_count": 0,
+                "sold_price_median": -1.0,
+                "sold_price_min": -1.0,
+                "sale_basis_usd": -1.0,
+                "sale_basis_type": "active_listing_price",
+                "gate_pass": false,
+                "gate_reason": "liquidity_sold_90d_below_threshold",
+                "max_purchase_total_jpy": -1.0,
+                "pass": false
+              },
+              {
+                "code": "22JEWELS",
+                "signal_key": "model:22JEWELS",
+                "sold_90d_count": 0,
+                "sold_price_median": -1.0,
+                "sold_price_min": -1.0,
+                "sale_basis_usd": -1.0,
+                "sale_basis_type": "active_listing_price",
+                "gate_pass": false,
+                "gate_reason": "liquidity_sold_90d_below_threshold",
+                "max_purchase_total_jpy": -1.0,
+                "pass": false
+              }
+            ],
+            "query_code_filter_applied": true,
+            "query_code_filter_before": 1,
+            "query_code_filter_after": 1,
+            "liquidity_signal_reuse_sold_first": 2,
+            "liquidity_signal_reuse_query_cache": 0
+          },
+          "sold_first_market_filter": {
+            "enabled": true,
+            "applied": true,
+            "query_codes": [
+              "RNAK0803Y"
+            ],
+            "before": 66,
+            "after": 66,
+            "dropped": 0,
+            "fallback_no_match": false
+          },
+          "model_backfill": {
+            "enabled": true,
+            "ran": false,
+            "skipped_reason": "specific_query_codes",
+            "query_specific_code_count": 1
+          }
+        },
+        "sold_first_source_backfill": {
+          "enabled": true,
+          "ran": true,
+          "reason": "ok",
+          "model_code_count": 1,
+          "queries": [
+            {
+              "site": "rakuten",
+              "query": "RNAK0803Y",
+              "ok": true,
+              "count": 10,
+              "info": {
+                "http": 200,
+                "raw_total": -1,
+                "cache_hit": false,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "site": "yahoo",
+              "query": "RNAK0803Y",
+              "ok": true,
+              "count": 9,
+              "info": {
+                "http": 200,
+                "raw_total": 9,
+                "cache_hit": false,
+                "budget_remaining": -1
+              }
+            }
+          ],
+          "added_items": 19,
+          "errors": []
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 16,
+          "calls_made": 1,
+          "cache_hits": 0,
+          "network_calls": 1,
+          "budget_remaining": -1,
+          "max_calls": 1,
+          "per_call_limit": 20,
+          "target_items": 10,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "require_in_stock": true,
+          "autotune_in": {
+            "enabled": true,
+            "applied": true,
+            "updated_at": 1771679117,
+            "updated_at_iso": "2026-02-21T13:05:17Z",
+            "ema_efficiency": 6.954,
+            "min_new_items": 2
+          },
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 0,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "ORIENT RN-AK0803Y",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 16,
+              "new_count": 16,
+              "duration_ms": 913,
+              "info": {
+                "http": 200,
+                "raw_count": 17,
+                "page": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": -1
+              }
+            }
+          ],
+          "knowledge": {
+            "applied": false,
+            "category_key": "",
+            "category_name": "",
+            "active_season_tags": [],
+            "query_count": 0
+          },
+          "category_relevance_filter_enabled": false,
+          "category_relevance_term_count": 0,
+          "category_relevance_filtered_out": 0,
+          "min_queries_before_target": 1,
+          "touched_query_count": 1,
+          "autotune_out": {
+            "enabled": true,
+            "saved": true,
+            "max_calls": 1,
+            "per_call_limit": 20,
+            "min_new_items": 1,
+            "ema_efficiency": 9.6678,
+            "updated_at": 1771707487,
+            "updated_at_iso": "2026-02-21T20:58:07Z"
+          },
+          "query_model_code_filter": {
+            "enabled": true,
+            "applied": true,
+            "query_codes": [
+              "RNAK0803Y"
+            ],
+            "before": 16,
+            "after": 16,
+            "dropped": 0,
+            "fallback_no_match": false
+          }
+        },
+        "yahoo": {
+          "ok": true,
+          "count": 14,
+          "calls_made": 1,
+          "cache_hits": 0,
+          "network_calls": 1,
+          "budget_remaining": -1,
+          "max_calls": 2,
+          "per_call_limit": 80,
+          "target_items": 10,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "require_in_stock": true,
+          "autotune_in": {
+            "enabled": true,
+            "applied": true,
+            "updated_at": 1771675915,
+            "updated_at_iso": "2026-02-21T12:11:55Z",
+            "ema_efficiency": 8.9406,
+            "min_new_items": 1
+          },
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 0,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "ORIENT RN-AK0803Y",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 14,
+              "new_count": 14,
+              "duration_ms": 268,
+              "info": {
+                "http": 200,
+                "raw_total": 15,
+                "page": 1,
+                "start": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": -1
+              }
+            }
+          ],
+          "knowledge": {
+            "applied": false,
+            "category_key": "",
+            "category_name": "",
+            "active_season_tags": [],
+            "query_count": 0
+          },
+          "category_relevance_filter_enabled": false,
+          "category_relevance_term_count": 0,
+          "category_relevance_filtered_out": 0,
+          "min_queries_before_target": 1,
+          "touched_query_count": 1,
+          "autotune_out": {
+            "enabled": true,
+            "saved": true,
+            "max_calls": 1,
+            "per_call_limit": 80,
+            "min_new_items": 0,
+            "ema_efficiency": 10.4584,
+            "updated_at": 1771707488,
+            "updated_at_iso": "2026-02-21T20:58:08Z"
+          },
+          "query_model_code_filter": {
+            "enabled": true,
+            "applied": true,
+            "query_codes": [
+              "RNAK0803Y"
+            ],
+            "before": 14,
+            "after": 14,
+            "dropped": 0,
+            "fallback_no_match": false
+          }
+        },
+        "source_budget_filter": {
+          "enabled": true,
+          "applied": true,
+          "before": 49,
+          "after": 49,
+          "dropped_no_code": 0,
+          "dropped_over_budget": 0,
+          "slack_ratio": 2.0
+        },
+        "source_model_backfill": {
+          "enabled": true,
+          "ran": false,
+          "skipped_reason": "specific_query_codes",
+          "query_specific_code_count": 1
+        }
+      },
+      "errors": [],
+      "skipped_duplicates": 0,
+      "skipped_low_match": 0,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 2,
+      "skipped_low_margin": 0,
+      "skipped_low_ev90": 0,
+      "skipped_low_liquidity": 0,
+      "skipped_liquidity_unavailable": 0,
+      "skipped_ambiguous_model_title": 0,
+      "liquidity_unavailable_model_codes": [],
+      "low_match_reason_counts": {},
+      "low_match_samples": [],
+      "hints": [
+        "Product Research(RPA)を実行しました: queries=3, rc=0"
+      ],
+      "api_efficiency": {
+        "total_calls": 3,
+        "cache_hits": 0,
+        "network_calls": 3,
+        "by_site": {
+          "ebay": {
+            "calls_made": 1,
+            "cache_hits": 0,
+            "network_calls": 1,
+            "budget_remaining": -1
+          },
+          "sold_first_source_backfill": {
+            "calls_made": 0,
+            "cache_hits": 0,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "rakuten": {
+            "calls_made": 1,
+            "cache_hits": 0,
+            "network_calls": 1,
+            "budget_remaining": -1
+          },
+          "yahoo": {
+            "calls_made": 1,
+            "cache_hits": 0,
+            "network_calls": 1,
+            "budget_remaining": -1
+          },
+          "source_budget_filter": {
+            "calls_made": 0,
+            "cache_hits": 0,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "source_model_backfill": {
+            "calls_made": 0,
+            "cache_hits": 0,
+            "network_calls": 0,
+            "budget_remaining": -1
+          }
+        }
+      },
+      "evaluated_candidate_count": 2,
+      "duplicate_ratio": 0.0,
+      "duplicate_heavy_cooldown_applied": false
+    }
+  ]
+}

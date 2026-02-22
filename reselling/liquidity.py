@@ -665,7 +665,7 @@ def _provider_rpa_json(
     if not isinstance(row, dict):
         return None, "rpa_json_no_match"
 
-    max_age = max(60, _env_int("LIQUIDITY_RPA_MAX_AGE_SECONDS", 604800))
+    max_age = max(60, _env_int("LIQUIDITY_RPA_MAX_AGE_SECONDS", 259200))
     fetched_at = str(row.get("fetched_at", "") or row.get("updated_at", "") or "").strip()
     fetched_epoch = _iso_to_epoch(fetched_at)
     if fetched_epoch > 0 and (int(time.time()) - fetched_epoch) > max_age:

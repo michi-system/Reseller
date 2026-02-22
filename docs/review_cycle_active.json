@@ -1,14 +1,14 @@
 {
-  "cycle_id": "cycle-20260220-031359",
-  "created_at": "2026-02-20T03:13:59Z",
-  "target_count": 1,
-  "hard_cap": 1,
+  "cycle_id": "cycle-20260221-205810",
+  "created_at": "2026-02-21T20:58:10Z",
+  "target_count": 2,
+  "hard_cap": 3,
   "batch_size": 0,
   "filters": {
     "status": "pending",
     "min_profit_usd": 0.01,
     "min_margin_rate": 0.03,
-    "min_match_score": 0.75,
+    "min_match_score": 0.7,
     "condition": "new"
   },
   "selected_candidate_ids": [],

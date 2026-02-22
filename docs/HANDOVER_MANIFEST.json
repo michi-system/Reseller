@@ -1,0 +1,75 @@
+{
+  "version": 1,
+  "last_updated": "2026-02-21",
+  "entrypoint": "docs/START_HERE.md",
+  "onboarding_order": [
+    "docs/START_HERE.md",
+    "docs/REQUIREMENTS.md",
+    "docs/DEFINITION_OF_DONE.md",
+    "docs/OPERATION_POLICY.json",
+    "docs/STATUS_CURRENT.md",
+    "docs/WORKBOARD.md",
+    "docs/RECORDS_REGISTRY.md"
+  ],
+  "single_source_of_truth": {
+    "requirements": "docs/REQUIREMENTS.md",
+    "definition_of_done": "docs/DEFINITION_OF_DONE.md",
+    "policy": "docs/OPERATION_POLICY.json",
+    "status_snapshot": "docs/STATUS_CURRENT.md",
+    "planning_and_effort": "docs/WORKBOARD.md",
+    "records_index": "docs/RECORDS_REGISTRY.md",
+    "docs_governance": "docs/DOCS_GOVERNANCE.md",
+    "knowledge_library": "docs/KNOWLEDGE_LIBRARY.md",
+    "knowledge_seed_data": "data/category_knowledge_seeds_v1.json"
+  },
+  "generated_outputs": {
+    "cycle_latest": [
+      "docs/review_cycle_active.json",
+      "docs/review_cycle_report_latest.json",
+      "docs/review_cycle_auto_review_latest.json",
+      "docs/review_cycle_close_report_latest.json",
+      "docs/review_cycle_validation_latest.json"
+    ],
+    "autonomous_history_dirs": [
+      "docs/autonomous_guarded_runs",
+      "docs/autonomous_runs",
+      "docs/autonomous_runs_v2"
+    ],
+    "diagnostics": [
+      "docs/cycle_diagnostics/*.json",
+      "docs/review_cycle_report_probe_*.json",
+      "docs/review_cycle_report_run_*.json",
+      "docs/query_width_report*.json",
+      "docs/query_width_summary.json",
+      "docs/fetch_autotune_report_latest.json",
+      "docs/min_new_autotune_batch_latest.json",
+      "docs/min_new_autotune_validation_latest.json"
+    ]
+  },
+  "runtime_state_files": [
+    "data/ebayminer.db",
+    "data/review_blocklist.json",
+    "data/review_query_cache.json",
+    "data/review_query_skip.json",
+    "data/review_fetch_cursor.json",
+    "data/review_fetch_tuner.json",
+    "data/review_api_usage.json",
+    "data/query_efficiency_stats.json",
+    "data/liquidity_backfill_targets.json",
+    "data/liquidity_rpa_progress.json",
+    "data/liquidity_rpa_fetch_state.json",
+    "data/liquidity_rpa_signals.jsonl"
+  ],
+  "update_protocol": [
+    "When requirement changes, update REQUIREMENTS -> DEFINITION_OF_DONE -> OPERATION_POLICY.",
+    "When implementation changes, update WORKBOARD and STATUS_CURRENT as needed.",
+    "When output path changes, update RECORDS_REGISTRY and README index."
+  ],
+  "manual_edit_forbidden_globs": [
+    "docs/review_cycle_*_latest.json",
+    "docs/autonomous_*",
+    "docs/cycle_diagnostics/*",
+    "data/review_*",
+    "data/liquidity_*"
+  ]
+}

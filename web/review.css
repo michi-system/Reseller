@@ -383,6 +383,39 @@ button:disabled {
   color: var(--muted);
 }
 
+.money-inline {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.money-inline.left {
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.money-inline.right {
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.money-inline .money-main {
+  font-size: 1em;
+  font-weight: 700;
+}
+
+.money-inline .money-sep {
+  color: var(--muted);
+  font-size: 0.86em;
+}
+
+.money-inline .money-sub {
+  font-size: 0.82em;
+  color: var(--muted);
+}
+
 .link-btn {
   display: inline-block;
   text-decoration: none;
@@ -759,7 +792,7 @@ button:disabled {
 
 .liquidity-grid {
   margin-top: 8px;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 6px;
 }
 
@@ -813,9 +846,9 @@ button:disabled {
 }
 
 .fetch-panel .hint {
-  margin: 0 0 6px;
+  margin: 0 0 4px;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .fetch-panel .hint.strong {
@@ -823,11 +856,85 @@ button:disabled {
   color: #22323f;
 }
 
+.fetch-panel .hint.strong.warn {
+  color: var(--warn);
+}
+
+.fetch-panel .hint.strong.running {
+  color: #0f4f7a;
+}
+
+.rpa-progress {
+  margin-bottom: 6px;
+  border: 1px solid #d8e3ee;
+  background: #f7fbff;
+  border-radius: 10px;
+  padding: 6px 8px;
+}
+
+.rpa-progress-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 11px;
+}
+
+.rpa-progress-head strong {
+  color: #173652;
+  font-weight: 700;
+}
+
+.rpa-progress-head span {
+  font-weight: 800;
+  color: #1d3f61;
+}
+
+.rpa-progress-bar {
+  margin-top: 4px;
+  width: 100%;
+  height: 6px;
+  background: #dce7f2;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.rpa-progress-bar > span {
+  display: block;
+  width: 0%;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #1d6aa5 0%, #12a078 100%);
+  transition: width 140ms ease;
+}
+
+.rpa-progress .fetch-note {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: #4f5e70;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .fetch-stats {
   display: flex;
   flex-direction: column;
   gap: 8px;
   margin-top: 8px;
+}
+
+.fetch-alert {
+  border-radius: 9px;
+  padding: 8px 10px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.fetch-alert.warn {
+  border: 1px solid #f0b7ab;
+  background: #fff1ed;
+  color: #7b2417;
 }
 
 .fetch-row {

@@ -1,8 +1,12 @@
 import unittest
 import inspect
+import os
+from unittest.mock import patch
 
 from reselling.live_review_fetch import (
     MarketItem,
+    _has_sold_sample_reference,
+    _is_strict_sold_min_basis_candidate,
     _is_implausible_sold_min,
     _query_skip_key,
     _sale_price_basis_from_signal,
@@ -11,6 +15,32 @@ from reselling.live_review_fetch import (
 
 
 class MarketPriceBasisTests(unittest.TestCase):
+    def test_has_sold_sample_reference_requires_url_and_price(self) -> None:
+        self.assertTrue(
+            _has_sold_sample_reference(
+                {
+                    "item_url": "https://www.ebay.com/itm/123456789012",
+                    "sold_price_usd": 120.0,
+                }
+            )
+        )
+        self.assertFalse(
+            _has_sold_sample_reference(
+                {
+                    "item_url": "",
+                    "sold_price_usd": 120.0,
+                }
+            )
+        )
+        self.assertFalse(
+            _has_sold_sample_reference(
+                {
+                    "item_url": "https://www.ebay.com/itm/123456789012",
+                    "sold_price_usd": 0.0,
+                }
+            )
+        )
+
     def test_sale_basis_prefers_sold_min(self) -> None:
         market = MarketItem(
             site="ebay",
@@ -70,9 +100,137 @@ class MarketPriceBasisTests(unittest.TestCase):
             market,
             {"sold_price_median": 185.0, "metadata": {"sold_price_min": 2.0}},
         )
-        self.assertEqual(basis_type, "sold_price_median_90d")
-        self.assertAlmostEqual(basis, 185.0)
+        self.assertEqual(basis_type, "sold_price_median_fallback_90d")
+        self.assertAlmostEqual(basis, 133.2)
         self.assertAlmostEqual(shipping, 0.0)
+
+    def test_sale_basis_uses_safe_median_fallback_when_min_is_outlier(self) -> None:
+        market = MarketItem(
+            site="ebay",
+            item_id="1",
+            title="sample",
+            item_url="",
+            image_url="",
+            price=230.0,
+            shipping=12.0,
+            currency="USD",
+            condition="new",
+            identifiers={},
+            raw={},
+        )
+        with patch.dict(
+            os.environ,
+            {
+                "LIQUIDITY_ALLOW_MEDIAN_FALLBACK_ON_OUTLIER": "1",
+                "LIQUIDITY_MEDIAN_FALLBACK_RATIO": "0.70",
+            },
+            clear=False,
+        ):
+            basis, basis_type, shipping = _sale_price_basis_from_signal(
+                market,
+                {
+                    "sold_price_median": 200.0,
+                    "metadata": {
+                        "sold_price_min": -1.0,
+                        "sold_price_min_raw": 8.0,
+                        "sold_price_min_outlier": True,
+                    },
+                },
+            )
+        self.assertEqual(basis_type, "sold_price_median_fallback_90d")
+        self.assertAlmostEqual(basis, 140.0)
+        self.assertAlmostEqual(shipping, 0.0)
+
+    def test_sale_basis_outlier_fallback_can_be_disabled(self) -> None:
+        market = MarketItem(
+            site="ebay",
+            item_id="1",
+            title="sample",
+            item_url="",
+            image_url="",
+            price=230.0,
+            shipping=12.0,
+            currency="USD",
+            condition="new",
+            identifiers={},
+            raw={},
+        )
+        with patch.dict(
+            os.environ,
+            {
+                "LIQUIDITY_ALLOW_MEDIAN_FALLBACK_ON_OUTLIER": "0",
+                "LIQUIDITY_MEDIAN_FALLBACK_RATIO": "0.70",
+            },
+            clear=False,
+        ):
+            basis, basis_type, shipping = _sale_price_basis_from_signal(
+                market,
+                {
+                    "sold_price_median": 200.0,
+                    "metadata": {
+                        "sold_price_min": -1.0,
+                        "sold_price_min_raw": 8.0,
+                        "sold_price_min_outlier": True,
+                    },
+                },
+            )
+        self.assertEqual(basis_type, "sold_price_median_90d")
+        self.assertAlmostEqual(basis, 200.0)
+        self.assertAlmostEqual(shipping, 0.0)
+
+    def test_sale_basis_fallback_when_min_ratio_vs_median_is_too_low(self) -> None:
+        market = MarketItem(
+            site="ebay",
+            item_id="1",
+            title="sample",
+            item_url="",
+            image_url="",
+            price=180.0,
+            shipping=0.0,
+            currency="USD",
+            condition="new",
+            identifiers={},
+            raw={},
+        )
+        with patch.dict(
+            os.environ,
+            {
+                "LIQUIDITY_ALLOW_MEDIAN_FALLBACK_ON_OUTLIER": "1",
+                "LIQUIDITY_MEDIAN_FALLBACK_RATIO": "0.75",
+                "LIQUIDITY_SOLD_MIN_RATIO_FLOOR_FOR_FALLBACK": "0.50",
+            },
+            clear=False,
+        ):
+            basis, basis_type, shipping = _sale_price_basis_from_signal(
+                market,
+                {"sold_price_median": 200.0, "metadata": {"sold_price_min": 80.0}},
+            )
+        self.assertEqual(basis_type, "sold_price_median_fallback_90d")
+        self.assertAlmostEqual(basis, 150.0)
+        self.assertAlmostEqual(shipping, 0.0)
+
+    def test_strict_sold_min_basis_rejects_non_min_basis(self) -> None:
+        self.assertFalse(
+            _is_strict_sold_min_basis_candidate(
+                sale_price_basis_type="sold_price_median_fallback_90d",
+                sold_min_basis=53.49,
+                sold_min_outlier=False,
+            )
+        )
+        self.assertFalse(
+            _is_strict_sold_min_basis_candidate(
+                sale_price_basis_type="sold_price_min_90d",
+                sold_min_basis=53.49,
+                sold_min_outlier=True,
+            )
+        )
+        self.assertTrue(
+            _is_strict_sold_min_basis_candidate(
+                sale_price_basis_type="sold_price_min_90d",
+                sold_min_basis=53.49,
+                sold_min_outlier=False,
+            )
+        )
 
     def test_implausible_sold_min_detects_too_low_ratio(self) -> None:
         reject, detail = _is_implausible_sold_min(

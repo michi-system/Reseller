@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import time
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
@@ -13,10 +14,18 @@ from .models import connect, init_db
 
 
 VALID_STATUSES = {"pending", "approved", "rejected", "listed"}
+REVIEWED_STATUSES = ("approved", "rejected", "listed")
 
 
 def _utc_iso() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+def _env_bool(key: str, default: bool = False) -> bool:
+    raw = (os.getenv(key, "") or "").strip().lower()
+    if not raw:
+        return default
+    return raw in {"1", "true", "yes", "on"}
 
 
 def _row_to_candidate(row: Any) -> Dict[str, Any]:
@@ -146,7 +155,7 @@ def list_review_queue(
 ) -> Dict[str, Any]:
     settings = settings or load_settings()
     status = (status or "pending").strip().lower()
-    if status not in VALID_STATUSES and status != "all":
+    if status not in VALID_STATUSES and status not in {"all", "reviewed"}:
         raise ValueError(f"invalid status: {status}")
     limit = max(1, min(200, int(limit)))
     offset = max(0, int(offset))
@@ -155,7 +164,11 @@ def list_review_queue(
         init_db(conn)
         where_clauses: List[str] = []
         where_params: List[Any] = []
-        if status != "all":
+        if status == "reviewed":
+            placeholders = ",".join("?" for _ in REVIEWED_STATUSES)
+            where_clauses.append(f"status IN ({placeholders})")
+            where_params.extend(REVIEWED_STATUSES)
+        elif status != "all":
             where_clauses.append("status = ?")
             where_params.append(status)
         if min_profit_usd is not None:
@@ -170,6 +183,17 @@ def list_review_queue(
         if condition is not None and str(condition).strip():
             where_clauses.append("LOWER(condition) = ?")
             where_params.append(str(condition).strip().lower())
+        if _env_bool("LIQUIDITY_STRICT_SOLD_MIN_BASIS", True):
+            where_clauses.append(
+                "(status NOT IN ('pending','approved') OR json_extract(metadata_json, '$.market_price_basis_type') = 'sold_price_min_90d')"
+            )
+            where_clauses.append(
+                "("
+                "status NOT IN ('pending','approved') "
+                "OR json_extract(metadata_json, '$.market_price_basis_type') <> 'sold_price_min_90d' "
+                "OR LENGTH(TRIM(COALESCE(json_extract(metadata_json, '$.ebay_sold_item_url'), ''))) > 0"
+                ")"
+            )
         if candidate_ids:
             normalized_ids = sorted({int(v) for v in candidate_ids})
             placeholders = ",".join("?" for _ in normalized_ids)

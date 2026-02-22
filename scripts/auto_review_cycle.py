@@ -61,6 +61,16 @@ _MATCH_REASON_ISSUE_MAP: Dict[str, str] = {
     "insufficient_tokens": "model",
 }
 
+_AUTO_PART_KEYWORDS: Dict[str, Tuple[str, ...]] = {
+    "floor_mat": ("FLOOR MAT", "MAT", "マット", "フロアマット"),
+    "headlight": ("HEADLIGHT", "HEAD LAMP", "ヘッドライト", "ヘッドランプ"),
+    "taillight": ("TAIL LIGHT", "TAILLAMP", "TAIL LAMP", "テールライト", "テールランプ"),
+    "air_filter": ("AIR FILTER", "CABIN FILTER", "AC FILTER", "エアコンフィルター", "フィルター"),
+    "garnish": ("GARNISH", "ガーニッシュ"),
+    "harness": ("HARNESS", "配線", "ハーネス"),
+    "brake": ("BRAKE", "ブレーキ"),
+}
+
 
 def _is_color_missing_market_reason(reason: str) -> bool:
     key = str(reason or "").strip().lower()
@@ -119,6 +129,26 @@ def _jaccard(a: Set[str], b: Set[str]) -> float:
     if not u:
         return 0.0
     return len(a & b) / len(u)
+
+
+def _extract_auto_part_tags(title: str) -> Set[str]:
+    normalized = str(title or "")
+    upper = normalized.upper()
+    tags: Set[str] = set()
+    for tag, keywords in _AUTO_PART_KEYWORDS.items():
+        for raw_kw in keywords:
+            kw = str(raw_kw or "").strip()
+            if not kw:
+                continue
+            if kw.isascii():
+                if kw in upper:
+                    tags.add(tag)
+                    break
+            else:
+                if kw in normalized:
+                    tags.add(tag)
+                    break
+    return tags
 
 
 def _normalize_identifiers(value: Any) -> Dict[str, str]:
@@ -221,6 +251,15 @@ def evaluate_candidate(
     source_colors = _extract_color_tags(source_title) | _extract_variant_color_codes(source_title)
     market_colors = _extract_color_tags(market_title) | _extract_variant_color_codes(market_title)
     has_color_conflict = bool(source_colors and market_colors and source_colors.isdisjoint(market_colors))
+    source_auto_parts = _extract_auto_part_tags(source_title)
+    market_auto_parts = _extract_auto_part_tags(market_title)
+    has_auto_part_conflict = bool(
+        source_auto_parts
+        and market_auto_parts
+        and source_auto_parts.isdisjoint(market_auto_parts)
+    )
+    has_auto_part_missing_market = bool(source_auto_parts and not market_auto_parts)
+    has_auto_part_missing_source = bool(market_auto_parts and not source_auto_parts)
     id_key, id_value = _identifier_exact(source.identifiers, market.identifiers)
     metadata = _metadata_dict(candidate)
     liquidity = metadata.get("liquidity") if isinstance(metadata.get("liquidity"), dict) else {}
@@ -287,6 +326,24 @@ def evaluate_candidate(
     if has_color_conflict:
         issues.append("color")
         reasons.append("色情報が不一致")
+    if has_auto_part_conflict:
+        issues.append("model")
+        reasons.append(
+            "自動車部位タグが不一致"
+            f" (source={sorted(source_auto_parts)}, market={sorted(market_auto_parts)})"
+        )
+    if has_auto_part_missing_market:
+        issues.append("model")
+        reasons.append(
+            "eBay側に自動車部位タグがなく同一性根拠が不足"
+            f" (source={sorted(source_auto_parts)})"
+        )
+    if has_auto_part_missing_source:
+        issues.append("model")
+        reasons.append(
+            "仕入側に自動車部位タグがなく同一性根拠が不足"
+            f" (market={sorted(market_auto_parts)})"
+        )
     if require_liquidity_signal and sold_90d < 0:
         issues.append("price")
         reasons.append("90日売却データ未取得(-1)のため自動承認対象外")
@@ -350,6 +407,11 @@ def evaluate_candidate(
             "token_jaccard": round(token_jaccard, 4),
             "source_colors": sorted(source_colors),
             "market_colors": sorted(market_colors),
+            "source_auto_parts": sorted(source_auto_parts),
+            "market_auto_parts": sorted(market_auto_parts),
+            "auto_part_conflict": bool(has_auto_part_conflict),
+            "auto_part_missing_market": bool(has_auto_part_missing_market),
+            "auto_part_missing_source": bool(has_auto_part_missing_source),
             "liquidity_sold_90d": sold_90d,
             "liquidity_pass_label": pass_label,
             "liquidity_sold_price_min": round(sold_price_min, 4) if sold_price_min > 0 else None,
@@ -373,6 +435,11 @@ def evaluate_candidate(
         "token_jaccard": round(token_jaccard, 4),
         "source_colors": sorted(source_colors),
         "market_colors": sorted(market_colors),
+        "source_auto_parts": sorted(source_auto_parts),
+        "market_auto_parts": sorted(market_auto_parts),
+        "auto_part_conflict": bool(has_auto_part_conflict),
+        "auto_part_missing_market": bool(has_auto_part_missing_market),
+        "auto_part_missing_source": bool(has_auto_part_missing_source),
         "liquidity_sold_90d": sold_90d,
         "liquidity_pass_label": pass_label,
         "liquidity_sold_price_min": round(sold_price_min, 4) if sold_price_min > 0 else None,

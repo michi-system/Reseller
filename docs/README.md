@@ -1,46 +1,49 @@
-# Docs Guide
+# Docs Index
 
-この `docs/` は「常用ドキュメント」「生成ログ」「アーカイブ」に分離しています。
+このファイルは `docs/` の総合索引です。  
+最初の入口は必ず `docs/START_HERE.md` に固定します。
 
-## 1. まず読む（常用）
-- `docs/REQUIREMENTS.md`
-  - 最終要件（カテゴリ入力 -> 自動探索 -> 90日売却基準 -> レビュー投入）
-- `docs/DEFINITION_OF_DONE.md`
-  - 1サイクルの完了条件
-- `docs/OPERATION_POLICY.json`
-  - 閾値と運用ガードの正本
-- `docs/STATUS_CURRENT.md`
-  - 現在地と残課題
-- `docs/KNOWLEDGE_LIBRARY.md`
-  - カテゴリ -> メーカー/シリーズ/型番の知識設計
-- `docs/API_LOCAL.md`
-  - ローカルAPIと運用コマンド
-- `docs/PREVALIDATION.md`
-  - 実行前チェック
-- `docs/FX_PROFIT_FLOW.md`
-  - 為替と利益計算フロー
-- `docs/RESEARCH_NOTES.md`
-  - 追加調査ノート（公式+コミュニティ）
+## 1. 最初に読む
+1. `docs/START_HERE.md`
+2. `docs/REQUIREMENTS.md`
+3. `docs/DEFINITION_OF_DONE.md`
+4. `docs/OPERATION_POLICY.json`
+5. `docs/STATUS_CURRENT.md`
+6. `docs/WORKBOARD.md`
 
-## 2. 実データ（機械可読）
-- `data/category_knowledge_seeds_v1.json`
-  - カテゴリ展開用のナレッジ辞書（v1）
+## 2. 正本（Single Source of Truth）
+| 種別 | 正本 | 用途 |
+|---|---|---|
+| 要件 | `docs/REQUIREMENTS.md` | プロジェクトが満たすべき条件 |
+| 完了定義 | `docs/DEFINITION_OF_DONE.md` | 1サイクル完了判定 |
+| 閾値/運用ガード | `docs/OPERATION_POLICY.json` | しきい値と運用制約 |
+| 現在地 | `docs/STATUS_CURRENT.md` | 最新スナップショット |
+| 計画/工数/進行 | `docs/WORKBOARD.md` | タスク・工数・決定ログ |
+| 記録先ルール | `docs/DOCS_GOVERNANCE.md` | 散乱防止ルール |
+| 生成物索引 | `docs/RECORDS_REGISTRY.md` | 生成物の参照先と意味 |
+| 引き継ぎマニフェスト | `docs/HANDOVER_MANIFEST.json` | 機械可読の引き継ぎ定義 |
 
-## 3. 自動生成ログ（読み物ではない）
-- `docs/autonomous_runs/`
-- `docs/autonomous_runs_v2/`
-- `docs/autonomous_guarded_runs/`
-- `docs/cycle_diagnostics/`
-- `docs/review_cycle_*_latest.json`
-- `docs/query_width_*.json`
-- `docs/min_new_autotune_*.json`
-- `docs/fetch_autotune_report_latest.json`
+## 3. 参照ドキュメント（補助）
+- `docs/API_LOCAL.md`: ローカル API と実行コマンド
+- `docs/PREVALIDATION.md`: 実行前チェック
+- `docs/FX_PROFIT_FLOW.md`: 為替・利益計算フロー
+- `docs/KNOWLEDGE_LIBRARY.md`: カテゴリ展開ナレッジ
+- `docs/RESEARCH_NOTES.md`: 調査メモ（未確定情報）
+- `docs/query_width_strategy.md`: API探索幅の戦略サマリ
+- `docs/RPA_SPEEDUP_NOTES_2026-02-21.md`: RPA高速化メモ
 
-## 4. アーカイブ（旧レポート）
+## 4. 生成物・状態ファイル
+生成物本体の一覧は `docs/RECORDS_REGISTRY.md` を参照。  
+`docs/review_cycle_*_latest.json` や `docs/autonomous_*` などは手編集禁止です。
+
+## 5. アーカイブ
 - `docs/archive/manual/PROJECT_SUPREME_REPORT_2026-02-19.md`
 - `docs/archive/manual/CYCLE_BOTTLENECK_REPORT_2026-02-20.md`
 
-## 5. 更新ルール
-1. 要件変更時は `REQUIREMENTS.md` -> `DEFINITION_OF_DONE.md` -> `OPERATION_POLICY.json` の順で同期。
-2. 調査メモは `RESEARCH_NOTES.md` に追記し、確定知識は `KNOWLEDGE_LIBRARY.md` と `data/category_knowledge_seeds_v1.json` に反映。
-3. 生成ログは編集せず、必要なら新規実行で再生成。
+## 6. 変更時の最小更新セット
+要件や運用を変更した場合は、最低限次を同時更新します。
+1. `docs/REQUIREMENTS.md`
+2. `docs/DEFINITION_OF_DONE.md`
+3. `docs/OPERATION_POLICY.json`
+4. `docs/WORKBOARD.md`
+5. `docs/STATUS_CURRENT.md`

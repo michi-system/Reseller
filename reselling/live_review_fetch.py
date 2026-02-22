@@ -10,6 +10,7 @@ import re
 import shutil
 import subprocess
 import sys
+import threading
 import time
 import unicodedata
 import urllib.error
@@ -35,8 +36,16 @@ _API_CACHE_DIR = Path(__file__).resolve().parents[1] / "data" / "review_api_cach
 _API_USAGE_PATH = Path(__file__).resolve().parents[1] / "data" / "review_api_usage.json"
 _QUERY_SKIP_PATH = Path(__file__).resolve().parents[1] / "data" / "review_query_skip.json"
 _RPA_FETCH_STATE_PATH = Path(__file__).resolve().parents[1] / "data" / "liquidity_rpa_fetch_state.json"
+_RPA_PROGRESS_PATH = Path(__file__).resolve().parents[1] / "data" / "liquidity_rpa_progress.json"
 _CATEGORY_KNOWLEDGE_PATH = Path(__file__).resolve().parents[1] / "data" / "category_knowledge_seeds_v1.json"
 _CATEGORY_KNOWLEDGE_CACHE: Dict[str, Any] = {"mtime": 0.0, "payload": {}}
+_CATEGORY_BRAND_CACHE: Dict[str, Any] = {"mtime": 0.0, "brands": {}}
+_RPA_DAILY_LIMIT_EXIT_CODE = 75
+_RPA_DAILY_LIMIT_PATTERNS = (
+    re.compile(r"exceeded\s+the\s+number\s+of\s+requests\s+allowed\s+in\s+one\s+day", re.IGNORECASE),
+    re.compile(r"please\s+try\s+again\s+tomorrow", re.IGNORECASE),
+    re.compile(r"number\s+of\s+requests\s+allowed\s+in\s+one\s+day", re.IGNORECASE),
+)
 
 _STOPWORDS = {
     "THE",
@@ -62,6 +71,7 @@ _STOPWORDS = {
 }
 
 _CODE_RE = re.compile(r"[A-Z0-9][A-Z0-9-]{3,}")
+_PRICE_JPY_RE = re.compile(r"([0-9]{1,3}(?:,[0-9]{3})+|[0-9]{4,7})\s*円", re.IGNORECASE)
 _USED_TERMS = {
     "USED",
     "PRE-OWNED",
@@ -490,6 +500,62 @@ def _save_json_file(path: Path, payload: Dict[str, Any]) -> None:
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
+def _rpa_progress_default() -> Dict[str, Any]:
+    now_ts = int(time.time())
+    return {
+        "status": "idle",
+        "phase": "idle",
+        "message": "待機中",
+        "progress_percent": 0.0,
+        "run_id": "",
+        "query": "",
+        "query_index": 0,
+        "total_queries": 0,
+        "started_at_epoch": 0,
+        "updated_at_epoch": now_ts,
+        "ended_at_epoch": 0,
+        "daily_limit_reached": False,
+        "reason": "",
+        "stdout_tail": [],
+        "stderr_tail": [],
+    }
+
+
+def _load_rpa_progress() -> Dict[str, Any]:
+    payload = _load_json_file(_RPA_PROGRESS_PATH)
+    if not payload:
+        return _rpa_progress_default()
+    merged = _rpa_progress_default()
+    merged.update(payload)
+    return merged
+
+
+def _save_rpa_progress(payload: Dict[str, Any]) -> None:
+    base = _rpa_progress_default()
+    if isinstance(payload, dict):
+        base.update(payload)
+    base["progress_percent"] = round(max(0.0, min(100.0, _to_float(base.get("progress_percent"), 0.0))), 2)
+    base["query_index"] = max(0, _to_int(base.get("query_index"), 0))
+    base["total_queries"] = max(0, _to_int(base.get("total_queries"), 0))
+    base["updated_at_epoch"] = max(0, _to_int(base.get("updated_at_epoch"), int(time.time())))
+    base["started_at_epoch"] = max(0, _to_int(base.get("started_at_epoch"), 0))
+    base["ended_at_epoch"] = max(0, _to_int(base.get("ended_at_epoch"), 0))
+    base["stdout_tail"] = [str(v) for v in (base.get("stdout_tail") if isinstance(base.get("stdout_tail"), list) else [])][-30:]
+    base["stderr_tail"] = [str(v) for v in (base.get("stderr_tail") if isinstance(base.get("stderr_tail"), list) else [])][-30:]
+    _save_json_file(_RPA_PROGRESS_PATH, base)
+
+
+def get_rpa_progress_snapshot() -> Dict[str, Any]:
+    state = _load_rpa_progress()
+    now_ts = int(time.time())
+    state["updated_ago_sec"] = (
+        max(0, now_ts - _to_int(state.get("updated_at_epoch"), now_ts))
+        if _to_int(state.get("updated_at_epoch"), 0) > 0
+        else -1
+    )
+    return state
+
+
 def _resolve_rpa_output_path() -> Path:
     raw = (os.getenv("LIQUIDITY_RPA_JSON_PATH", "") or "").strip() or "data/liquidity_rpa_signals.jsonl"
     path = Path(raw).expanduser()
@@ -532,16 +598,85 @@ def _normalize_rpa_queries(queries: Sequence[str]) -> List[str]:
     return out
 
 
+def _contains_rpa_daily_limit_message(text: str) -> bool:
+    haystack = str(text or "")
+    if not haystack:
+        return False
+    matched = 0
+    for pattern in _RPA_DAILY_LIMIT_PATTERNS:
+        if pattern.search(haystack):
+            matched += 1
+    return matched >= 2
+
+
+def _rpa_daily_limit_reached(summary: Any) -> bool:
+    if not isinstance(summary, dict):
+        return False
+    reason = str(summary.get("reason", "") or "").strip().lower()
+    if reason == "daily_limit_reached":
+        return True
+    if bool(summary.get("daily_limit_reached")):
+        return True
+    return False
+
+
+def _tail_append(lines: List[str], line: str, *, max_len: int = 30) -> None:
+    text = str(line or "").strip()
+    if not text:
+        return
+    lines.append(text)
+    if len(lines) > max_len:
+        del lines[: len(lines) - max_len]
+
+
+def _parse_rpa_progress_line(line: str) -> Optional[Dict[str, Any]]:
+    text = str(line or "").strip()
+    if not text.startswith("[progress]"):
+        return None
+    raw = text[len("[progress]") :].strip()
+    if not raw:
+        return None
+    try:
+        payload = json.loads(raw)
+    except Exception:
+        return None
+    if not isinstance(payload, dict):
+        return None
+    return payload
+
+
 def _run_rpa_collect_for_fetch(queries: Sequence[str]) -> Dict[str, Any]:
     query_list = _normalize_rpa_queries(queries)
     if not query_list:
+        _save_rpa_progress(
+            {
+                "status": "idle",
+                "phase": "idle",
+                "message": "RPA実行対象クエリがありません",
+                "progress_percent": 0.0,
+                "reason": "empty_queries",
+                "updated_at_epoch": int(time.time()),
+            }
+        )
         return {"enabled": True, "ran": False, "reason": "empty_queries", "queries": []}
 
-    max_queries = max(1, _env_int("LIQUIDITY_RPA_FETCH_MAX_QUERIES", 8))
+    max_queries = max(1, _env_int("LIQUIDITY_RPA_FETCH_MAX_QUERIES", 3))
     query_list = query_list[:max_queries]
     project_root = Path(__file__).resolve().parents[1]
     script_path = project_root / "scripts" / "rpa_ebay_product_research.py"
     if not script_path.exists():
+        _save_rpa_progress(
+            {
+                "status": "failed",
+                "phase": "error",
+                "message": "RPAスクリプトが見つかりません",
+                "progress_percent": 100.0,
+                "reason": "rpa_script_missing",
+                "updated_at_epoch": int(time.time()),
+                "ended_at_epoch": int(time.time()),
+                "total_queries": len(query_list),
+            }
+        )
         return {
             "enabled": True,
             "ran": False,
@@ -575,7 +710,9 @@ def _run_rpa_collect_for_fetch(queries: Sequence[str]) -> Dict[str, Any]:
     login_url = (os.getenv("LIQUIDITY_RPA_LOGIN_URL", "") or "").strip()
     if login_url:
         cmd.extend(["--login-url", login_url])
-    if _env_bool("LIQUIDITY_RPA_HEADLESS", False):
+    force_headless = _env_bool("LIQUIDITY_RPA_FORCE_HEADLESS", True)
+    requested_headless = _env_bool("LIQUIDITY_RPA_HEADLESS", True)
+    if force_headless or requested_headless:
         cmd.append("--headless")
     if _env_bool("LIQUIDITY_RPA_PRIMARY_STRICT_CONDITION", True):
         cmd.append("--strict-condition")
@@ -585,9 +722,136 @@ def _run_rpa_collect_for_fetch(queries: Sequence[str]) -> Dict[str, Any]:
         cmd.extend(["--query", query])
 
     started_at = int(time.time())
+    run_id = f"fetch-{started_at}-{hashlib.sha1('|'.join(query_list).encode('utf-8')).hexdigest()[:8]}"
+    progress_state = {
+        "status": "running",
+        "phase": "starting",
+        "message": "RPAプロセスを起動しています",
+        "progress_percent": 0.5,
+        "run_id": run_id,
+        "query": "",
+        "query_index": 0,
+        "total_queries": len(query_list),
+        "started_at_epoch": started_at,
+        "updated_at_epoch": started_at,
+        "ended_at_epoch": 0,
+        "daily_limit_reached": False,
+        "reason": "",
+        "stdout_tail": [],
+        "stderr_tail": [],
+    }
+    _save_rpa_progress(progress_state)
+
+    lock = threading.Lock()
+    stdout_tail: List[str] = []
+    stderr_tail: List[str] = []
+    progress_from_child: Dict[str, Any] = {}
+    daily_limit_reached_stream = False
+
+    def _save_progress_locked() -> None:
+        merged = dict(progress_state)
+        merged["stdout_tail"] = list(stdout_tail)
+        merged["stderr_tail"] = list(stderr_tail)
+        _save_rpa_progress(merged)
+
+    def _ingest_progress_payload(payload: Dict[str, Any]) -> None:
+        phase = str(payload.get("phase", "") or "").strip() or "running"
+        message = str(payload.get("message", "") or "").strip() or "RPA実行中"
+        progress_percent = _to_float(payload.get("progress_percent"), _to_float(progress_state.get("progress_percent"), 0.0))
+        progress_state["phase"] = phase
+        progress_state["message"] = message
+        progress_state["progress_percent"] = progress_percent
+        progress_state["query"] = str(payload.get("query", "") or "").strip()
+        progress_state["query_index"] = max(0, _to_int(payload.get("query_index"), _to_int(progress_state.get("query_index"), 0)))
+        progress_state["total_queries"] = max(0, _to_int(payload.get("total_queries"), _to_int(progress_state.get("total_queries"), len(query_list))))
+        progress_state["updated_at_epoch"] = int(time.time())
+        progress_from_child.clear()
+        progress_from_child.update(payload)
+
+    def _handle_stdout_line(line: str) -> None:
+        nonlocal daily_limit_reached_stream
+        text = str(line or "").rstrip("\n")
+        if not text.strip():
+            return
+        with lock:
+            _tail_append(stdout_tail, text)
+            if _contains_rpa_daily_limit_message(text):
+                daily_limit_reached_stream = True
+            parsed = _parse_rpa_progress_line(text)
+            if parsed:
+                _ingest_progress_payload(parsed)
+            _save_progress_locked()
+
+    def _handle_stderr_line(line: str) -> None:
+        nonlocal daily_limit_reached_stream
+        text = str(line or "").rstrip("\n")
+        if not text.strip():
+            return
+        with lock:
+            _tail_append(stderr_tail, text)
+            if _contains_rpa_daily_limit_message(text):
+                daily_limit_reached_stream = True
+            progress_state["updated_at_epoch"] = int(time.time())
+            _save_progress_locked()
+
+    def _read_stream(stream: Any, handler: Callable[[str], None]) -> None:
+        try:
+            for row in iter(stream.readline, ""):
+                if row == "":
+                    break
+                handler(row)
+        except Exception:
+            return
+        finally:
+            try:
+                stream.close()
+            except Exception:
+                pass
+
+    timeout_sec = max(15, _env_int("LIQUIDITY_RPA_FETCH_TIMEOUT_SECONDS", 95))
+    proc: Optional[subprocess.Popen[str]] = None
+    timed_out = False
+    return_code = -1
     try:
-        proc = subprocess.run(cmd, cwd=str(project_root), capture_output=True, text=True)
+        proc = subprocess.Popen(
+            cmd,
+            cwd=str(project_root),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            bufsize=1,
+        )
+        if proc.stdout is None or proc.stderr is None:
+            raise RuntimeError("failed to capture RPA process streams")
+        out_thread = threading.Thread(target=_read_stream, args=(proc.stdout, _handle_stdout_line), daemon=True)
+        err_thread = threading.Thread(target=_read_stream, args=(proc.stderr, _handle_stderr_line), daemon=True)
+        out_thread.start()
+        err_thread.start()
+        try:
+            return_code = int(proc.wait(timeout=timeout_sec))
+        except subprocess.TimeoutExpired:
+            timed_out = True
+            try:
+                proc.kill()
+            except Exception:
+                pass
+            try:
+                return_code = int(proc.wait(timeout=5))
+            except Exception:
+                return_code = -1
+        out_thread.join(timeout=2.0)
+        err_thread.join(timeout=2.0)
     except Exception as err:
+        ended_at = int(time.time())
+        with lock:
+            progress_state["status"] = "failed"
+            progress_state["phase"] = "error"
+            progress_state["message"] = f"RPA起動に失敗しました: {err}"
+            progress_state["progress_percent"] = 100.0
+            progress_state["reason"] = "collector_invoke_error"
+            progress_state["updated_at_epoch"] = ended_at
+            progress_state["ended_at_epoch"] = ended_at
+            _save_progress_locked()
         return {
             "enabled": True,
             "ran": False,
@@ -598,22 +862,85 @@ def _run_rpa_collect_for_fetch(queries: Sequence[str]) -> Dict[str, Any]:
             "python_exec": str(cmd[0]),
             "error": str(err),
         }
+
     ended_at = int(time.time())
-    stdout_lines = [line for line in (proc.stdout or "").splitlines() if line.strip()]
-    stderr_lines = [line for line in (proc.stderr or "").splitlines() if line.strip()]
+    stdout_text = "\n".join(stdout_tail)
+    stderr_text = "\n".join(stderr_tail)
+    daily_limit_reached = (
+        daily_limit_reached_stream
+        or int(return_code) == _RPA_DAILY_LIMIT_EXIT_CODE
+        or _contains_rpa_daily_limit_message(stdout_text)
+        or _contains_rpa_daily_limit_message(stderr_text)
+    )
+
+    if timed_out:
+        reason = "daily_limit_reached" if daily_limit_reached else "collector_timeout"
+        with lock:
+            progress_state["status"] = "stopped" if daily_limit_reached else "failed"
+            progress_state["phase"] = "daily_limit_reached" if daily_limit_reached else "timeout"
+            progress_state["message"] = (
+                "Product Researchの上限到達で停止しました"
+                if daily_limit_reached
+                else "RPA実行がタイムアウトしました"
+            )
+            progress_state["progress_percent"] = 100.0
+            progress_state["reason"] = reason
+            progress_state["daily_limit_reached"] = bool(daily_limit_reached)
+            progress_state["updated_at_epoch"] = ended_at
+            progress_state["ended_at_epoch"] = ended_at
+            _save_progress_locked()
+        ended_at = int(time.time())
+        return {
+            "enabled": True,
+            "ran": False,
+            "reason": reason,
+            "daily_limit_reached": bool(daily_limit_reached),
+            "queries": query_list,
+            "query_count": len(query_list),
+            "output_path": str(output_path),
+            "python_exec": str(cmd[0]),
+            "timeout_sec": int(timeout_sec),
+            "started_at_epoch": started_at,
+            "ended_at_epoch": ended_at,
+            "stdout_tail": stdout_tail[-18:],
+            "stderr_tail": stderr_tail[-18:],
+        }
+
+    reason = "daily_limit_reached" if daily_limit_reached else ("ok" if int(return_code) == 0 else "collector_failed")
+    with lock:
+        progress_state["status"] = "stopped" if daily_limit_reached else ("completed" if int(return_code) == 0 else "failed")
+        progress_state["phase"] = "completed" if int(return_code) == 0 else ("daily_limit_reached" if daily_limit_reached else "failed")
+        progress_state["message"] = (
+            "Product Research取得が完了しました"
+            if int(return_code) == 0
+            else ("Product Researchの上限到達で停止しました" if daily_limit_reached else "RPA実行が失敗しました")
+        )
+        progress_state["progress_percent"] = 100.0
+        progress_state["reason"] = reason
+        progress_state["daily_limit_reached"] = bool(daily_limit_reached)
+        progress_state["updated_at_epoch"] = ended_at
+        progress_state["ended_at_epoch"] = ended_at
+        if progress_from_child:
+            progress_state["query"] = str(progress_from_child.get("query", progress_state.get("query", "")) or "")
+            progress_state["query_index"] = max(0, _to_int(progress_from_child.get("query_index"), _to_int(progress_state.get("query_index"), 0)))
+            progress_state["total_queries"] = max(0, _to_int(progress_from_child.get("total_queries"), _to_int(progress_state.get("total_queries"), len(query_list))))
+        _save_progress_locked()
+
     return {
         "enabled": True,
         "ran": True,
-        "reason": "ok" if int(proc.returncode) == 0 else "collector_failed",
-        "returncode": int(proc.returncode),
+        "reason": reason,
+        "daily_limit_reached": bool(daily_limit_reached),
+        "returncode": int(return_code),
         "queries": query_list,
         "query_count": len(query_list),
         "output_path": str(output_path),
         "python_exec": str(cmd[0]),
         "started_at_epoch": started_at,
         "ended_at_epoch": ended_at,
-        "stdout_tail": stdout_lines[-18:],
-        "stderr_tail": stderr_lines[-18:],
+        "stdout_tail": stdout_tail[-18:],
+        "stderr_tail": stderr_tail[-18:],
+        "run_id": run_id,
     }
 
 
@@ -669,7 +996,8 @@ def _load_recent_rpa_queries(path: Path, *, max_age_sec: int) -> set[str]:
     max_age = max(1, int(max_age_sec))
     rows = _iter_rpa_rows(path)
     out: set[str] = set()
-    require_sold_sample = _env_bool("LIQUIDITY_REQUIRE_SOLD_SAMPLE_ITEM", True)
+    require_sold_sample = _env_bool("LIQUIDITY_RPA_FETCH_REQUIRE_SOLD_SAMPLE_FOR_FRESH", False)
+    require_sold_count_known = _env_bool("LIQUIDITY_RPA_FETCH_REQUIRE_SOLD_COUNT_FOR_FRESH", True)
     for row in rows:
         query = re.sub(r"\s+", " ", str(row.get("query", "") or "").strip()).lower()
         if not query:
@@ -678,6 +1006,8 @@ def _load_recent_rpa_queries(path: Path, *, max_age_sec: int) -> set[str]:
         if fetched_ts <= 0:
             continue
         if (now_ts - fetched_ts) > max_age:
+            continue
+        if require_sold_count_known and _to_int(row.get("sold_90d_count"), -1) < 0:
             continue
         if require_sold_sample:
             meta = row.get("metadata") if isinstance(row.get("metadata"), dict) else {}
@@ -702,6 +1032,16 @@ def _maybe_refresh_rpa_for_fetch(queries: Sequence[str], *, force: bool = False)
     )
     normalized = _normalize_rpa_queries(queries)
     if not enabled:
+        _save_rpa_progress(
+            {
+                "status": "idle",
+                "phase": "skipped",
+                "message": "RPA自動更新は無効です",
+                "progress_percent": 0.0,
+                "reason": "disabled_or_non_rpa_mode",
+                "updated_at_epoch": int(time.time()),
+            }
+        )
         return {
             "enabled": False,
             "mode": mode,
@@ -710,6 +1050,16 @@ def _maybe_refresh_rpa_for_fetch(queries: Sequence[str], *, force: bool = False)
             "queries": normalized,
         }
     if not normalized:
+        _save_rpa_progress(
+            {
+                "status": "idle",
+                "phase": "skipped",
+                "message": "RPA実行対象クエリがありません",
+                "progress_percent": 0.0,
+                "reason": "empty_queries",
+                "updated_at_epoch": int(time.time()),
+            }
+        )
         return {"enabled": True, "mode": mode, "ran": False, "reason": "empty_queries", "queries": []}
 
     cooldown_sec = max(0, _env_int("LIQUIDITY_RPA_FETCH_MIN_INTERVAL_SECONDS", 300))
@@ -719,15 +1069,86 @@ def _maybe_refresh_rpa_for_fetch(queries: Sequence[str], *, force: bool = False)
     now_ts = int(time.time())
     row = state.get(key) if isinstance(state.get(key), dict) else {}
     last_run_at = _to_int((row or {}).get("last_run_at"), 0)
+    last_signal_miss_override_at = _to_int((row or {}).get("last_signal_miss_override_at"), 0)
+    signal_miss_min_interval_sec = max(
+        0, _env_int("LIQUIDITY_RPA_FETCH_FORCE_ON_SIGNAL_MISS_MIN_INTERVAL_SECONDS", 1800)
+    )
     override_missing_queries: List[str] = []
+    override_blocked_by_backoff = False
     if (not force) and cooldown_sec > 0 and last_run_at > 0 and (now_ts - last_run_at) < cooldown_sec:
         allow_override = _env_bool("LIQUIDITY_RPA_FETCH_FORCE_ON_SIGNAL_MISS", True)
         if allow_override:
             output_path = _resolve_rpa_output_path()
-            max_age = max(60, _env_int("LIQUIDITY_RPA_MAX_AGE_SECONDS", 604800))
+            max_age = max(60, _env_int("LIQUIDITY_RPA_MAX_AGE_SECONDS", 259200))
             recent_queries = _load_recent_rpa_queries(output_path, max_age_sec=max_age)
             override_missing_queries = [query for query in normalized if query.lower() not in recent_queries]
+            if override_missing_queries and signal_miss_min_interval_sec > 0 and last_signal_miss_override_at > 0:
+                elapsed_from_override = max(0, now_ts - last_signal_miss_override_at)
+                if elapsed_from_override < signal_miss_min_interval_sec:
+                    override_missing_queries = []
+                    override_blocked_by_backoff = True
         if not override_missing_queries:
+            last_reason = str((row or {}).get("reason", "") or "").strip().lower()
+            if last_reason == "daily_limit_reached":
+                _save_rpa_progress(
+                    {
+                        "status": "stopped",
+                        "phase": "daily_limit_reached",
+                        "message": "Product Researchの上限到達中のため再実行を停止しました",
+                        "progress_percent": 100.0,
+                        "reason": "daily_limit_reached",
+                        "daily_limit_reached": True,
+                        "updated_at_epoch": int(time.time()),
+                        "ended_at_epoch": int(time.time()),
+                        "total_queries": len(normalized),
+                    }
+                )
+                return {
+                    "enabled": True,
+                    "mode": mode,
+                    "ran": False,
+                    "reason": "daily_limit_reached",
+                    "daily_limit_reached": True,
+                    "queries": normalized,
+                    "cooldown_sec": cooldown_sec,
+                    "retry_after_sec": max(0, cooldown_sec - (now_ts - last_run_at)),
+                }
+            if override_blocked_by_backoff:
+                _save_rpa_progress(
+                    {
+                        "status": "idle",
+                        "phase": "cooldown_skip",
+                        "message": "signal_missing再実行は待機中のためスキップしました",
+                        "progress_percent": 0.0,
+                        "reason": "cooldown_skip_signal_miss_backoff",
+                        "updated_at_epoch": int(time.time()),
+                        "total_queries": len(normalized),
+                    }
+                )
+                return {
+                    "enabled": True,
+                    "mode": mode,
+                    "ran": False,
+                    "reason": "cooldown_skip_signal_miss_backoff",
+                    "queries": normalized,
+                    "cooldown_sec": cooldown_sec,
+                    "signal_miss_min_interval_sec": signal_miss_min_interval_sec,
+                    "next_signal_miss_retry_sec": max(
+                        0, signal_miss_min_interval_sec - max(0, now_ts - last_signal_miss_override_at)
+                    ),
+                    "retry_after_sec": max(0, cooldown_sec - (now_ts - last_run_at)),
+                }
+            _save_rpa_progress(
+                {
+                    "status": "idle",
+                    "phase": "cooldown_skip",
+                    "message": "クールダウン中のためRPAをスキップしました",
+                    "progress_percent": 0.0,
+                    "reason": "cooldown_skip",
+                    "updated_at_epoch": int(time.time()),
+                    "total_queries": len(normalized),
+                }
+            )
             return {
                 "enabled": True,
                 "mode": mode,
@@ -739,12 +1160,17 @@ def _maybe_refresh_rpa_for_fetch(queries: Sequence[str], *, force: bool = False)
             }
 
     result = _run_rpa_collect_for_fetch(normalized)
-    state[key] = {
+    state_row: Dict[str, Any] = {
         "last_run_at": now_ts,
         "queries": normalized,
         "returncode": _to_int(result.get("returncode"), 0),
         "reason": str(result.get("reason", "") or ""),
     }
+    if override_missing_queries:
+        state_row["last_signal_miss_override_at"] = now_ts
+    elif last_signal_miss_override_at > 0:
+        state_row["last_signal_miss_override_at"] = last_signal_miss_override_at
+    state[key] = state_row
     _save_json_file(_RPA_FETCH_STATE_PATH, state)
     result["mode"] = mode
     result["cooldown_sec"] = cooldown_sec
@@ -929,6 +1355,65 @@ def _query_skip_key(
     )
 
 
+def _iter_fetched_site_infos(fetched: Any) -> List[Tuple[str, Dict[str, Any]]]:
+    if not isinstance(fetched, dict):
+        return []
+    out: List[Tuple[str, Dict[str, Any]]] = []
+    for site, info in fetched.items():
+        if not isinstance(info, dict):
+            continue
+        # source_budget_filter 等の集計データは除外し、実サイトの結果のみ判定対象にする。
+        if str(site or "").strip().lower() not in {"ebay", "rakuten", "yahoo"} and "stop_reason" not in info:
+            continue
+        out.append((str(site), info))
+    return out
+
+
+def _is_site_scope_done(info: Dict[str, Any]) -> bool:
+    if not isinstance(info, dict):
+        return False
+    if not bool(info.get("ok")):
+        return False
+    reason = str(info.get("stop_reason", "") or "").strip().lower()
+    calls_made = _to_int(info.get("calls_made"), 0)
+    if reason == "query_exhausted":
+        return calls_made > 0
+    if reason == "skipped_by_sold_first_preselection":
+        return True
+    return False
+
+
+def _is_short_term_no_gain_result(result: Dict[str, Any]) -> bool:
+    if not isinstance(result, dict):
+        return False
+    if _to_int(result.get("created_count"), -1) != 0:
+        return False
+    fetched = result.get("fetched")
+    site_infos = _iter_fetched_site_infos(fetched)
+    if not site_infos:
+        return False
+    no_gain_reasons = {
+        "low_yield_stop",
+        "max_calls_reached",
+        "target_reached",
+        "query_exhausted",
+        "search_scope_done_no_gain",
+        "skipped_by_sold_first_preselection",
+        "skipped_no_market_hits",
+    }
+    has_site_reason = False
+    for _site, info in site_infos:
+        if not bool(info.get("ok")):
+            return False
+        reason = str(info.get("stop_reason", "") or "").strip().lower()
+        if not reason:
+            continue
+        has_site_reason = True
+        if reason not in no_gain_reasons:
+            return False
+    return has_site_reason
+
+
 def _epoch_to_iso(ts: int) -> str:
     if ts <= 0:
         return ""
@@ -1054,6 +1539,36 @@ def _request_json(
         }, {"error": str(err)}
 
 
+def _request_text(
+    url: str,
+    *,
+    method: str = "GET",
+    data: bytes | None = None,
+    headers: Dict[str, str] | None = None,
+    timeout: int = 18,
+) -> Tuple[int, Dict[str, str], str]:
+    req = urllib.request.Request(url=url, data=data, method=method)
+    base_headers = {
+        "User-Agent": (
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/123.0.0.0 Safari/537.36"
+        ),
+        "Accept-Language": "ja,en-US;q=0.9,en;q=0.8",
+    }
+    for key, value in {**base_headers, **(headers or {})}.items():
+        req.add_header(key, value)
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            raw = resp.read().decode("utf-8", errors="replace")
+            return int(resp.status), dict(resp.headers.items()), raw
+    except urllib.error.HTTPError as err:
+        body = err.read().decode("utf-8", errors="replace")
+        return int(err.code), dict(err.headers.items()), body
+    except urllib.error.URLError:
+        return 0, {}, ""
+
+
 def _request_with_retry(
     url: str,
     *,
@@ -1094,22 +1609,199 @@ def _request_with_retry(
 
 
 def _extract_image_url(value: Any) -> str:
-    if isinstance(value, str):
-        return value
-    if isinstance(value, dict):
-        for key in ("imageUrl", "medium", "small"):
-            candidate = value.get(key)
-            if isinstance(candidate, str) and candidate:
+    def _normalize_candidate(raw: Any) -> str:
+        text = str(raw or "").strip()
+        if not text:
+            return ""
+        if text.startswith("//"):
+            text = f"https:{text}"
+        elif text.startswith("/"):
+            text = urllib.parse.urljoin("https://www.ebay.com", text)
+        if not text.startswith("http"):
+            return ""
+        return text
+
+    def _from_srcset(raw: Any) -> str:
+        text = str(raw or "").strip()
+        if not text:
+            return ""
+        for chunk in text.split(","):
+            url = chunk.strip().split(" ", 1)[0].strip()
+            candidate = _normalize_candidate(url)
+            if candidate:
                 return candidate
-    if isinstance(value, list) and value:
-        head = value[0]
-        if isinstance(head, str):
-            return head
-        if isinstance(head, dict):
-            candidate = head.get("imageUrl")
-            if isinstance(candidate, str):
-                return candidate
-    return ""
+        return ""
+
+    def _looks_like_image_url(url: str) -> bool:
+        lower = str(url or "").lower()
+        if not lower:
+            return False
+        if any(ext in lower for ext in (".jpg", ".jpeg", ".png", ".webp", ".gif", ".bmp", ".avif")):
+            return True
+        if any(host in lower for host in ("ebayimg.com", "rakuten.co.jp", "yimg.jp", "yahoo.co.jp")):
+            return True
+        return "/images/" in lower or "/image/" in lower
+
+    def _walk(node: Any, depth: int, seen: set[int]) -> str:
+        if depth > 5:
+            return ""
+        ident = id(node)
+        if ident in seen:
+            return ""
+        seen.add(ident)
+
+        if isinstance(node, str):
+            direct = _normalize_candidate(node)
+            if direct and _looks_like_image_url(direct):
+                return direct
+            from_srcset = _from_srcset(node)
+            if from_srcset and _looks_like_image_url(from_srcset):
+                return from_srcset
+            return ""
+
+        if isinstance(node, dict):
+            for key in (
+                "imageUrl",
+                "data-src",
+                "dataSrc",
+                "data-original",
+                "dataOriginal",
+                "src",
+                "srcSet",
+                "srcset",
+                "thumbnail",
+                "thumbnailUrl",
+                "small",
+                "medium",
+                "large",
+                "url",
+            ):
+                if key not in node:
+                    continue
+                raw = node.get(key)
+                candidate = _from_srcset(raw) if key.lower() == "srcset" else _normalize_candidate(raw)
+                if candidate and _looks_like_image_url(candidate):
+                    return candidate
+            for key, raw in node.items():
+                key_text = str(key or "").lower()
+                if any(tag in key_text for tag in ("image", "img", "thumb", "photo", "picture")):
+                    candidate = _walk(raw, depth + 1, seen)
+                    if candidate:
+                        return candidate
+            for raw in node.values():
+                candidate = _walk(raw, depth + 1, seen)
+                if candidate:
+                    return candidate
+            return ""
+
+        if isinstance(node, list):
+            for raw in node[:12]:
+                candidate = _walk(raw, depth + 1, seen)
+                if candidate:
+                    return candidate
+            return ""
+        return ""
+
+    return _walk(value, 0, set())
+
+
+def _ebay_fetch_item_image(
+    *,
+    token: str,
+    marketplace: str,
+    item_id: str,
+    timeout: int,
+) -> str:
+    item = str(item_id or "").strip()
+    if not item:
+        return ""
+    encoded_item = urllib.parse.quote(item, safe="")
+    status, _, payload = _request_with_retry(
+        f"https://api.ebay.com/buy/browse/v1/item/{encoded_item}",
+        headers={
+            "Authorization": f"Bearer {token}",
+            "X-EBAY-C-MARKETPLACE-ID": marketplace,
+        },
+        timeout=timeout,
+        site="ebay",
+    )
+    if status != 200 or not isinstance(payload, dict):
+        return ""
+    return (
+        _extract_image_url(payload.get("image"))
+        or _extract_image_url(payload.get("additionalImages"))
+        or _extract_image_url(payload.get("thumbnailImages"))
+        or _extract_image_url(payload)
+    )
+
+
+def _ebay_item_id_from_url(url: str) -> str:
+    raw = str(url or "").strip()
+    if not raw:
+        return ""
+    m = re.search(r"/itm/(?:[^/?#]+/)?([0-9]{9,15})", raw)
+    if not m:
+        return ""
+    numeric_id = str(m.group(1) or "").strip()
+    if not numeric_id:
+        return ""
+    return f"v1|{numeric_id}|0"
+
+
+def backfill_candidate_market_images(
+    candidates: Sequence[Dict[str, Any]],
+    *,
+    timeout: int = 8,
+    max_calls: int = 8,
+) -> int:
+    rows = [row for row in (candidates or []) if isinstance(row, dict)]
+    if not rows:
+        return 0
+    allowed_calls = max(0, int(max_calls))
+    if allowed_calls <= 0:
+        return 0
+    try:
+        token = _ebay_access_token(timeout)
+    except Exception:
+        return 0
+    marketplace = (_first_env("TARGET_MARKETPLACE") or "EBAY_US").strip() or "EBAY_US"
+    updated = 0
+    calls = 0
+    for candidate in rows:
+        if calls >= allowed_calls:
+            break
+        market_site = str(candidate.get("market_site", "") or "").strip().lower()
+        if market_site != "ebay":
+            continue
+        metadata = candidate.get("metadata")
+        if not isinstance(metadata, dict):
+            continue
+        existing_image = (
+            str(metadata.get("ebay_sold_image_url", "") or "").strip()
+            or str(metadata.get("market_image_url", "") or "").strip()
+            or str(metadata.get("market_image_url_active", "") or "").strip()
+        )
+        if existing_image:
+            continue
+        item_id = str(candidate.get("market_item_id", "") or "").strip()
+        if not item_id:
+            item_id = _ebay_item_id_from_url(str(metadata.get("market_item_url", "") or ""))
+        if not item_id:
+            continue
+        calls += 1
+        image_url = _ebay_fetch_item_image(
+            token=token,
+            marketplace=marketplace,
+            item_id=item_id,
+            timeout=timeout,
+        )
+        if not image_url:
+            continue
+        metadata["market_image_url"] = image_url
+        metadata.setdefault("market_image_url_active", image_url)
+        candidate["metadata"] = metadata
+        updated += 1
+    return updated
 
 
 def _ebay_access_token(timeout: int) -> str:
@@ -1166,6 +1858,10 @@ def _search_ebay(
     if offset > 0:
         params_dict["offset"] = str(offset)
     params = urllib.parse.urlencode(params_dict)
+    image_fallback_enabled = _env_bool("EBAY_IMAGE_FALLBACK_ITEM_API", True)
+    image_fallback_max_calls = max(0, min(40, _env_int("EBAY_IMAGE_FALLBACK_MAX_CALLS", 8)))
+    image_fallback_calls = 0
+    image_fallback_hits = 0
     status, res_headers, payload = _request_with_retry(
         f"https://api.ebay.com/buy/browse/v1/item_summary/search?{params}",
         headers={
@@ -1186,6 +1882,7 @@ def _search_ebay(
             continue
         title = str(row.get("title", "") or "").strip()
         condition = str(row.get("condition", "new") or "new")
+        item_id = str(row.get("itemId", "") or "")
         price_info = row.get("price") if isinstance(row.get("price"), dict) else {}
         shipping_options = row.get("shippingOptions") if isinstance(row.get("shippingOptions"), list) else []
         shipping_cost = 0.0
@@ -1201,17 +1898,40 @@ def _search_ebay(
             continue
         if not _is_new_listing(title, condition):
             continue
+        image_url = (
+            _extract_image_url(row.get("image"))
+            or _extract_image_url(row.get("additionalImages"))
+            or _extract_image_url(row.get("thumbnailImages"))
+            or _extract_image_url(row.get("thumbnailImage"))
+            or _extract_image_url(row.get("imageUrl"))
+        )
+        if (
+            not image_url
+            and image_fallback_enabled
+            and image_fallback_calls < image_fallback_max_calls
+            and item_id
+        ):
+            image_fallback_calls += 1
+            image_url = _ebay_fetch_item_image(
+                token=token,
+                marketplace=marketplace,
+                item_id=item_id,
+                timeout=timeout,
+            )
+            if image_url:
+                image_fallback_hits += 1
+        identifiers = _with_title_identifier_hints({}, title)
         item = MarketItem(
             site="ebay",
-            item_id=str(row.get("itemId", "") or ""),
+            item_id=item_id,
             title=title,
             item_url=str(row.get("itemWebUrl", "") or ""),
-            image_url=_extract_image_url(row.get("image")) or _extract_image_url(row.get("thumbnailImages")),
+            image_url=image_url,
             price=_to_float(price_info.get("value"), 0.0),
             shipping=shipping_cost,
             currency=str(price_info.get("currency", "USD") or "USD"),
             condition=condition,
-            identifiers={},
+            identifiers=identifiers,
             raw=row,
         )
         if item.price > 0:
@@ -1224,6 +1944,8 @@ def _search_ebay(
         "cache_hit": str(res_headers.get("x-ebayminer-cache-hit", "0")).strip() in {"1", "true", "yes"},
         "cache_age_sec": _to_int(res_headers.get("x-ebayminer-cache-age-sec"), -1),
         "budget_remaining": _to_int(res_headers.get("x-ebayminer-budget-remaining"), -1),
+        "image_fallback_calls": image_fallback_calls,
+        "image_fallback_hits": image_fallback_hits,
     }
 
 
@@ -1298,6 +2020,11 @@ def _search_rakuten(
         image_url = _extract_image_url(item.get("mediumImageUrls")) or _extract_image_url(
             item.get("smallImageUrls")
         )
+        identifiers = _with_title_identifier_hints({}, title)
+        code_hint = _extract_primary_model_code(item_code.replace(":", " "))
+        if code_hint:
+            identifiers.setdefault("model", code_hint)
+            identifiers.setdefault("mpn", code_hint)
         market_item = MarketItem(
             site="rakuten",
             item_id=str(item.get("itemCode", "") or ""),
@@ -1308,7 +2035,7 @@ def _search_rakuten(
             shipping=0.0,
             currency="JPY",
             condition="new",
-            identifiers={},
+            identifiers=identifiers,
             raw=item,
         )
         if market_item.price > 0:
@@ -1403,6 +2130,7 @@ def _search_yahoo(
         jan = str(row.get("janCode", "") or "").strip()
         if jan:
             identifiers["jan"] = jan
+        identifiers = _with_title_identifier_hints(identifiers, title)
 
         item = MarketItem(
             site="yahoo_shopping",
@@ -1497,6 +2225,74 @@ def _load_category_knowledge() -> Dict[str, Any]:
     return _CATEGORY_KNOWLEDGE_CACHE["payload"]
 
 
+def _load_known_brand_aliases() -> Dict[str, Tuple[str, ...]]:
+    payload = _load_category_knowledge()
+    mtime = _to_float(_CATEGORY_KNOWLEDGE_CACHE.get("mtime"), 0.0)
+    cached_mtime = _to_float(_CATEGORY_BRAND_CACHE.get("mtime"), -1.0)
+    cached = _CATEGORY_BRAND_CACHE.get("brands")
+    if cached_mtime == mtime and isinstance(cached, dict):
+        return cached
+
+    out: Dict[str, Tuple[str, ...]] = {}
+    categories = payload.get("categories", []) if isinstance(payload, dict) else []
+    if isinstance(categories, list):
+        for row in categories:
+            if not isinstance(row, dict):
+                continue
+            for raw in row.get("seed_brands", []) or []:
+                brand = str(raw or "").strip()
+                if not brand:
+                    continue
+                canonical = re.sub(r"\s+", " ", unicodedata.normalize("NFKC", brand)).strip().upper()
+                if not canonical:
+                    continue
+                aliases = set(out.get(canonical, ()))
+                aliases.add(canonical)
+                aliases.add(brand)
+                compact = re.sub(r"\s+", "", canonical)
+                if len(compact) >= 3:
+                    aliases.add(compact)
+                normalized_aliases = tuple(
+                    sorted(
+                        {
+                            re.sub(r"\s+", " ", unicodedata.normalize("NFKC", str(v or ""))).strip()
+                            for v in aliases
+                            if str(v or "").strip()
+                        },
+                        key=lambda text: len(text),
+                        reverse=True,
+                    )
+                )
+                out[canonical] = normalized_aliases
+
+    _CATEGORY_BRAND_CACHE["mtime"] = mtime
+    _CATEGORY_BRAND_CACHE["brands"] = out
+    return out
+
+
+def _extract_known_brand_tags(title: str) -> set[str]:
+    normalized = unicodedata.normalize("NFKC", str(title or ""))
+    upper = normalized.upper()
+    brands = _load_known_brand_aliases()
+    if not brands:
+        return set()
+    found: set[str] = set()
+    for canonical, aliases in brands.items():
+        for alias in aliases:
+            token = str(alias or "").strip()
+            if not token:
+                continue
+            if token.isascii():
+                if _contains_ascii_token(upper, token):
+                    found.add(canonical)
+                    break
+            else:
+                if token in normalized:
+                    found.add(canonical)
+                    break
+    return found
+
+
 def _category_aliases(category_row: Dict[str, Any]) -> set[str]:
     aliases: set[str] = set()
     key = _normalize_category_text(str(category_row.get("category_key", "") or ""))
@@ -1514,6 +2310,13 @@ def _category_aliases(category_row: Dict[str, Any]) -> set[str]:
         if norm:
             aliases.add(norm)
             aliases.add(norm.replace(" ", ""))
+    user_aliases = category_row.get("aliases", [])
+    if isinstance(user_aliases, list):
+        for alias in user_aliases:
+            norm = _normalize_category_text(alias)
+            if norm:
+                aliases.add(norm)
+                aliases.add(norm.replace(" ", ""))
     return aliases
 
 
@@ -1586,6 +2389,65 @@ def _is_specific_model_example(text: str) -> bool:
     return bool(re.search(r"\d", raw))
 
 
+def _build_category_relevance_terms(category_row: Dict[str, Any]) -> Tuple[str, ...]:
+    key = _normalize_category_text(str(category_row.get("category_key", "") or "")).replace(" ", "_")
+    noun = _CATEGORY_NOUN_HINT.get(key, key.replace("_", " ")).strip()
+    terms: List[str] = []
+    for raw in category_row.get("model_examples", []) or []:
+        model = str(raw or "").strip()
+        if _is_specific_model_example(model):
+            terms.append(model)
+    for raw in category_row.get("seed_series", []) or []:
+        series = str(raw or "").strip()
+        if len(series) >= 3:
+            terms.append(series)
+    for raw in category_row.get("seed_brands", []) or []:
+        brand = str(raw or "").strip()
+        if len(brand) >= 3:
+            terms.append(brand)
+    aliases = _CATEGORY_QUERY_ALIASES.get(key, ())
+    for raw in aliases:
+        alias = str(raw or "").strip()
+        if len(alias) >= 3:
+            terms.append(alias)
+    if noun and len(noun) >= 3:
+        terms.append(noun)
+
+    max_terms = max(8, min(80, _env_int("REVIEW_CATEGORY_RELEVANCE_MAX_TERMS", 32)))
+    seen: set[str] = set()
+    out: List[str] = []
+    for raw in terms:
+        term = re.sub(r"\s+", " ", unicodedata.normalize("NFKC", str(raw or ""))).strip()
+        if len(term) < 3:
+            continue
+        key_norm = term.upper()
+        if key_norm in seen:
+            continue
+        seen.add(key_norm)
+        out.append(term)
+        if len(out) >= max_terms:
+            break
+    return tuple(out)
+
+
+def _title_matches_category_terms(title: str, terms: Sequence[str]) -> bool:
+    if not terms:
+        return True
+    normalized = unicodedata.normalize("NFKC", str(title or ""))
+    upper = normalized.upper()
+    for raw in terms:
+        term = str(raw or "").strip()
+        if not term:
+            continue
+        if term.isascii():
+            if _contains_ascii_token(upper, term):
+                return True
+            continue
+        if term in normalized:
+            return True
+    return False
+
+
 def _build_category_seed_queries(
     *,
     category_row: Dict[str, Any],
@@ -1604,27 +2466,21 @@ def _build_category_seed_queries(
     noun = _CATEGORY_NOUN_HINT.get(key, key.replace("_", " "))
 
     candidates: List[str] = []
-    pair_depth = max(1, min(base_depth, max(len(brands), 1), max(len(series), 1)))
-    for idx in range(pair_depth):
-        brand = brands[idx % len(brands)] if brands else ""
-        serie = series[idx % len(series)] if series else ""
-        if brand and serie:
-            if site == "ebay":
-                candidates.append(_compact_query(f"{brand} {serie} NEW"))
-            candidates.append(_compact_query(f"{brand} {serie}"))
-        elif brand and noun:
-            if site == "ebay":
-                candidates.append(_compact_query(f"{brand} {noun} NEW"))
-            candidates.append(_compact_query(f"{brand} {noun}"))
+    series_depth = min(base_depth, len(series))
+    for idx in range(series_depth):
+        serie = series[idx]
+        if site == "ebay":
+            candidates.append(_compact_query(f"{serie} NEW"))
+        candidates.append(_compact_query(serie))
 
-    model_depth = max(1, min(base_depth, len(models)))
+    model_depth = min(base_depth, len(models))
     for idx in range(model_depth):
         model = models[idx]
         if site == "ebay":
             candidates.append(_compact_query(f"{model} NEW"))
         candidates.append(_compact_query(model))
 
-    brand_depth = max(1, min(base_depth, len(brands)))
+    brand_depth = min(base_depth, len(brands))
     for idx in range(brand_depth):
         brand = brands[idx]
         if noun:
@@ -1927,16 +2783,51 @@ def _market_identity_key(item: MarketItem) -> str:
 def _sale_price_basis_from_signal(market: MarketItem, liquidity_signal: Dict[str, Any]) -> Tuple[float, str, float]:
     meta = liquidity_signal.get("metadata") if isinstance(liquidity_signal.get("metadata"), dict) else {}
     sold_min = _to_float(meta.get("sold_price_min"), -1.0)
+    sold_min_raw = _to_float(meta.get("sold_price_min_raw"), sold_min)
+    sold_min_outlier = bool(meta.get("sold_price_min_outlier"))
     sold_median = _to_float(liquidity_signal.get("sold_price_median"), -1.0)
     active_price = _to_float(market.price, -1.0)
+    sold_min_vs_median = (sold_min / sold_median) if (sold_min > 0 and sold_median > 0) else -1.0
     min_ratio_vs_active = max(0.0, min(1.0, _env_float("LIQUIDITY_SOLD_PRICE_MIN_ACTIVE_RATIO_MIN", 0.08)))
     sold_min_vs_active = (sold_min / active_price) if (sold_min > 0 and active_price > 0) else -1.0
     sold_min_too_low_vs_active = sold_min_vs_active > 0 and sold_min_vs_active < min_ratio_vs_active
+    robust_ratio_floor = max(0.0, min(1.0, _env_float("LIQUIDITY_SOLD_MIN_RATIO_FLOOR_FOR_FALLBACK", 0.45)))
+    needs_median_fallback = (
+        sold_median > 0
+        and (
+            sold_min_outlier
+            or (sold_min_vs_median > 0 and sold_min_vs_median < robust_ratio_floor)
+            or sold_min_too_low_vs_active
+            or sold_min <= 0
+        )
+    )
+    if needs_median_fallback:
+        allow_fallback = _env_bool("LIQUIDITY_ALLOW_MEDIAN_FALLBACK_ON_OUTLIER", True)
+        fallback_ratio = max(0.1, min(1.0, _env_float("LIQUIDITY_MEDIAN_FALLBACK_RATIO", 0.72)))
+        if allow_fallback:
+            # sold_minが付属品混入で無効化された場合、中央値に安全率を掛けて保守的に売値基準化する。
+            fallback_basis = sold_median * fallback_ratio
+            if sold_min_raw > 0:
+                fallback_basis = max(fallback_basis, sold_min_raw)
+            return fallback_basis, "sold_price_median_fallback_90d", 0.0
     if sold_min > 0 and not sold_min_too_low_vs_active:
         return sold_min, "sold_price_min_90d", 0.0
     if sold_median > 0:
         return sold_median, "sold_price_median_90d", 0.0
     return market.price, "active_listing_price", market.shipping
+
+
+def _is_strict_sold_min_basis_candidate(
+    *,
+    sale_price_basis_type: str,
+    sold_min_basis: float,
+    sold_min_outlier: bool,
+) -> bool:
+    if sold_min_basis <= 0:
+        return False
+    if sold_min_outlier:
+        return False
+    return str(sale_price_basis_type or "").strip().lower() == "sold_price_min_90d"
 
 
 def _liquidity_sold_sample(liquidity_signal: Dict[str, Any]) -> Dict[str, Any]:
@@ -1958,6 +2849,14 @@ def _liquidity_sold_sample(liquidity_signal: Dict[str, Any]) -> Dict[str, Any]:
     if sold_price > 0:
         out["sold_price_usd"] = sold_price
     return out
+
+
+def _has_sold_sample_reference(sample: Dict[str, Any]) -> bool:
+    if not isinstance(sample, dict) or not sample:
+        return False
+    item_url = str(sample.get("item_url", "") or "").strip()
+    sold_price = _to_float(sample.get("sold_price_usd"), -1.0)
+    return bool(item_url and sold_price > 0)
 
 
 def _is_implausible_sold_min(
@@ -1997,6 +2896,307 @@ def _is_implausible_sold_min(
     }
 
 
+def _resolve_current_fx_rate(settings: Settings) -> float:
+    calc = calculate_profit(
+        ProfitInput(
+            sale_price_usd=1.0,
+            purchase_price_jpy=0.0,
+            domestic_shipping_jpy=0.0,
+            international_shipping_usd=0.0,
+            customs_usd=0.0,
+            packaging_usd=0.0,
+            marketplace_fee_rate=0.0,
+            payment_fee_rate=0.0,
+            fixed_fee_usd=0.0,
+        ),
+        settings=settings,
+    )
+    return _to_float((calc.get("fx") or {}).get("rate"), 0.0)
+
+
+def _required_profit_floor_usd(*, sale_total_usd: float, min_profit_usd: float, min_margin_rate: float) -> float:
+    if sale_total_usd <= 0:
+        return float(min_profit_usd)
+    return max(float(min_profit_usd), float(sale_total_usd) * max(0.0, float(min_margin_rate)))
+
+
+def _max_purchase_total_jpy_for_sale(
+    *,
+    sale_total_usd: float,
+    fx_rate: float,
+    min_profit_usd: float,
+    min_margin_rate: float,
+    marketplace_fee_rate: float,
+    payment_fee_rate: float,
+    international_shipping_usd: float,
+    customs_usd: float,
+    packaging_usd: float,
+    fixed_fee_usd: float,
+    misc_cost_usd: float = 0.0,
+) -> float:
+    if sale_total_usd <= 0 or fx_rate <= 0:
+        return -1.0
+    required_profit = _required_profit_floor_usd(
+        sale_total_usd=sale_total_usd,
+        min_profit_usd=min_profit_usd,
+        min_margin_rate=min_margin_rate,
+    )
+    fee_rate = max(0.0, float(marketplace_fee_rate) + float(payment_fee_rate))
+    variable_fee = float(sale_total_usd) * fee_rate
+    non_jpy_usd = (
+        float(international_shipping_usd)
+        + float(customs_usd)
+        + float(packaging_usd)
+        + float(fixed_fee_usd)
+        + float(misc_cost_usd)
+    )
+    purchase_budget_usd = float(sale_total_usd) - variable_fee - non_jpy_usd - required_profit
+    if purchase_budget_usd <= 0:
+        return -1.0
+    return purchase_budget_usd * float(fx_rate)
+
+
+def _build_ebay_sold_first_plan(
+    *,
+    query: str,
+    ebay_items: Sequence[MarketItem],
+    query_specific_codes: set[str],
+    active_count_hint: int,
+    timeout: int,
+    settings: Settings,
+    min_sold_90d_count: int,
+    min_sell_through_90d: float,
+    liquidity_require_signal: bool,
+    min_profit_usd: float,
+    min_margin_rate: float,
+    marketplace_fee_rate: float,
+    payment_fee_rate: float,
+    international_shipping_usd: float,
+    customs_usd: float,
+    packaging_usd: float,
+    fixed_fee_usd: float,
+) -> Dict[str, Any]:
+    enabled = _env_bool("REVIEW_FETCH_EBAY_SOLD_FIRST_ENABLED", True)
+    summary: Dict[str, Any] = {
+        "enabled": bool(enabled),
+        "applied": False,
+        "codes_considered": 0,
+        "codes_passed": 0,
+        "selected_codes": [],
+        "reason": "",
+        "rows": [],
+    }
+    if not enabled:
+        summary["reason"] = "disabled"
+        return {"summary": summary, "selected_codes": set(), "max_purchase_jpy_by_code": {}, "signals": {}}
+
+    max_codes = max(1, min(24, _env_int("REVIEW_FETCH_EBAY_SOLD_FIRST_MAX_CODES", 10)))
+    stats: Dict[str, Dict[str, Any]] = {}
+    for code in query_specific_codes:
+        stats[code] = {"count": 1000, "example": code}
+    for item in ebay_items:
+        for raw in _extract_codes(item.title):
+            if not _is_specific_model_code(raw):
+                continue
+            canon = _canonicalize_code(raw)
+            if not canon:
+                continue
+            row = stats.get(canon)
+            if not isinstance(row, dict):
+                row = {"count": 0, "example": str(raw).strip().upper()}
+                stats[canon] = row
+            row["count"] = _to_int(row.get("count"), 0) + 1
+            example = str(row.get("example", "") or "")
+            code = str(raw).strip().upper()
+            if len(code) > len(example):
+                row["example"] = code
+
+    ranked_codes = [
+        str((row or {}).get("example", "") or "").strip().upper()
+        for _, row in sorted(
+            stats.items(),
+            key=lambda kv: (
+                -_to_int((kv[1] or {}).get("count"), 0),
+                -len(str((kv[1] or {}).get("example", "") or "")),
+            ),
+        )
+    ]
+    ranked_codes = [c for c in ranked_codes if c][:max_codes]
+    summary["codes_considered"] = len(ranked_codes)
+    if not ranked_codes:
+        summary["reason"] = "no_model_codes"
+        return {"summary": summary, "selected_codes": set(), "max_purchase_jpy_by_code": {}, "signals": {}}
+
+    fx_rate = _resolve_current_fx_rate(settings)
+    selected_codes: set[str] = set()
+    max_purchase_jpy_by_code: Dict[str, float] = {}
+    signals_by_code: Dict[str, Dict[str, Any]] = {}
+    rows: List[Dict[str, Any]] = []
+
+    for code in ranked_codes:
+        signal = get_liquidity_signal(
+            query=code,
+            source_title=code,
+            market_title=code,
+            source_identifiers={},
+            market_identifiers={},
+            active_count_hint=active_count_hint,
+            timeout=timeout,
+            settings=settings,
+        )
+        gate = evaluate_liquidity_gate(
+            signal,
+            min_sold_90d_count=min_sold_90d_count,
+            min_sell_through_90d=min_sell_through_90d,
+            require_signal=liquidity_require_signal,
+        )
+        signal_meta = signal.get("metadata") if isinstance(signal.get("metadata"), dict) else {}
+        median_price = _to_float(signal.get("sold_price_median"), 0.0)
+        market_stub = MarketItem(
+            site="ebay",
+            item_id=f"sold:{code}",
+            title=code,
+            item_url="",
+            image_url="",
+            price=median_price if median_price > 0 else 0.0,
+            shipping=0.0,
+            currency="USD",
+            condition="new",
+            identifiers={},
+            raw={},
+        )
+        sale_basis_usd, sale_basis_type, sale_basis_ship = _sale_price_basis_from_signal(market_stub, signal)
+        sale_total_usd = sale_basis_usd + sale_basis_ship
+        max_purchase_jpy = _max_purchase_total_jpy_for_sale(
+            sale_total_usd=sale_total_usd,
+            fx_rate=fx_rate,
+            min_profit_usd=min_profit_usd,
+            min_margin_rate=min_margin_rate,
+            marketplace_fee_rate=marketplace_fee_rate,
+            payment_fee_rate=payment_fee_rate,
+            international_shipping_usd=international_shipping_usd,
+            customs_usd=customs_usd,
+            packaging_usd=packaging_usd,
+            fixed_fee_usd=fixed_fee_usd,
+        )
+        passed = bool(gate.get("pass")) and max_purchase_jpy > 0 and sale_total_usd > 0
+        row = {
+            "code": code,
+            "signal_key": str(signal.get("signal_key", "") or ""),
+            "sold_90d_count": _to_int(signal.get("sold_90d_count"), -1),
+            "sold_price_median": _to_float(signal.get("sold_price_median"), -1.0),
+            "sold_price_min": _to_float(signal_meta.get("sold_price_min"), -1.0),
+            "sale_basis_usd": round(sale_basis_usd, 4) if sale_basis_usd > 0 else -1.0,
+            "sale_basis_type": sale_basis_type,
+            "gate_pass": bool(gate.get("pass")),
+            "gate_reason": str(gate.get("reason", "") or ""),
+            "max_purchase_total_jpy": round(max_purchase_jpy, 2) if max_purchase_jpy > 0 else -1.0,
+            "pass": bool(passed),
+        }
+        rows.append(row)
+        if not passed:
+            continue
+        canon = _canonicalize_code(code)
+        if not canon:
+            continue
+        selected_codes.add(canon)
+        max_purchase_jpy_by_code[canon] = float(max_purchase_jpy)
+        signals_by_code[canon] = signal
+
+    summary["rows"] = rows
+    summary["selected_codes"] = sorted(selected_codes)
+    summary["codes_passed"] = len(selected_codes)
+    summary["applied"] = len(selected_codes) > 0
+    summary["reason"] = "ok" if selected_codes else "no_codes_passed"
+    return {
+        "summary": summary,
+        "selected_codes": selected_codes,
+        "max_purchase_jpy_by_code": max_purchase_jpy_by_code,
+        "signals": signals_by_code,
+    }
+
+
+def _filter_source_items_by_purchase_ceiling(
+    *,
+    items: Sequence[MarketItem],
+    max_purchase_jpy_by_code: Dict[str, float],
+    require_code_match: bool,
+) -> Tuple[List[MarketItem], Dict[str, Any]]:
+    if not max_purchase_jpy_by_code:
+        return list(items), {"enabled": False, "applied": False}
+    slack_ratio = max(1.0, _env_float("REVIEW_FETCH_EBAY_SOLD_FIRST_BUDGET_SLACK_RATIO", 2.0))
+    kept: List[MarketItem] = []
+    dropped_no_code = 0
+    dropped_over_budget = 0
+    for item in items:
+        item_codes = _item_model_code_keys(item)
+        if not item_codes:
+            if require_code_match:
+                dropped_no_code += 1
+                continue
+            kept.append(item)
+            continue
+        matched = [max_purchase_jpy_by_code.get(code) for code in item_codes if code in max_purchase_jpy_by_code]
+        if not matched:
+            if require_code_match:
+                dropped_no_code += 1
+                continue
+            kept.append(item)
+            continue
+        ceiling = max(v for v in matched if isinstance(v, (int, float)))
+        purchase_total = _to_float(item.price, 0.0) + _to_float(item.shipping, 0.0)
+        if ceiling > 0 and purchase_total > (ceiling * slack_ratio):
+            dropped_over_budget += 1
+            continue
+        kept.append(item)
+    return kept, {
+        "enabled": True,
+        "applied": True,
+        "before": len(items),
+        "after": len(kept),
+        "dropped_no_code": dropped_no_code,
+        "dropped_over_budget": dropped_over_budget,
+        "slack_ratio": float(round(slack_ratio, 4)),
+    }
+
+
+def _rank_specific_codes_from_market_items(
+    market_items: Sequence[MarketItem],
+    *,
+    max_codes: int,
+) -> List[str]:
+    cap = max(1, int(max_codes))
+    stats: Dict[str, Dict[str, Any]] = {}
+    for item in market_items:
+        for raw in _extract_codes(item.title):
+            code = str(raw or "").strip().upper()
+            if not _is_specific_model_code(code):
+                continue
+            canon = _canonicalize_code(code)
+            if not canon:
+                continue
+            row = stats.get(canon)
+            if not isinstance(row, dict):
+                row = {"code": code, "count": 0}
+                stats[canon] = row
+            row["count"] = _to_int(row.get("count"), 0) + 1
+            best = str(row.get("code", "") or "")
+            if len(code) > len(best):
+                row["code"] = code
+    ranked = [
+        str((row or {}).get("code", "") or "").strip().upper()
+        for _, row in sorted(
+            stats.items(),
+            key=lambda kv: (
+                -_to_int((kv[1] or {}).get("count"), 0),
+                -len(str((kv[1] or {}).get("code", "") or "")),
+                str((kv[1] or {}).get("code", "") or ""),
+            ),
+        )
+    ]
+    return [code for code in ranked if code][:cap]
+
+
 def _fetch_site_items_adaptive(
     *,
     site: str,
@@ -2021,6 +3221,54 @@ def _fetch_site_items_adaptive(
     if not queries:
         queries = [_compact_query(query)]
     total_queries = len(queries)
+    knowledge_applied = bool(knowledge_meta.get("applied"))
+    relevance_filter_enabled = _env_bool("REVIEW_CATEGORY_RELEVANCE_FILTER_ENABLED", True)
+    relevance_terms: Tuple[str, ...] = ()
+    if knowledge_applied and relevance_filter_enabled:
+        category_row = _match_category_row(_compact_query(query))
+        if isinstance(category_row, dict):
+            relevance_terms = _build_category_relevance_terms(category_row)
+    min_queries_before_target = 1
+    if knowledge_applied:
+        if site == "ebay":
+            min_calls_floor = max(1, min(6, _env_int("REVIEW_CATEGORY_FETCH_MIN_CALLS_EBAY", 3)))
+            per_call_cap = max(20, min(200, _env_int("REVIEW_CATEGORY_FETCH_PER_CALL_LIMIT_CAP_EBAY", 50)))
+            min_queries_before_target = max(
+                1,
+                min(
+                    min_calls_floor,
+                    _env_int("REVIEW_CATEGORY_MIN_QUERIES_BEFORE_TARGET_EBAY", min_calls_floor),
+                ),
+            )
+        elif site == "rakuten":
+            min_calls_floor = max(1, min(5, _env_int("REVIEW_CATEGORY_FETCH_MIN_CALLS_RAKUTEN", 2)))
+            per_call_cap = max(10, min(30, _env_int("REVIEW_CATEGORY_FETCH_PER_CALL_LIMIT_CAP_RAKUTEN", 20)))
+            min_queries_before_target = max(
+                1,
+                min(
+                    min_calls_floor,
+                    _env_int("REVIEW_CATEGORY_MIN_QUERIES_BEFORE_TARGET_RAKUTEN", min_calls_floor),
+                ),
+            )
+        else:
+            min_calls_floor = max(1, min(5, _env_int("REVIEW_CATEGORY_FETCH_MIN_CALLS_YAHOO", 2)))
+            per_call_cap = max(20, min(100, _env_int("REVIEW_CATEGORY_FETCH_PER_CALL_LIMIT_CAP_YAHOO", 40)))
+            min_queries_before_target = max(
+                1,
+                min(
+                    min_calls_floor,
+                    _env_int("REVIEW_CATEGORY_MIN_QUERIES_BEFORE_TARGET_YAHOO", min_calls_floor),
+                ),
+            )
+        profile = SiteFetchProfile(
+            site=profile.site,
+            max_calls=max(profile.max_calls, min_calls_floor),
+            per_call_limit=min(profile.per_call_limit, per_call_cap),
+            target_items=max(profile.target_items, cap_site * max(1, min_queries_before_target)),
+            min_new_items=profile.min_new_items,
+            max_pages_per_query=profile.max_pages_per_query,
+            sleep_sec=profile.sleep_sec,
+        )
 
     entries = _load_fetch_cursor_entries()
     cursor_key = _fetch_cursor_key(site=site, query=query)
@@ -2040,6 +3288,8 @@ def _fetch_site_items_adaptive(
     seen_items: set[Tuple[str, str]] = set()
     merged_items: List[MarketItem] = []
     query_logs: List[Dict[str, Any]] = []
+    touched_queries: set[int] = set()
+    relevance_filtered_out = 0
     calls_made = 0
     stop_reason = "query_exhausted"
     last_error: Optional[str] = None
@@ -2048,6 +3298,7 @@ def _fetch_site_items_adaptive(
 
     for order_pos, q_index in enumerate(query_order):
         q = queries[q_index]
+        touched_queries.add(q_index)
         if calls_made >= profile.max_calls:
             stop_reason = "max_calls_reached"
             next_query_index = q_index
@@ -2086,6 +3337,9 @@ def _fetch_site_items_adaptive(
 
             before = len(merged_items)
             for item in rows:
+                if relevance_terms and (not _title_matches_category_terms(item.title, relevance_terms)):
+                    relevance_filtered_out += 1
+                    continue
                 ident = _item_identity(item)
                 if ident in seen_items:
                     continue
@@ -2111,7 +3365,12 @@ def _fetch_site_items_adaptive(
                 next_page = 1
 
             if len(merged_items) >= profile.target_items:
-                stop_reason = "target_reached"
+                if len(touched_queries) >= max(1, min_queries_before_target):
+                    stop_reason = "target_reached"
+                    break
+                stop_reason = "target_deferred"
+                next_query_index = (q_index + 1) % total_queries
+                next_page = 1
                 break
 
             if new_items == 0:
@@ -2165,6 +3424,9 @@ def _fetch_site_items_adaptive(
         if page > profile.max_pages_per_query:
             next_query_index = (q_index + 1) % total_queries
             next_page = 1
+
+    if stop_reason == "target_deferred":
+        stop_reason = "query_exhausted"
 
     now_ts = int(time.time())
     retention_sec = max(3600, _env_int("REVIEW_FETCH_CURSOR_RETENTION_SECONDS", 604800))
@@ -2221,6 +3483,11 @@ def _fetch_site_items_adaptive(
         "cursor_next": {"query_index": int(next_query_index), "page": int(next_page)},
         "queries": query_logs,
         "knowledge": knowledge_meta,
+        "category_relevance_filter_enabled": bool(knowledge_applied and relevance_filter_enabled),
+        "category_relevance_term_count": int(len(relevance_terms)),
+        "category_relevance_filtered_out": int(relevance_filtered_out),
+        "min_queries_before_target": int(max(1, min_queries_before_target)),
+        "touched_query_count": int(len(touched_queries)),
     }
     autotune_out = _update_fetch_tuner(
         site=site,
@@ -2436,6 +3703,46 @@ def _extract_codes(title: str) -> List[str]:
     return sorted(set(codes))
 
 
+def _extract_codes_in_order(title: str) -> List[str]:
+    upper = str(title or "").upper()
+    seen: set[str] = set()
+    out: List[str] = []
+    for token in _CODE_RE.findall(upper):
+        cleaned = token.strip("-")
+        if not _is_informative_code(cleaned):
+            continue
+        if cleaned in seen:
+            continue
+        seen.add(cleaned)
+        out.append(cleaned)
+    return out
+
+
+def _extract_primary_model_code(title: str) -> str:
+    ordered_codes = _extract_codes_in_order(title)
+    if not ordered_codes:
+        return ""
+    for code in ordered_codes:
+        if _is_specific_model_code(code):
+            return code
+    return ordered_codes[0]
+
+
+def _with_title_identifier_hints(base: Dict[str, str], title: str) -> Dict[str, str]:
+    out: Dict[str, str] = {}
+    for key, val in (base or {}).items():
+        key_text = str(key or "").strip().lower()
+        value_text = str(val or "").strip()
+        if not key_text or not value_text:
+            continue
+        out[key_text] = value_text
+    model_hint = _extract_primary_model_code(title)
+    if model_hint:
+        out.setdefault("model", model_hint)
+        out.setdefault("mpn", model_hint)
+    return out
+
+
 def _canonicalize_code(token: str) -> str:
     return re.sub(r"[^A-Z0-9]+", "", str(token or "").upper())
 
@@ -2447,6 +3754,85 @@ def _canonical_code_set(codes: Sequence[str]) -> set[str]:
         if normalized:
             out.add(normalized)
     return out
+
+
+def _specific_model_codes_in_title(title: str) -> List[str]:
+    out: List[str] = []
+    seen: set[str] = set()
+    for raw in _extract_codes_in_order(title):
+        if not _is_specific_model_code(raw):
+            continue
+        canon = _canonicalize_code(raw)
+        if not canon or canon in seen:
+            continue
+        seen.add(canon)
+        out.append(raw)
+    return out
+
+
+def _extract_rakuten_variant_price_from_html(html: str, *, target_code: str) -> float:
+    text = unicodedata.normalize("NFKC", str(html or ""))
+    if not text:
+        return -1.0
+    upper = text.upper()
+    canon_target = _canonicalize_code(target_code)
+    if not canon_target:
+        return -1.0
+    candidates: List[Tuple[int, float]] = []
+    for m in _CODE_RE.finditer(upper):
+        token = str(m.group(0) or "").strip("-")
+        if _canonicalize_code(token) != canon_target:
+            continue
+        start = max(0, m.start() - 260)
+        end = min(len(upper), m.end() + 260)
+        chunk = upper[start:end]
+        for pm in _PRICE_JPY_RE.finditer(chunk):
+            value = _to_float(str(pm.group(1) or "").replace(",", ""), -1.0)
+            if value < 1000 or value > 5_000_000:
+                continue
+            absolute_dist = abs((start + pm.start()) - m.start())
+            candidates.append((absolute_dist, value))
+        for pm in re.finditer(r'"PRICE"\s*:\s*([0-9]{4,7})', chunk):
+            value = _to_float(pm.group(1), -1.0)
+            if value < 1000 or value > 5_000_000:
+                continue
+            absolute_dist = abs((start + pm.start()) - m.start())
+            candidates.append((absolute_dist + 8, value))
+    if not candidates:
+        escaped = re.escape(str(target_code or "").upper())
+        around_patterns = (
+            rf"{escaped}.{{0,90}}?([0-9]{{1,3}}(?:,[0-9]{{3}})+|[0-9]{{4,7}})\s*円",
+            rf"([0-9]{{1,3}}(?:,[0-9]{{3}})+|[0-9]{{4,7}})\s*円.{{0,90}}?{escaped}",
+        )
+        for pat in around_patterns:
+            for mm in re.finditer(pat, upper, re.IGNORECASE | re.DOTALL):
+                value = _to_float(str(mm.group(1) or "").replace(",", ""), -1.0)
+                if value < 1000 or value > 5_000_000:
+                    continue
+                candidates.append((120, value))
+    if not candidates:
+        return -1.0
+    candidates.sort(key=lambda row: (row[0], row[1]))
+    return float(candidates[0][1])
+
+
+def _resolve_rakuten_variant_price_jpy(
+    *,
+    item_url: str,
+    target_code: str,
+    timeout: int,
+) -> Tuple[float, Dict[str, Any]]:
+    url = str(item_url or "").strip()
+    code = str(target_code or "").strip().upper()
+    if not url or not code:
+        return -1.0, {"ok": False, "reason": "missing_url_or_code"}
+    status, _headers, html = _request_text(url, timeout=max(5, int(timeout)))
+    if status != 200 or not html:
+        return -1.0, {"ok": False, "reason": f"http_{status if status else 'error'}"}
+    price = _extract_rakuten_variant_price_from_html(html, target_code=code)
+    if price <= 0:
+        return -1.0, {"ok": False, "reason": "price_not_found"}
+    return price, {"ok": True, "reason": "resolved", "target_code": code, "resolved_price_jpy": price}
 
 
 def _is_ambiguous_model_title(title: str) -> bool:
@@ -2464,7 +3850,186 @@ def _is_specific_model_code(code: str) -> bool:
     token = str(code or "").strip().upper()
     if not token:
         return False
-    return len(token) >= 8 or token.count("-") >= 2
+    alpha = sum(1 for ch in token if "A" <= ch <= "Z")
+    digit = sum(1 for ch in token if ch.isdigit())
+    if alpha < 2 or digit < 2:
+        return False
+    return len(token) >= 6 or token.count("-") >= 1
+
+
+def _query_specific_codes(query: str) -> set[str]:
+    out: set[str] = set()
+    for raw in _extract_codes(query):
+        if not _is_specific_model_code(raw):
+            continue
+        canon = _canonicalize_code(raw)
+        if canon:
+            out.add(canon)
+    return out
+
+
+def _should_skip_model_backfill_for_query(query_specific_codes: set[str]) -> bool:
+    if not query_specific_codes:
+        return False
+    return _env_bool("REVIEW_FETCH_MODEL_BACKFILL_SKIP_ON_SPECIFIC_QUERY", True)
+
+
+def _is_related_model_code(candidate: str, query_code: str) -> bool:
+    left = _canonicalize_code(candidate)
+    right = _canonicalize_code(query_code)
+    if not left or not right:
+        return False
+    if left == right:
+        return True
+    if left.startswith(right) or right.startswith(left):
+        return True
+    if min(len(left), len(right)) < 6:
+        return False
+    if left[:6] != right[:6]:
+        return False
+    left_digits = "".join(ch for ch in left if ch.isdigit())
+    right_digits = "".join(ch for ch in right if ch.isdigit())
+    if left_digits and right_digits and (
+        left_digits != right_digits
+        and (not left_digits.startswith(right_digits))
+        and (not right_digits.startswith(left_digits))
+    ):
+        return False
+    return True
+
+
+def _filter_sold_first_codes_for_query(sold_first_codes: set[str], query_specific_codes: set[str]) -> set[str]:
+    if not sold_first_codes or not query_specific_codes:
+        return set(sold_first_codes or set())
+    filtered: set[str] = set()
+    for code in sold_first_codes:
+        if any(_is_related_model_code(code, q) for q in query_specific_codes):
+            filtered.add(code)
+    return filtered if filtered else set(sold_first_codes)
+
+
+def _liquidity_query_key(query: str) -> str:
+    code = _canonicalize_code(query)
+    if code:
+        return code
+    return _compact_query(query).upper()
+
+
+def _build_sold_first_signal_lookup(signals_by_code: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
+    out: Dict[str, Dict[str, Any]] = {}
+    if not isinstance(signals_by_code, dict):
+        return out
+    for key, signal in signals_by_code.items():
+        if not isinstance(signal, dict):
+            continue
+        normalized = _liquidity_query_key(str(key or ""))
+        if normalized:
+            out[normalized] = signal
+        alt_key = _liquidity_query_key(str(signal.get("query", "") or ""))
+        if alt_key and alt_key not in out:
+            out[alt_key] = signal
+    return out
+
+
+def _can_skip_source_fetch_after_preselection(
+    *,
+    sold_first_codes: set[str],
+    jp_items: Sequence[MarketItem],
+    cap_site: int,
+    source_sites: Sequence[str],
+) -> bool:
+    if not sold_first_codes:
+        return False
+    normalized_sources = [str(v or "").strip().lower() for v in source_sites if str(v or "").strip()]
+    if not normalized_sources:
+        return False
+    normalized_set = set(normalized_sources)
+    target_min_items = max(1, int(cap_site)) * max(1, len(normalized_sources))
+    if len(jp_items) < target_min_items:
+        return False
+    min_sites_required = max(
+        1,
+        min(
+            len(normalized_sources),
+            _env_int("REVIEW_FETCH_SOLD_FIRST_MIN_SOURCE_SITES_BEFORE_SKIP", 2),
+        ),
+    )
+    covered_sites = {
+        str(item.site or "").strip().lower()
+        for item in jp_items
+        if str(item.site or "").strip().lower() in normalized_set
+    }
+    return len(covered_sites) >= min_sites_required
+
+
+def _item_model_code_keys(item: MarketItem) -> set[str]:
+    keys = _canonical_code_set(_extract_codes(item.title))
+    identifiers = item.identifiers if isinstance(item.identifiers, dict) else {}
+    for name in ("model", "mpn"):
+        raw = str(identifiers.get(name, "") or "").strip()
+        if not raw:
+            continue
+        for token in _extract_codes(raw):
+            canon = _canonicalize_code(token)
+            if canon:
+                keys.add(canon)
+    return keys
+
+
+def _filter_items_by_query_codes(
+    *,
+    items: Sequence[MarketItem],
+    query_codes: set[str],
+    allow_fallback_no_match: bool = True,
+    allow_related_codes: bool = True,
+) -> Tuple[List[MarketItem], Dict[str, Any]]:
+    if not query_codes:
+        return list(items), {"enabled": False, "applied": False}
+    kept: List[MarketItem] = []
+    dropped = 0
+    for item in items:
+        item_codes = _item_model_code_keys(item)
+        has_exact = bool(item_codes and item_codes.intersection(query_codes))
+        has_related = bool(
+            allow_related_codes
+            and item_codes
+            and any(_is_related_model_code(code, q) for code in item_codes for q in query_codes)
+        )
+        if has_exact or has_related:
+            kept.append(item)
+            continue
+        dropped += 1
+    if kept:
+        return kept, {
+            "enabled": True,
+            "applied": True,
+            "query_codes": sorted(query_codes),
+            "before": len(items),
+            "after": len(kept),
+            "dropped": dropped,
+            "fallback_no_match": False,
+        }
+    if not allow_fallback_no_match:
+        return [], {
+            "enabled": True,
+            "applied": True,
+            "query_codes": sorted(query_codes),
+            "before": len(items),
+            "after": 0,
+            "dropped": dropped,
+            "fallback_no_match": False,
+            "strict_drop_all": True,
+        }
+    # 取りこぼし回避: 全件除外になる場合はフィルタを外して従来挙動に戻す。
+    return list(items), {
+        "enabled": True,
+        "applied": False,
+        "query_codes": sorted(query_codes),
+        "before": len(items),
+        "after": len(items),
+        "dropped": 0,
+        "fallback_no_match": True,
+    }
 
 
 def _extract_color_tags(title: str) -> set[str]:
@@ -2567,6 +4132,123 @@ def _bundle_mode(title: str) -> str:
     return ""
 
 
+def _has_near_specific_model_code(left_codes: set[str], right_codes: set[str]) -> bool:
+    if not left_codes or not right_codes:
+        return False
+    for left in left_codes:
+        if not left:
+            continue
+        for right in right_codes:
+            if not right:
+                continue
+            if left == right:
+                return True
+            if min(len(left), len(right)) < 8:
+                continue
+            if left[:4] != right[:4]:
+                continue
+            left_digits = "".join(ch for ch in left if ch.isdigit())
+            right_digits = "".join(ch for ch in right if ch.isdigit())
+            if left_digits and right_digits and left_digits != right_digits:
+                continue
+            if abs(len(left) - len(right)) > 2:
+                continue
+            prefix_len = 0
+            for lch, rch in zip(left, right):
+                if lch != rch:
+                    break
+                prefix_len += 1
+            if prefix_len >= max(6, min(len(left), len(right)) - 2):
+                return True
+    return False
+
+
+def _recover_model_code_conflict(
+    *,
+    source: MarketItem,
+    market: MarketItem,
+    source_brands: set[str],
+    market_brands: set[str],
+    source_specific_canon: set[str],
+    market_specific_canon: set[str],
+    variant_missing_market: bool,
+    variant_missing_source: bool,
+    color_missing_market: bool,
+) -> Optional[Tuple[float, str]]:
+    if not _env_bool("REVIEW_MATCH_MODEL_CONFLICT_RECOVERY_ENABLED", True):
+        return None
+
+    source_token_list = _title_tokens(source.title)
+    market_token_list = _title_tokens(market.title)
+    if not source_token_list or not market_token_list:
+        return None
+
+    source_tokens = set(source_token_list)
+    market_tokens = set(market_token_list)
+    if not source_tokens or not market_tokens:
+        return None
+
+    common = source_tokens & market_tokens
+    if not common:
+        return None
+
+    union = source_tokens | market_tokens
+    jaccard = len(common) / len(union) if union else 0.0
+
+    src_first = source_token_list[0] if source_token_list else ""
+    mk_first = market_token_list[0] if market_token_list else ""
+    first_token_match = bool(src_first and src_first == mk_first)
+    brand_overlap = bool(source_brands and market_brands and source_brands.intersection(market_brands))
+    near_code = _has_near_specific_model_code(source_specific_canon, market_specific_canon)
+    source_families = _extract_primary_families(source.title)
+    market_families = _extract_primary_families(market.title)
+    family_overlap = bool(source_families and market_families and source_families.intersection(market_families))
+    if not (brand_overlap or first_token_match or (near_code and family_overlap)):
+        return None
+
+    multi_code_side = len(source_specific_canon) >= 2 or len(market_specific_canon) >= 2
+
+    if near_code:
+        min_common = max(1, _env_int("REVIEW_MATCH_MODEL_CONFLICT_RECOVERY_MIN_COMMON_TOKENS_NEAR_CODE", 1))
+        min_jaccard = _env_float("REVIEW_MATCH_MODEL_CONFLICT_RECOVERY_MIN_JACCARD_NEAR_CODE", 0.08)
+        if len(common) < min_common or jaccard < max(0.0, min_jaccard):
+            return None
+        score = 0.78
+        reason = "model_code_conflict_recovered_near_code"
+    else:
+        if not _env_bool("REVIEW_MATCH_MODEL_CONFLICT_RECOVERY_ALLOW_MULTI_CODE", True):
+            return None
+        if not multi_code_side:
+            return None
+        min_common = max(1, _env_int("REVIEW_MATCH_MODEL_CONFLICT_RECOVERY_MIN_COMMON_TOKENS", 4))
+        min_jaccard = _env_float("REVIEW_MATCH_MODEL_CONFLICT_RECOVERY_MIN_JACCARD", 0.40)
+        if len(common) < min_common or jaccard < max(0.0, min_jaccard):
+            return None
+        score = 0.76
+        reason = "model_code_conflict_recovered_multi_code"
+
+    if brand_overlap:
+        score += 0.01
+    if first_token_match:
+        score += 0.01
+
+    if variant_missing_market:
+        score -= 0.03
+        reason += "_variant_color_missing_market"
+    elif variant_missing_source:
+        score -= 0.03
+        reason += "_variant_color_missing_source"
+    elif color_missing_market:
+        score -= 0.02
+        reason += "_color_missing_market"
+
+    min_score = _env_float("REVIEW_MATCH_MODEL_CONFLICT_RECOVERY_MIN_SCORE", 0.75)
+    score = min(0.87, max(0.0, score))
+    if score < max(0.0, min(1.0, min_score)):
+        return None
+    return score, reason
+
+
 def _match_score(source: MarketItem, market: MarketItem) -> Tuple[float, str]:
     source_is_accessory = _is_accessory_title(source.title)
     market_is_accessory = _is_accessory_title(market.title)
@@ -2575,8 +4257,13 @@ def _match_score(source: MarketItem, market: MarketItem) -> Tuple[float, str]:
 
     source_families = _extract_primary_families(source.title)
     market_families = _extract_primary_families(market.title)
-    if (source_families or market_families) and source_families.isdisjoint(market_families):
+    if (source_families and market_families) and source_families.isdisjoint(market_families):
         return 0.0, "family_conflict"
+
+    source_brands = _extract_known_brand_tags(source.title)
+    market_brands = _extract_known_brand_tags(market.title)
+    if (source_brands and market_brands) and source_brands.isdisjoint(market_brands):
+        return 0.0, "brand_conflict"
 
     source_bundle = _bundle_mode(source.title)
     market_bundle = _bundle_mode(market.title)
@@ -2644,6 +4331,19 @@ def _match_score(source: MarketItem, market: MarketItem) -> Tuple[float, str]:
         market_specific_canon = _canonical_code_set(market_specific)
         same_specific = source_specific_canon & market_specific_canon
         if source_specific and market_specific and not same_specific:
+            recovered = _recover_model_code_conflict(
+                source=source,
+                market=market,
+                source_brands=source_brands,
+                market_brands=market_brands,
+                source_specific_canon=source_specific_canon,
+                market_specific_canon=market_specific_canon,
+                variant_missing_market=variant_missing_market,
+                variant_missing_source=variant_missing_source,
+                color_missing_market=color_missing_market,
+            )
+            if recovered is not None:
+                return recovered
             return 0.12, "model_code_conflict"
     if same_codes:
         if len(same_codes) == 1:
@@ -2683,13 +4383,31 @@ def _match_score(source: MarketItem, market: MarketItem) -> Tuple[float, str]:
             return 0.16, "color_missing_market"
         return min(0.95, 0.88 + boost), "model_code_normalized"
     if source_codes and market_codes:
+        recovered = _recover_model_code_conflict(
+            source=source,
+            market=market,
+            source_brands=source_brands,
+            market_brands=market_brands,
+            source_specific_canon=source_specific_canon,
+            market_specific_canon=market_specific_canon,
+            variant_missing_market=variant_missing_market,
+            variant_missing_source=variant_missing_source,
+            color_missing_market=color_missing_market,
+        )
+        if recovered is not None:
+            return recovered
         return 0.12, "model_code_conflict"
+    soft_color_reason = ""
+    soft_color_penalty = 0.0
     if variant_missing_market:
-        return 0.16, "variant_color_missing_market"
-    if variant_missing_source:
-        return 0.16, "variant_color_missing_source"
-    if color_missing_market:
-        return 0.16, "color_missing_market"
+        soft_color_reason = "variant_color_missing_market"
+        soft_color_penalty = 0.04
+    elif variant_missing_source:
+        soft_color_reason = "variant_color_missing_source"
+        soft_color_penalty = 0.04
+    elif color_missing_market:
+        soft_color_reason = "color_missing_market"
+        soft_color_penalty = 0.02
 
     source_token_list = _title_tokens(source.title)
     market_token_list = _title_tokens(market.title)
@@ -2708,6 +4426,10 @@ def _match_score(source: MarketItem, market: MarketItem) -> Tuple[float, str]:
     brand_bonus = 0.10 if src_first and src_first == mk_first else 0.0
     overlap_bonus = 0.06 if len(common) >= 3 else 0.0
     score = min(0.89, jaccard * 0.76 + brand_bonus + overlap_bonus)
+    if soft_color_penalty > 0:
+        score = max(0.0, score - soft_color_penalty)
+    if soft_color_reason:
+        return score, soft_color_reason
     return score, "token_overlap"
 
 
@@ -2756,11 +4478,36 @@ def _candidate_model_codes(source: MarketItem, market: MarketItem) -> List[str]:
     return []
 
 
+def _preferred_liquidity_query(
+    *,
+    source: MarketItem,
+    market: MarketItem,
+    base_query: str,
+    preferred_codes: Optional[set[str]] = None,
+) -> str:
+    candidate_codes = _candidate_model_codes(source, market)
+    if preferred_codes:
+        for code in candidate_codes:
+            if code in preferred_codes:
+                return code
+        union_codes = _item_model_code_keys(source) | _item_model_code_keys(market)
+        preferred_union = sorted(union_codes & preferred_codes)
+        if preferred_union:
+            return preferred_union[0]
+        preferred_fallback = sorted(preferred_codes)
+        if preferred_fallback:
+            return preferred_fallback[0]
+    if candidate_codes:
+        return candidate_codes[0]
+    return str(base_query or "").strip()
+
+
 def _analyze_candidate_matches(
     *,
     jp_items: Sequence[MarketItem],
     ebay_items: Sequence[MarketItem],
     min_score: float,
+    allow_ambiguous_codes: Optional[set[str]] = None,
 ) -> Dict[str, Any]:
     candidate_matches: List[Dict[str, Any]] = []
     skipped_low_match = 0
@@ -2770,8 +4517,10 @@ def _analyze_candidate_matches(
 
     for source in jp_items:
         if _is_ambiguous_model_title(source.title):
-            skipped_ambiguous_model_title += 1
-            continue
+            source_codes = _canonical_code_set(_extract_codes(source.title))
+            if not (allow_ambiguous_codes and source_codes.intersection(allow_ambiguous_codes)):
+                skipped_ambiguous_model_title += 1
+                continue
         best: Optional[Tuple[float, str, MarketItem]] = None
         for market in ebay_items:
             score, reason = _match_score(source, market)
@@ -2941,6 +4690,120 @@ def _fetch_ebay_model_backfill(
     }
 
 
+def _fetch_source_model_backfill_from_market(
+    *,
+    market_items: Sequence[MarketItem],
+    source_sites: Sequence[str],
+    timeout: int,
+    cap_site: int,
+    require_in_stock: bool,
+) -> Tuple[List[MarketItem], Dict[str, Any]]:
+    enabled = _env_bool("REVIEW_FETCH_SOURCE_MODEL_BACKFILL_ENABLED", True)
+    max_codes = max(1, min(8, _env_int("REVIEW_FETCH_SOURCE_MODEL_BACKFILL_MAX_CODES", 3)))
+    max_items = max(10, min(120, _env_int("REVIEW_FETCH_SOURCE_MODEL_BACKFILL_MAX_ITEMS", 50)))
+    summary: Dict[str, Any] = {
+        "enabled": bool(enabled),
+        "ran": False,
+        "reason": "",
+        "model_code_count": 0,
+        "queries": [],
+        "added_items": 0,
+        "errors": [],
+    }
+    if not enabled:
+        summary["reason"] = "disabled"
+        return [], summary
+
+    code_rows: Dict[str, Dict[str, Any]] = {}
+    for item in market_items:
+        for raw_code in _extract_codes(item.title):
+            code = str(raw_code or "").strip().upper()
+            if not _is_specific_model_code(code):
+                continue
+            canon = _canonicalize_code(code)
+            if not canon:
+                continue
+            row = code_rows.get(canon)
+            if not isinstance(row, dict):
+                row = {"code": code, "count": 0}
+                code_rows[canon] = row
+            row["count"] = _to_int(row.get("count"), 0) + 1
+            best = str(row.get("code", "") or "")
+            if len(code) > len(best):
+                row["code"] = code
+
+    ranked_codes = [
+        str(row.get("code", "") or "").strip().upper()
+        for _, row in sorted(
+            code_rows.items(),
+            key=lambda kv: (
+                -_to_int((kv[1] or {}).get("count"), 0),
+                -len(str((kv[1] or {}).get("code", "") or "")),
+                str((kv[1] or {}).get("code", "") or ""),
+            ),
+        )
+    ]
+    ranked_codes = [code for code in ranked_codes if code][:max_codes]
+    summary["model_code_count"] = len(ranked_codes)
+    if not ranked_codes:
+        summary["reason"] = "no_model_codes"
+        return [], summary
+
+    fetchers: Dict[str, Callable[[str, int, int, int, bool], Tuple[List[MarketItem], Dict[str, Any]]]] = {
+        "rakuten": _search_rakuten,
+        "yahoo": _search_yahoo,
+    }
+    normalized_sites = [str(v or "").strip().lower() for v in source_sites if str(v or "").strip()]
+    normalized_sites = [site for site in normalized_sites if site in fetchers]
+    if not normalized_sites:
+        summary["reason"] = "no_supported_source_sites"
+        return [], summary
+
+    out: List[MarketItem] = []
+    seen: set[Tuple[str, str]] = set()
+    per_call_limit = max(1, min(30, cap_site))
+    for site in normalized_sites:
+        fetcher = fetchers[site]
+        for code in ranked_codes:
+            if len(out) >= max_items:
+                break
+            entry: Dict[str, Any] = {"site": site, "query": code}
+            try:
+                rows, info = fetcher(code, per_call_limit, timeout, 1, require_in_stock)
+                entry["ok"] = True
+                entry["count"] = len(rows)
+                entry["info"] = {
+                    "http": _to_int((info or {}).get("http"), -1),
+                    "raw_total": _to_int((info or {}).get("raw_total"), -1),
+                    "cache_hit": bool((info or {}).get("cache_hit")),
+                    "budget_remaining": _to_int((info or {}).get("budget_remaining"), -1),
+                }
+                for item in rows:
+                    ident = _item_identity(item)
+                    if ident in seen:
+                        continue
+                    seen.add(ident)
+                    out.append(item)
+                    if len(out) >= max_items:
+                        break
+            except Exception as err:
+                entry["ok"] = False
+                entry["error"] = str(err)
+                errors = summary.get("errors")
+                if isinstance(errors, list):
+                    errors.append({"site": site, "query": code, "message": str(err)})
+            queries = summary.get("queries")
+            if isinstance(queries, list):
+                queries.append(entry)
+        if len(out) >= max_items:
+            break
+
+    summary["ran"] = True
+    summary["reason"] = "ok"
+    summary["added_items"] = len(out)
+    return out, summary
+
+
 def _existing_pairs(settings: Settings) -> set[Tuple[str, str, str, str]]:
     existing: set[Tuple[str, str, str, str]] = set()
     with connect(settings.db_path) as conn:
@@ -3039,6 +4902,8 @@ def fetch_live_review_candidates(
         "require_in_stock": require_in_stock_flag,
         "liquidity_require_signal": _env_bool("LIQUIDITY_REQUIRE_SIGNAL", True),
     }
+    strict_sold_min_basis = _env_bool("LIQUIDITY_STRICT_SOLD_MIN_BASIS", True)
+    applied_filters["strict_sold_min_basis"] = bool(strict_sold_min_basis)
     blocked_pair_signatures = _load_blocked_pair_signatures()
     liquidity_gate_enabled = _env_bool("LIQUIDITY_GATE_ENABLED", True)
     # 90日売却データ未取得を通さないことをデフォルトにする。
@@ -3058,7 +4923,21 @@ def fetch_live_review_candidates(
     }
     liquidity_min_sold_90d = max(0, _env_int("LIQUIDITY_MIN_SOLD_90D", 3))
     liquidity_min_sell_through_90d = max(0.0, min(1.0, _env_float("LIQUIDITY_MIN_SELL_THROUGH_90D", 0.15)))
-    query_skip_ttl_sec = max(0, _env_int("REVIEW_QUERY_SKIP_TTL_SECONDS", 1200))
+    est_intl_shipping = _to_float(os.getenv("EST_INTL_SHIPPING_USD"), 18.0)
+    est_customs = _to_float(os.getenv("EST_CUSTOMS_USD"), 0.0)
+    est_packaging = _to_float(os.getenv("EST_PACKAGING_USD"), 0.0)
+    marketplace_fee_rate = _to_float(os.getenv("MARKETPLACE_FEE_RATE"), 0.13)
+    payment_fee_rate = _to_float(os.getenv("PAYMENT_FEE_RATE"), 0.03)
+    fixed_fee_usd = _to_float(os.getenv("FIXED_FEE_USD"), 0.0)
+    query_skip_ttl_sec = max(0, _env_int("REVIEW_QUERY_SKIP_TTL_SECONDS", 1800))
+    query_skip_ttl_done_sec = max(
+        query_skip_ttl_sec,
+        _env_int("REVIEW_QUERY_SKIP_TTL_DONE_SECONDS", 21600),
+    )
+    query_skip_ttl_no_gain_sec = max(
+        query_skip_ttl_sec,
+        _env_int("REVIEW_QUERY_SKIP_TTL_NO_GAIN_SECONDS", 3600),
+    )
     query_skip_disabled = _env_bool("REVIEW_QUERY_SKIP_DISABLED", False)
     query_skip_key = _query_skip_key(
         query=text_query,
@@ -3073,7 +4952,7 @@ def fetch_live_review_candidates(
     )
     query_skip_entries = _load_query_skip_entries() if query_skip_ttl_sec > 0 else {}
 
-    if (not query_skip_disabled) and query_skip_ttl_sec > 0 and (not rpa_refresh_enabled):
+    if (not query_skip_disabled) and query_skip_ttl_sec > 0:
         row = query_skip_entries.get(query_skip_key)
         if isinstance(row, dict):
             expires_at = _to_int(row.get("expires_at"), 0)
@@ -3081,7 +4960,7 @@ def fetch_live_review_candidates(
             if (
                 expires_at > now_ts
                 and _to_int(row.get("created_count"), -1) == 0
-                and bool(row.get("search_scope_done"))
+                and (bool(row.get("search_scope_done")) or bool(row.get("no_gain_stop")))
             ):
                 ttl_remaining = max(0, expires_at - now_ts)
                 return {
@@ -3113,7 +4992,7 @@ def fetch_live_review_candidates(
                     "low_match_samples": row.get("low_match_samples", [])
                     if isinstance(row.get("low_match_samples"), list)
                     else [],
-                    "search_scope_done": True,
+                    "search_scope_done": bool(row.get("search_scope_done")),
                     "hints": row.get("hints", []) if isinstance(row.get("hints"), list) else [],
                     "applied_filters": row.get("applied_filters", applied_filters)
                     if isinstance(row.get("applied_filters"), dict)
@@ -3125,7 +5004,70 @@ def fetch_live_review_candidates(
                     "query_cache_expires_at": _epoch_to_iso(expires_at),
                 }
 
+    def _build_rpa_daily_limit_result(
+        *,
+        fetched_payload: Optional[Dict[str, Any]] = None,
+        errors_payload: Optional[List[Dict[str, str]]] = None,
+        hints_extra: Optional[List[str]] = None,
+        search_scope_done: bool = False,
+    ) -> Dict[str, Any]:
+        hints: List[str] = [
+            "Product Researchの日次上限に到達したため、探索を停止しました。",
+            "この上限は翌日にリセットされます。時間を空けて再実行してください。",
+        ]
+        if isinstance(hints_extra, list):
+            for row in hints_extra:
+                text = str(row or "").strip()
+                if text:
+                    hints.append(text)
+        return {
+            "query": text_query,
+            "market_site": market_site,
+            "source_sites": normalized_sources,
+            "fetched": fetched_payload if isinstance(fetched_payload, dict) else {},
+            "created_count": 0,
+            "created_ids": [],
+            "created": [],
+            "errors": errors_payload if isinstance(errors_payload, list) else [],
+            "skipped_duplicates": 0,
+            "skipped_low_match": 0,
+            "skipped_invalid_price": 0,
+            "skipped_unprofitable": 0,
+            "skipped_low_margin": 0,
+            "skipped_missing_sold_min": 0,
+            "skipped_non_min_basis": 0,
+            "skipped_missing_sold_sample": 0,
+            "skipped_below_sold_min": 0,
+            "skipped_implausible_sold_min": 0,
+            "skipped_source_variant_unresolved": 0,
+            "skipped_low_ev90": 0,
+            "skipped_low_liquidity": 0,
+            "skipped_liquidity_unavailable": 0,
+            "skipped_blocked": 0,
+            "skipped_group_cap": 0,
+            "skipped_ambiguous_model_title": 0,
+            "liquidity_unavailable_model_codes": [],
+            "low_match_reason_counts": {},
+            "low_match_samples": [],
+            "search_scope_done": bool(search_scope_done),
+            "hints": hints,
+            "applied_filters": applied_filters,
+            "liquidity_rpa_refresh": rpa_refresh_summary,
+            "query_cache_skip": False,
+            "query_cache_ttl_sec": 0,
+            "rpa_daily_limit_reached": True,
+        }
+
     def _finalize(result: Dict[str, Any]) -> Dict[str, Any]:
+        if isinstance(result, dict):
+            result.setdefault("liquidity_rpa_refresh", rpa_refresh_summary)
+            daily_limit = _rpa_daily_limit_reached(result.get("liquidity_rpa_refresh"))
+            result["rpa_daily_limit_reached"] = bool(daily_limit or bool(result.get("rpa_daily_limit_reached")))
+            if result["rpa_daily_limit_reached"]:
+                hints_row = result.get("hints") if isinstance(result.get("hints"), list) else []
+                if not any("日次上限" in str(v or "") for v in hints_row):
+                    hints_row.insert(0, "Product Researchの日次上限に到達したため、探索を停止しました。")
+                result["hints"] = hints_row
         if query_skip_ttl_sec <= 0 or query_skip_disabled:
             if isinstance(result, dict):
                 result.setdefault("query_cache_saved_at", "")
@@ -3135,12 +5077,21 @@ def fetch_live_review_candidates(
             return result
         result.setdefault("applied_filters", dict(applied_filters))
         now_ts = int(time.time())
-        expires_at = now_ts + query_skip_ttl_sec
+        created_count = _to_int(result.get("created_count"), 0)
+        no_gain_stop = bool(_is_short_term_no_gain_result(result))
+        if created_count == 0 and bool(result.get("search_scope_done")):
+            effective_ttl = query_skip_ttl_done_sec
+        elif created_count == 0 and no_gain_stop:
+            effective_ttl = query_skip_ttl_no_gain_sec
+        else:
+            effective_ttl = query_skip_ttl_sec
+        expires_at = now_ts + max(0, int(effective_ttl))
         query_skip_entries[query_skip_key] = {
             "updated_at": now_ts,
             "expires_at": expires_at,
             "created_count": _to_int(result.get("created_count"), 0),
             "search_scope_done": bool(result.get("search_scope_done")),
+            "no_gain_stop": no_gain_stop,
             "fetched": result.get("fetched", {}) if isinstance(result.get("fetched"), dict) else {},
             "errors": result.get("errors", []) if isinstance(result.get("errors"), list) else [],
             "hints": result.get("hints", []) if isinstance(result.get("hints"), list) else [],
@@ -3155,6 +5106,7 @@ def fetch_live_review_candidates(
             "skipped_low_ev90": _to_int(result.get("skipped_low_ev90"), 0),
             "skipped_low_liquidity": _to_int(result.get("skipped_low_liquidity"), 0),
             "skipped_liquidity_unavailable": _to_int(result.get("skipped_liquidity_unavailable"), 0),
+            "skipped_source_variant_unresolved": _to_int(result.get("skipped_source_variant_unresolved"), 0),
             "skipped_blocked": _to_int(result.get("skipped_blocked"), 0),
             "skipped_group_cap": _to_int(result.get("skipped_group_cap"), 0),
             "skipped_ambiguous_model_title": _to_int(result.get("skipped_ambiguous_model_title"), 0),
@@ -3178,7 +5130,11 @@ def fetch_live_review_candidates(
     jp_items: List[MarketItem] = []
     # 完走は厳格に「探索候補を最後まで消化した」時のみ。
     # max_calls_reached / target_reached / low_yield_stop は途中打ち切りの可能性がある。
-    done_stop_reasons = {"query_exhausted"}
+    query_specific_codes = _query_specific_codes(text_query)
+    strict_query_code_match = bool(
+        _env_bool("REVIEW_FETCH_FORCE_EXACT_FOR_MODEL_QUERY", True) and query_specific_codes
+    )
+    sold_first_required = _env_bool("REVIEW_FETCH_EBAY_SOLD_FIRST_REQUIRED", False)
 
     ebay_items, ebay_info, ebay_error = _fetch_site_items_adaptive(
         site="ebay",
@@ -3187,6 +5143,13 @@ def fetch_live_review_candidates(
         timeout=timeout,
         require_in_stock=True,
     )
+    ebay_items, ebay_query_code_filter = _filter_items_by_query_codes(
+        items=ebay_items,
+        query_codes=query_specific_codes,
+        allow_fallback_no_match=(not strict_query_code_match),
+    )
+    if isinstance(ebay_info, dict):
+        ebay_info["query_model_code_filter"] = ebay_query_code_filter
     fetched["ebay"] = ebay_info
     if ebay_error:
         errors.append({"site": "ebay", "message": ebay_error})
@@ -3195,6 +5158,14 @@ def fetch_live_review_candidates(
     if not ebay_items:
         if rpa_refresh_enabled:
             rpa_refresh_summary = _maybe_refresh_rpa_for_fetch([text_query], force=False)
+            if _rpa_daily_limit_reached(rpa_refresh_summary):
+                return _finalize(
+                    _build_rpa_daily_limit_result(
+                        fetched_payload=fetched,
+                        errors_payload=errors,
+                        hints_extra=["eBay側ヒット0のためのRPA補完取得中に上限へ到達しました。"],
+                    )
+                )
         for source in normalized_sources:
             fetched[source] = {
                 "ok": True,
@@ -3226,6 +5197,7 @@ def fetch_live_review_candidates(
             "skipped_low_ev90": 0,
             "skipped_low_liquidity": 0,
             "skipped_liquidity_unavailable": 0,
+            "skipped_source_variant_unresolved": 0,
             "skipped_blocked": 0,
             "skipped_group_cap": 0,
             "skipped_ambiguous_model_title": 0,
@@ -3240,7 +5212,190 @@ def fetch_live_review_candidates(
             "query_cache_ttl_sec": 0,
         })
 
+    if rpa_refresh_enabled:
+        max_model_queries = max(1, _env_int("LIQUIDITY_RPA_FETCH_MODEL_QUERIES", 3))
+        top_codes = _rank_specific_codes_from_market_items(ebay_items, max_codes=max_model_queries)
+        refresh_queries: List[str] = top_codes if top_codes else [text_query]
+        rpa_refresh_summary = _maybe_refresh_rpa_for_fetch(refresh_queries, force=False)
+        if _rpa_daily_limit_reached(rpa_refresh_summary):
+            return _finalize(
+                _build_rpa_daily_limit_result(
+                    fetched_payload=fetched,
+                    errors_payload=errors,
+                    hints_extra=["型番クエリのRPA更新中に上限へ到達しました。"],
+                )
+            )
+        if isinstance(fetched.get("ebay"), dict):
+            fetched["ebay"]["rpa_prefetch_queries"] = refresh_queries
+
+    sold_first_plan = _build_ebay_sold_first_plan(
+        query=text_query,
+        ebay_items=ebay_items,
+        query_specific_codes=query_specific_codes,
+        active_count_hint=_to_int(ebay_info.get("raw_total"), -1) if isinstance(ebay_info, dict) else -1,
+        timeout=timeout,
+        settings=settings,
+        min_sold_90d_count=liquidity_min_sold_90d,
+        min_sell_through_90d=liquidity_min_sell_through_90d,
+        liquidity_require_signal=liquidity_require_signal,
+        min_profit_usd=min_profit,
+        min_margin_rate=min_margin,
+        marketplace_fee_rate=marketplace_fee_rate,
+        payment_fee_rate=payment_fee_rate,
+        international_shipping_usd=est_intl_shipping,
+        customs_usd=est_customs,
+        packaging_usd=est_packaging,
+        fixed_fee_usd=fixed_fee_usd,
+    )
+    sold_first_summary = sold_first_plan.get("summary", {}) if isinstance(sold_first_plan, dict) else {}
+    sold_first_codes = sold_first_plan.get("selected_codes", set()) if isinstance(sold_first_plan, dict) else set()
+    sold_first_ceiling = (
+        sold_first_plan.get("max_purchase_jpy_by_code", {}) if isinstance(sold_first_plan, dict) else {}
+    )
+    sold_first_signal_lookup = _build_sold_first_signal_lookup(
+        sold_first_plan.get("signals", {}) if isinstance(sold_first_plan, dict) else {}
+    )
+    if sold_first_codes and query_specific_codes and _env_bool("REVIEW_FETCH_EBAY_SOLD_FIRST_FILTER_BY_QUERY_CODE", True):
+        before_count = len(sold_first_codes)
+        sold_first_codes = _filter_sold_first_codes_for_query(sold_first_codes, query_specific_codes)
+        if isinstance(sold_first_summary, dict):
+            sold_first_summary["query_code_filter_applied"] = True
+            sold_first_summary["query_code_filter_before"] = int(before_count)
+            sold_first_summary["query_code_filter_after"] = int(len(sold_first_codes))
+            sold_first_summary["selected_codes"] = sorted(sold_first_codes)
+            sold_first_summary["codes_passed"] = int(len(sold_first_codes))
+    if isinstance(fetched.get("ebay"), dict):
+        fetched["ebay"]["sold_first"] = sold_first_summary
+
+    if sold_first_codes:
+        ebay_items, sold_first_market_filter = _filter_items_by_query_codes(
+            items=ebay_items,
+            query_codes=sold_first_codes,
+            allow_fallback_no_match=False,
+        )
+        if isinstance(fetched.get("ebay"), dict):
+            fetched["ebay"]["sold_first_market_filter"] = sold_first_market_filter
+        if not ebay_items:
+            hints: List[str] = []
+            hints.append("eBay売却先行フィルタ後に候補が0件でした。")
+            hints.append("型番候補が細かすぎる可能性があります。クエリ幅を少し広げてください。")
+            return _finalize(
+                {
+                    "query": text_query,
+                    "market_site": market_site,
+                    "source_sites": normalized_sources,
+                    "fetched": fetched,
+                    "created_count": 0,
+                    "created_ids": [],
+                    "created": [],
+                    "errors": errors,
+                    "skipped_duplicates": 0,
+                    "skipped_low_match": 0,
+                    "skipped_invalid_price": 0,
+                    "skipped_unprofitable": 0,
+                    "skipped_low_margin": 0,
+                    "skipped_low_ev90": 0,
+                    "skipped_low_liquidity": 0,
+                    "skipped_liquidity_unavailable": 0,
+                    "skipped_source_variant_unresolved": 0,
+                    "skipped_blocked": 0,
+                    "skipped_group_cap": 0,
+                    "skipped_ambiguous_model_title": 0,
+                    "liquidity_unavailable_model_codes": [],
+                    "low_match_reason_counts": {},
+                    "low_match_samples": [],
+                    "search_scope_done": False,
+                    "hints": hints,
+                    "applied_filters": applied_filters,
+                    "liquidity_rpa_refresh": rpa_refresh_summary,
+                    "query_cache_skip": False,
+                    "query_cache_ttl_sec": 0,
+                }
+            )
+    elif sold_first_required:
+        hints: List[str] = []
+        hints.append("eBay売却先行フィルタで通過型番が0件でした。")
+        hints.append("カテゴリや検索語を変更するか、売却件数・利益閾値を調整してください。")
+        return _finalize(
+            {
+                "query": text_query,
+                "market_site": market_site,
+                "source_sites": normalized_sources,
+                "fetched": fetched,
+                "created_count": 0,
+                "created_ids": [],
+                "created": [],
+                "errors": errors,
+                "skipped_duplicates": 0,
+                "skipped_low_match": 0,
+                "skipped_invalid_price": 0,
+                "skipped_unprofitable": 0,
+                "skipped_low_margin": 0,
+                "skipped_low_ev90": 0,
+                "skipped_low_liquidity": 0,
+                "skipped_liquidity_unavailable": 0,
+                "skipped_source_variant_unresolved": 0,
+                "skipped_blocked": 0,
+                "skipped_group_cap": 0,
+                "skipped_ambiguous_model_title": 0,
+                "liquidity_unavailable_model_codes": [],
+                "low_match_reason_counts": {},
+                "low_match_samples": [],
+                "search_scope_done": False,
+                "hints": hints,
+                "applied_filters": applied_filters,
+                "liquidity_rpa_refresh": rpa_refresh_summary,
+                "query_cache_skip": False,
+                "query_cache_ttl_sec": 0,
+            }
+        )
+
+    sold_first_source_backfill_summary: Dict[str, Any] = {"enabled": bool(sold_first_codes), "ran": False}
+    if sold_first_codes:
+        synthetic_market_items = [
+            MarketItem(
+                site="ebay",
+                item_id=f"sold-first:{code}",
+                title=code,
+                item_url="",
+                image_url="",
+                price=0.0,
+                shipping=0.0,
+                currency="USD",
+                condition="new",
+                identifiers={},
+                raw={},
+            )
+            for code in sorted(sold_first_codes)
+        ]
+        sold_first_items, sold_first_source_backfill_summary = _fetch_source_model_backfill_from_market(
+            market_items=synthetic_market_items,
+            source_sites=normalized_sources,
+            timeout=timeout,
+            cap_site=cap_site,
+            require_in_stock=require_in_stock_flag,
+        )
+        jp_items.extend(sold_first_items)
+        fetched["sold_first_source_backfill"] = sold_first_source_backfill_summary
+
     for source in normalized_sources:
+        if _can_skip_source_fetch_after_preselection(
+            sold_first_codes=sold_first_codes,
+            jp_items=jp_items,
+            cap_site=cap_site,
+            source_sites=normalized_sources,
+        ):
+            fetched[source] = {
+                "ok": True,
+                "count": 0,
+                "calls_made": 0,
+                "cache_hits": 0,
+                "network_calls": 0,
+                "budget_remaining": -1,
+                "stop_reason": "skipped_by_sold_first_preselection",
+                "require_in_stock": bool(require_in_stock_flag),
+            }
+            continue
         items, info, fetch_error = _fetch_site_items_adaptive(
             site=source,
             query=text_query,
@@ -3248,26 +5403,55 @@ def fetch_live_review_candidates(
             timeout=timeout,
             require_in_stock=require_in_stock_flag,
         )
+        items, source_query_code_filter = _filter_items_by_query_codes(
+            items=items,
+            query_codes=query_specific_codes,
+            allow_fallback_no_match=(not strict_query_code_match),
+        )
+        if isinstance(info, dict):
+            info["query_model_code_filter"] = source_query_code_filter
         fetched[source] = info
         jp_items.extend(items)
         if fetch_error:
             errors.append({"site": source, "message": fetch_error})
 
-    scope_done = (
-        not errors
-        and bool(fetched)
-        and all(
-            bool(info.get("ok"))
-            and _to_int(info.get("calls_made"), 0) > 0
-            and str(info.get("stop_reason", "") or "").strip() in done_stop_reasons
-            for info in fetched.values()
-            if isinstance(info, dict)
+    if sold_first_ceiling:
+        require_code_match_for_budget = _env_bool("REVIEW_FETCH_EBAY_SOLD_FIRST_REQUIRE_CODE_MATCH", False) or bool(
+            query_specific_codes
         )
-    )
+        jp_items, source_budget_filter = _filter_source_items_by_purchase_ceiling(
+            items=jp_items,
+            max_purchase_jpy_by_code=sold_first_ceiling,
+            require_code_match=require_code_match_for_budget,
+        )
+        fetched["source_budget_filter"] = source_budget_filter
+
+    required_done_sites = ["ebay"] + [site for site in normalized_sources if site != "ebay"]
+    scope_done = False
+    if not errors and required_done_sites:
+        done_rows: List[Dict[str, Any]] = []
+        missing_required = False
+        for site in required_done_sites:
+            info = fetched.get(site)
+            if not isinstance(info, dict):
+                missing_required = True
+                break
+            done_rows.append(info)
+        if (not missing_required) and done_rows:
+            scope_done = all(_is_site_scope_done(info) for info in done_rows)
 
     if not ebay_items or not jp_items:
         if rpa_refresh_enabled:
             rpa_refresh_summary = _maybe_refresh_rpa_for_fetch([text_query], force=False)
+            if _rpa_daily_limit_reached(rpa_refresh_summary):
+                return _finalize(
+                    _build_rpa_daily_limit_result(
+                        fetched_payload=fetched,
+                        errors_payload=errors,
+                        hints_extra=["候補不足時のRPA再取得中に上限へ到達しました。"],
+                        search_scope_done=scope_done,
+                    )
+                )
         hints: List[str] = []
         if scope_done:
             hints.append("この検索ワードは現在設定の探索範囲を完走済みです。")
@@ -3295,6 +5479,7 @@ def fetch_live_review_candidates(
             "skipped_low_ev90": 0,
             "skipped_low_liquidity": 0,
             "skipped_liquidity_unavailable": 0,
+            "skipped_source_variant_unresolved": 0,
             "skipped_blocked": 0,
             "skipped_group_cap": 0,
             "skipped_ambiguous_model_title": 0,
@@ -3313,6 +5498,7 @@ def fetch_live_review_candidates(
         jp_items=jp_items,
         ebay_items=ebay_items,
         min_score=min_score,
+        allow_ambiguous_codes=(sold_first_codes if sold_first_codes else None),
     )
     candidate_matches = list(analysis.get("candidate_matches", []))
     skipped_low_match = _to_int(analysis.get("skipped_low_match"), 0)
@@ -3321,9 +5507,14 @@ def fetch_live_review_candidates(
     low_match_samples = list(analysis.get("low_match_samples", []))
 
     model_backfill_summary: Dict[str, Any] = {"enabled": _env_bool("REVIEW_FETCH_MODEL_BACKFILL_ENABLED", True), "ran": False}
+    skip_model_backfill_for_query = _should_skip_model_backfill_for_query(query_specific_codes)
+    if skip_model_backfill_for_query:
+        model_backfill_summary["skipped_reason"] = "specific_query_codes"
+        model_backfill_summary["query_specific_code_count"] = len(query_specific_codes)
     model_conflict_count = _to_int(low_match_reason_counts.get("model_code_conflict"), 0)
     should_model_backfill = (
         bool(model_backfill_summary.get("enabled"))
+        and (not skip_model_backfill_for_query)
         and skipped_low_match >= max(6, cap_candidates // 2)
         and model_conflict_count >= max(6, int(skipped_low_match * 0.4))
     )
@@ -3351,6 +5542,7 @@ def fetch_live_review_candidates(
                 jp_items=jp_items,
                 ebay_items=ebay_items,
                 min_score=min_score,
+                allow_ambiguous_codes=(sold_first_codes if sold_first_codes else None),
             )
             candidate_matches = list(analysis.get("candidate_matches", []))
             skipped_low_match = _to_int(analysis.get("skipped_low_match"), 0)
@@ -3360,9 +5552,57 @@ def fetch_live_review_candidates(
     if isinstance(fetched.get("ebay"), dict):
         fetched["ebay"]["model_backfill"] = model_backfill_summary
 
-    if rpa_refresh_enabled:
-        max_model_queries = max(1, _env_int("LIQUIDITY_RPA_FETCH_MODEL_QUERIES", 8))
+    source_model_backfill_summary: Dict[str, Any] = {
+        "enabled": _env_bool("REVIEW_FETCH_SOURCE_MODEL_BACKFILL_ENABLED", True),
+        "ran": False,
+    }
+    if skip_model_backfill_for_query:
+        source_model_backfill_summary["skipped_reason"] = "specific_query_codes"
+        source_model_backfill_summary["query_specific_code_count"] = len(query_specific_codes)
+    should_source_model_backfill = (
+        bool(source_model_backfill_summary.get("enabled"))
+        and (not skip_model_backfill_for_query)
+        and skipped_low_match >= max(6, cap_candidates // 2)
+        and model_conflict_count >= max(4, int(skipped_low_match * 0.25))
+    )
+    if should_source_model_backfill:
+        source_backfill_items, source_model_backfill_summary = _fetch_source_model_backfill_from_market(
+            market_items=ebay_items,
+            source_sites=normalized_sources,
+            timeout=timeout,
+            cap_site=cap_site,
+            require_in_stock=require_in_stock_flag,
+        )
+        if source_backfill_items:
+            seen_source: set[Tuple[str, str]] = {_item_identity(item) for item in jp_items}
+            merged_jp_items = list(jp_items)
+            added_source = 0
+            for item in source_backfill_items:
+                ident = _item_identity(item)
+                if ident in seen_source:
+                    continue
+                seen_source.add(ident)
+                merged_jp_items.append(item)
+                added_source += 1
+            jp_items = merged_jp_items
+            source_model_backfill_summary["unique_added_items"] = int(added_source)
+            analysis = _analyze_candidate_matches(
+                jp_items=jp_items,
+                ebay_items=ebay_items,
+                min_score=min_score,
+                allow_ambiguous_codes=(sold_first_codes if sold_first_codes else None),
+            )
+            candidate_matches = list(analysis.get("candidate_matches", []))
+            skipped_low_match = _to_int(analysis.get("skipped_low_match"), 0)
+            skipped_ambiguous_model_title = _to_int(analysis.get("skipped_ambiguous_model_title"), 0)
+            low_match_reason_counts = dict(analysis.get("low_match_reason_counts", {}))
+            low_match_samples = list(analysis.get("low_match_samples", []))
+    fetched["source_model_backfill"] = source_model_backfill_summary
+
+    if rpa_refresh_enabled and not bool(rpa_refresh_summary.get("ran")):
+        max_model_queries = max(1, _env_int("LIQUIDITY_RPA_FETCH_MODEL_QUERIES", 3))
         model_queries: List[str] = []
+        seen_candidate_codes: set[str] = set()
         for row in candidate_matches:
             source = row.get("source")
             market = row.get("market")
@@ -3370,11 +5610,53 @@ def fetch_live_review_candidates(
                 continue
             for code in _candidate_model_codes(source, market):
                 text = str(code or "").strip().upper()
-                if text:
-                    model_queries.append(text)
+                if not text or text in seen_candidate_codes:
+                    continue
+                seen_candidate_codes.add(text)
+                model_queries.append(text)
+                if len(model_queries) >= max_model_queries:
+                    break
             if len(model_queries) >= max_model_queries:
                 break
-        rpa_refresh_summary = _maybe_refresh_rpa_for_fetch([text_query, *model_queries], force=False)
+        source_backfill_queries: List[str] = []
+        source_backfill_rows = (
+            source_model_backfill_summary.get("queries")
+            if isinstance(source_model_backfill_summary, dict)
+            else []
+        )
+        if isinstance(source_backfill_rows, list):
+            for row in source_backfill_rows:
+                if not isinstance(row, dict):
+                    continue
+                text = str(row.get("query", "") or "").strip().upper()
+                if text:
+                    source_backfill_queries.append(text)
+                if len(source_backfill_queries) >= max_model_queries:
+                    break
+        merged_model_queries: List[str] = []
+        seen_model_queries: set[str] = set()
+        for code in [*model_queries, *source_backfill_queries]:
+            text = str(code or "").strip().upper()
+            if not text or text in seen_model_queries:
+                continue
+            seen_model_queries.add(text)
+            merged_model_queries.append(text)
+            if len(merged_model_queries) >= max_model_queries:
+                break
+        broad_query = bool((not re.search(r"\d", text_query)) and len(text_query.strip().split()) <= 3)
+        if broad_query and merged_model_queries:
+            refresh_queries = list(merged_model_queries)
+        else:
+            refresh_queries = [text_query, *merged_model_queries]
+        rpa_refresh_summary = _maybe_refresh_rpa_for_fetch(refresh_queries, force=False)
+        if _rpa_daily_limit_reached(rpa_refresh_summary):
+            return _finalize(
+                _build_rpa_daily_limit_result(
+                    fetched_payload=fetched,
+                    errors_payload=errors,
+                    hints_extra=["候補型番からのRPA補完中に上限へ到達しました。"],
+                )
+            )
 
     # 同一eBay候補に対しては、現在の仕入れ最安（同率なら一致スコア高い方）を優先する。
     best_by_market: Dict[str, Dict[str, Any]] = {}
@@ -3405,8 +5687,10 @@ def fetch_live_review_candidates(
     skipped_low_margin = 0
     skipped_below_sold_min = 0
     skipped_missing_sold_min = 0
+    skipped_non_min_basis = 0
     skipped_missing_sold_sample = 0
     skipped_implausible_sold_min = 0
+    skipped_source_variant_unresolved = 0
     skipped_low_ev90 = 0
     skipped_low_liquidity = 0
     skipped_liquidity_unavailable = 0
@@ -3419,14 +5703,12 @@ def fetch_live_review_candidates(
     group_counts: Dict[str, int] = {}
     ebay_active_count_hint = _to_int(ebay_info.get("raw_total"), -1) if isinstance(ebay_info, dict) else -1
 
-    est_intl_shipping = _to_float(os.getenv("EST_INTL_SHIPPING_USD"), 18.0)
-    est_customs = _to_float(os.getenv("EST_CUSTOMS_USD"), 0.0)
-    est_packaging = _to_float(os.getenv("EST_PACKAGING_USD"), 0.0)
-    marketplace_fee_rate = _to_float(os.getenv("MARKETPLACE_FEE_RATE"), 0.13)
-    payment_fee_rate = _to_float(os.getenv("PAYMENT_FEE_RATE"), 0.03)
-    fixed_fee_usd = _to_float(os.getenv("FIXED_FEE_USD"), 0.0)
     require_sold_min_basis = _env_bool("LIQUIDITY_REQUIRE_SOLD_MIN_PRICE", True)
     require_sold_sample_item = _env_bool("LIQUIDITY_REQUIRE_SOLD_SAMPLE_ITEM", True)
+    liquidity_signal_cache_by_query: Dict[str, Dict[str, Any]] = {}
+    liquidity_signal_reuse_sold_first = 0
+    liquidity_signal_reuse_query_cache = 0
+    source_variant_price_cache: Dict[Tuple[str, str, str], Tuple[float, Dict[str, Any]]] = {}
 
     for row in candidate_matches:
         if len(created_ids) >= cap_candidates:
@@ -3460,6 +5742,55 @@ def fetch_live_review_candidates(
             skipped_group_cap += 1
             continue
 
+        source_price_for_calc = _to_float(source.price, 0.0)
+        source_shipping_for_calc = _to_float(source.shipping, 0.0)
+        source_price_basis_type = "listing_price"
+        source_variant_resolution: Dict[str, Any] = {
+            "site": source.site,
+            "applied": False,
+            "ambiguous_source_model_codes": [],
+            "target_model_code": "",
+            "reason": "",
+        }
+        source_specific_codes = _specific_model_codes_in_title(source.title)
+        source_specific_canon = _canonical_code_set(source_specific_codes)
+        market_specific_canon = _canonical_code_set(_specific_model_codes_in_title(market.title))
+        pair_common_specific = sorted(source_specific_canon & market_specific_canon)
+        target_model_code = pair_common_specific[0] if pair_common_specific else ""
+        source_variant_resolution["ambiguous_source_model_codes"] = sorted(source_specific_canon)
+        source_variant_resolution["target_model_code"] = target_model_code
+        if len(source_specific_canon) >= 2:
+            if str(source.site or "").strip().lower() == "rakuten" and target_model_code:
+                cache_key = (str(source.site or "").strip().lower(), str(source.item_url or "").strip(), target_model_code)
+                resolved_price, resolved_info = source_variant_price_cache.get(cache_key, (-1.0, {}))
+                if not resolved_info:
+                    resolved_price, resolved_info = _resolve_rakuten_variant_price_jpy(
+                        item_url=str(source.item_url or ""),
+                        target_code=target_model_code,
+                        timeout=timeout,
+                    )
+                    source_variant_price_cache[cache_key] = (resolved_price, resolved_info)
+                if resolved_price > 0:
+                    source_price_for_calc = resolved_price
+                    source_price_basis_type = "rakuten_variant_model_price"
+                    source_variant_resolution = {
+                        **source_variant_resolution,
+                        **(resolved_info if isinstance(resolved_info, dict) else {}),
+                        "applied": True,
+                    }
+                else:
+                    skipped_source_variant_unresolved += 1
+                    source_variant_resolution = {
+                        **source_variant_resolution,
+                        **(resolved_info if isinstance(resolved_info, dict) else {}),
+                        "applied": False,
+                    }
+                    continue
+            else:
+                skipped_source_variant_unresolved += 1
+                source_variant_resolution["reason"] = "ambiguous_source_model_codes"
+                continue
+
         liquidity_signal: Dict[str, Any] = {}
         liquidity_gate: Dict[str, Any] = {
             "pass": True,
@@ -3468,17 +5799,43 @@ def fetch_live_review_candidates(
             "sell_through_90d": -1.0,
             "source": "",
         }
+        liquidity_query = _preferred_liquidity_query(
+            source=source,
+            market=market,
+            base_query=text_query,
+            preferred_codes=(sold_first_codes if sold_first_codes else None),
+        )
+        if not liquidity_query:
+            liquidity_query = text_query
+        liquidity_use_query_only = bool(sold_first_codes)
         if liquidity_gate_enabled:
-            liquidity_signal = get_liquidity_signal(
-                query=text_query,
-                source_title=source.title,
-                market_title=market.title,
-                source_identifiers=source.identifiers,
-                market_identifiers=market.identifiers,
-                active_count_hint=ebay_active_count_hint,
-                timeout=timeout,
-                settings=settings,
-            )
+            liquidity_key = _liquidity_query_key(liquidity_query)
+            used_preloaded_signal = False
+            if liquidity_use_query_only and liquidity_key:
+                preloaded = sold_first_signal_lookup.get(liquidity_key)
+                if isinstance(preloaded, dict) and preloaded:
+                    liquidity_signal = preloaded
+                    used_preloaded_signal = True
+                    liquidity_signal_reuse_sold_first += 1
+                else:
+                    cached = liquidity_signal_cache_by_query.get(liquidity_key)
+                    if isinstance(cached, dict) and cached:
+                        liquidity_signal = cached
+                        liquidity_signal_reuse_query_cache += 1
+            if not liquidity_signal:
+                liquidity_signal = get_liquidity_signal(
+                    query=liquidity_query,
+                    source_title=(liquidity_query if liquidity_use_query_only else source.title),
+                    market_title=(liquidity_query if liquidity_use_query_only else market.title),
+                    source_identifiers=({} if liquidity_use_query_only else source.identifiers),
+                    market_identifiers=({} if liquidity_use_query_only else market.identifiers),
+                    active_count_hint=ebay_active_count_hint,
+                    timeout=timeout,
+                    settings=settings,
+                )
+            if liquidity_use_query_only and liquidity_key and (not used_preloaded_signal):
+                if isinstance(liquidity_signal, dict) and liquidity_signal:
+                    liquidity_signal_cache_by_query[liquidity_key] = liquidity_signal
             liquidity_gate = evaluate_liquidity_gate(
                 liquidity_signal,
                 min_sold_90d_count=liquidity_min_sold_90d,
@@ -3495,23 +5852,39 @@ def fetch_live_review_candidates(
                     skipped_low_liquidity += 1
                 continue
 
+        sale_price_basis_usd, sale_price_basis_type, sale_shipping_basis_usd = _sale_price_basis_from_signal(
+            market, liquidity_signal
+        )
         liquidity_meta = liquidity_signal.get("metadata") if isinstance(liquidity_signal.get("metadata"), dict) else {}
         sold_min_basis = _to_float(liquidity_meta.get("sold_price_min"), -1.0)
         sold_min_raw = _to_float(liquidity_meta.get("sold_price_min_raw"), sold_min_basis)
         sold_min_outlier = bool(liquidity_meta.get("sold_price_min_outlier"))
-        if require_sold_min_basis and sold_min_basis <= 0:
-            skipped_missing_sold_min += 1
-            continue
-
-        sale_price_basis_usd, sale_price_basis_type, sale_shipping_basis_usd = _sale_price_basis_from_signal(
-            market, liquidity_signal
-        )
         if require_sold_min_basis:
-            sale_price_basis_usd = sold_min_basis
-            sale_price_basis_type = "sold_price_min_90d"
+            if strict_sold_min_basis:
+                if not _is_strict_sold_min_basis_candidate(
+                    sale_price_basis_type=sale_price_basis_type,
+                    sold_min_basis=sold_min_basis,
+                    sold_min_outlier=sold_min_outlier,
+                ):
+                    if sold_min_basis <= 0:
+                        skipped_missing_sold_min += 1
+                    else:
+                        skipped_non_min_basis += 1
+                    continue
+                sale_price_basis_usd = sold_min_basis
+                sale_price_basis_type = "sold_price_min_90d"
+            else:
+                if sale_price_basis_type == "sold_price_median_fallback_90d" and sale_price_basis_usd > 0:
+                    sold_min_basis = sale_price_basis_usd
+                elif sold_min_basis <= 0:
+                    skipped_missing_sold_min += 1
+                    continue
+                sale_price_basis_usd = sold_min_basis
+                if sale_price_basis_type != "sold_price_median_fallback_90d":
+                    sale_price_basis_type = "sold_price_min_90d"
             sale_shipping_basis_usd = 0.0
         sale_total_usd = sale_price_basis_usd + sale_shipping_basis_usd
-        purchase_total_jpy = source.price + source.shipping
+        purchase_total_jpy = source_price_for_calc + source_shipping_for_calc
         if sale_total_usd <= 0 or purchase_total_jpy <= 0:
             skipped_invalid_price += 1
             continue
@@ -3519,8 +5892,8 @@ def fetch_live_review_candidates(
         calc = calculate_profit(
             ProfitInput(
                 sale_price_usd=sale_total_usd,
-                purchase_price_jpy=source.price,
-                domestic_shipping_jpy=source.shipping,
+                purchase_price_jpy=source_price_for_calc,
+                domestic_shipping_jpy=source_shipping_for_calc,
                 international_shipping_usd=est_intl_shipping,
                 customs_usd=est_customs,
                 packaging_usd=est_packaging,
@@ -3563,12 +5936,20 @@ def fetch_live_review_candidates(
             skipped_low_ev90 += 1
             continue
         sold_sample = _liquidity_sold_sample(liquidity_signal)
-        if require_sold_sample_item and not sold_sample:
+        has_sold_sample_reference = _has_sold_sample_reference(sold_sample)
+        if require_sold_sample_item and not has_sold_sample_reference:
             skipped_missing_sold_sample += 1
             continue
         market_title_display = str(sold_sample.get("title", "") or market.title or "").strip() or market.title
-        market_url_display = str(sold_sample.get("item_url", "") or market.item_url or "").strip() or market.item_url
-        market_image_display = str(sold_sample.get("image_url", "") or market.image_url or "").strip() or market.image_url
+        if str(sale_price_basis_type or "").strip().lower() == "sold_price_min_90d":
+            market_url_display = str(sold_sample.get("item_url", "") or "").strip()
+            market_image_display = (
+                str(sold_sample.get("image_url", "") or "").strip()
+                or str(market.image_url or "").strip()
+            )
+        else:
+            market_url_display = str(sold_sample.get("item_url", "") or market.item_url or "").strip() or market.item_url
+            market_image_display = str(sold_sample.get("image_url", "") or market.image_url or "").strip() or market.image_url
         payload = {
             "source_site": source.site,
             "market_site": market.site,
@@ -3593,6 +5974,9 @@ def fetch_live_review_candidates(
                 "market_title_active": market.title,
                 "source_price_jpy": source.price,
                 "source_shipping_jpy": source.shipping,
+                "source_price_basis_jpy": source_price_for_calc,
+                "source_shipping_basis_jpy": source_shipping_for_calc,
+                "source_price_basis_type": source_price_basis_type,
                 "source_total_jpy": purchase_total_jpy,
                 "market_price_usd": market.price,
                 "market_shipping_usd": market.shipping,
@@ -3606,12 +5990,14 @@ def fetch_live_review_candidates(
                 "match_reason": reason,
                 "pair_signature": signature,
                 "liquidity_sold_min_implausible_check": implausible_detail,
+                "liquidity_query": liquidity_query,
                 "source_identifiers": source.identifiers,
                 "market_identifiers": market.identifiers,
                 "source_currency": source.currency,
                 "market_currency": market.currency,
                 "source_condition": source.condition,
                 "market_condition": market.condition,
+                "source_variant_price_resolution": source_variant_resolution,
                 "source_require_in_stock": bool(require_in_stock_flag),
                 "source_stock_status": _source_stock_status(source),
                 "ev90": ev90,
@@ -3631,6 +6017,7 @@ def fetch_live_review_candidates(
             payload["metadata"]["ebay_sold_image_url"] = sold_sample.get("image_url")
             payload["metadata"]["ebay_sold_title"] = sold_sample.get("title")
             payload["metadata"]["ebay_sold_price_usd"] = sold_sample.get("sold_price_usd")
+            payload["metadata"]["ebay_sold_sample_reference_ok"] = bool(has_sold_sample_reference)
         created = create_review_candidate(payload, settings=settings)
         candidate_id = int(created["id"])
         created_ids.append(candidate_id)
@@ -3685,11 +6072,20 @@ def fetch_live_review_candidates(
             qn = int(rpa_refresh_summary.get("query_count", 0) or 0)
             rc = int(rpa_refresh_summary.get("returncode", 0) or 0)
             hints.append(f"Product Research(RPA)を実行しました: queries={qn}, rc={rc}")
-            if rc != 0:
+            if _rpa_daily_limit_reached(rpa_refresh_summary):
+                hints.append("Product Researchの日次上限に到達したため、RPA処理を停止しました。")
+            elif rc != 0:
                 hints.append("Product Research(RPA)が失敗しました。環境設定またはログを確認してください。")
+        elif _rpa_daily_limit_reached(rpa_refresh_summary):
+            hints.append("Product Researchの日次上限に到達しているため、RPAを再実行しませんでした。")
         elif str(rpa_refresh_summary.get("reason", "") or "") == "cooldown_skip":
             retry_after = int(rpa_refresh_summary.get("retry_after_sec", 0) or 0)
             hints.append(f"Product Research(RPA)はクールダウン中のためスキップしました（{retry_after}秒後に再実行可）。")
+    if isinstance(fetched.get("ebay"), dict):
+        sold_summary = fetched["ebay"].get("sold_first")
+        if isinstance(sold_summary, dict):
+            sold_summary["liquidity_signal_reuse_sold_first"] = int(liquidity_signal_reuse_sold_first)
+            sold_summary["liquidity_signal_reuse_query_cache"] = int(liquidity_signal_reuse_query_cache)
 
     if len(created_ids) == 0:
         if scope_done:
@@ -3707,12 +6103,16 @@ def fetch_live_review_candidates(
             hints.append("利益条件で除外されています。仕入れ価格が低い型番で再検索してください。")
         if skipped_missing_sold_min > 0:
             hints.append("90日最低成約価格が未取得の候補を除外しました。")
+        if skipped_non_min_basis > 0:
+            hints.append("90日最低成約価格基準ではない候補を除外しました。")
         if skipped_missing_sold_sample > 0:
             hints.append("90日売却済み商品の参照URL/画像が取得できない候補を除外しました。")
         if skipped_below_sold_min > 0:
             hints.append("仕入れ総額が90日最低成約価格を上回る候補を除外しました。")
         if skipped_implausible_sold_min > 0:
             hints.append("90日最低成約価格が異常に低い候補を除外しました。")
+        if skipped_source_variant_unresolved > 0:
+            hints.append("型番別価格を特定できない複数型番商品を除外しました。")
         if skipped_low_ev90 > 0:
             hints.append("EV90（90日期待値）で除外されています。回転率か利幅の高い商品に寄せてください。")
         if skipped_low_liquidity > 0:
@@ -3739,9 +6139,11 @@ def fetch_live_review_candidates(
         "skipped_unprofitable": skipped_unprofitable,
         "skipped_low_margin": skipped_low_margin,
         "skipped_missing_sold_min": skipped_missing_sold_min,
+        "skipped_non_min_basis": skipped_non_min_basis,
         "skipped_missing_sold_sample": skipped_missing_sold_sample,
         "skipped_below_sold_min": skipped_below_sold_min,
         "skipped_implausible_sold_min": skipped_implausible_sold_min,
+        "skipped_source_variant_unresolved": skipped_source_variant_unresolved,
         "skipped_low_ev90": skipped_low_ev90,
         "skipped_low_liquidity": skipped_low_liquidity,
         "skipped_liquidity_unavailable": skipped_liquidity_unavailable,

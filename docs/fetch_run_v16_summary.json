@@ -1,0 +1,672 @@
+{
+  "generated_at": "2026-02-21T00:00:00Z",
+  "run_tag": "v16",
+  "rows": [
+    {
+      "category": "camera_lenses",
+      "created_count": 0,
+      "skipped_low_match": 95,
+      "skipped_missing_sold_min": 0,
+      "skipped_low_liquidity": 5,
+      "errors": [
+        {
+          "site": "rakuten",
+          "message": "楽天検索失敗: http=400 (wrong_parameter)"
+        }
+      ],
+      "timed_fetch": {
+        "enabled": true,
+        "min_target_candidates": 3,
+        "timebox_sec": 90,
+        "max_passes": 6,
+        "continue_after_target": true,
+        "passes_run": 2,
+        "stop_reason": "timebox_reached",
+        "elapsed_sec": 107.535,
+        "reached_min_target": false,
+        "adaptive_min_match_floor": 0.58,
+        "adaptive_min_match_step": 0.04,
+        "passes": [
+          {
+            "pass": 1,
+            "min_match_score": 0.72,
+            "created_count": 0,
+            "created_ids": [],
+            "elapsed_sec": 31.874,
+            "query_cache_skip": false,
+            "search_scope_done": false
+          },
+          {
+            "pass": 2,
+            "min_match_score": 0.68,
+            "created_count": 0,
+            "created_ids": [],
+            "elapsed_sec": 107.535,
+            "query_cache_skip": false,
+            "search_scope_done": false
+          }
+        ]
+      },
+      "source_model_backfill": {
+        "enabled": true,
+        "ran": false
+      },
+      "liquidity_rpa_refresh": {
+        "enabled": true,
+        "ran": true,
+        "reason": "ok",
+        "returncode": 0,
+        "queries": [
+          "SEL24105G",
+          "SEL90M28G",
+          "70200MM"
+        ],
+        "query_count": 3,
+        "output_path": "/Users/tadamichikimura/Downloads/dev-HQ/ebayminer/data/liquidity_rpa_signals.jsonl",
+        "python_exec": "/Users/tadamichikimura/Downloads/dev-HQ/ebayminer/.venv/bin/python",
+        "started_at_epoch": 1771647876,
+        "ended_at_epoch": 1771647945,
+        "stdout_tail": [
+          "[1/3] query=SEL24105G",
+          "  -> sold_90d=3 min=799.0 median=799.0 ccy=USD conf=0.95",
+          "[2/3] query=SEL90M28G",
+          "  -> sold_90d=7 min=29.89 median=363.0 ccy=USD conf=0.95",
+          "[3/3] query=70200MM",
+          "  -> sold_90d=0 min=-1.0 median=-1.0 ccy=USD conf=0.55",
+          "saved 81 rows -> /Users/tadamichikimura/Downloads/dev-HQ/ebayminer/data/liquidity_rpa_signals.jsonl"
+        ],
+        "stderr_tail": [],
+        "mode": "rpa_json",
+        "cooldown_sec": 300
+      }
+    },
+    {
+      "category": "sneakers",
+      "created_count": 0,
+      "skipped_low_match": 323,
+      "skipped_missing_sold_min": 0,
+      "skipped_low_liquidity": 0,
+      "errors": [],
+      "timed_fetch": {
+        "enabled": true,
+        "min_target_candidates": 3,
+        "timebox_sec": 90,
+        "max_passes": 6,
+        "continue_after_target": true,
+        "passes_run": 3,
+        "stop_reason": "timebox_reached",
+        "elapsed_sec": 107.801,
+        "reached_min_target": false,
+        "adaptive_min_match_floor": 0.58,
+        "adaptive_min_match_step": 0.04,
+        "passes": [
+          {
+            "pass": 1,
+            "min_match_score": 0.72,
+            "created_count": 0,
+            "created_ids": [],
+            "elapsed_sec": 37.142,
+            "query_cache_skip": false,
+            "search_scope_done": false
+          },
+          {
+            "pass": 2,
+            "min_match_score": 0.68,
+            "created_count": 0,
+            "created_ids": [],
+            "elapsed_sec": 73.049,
+            "query_cache_skip": false,
+            "search_scope_done": false
+          },
+          {
+            "pass": 3,
+            "min_match_score": 0.64,
+            "created_count": 0,
+            "created_ids": [],
+            "elapsed_sec": 107.801,
+            "query_cache_skip": false,
+            "search_scope_done": false
+          }
+        ]
+      },
+      "source_model_backfill": {
+        "enabled": true,
+        "ran": false
+      },
+      "liquidity_rpa_refresh": {
+        "enabled": true,
+        "ran": true,
+        "reason": "ok",
+        "returncode": 0,
+        "queries": [
+          "sneakers"
+        ],
+        "query_count": 1,
+        "output_path": "/Users/tadamichikimura/Downloads/dev-HQ/ebayminer/data/liquidity_rpa_signals.jsonl",
+        "python_exec": "/Users/tadamichikimura/Downloads/dev-HQ/ebayminer/.venv/bin/python",
+        "started_at_epoch": 1771647406,
+        "ended_at_epoch": 1771647432,
+        "stdout_tail": [
+          "[1/1] query=sneakers",
+          "  -> sold_90d=50 min=0.01 median=76.42 ccy=USD conf=0.95",
+          "saved 74 rows -> /Users/tadamichikimura/Downloads/dev-HQ/ebayminer/data/liquidity_rpa_signals.jsonl"
+        ],
+        "stderr_tail": [],
+        "mode": "rpa_json",
+        "cooldown_sec": 300,
+        "cooldown_override_reason": "signal_missing",
+        "missing_queries": [
+          "sneakers"
+        ]
+      }
+    },
+    {
+      "category": "streetwear",
+      "created_count": 0,
+      "skipped_low_match": 86,
+      "skipped_missing_sold_min": 1,
+      "skipped_low_liquidity": 0,
+      "errors": [],
+      "timed_fetch": {
+        "enabled": true,
+        "min_target_candidates": 3,
+        "timebox_sec": 90,
+        "max_passes": 6,
+        "continue_after_target": true,
+        "passes_run": 3,
+        "stop_reason": "timebox_reached",
+        "elapsed_sec": 133.486,
+        "reached_min_target": false,
+        "adaptive_min_match_floor": 0.58,
+        "adaptive_min_match_step": 0.04,
+        "passes": [
+          {
+            "pass": 1,
+            "min_match_score": 0.72,
+            "created_count": 0,
+            "created_ids": [],
+            "elapsed_sec": 29.18,
+            "query_cache_skip": false,
+            "search_scope_done": false
+          },
+          {
+            "pass": 2,
+            "min_match_score": 0.72,
+            "created_count": 0,
+            "created_ids": [],
+            "elapsed_sec": 61.006,
+            "query_cache_skip": false,
+            "search_scope_done": false
+          },
+          {
+            "pass": 3,
+            "min_match_score": 0.68,
+            "created_count": 0,
+            "created_ids": [],
+            "elapsed_sec": 133.486,
+            "query_cache_skip": false,
+            "search_scope_done": false
+          }
+        ]
+      },
+      "source_model_backfill": {
+        "enabled": true,
+        "ran": true,
+        "reason": "ok",
+        "model_code_count": 3,
+        "queries": [
+          {
+            "site": "rakuten",
+            "query": "BLACKKHT030169-001",
+            "ok": true,
+            "count": 0,
+            "info": {
+              "http": 200,
+              "raw_total": -1,
+              "cache_hit": false,
+              "budget_remaining": -1
+            }
+          },
+          {
+            "site": "rakuten",
+            "query": "SS17-FW21",
+            "ok": true,
+            "count": 0,
+            "info": {
+              "http": 200,
+              "raw_total": -1,
+              "cache_hit": false,
+              "budget_remaining": -1
+            }
+          },
+          {
+            "site": "rakuten",
+            "query": "FW23T57",
+            "ok": true,
+            "count": 0,
+            "info": {
+              "http": 200,
+              "raw_total": -1,
+              "cache_hit": false,
+              "budget_remaining": -1
+            }
+          },
+          {
+            "site": "yahoo",
+            "query": "BLACKKHT030169-001",
+            "ok": true,
+            "count": 0,
+            "info": {
+              "http": 200,
+              "raw_total": 0,
+              "cache_hit": false,
+              "budget_remaining": -1
+            }
+          },
+          {
+            "site": "yahoo",
+            "query": "SS17-FW21",
+            "ok": true,
+            "count": 0,
+            "info": {
+              "http": 200,
+              "raw_total": 0,
+              "cache_hit": false,
+              "budget_remaining": -1
+            }
+          },
+          {
+            "site": "yahoo",
+            "query": "FW23T57",
+            "ok": true,
+            "count": 0,
+            "info": {
+              "http": 200,
+              "raw_total": 0,
+              "cache_hit": false,
+              "budget_remaining": -1
+            }
+          }
+        ],
+        "added_items": 0,
+        "errors": []
+      },
+      "liquidity_rpa_refresh": {
+        "enabled": true,
+        "ran": true,
+        "reason": "ok",
+        "returncode": 0,
+        "queries": [
+          "BLACKKHT030169-001",
+          "SS17-FW21",
+          "FW23T57"
+        ],
+        "query_count": 3,
+        "output_path": "/Users/tadamichikimura/Downloads/dev-HQ/ebayminer/data/liquidity_rpa_signals.jsonl",
+        "python_exec": "/Users/tadamichikimura/Downloads/dev-HQ/ebayminer/.venv/bin/python",
+        "started_at_epoch": 1771647498,
+        "ended_at_epoch": 1771647566,
+        "stdout_tail": [
+          "[1/3] query=BLACKKHT030169-001",
+          "  -> sold_90d=0 min=-1.0 median=-1.0 ccy=USD conf=0.55",
+          "[2/3] query=SS17-FW21",
+          "  -> sold_90d=3 min=1.26 median=1.29 ccy=USD conf=0.95",
+          "[3/3] query=FW23T57",
+          "  -> sold_90d=0 min=-1.0 median=-1.0 ccy=USD conf=0.55",
+          "saved 77 rows -> /Users/tadamichikimura/Downloads/dev-HQ/ebayminer/data/liquidity_rpa_signals.jsonl"
+        ],
+        "stderr_tail": [],
+        "mode": "rpa_json",
+        "cooldown_sec": 300
+      }
+    },
+    {
+      "category": "toys_collectibles",
+      "created_count": 0,
+      "skipped_low_match": 246,
+      "skipped_missing_sold_min": 0,
+      "skipped_low_liquidity": 4,
+      "errors": [],
+      "timed_fetch": {
+        "enabled": true,
+        "min_target_candidates": 3,
+        "timebox_sec": 90,
+        "max_passes": 6,
+        "continue_after_target": true,
+        "passes_run": 3,
+        "stop_reason": "timebox_reached",
+        "elapsed_sec": 104.528,
+        "reached_min_target": false,
+        "adaptive_min_match_floor": 0.58,
+        "adaptive_min_match_step": 0.04,
+        "passes": [
+          {
+            "pass": 1,
+            "min_match_score": 0.72,
+            "created_count": 0,
+            "created_ids": [],
+            "elapsed_sec": 37.987,
+            "query_cache_skip": false,
+            "search_scope_done": false
+          },
+          {
+            "pass": 2,
+            "min_match_score": 0.68,
+            "created_count": 0,
+            "created_ids": [],
+            "elapsed_sec": 71.355,
+            "query_cache_skip": false,
+            "search_scope_done": false
+          },
+          {
+            "pass": 3,
+            "min_match_score": 0.64,
+            "created_count": 0,
+            "created_ids": [],
+            "elapsed_sec": 104.528,
+            "query_cache_skip": false,
+            "search_scope_done": false
+          }
+        ]
+      },
+      "source_model_backfill": {
+        "enabled": true,
+        "ran": false
+      },
+      "liquidity_rpa_refresh": {
+        "enabled": true,
+        "ran": true,
+        "reason": "ok",
+        "returncode": 0,
+        "queries": [
+          "toys_collectibles"
+        ],
+        "query_count": 1,
+        "output_path": "/Users/tadamichikimura/Downloads/dev-HQ/ebayminer/data/liquidity_rpa_signals.jsonl",
+        "python_exec": "/Users/tadamichikimura/Downloads/dev-HQ/ebayminer/.venv/bin/python",
+        "started_at_epoch": 1771647748,
+        "ended_at_epoch": 1771647774,
+        "stdout_tail": [
+          "[1/1] query=toys_collectibles",
+          "  -> sold_90d=0 min=-1.0 median=-1.0 ccy=USD conf=0.55",
+          "saved 77 rows -> /Users/tadamichikimura/Downloads/dev-HQ/ebayminer/data/liquidity_rpa_signals.jsonl"
+        ],
+        "stderr_tail": [],
+        "mode": "rpa_json",
+        "cooldown_sec": 300,
+        "cooldown_override_reason": "signal_missing",
+        "missing_queries": [
+          "toys_collectibles"
+        ]
+      }
+    },
+    {
+      "category": "trading_cards",
+      "created_count": 0,
+      "skipped_low_match": 239,
+      "skipped_missing_sold_min": 0,
+      "skipped_low_liquidity": 0,
+      "errors": [],
+      "timed_fetch": {
+        "enabled": true,
+        "min_target_candidates": 3,
+        "timebox_sec": 90,
+        "max_passes": 6,
+        "continue_after_target": true,
+        "passes_run": 3,
+        "stop_reason": "timebox_reached",
+        "elapsed_sec": 103.878,
+        "reached_min_target": false,
+        "adaptive_min_match_floor": 0.58,
+        "adaptive_min_match_step": 0.04,
+        "passes": [
+          {
+            "pass": 1,
+            "min_match_score": 0.72,
+            "created_count": 0,
+            "created_ids": [],
+            "elapsed_sec": 33.807,
+            "query_cache_skip": false,
+            "search_scope_done": false
+          },
+          {
+            "pass": 2,
+            "min_match_score": 0.68,
+            "created_count": 0,
+            "created_ids": [],
+            "elapsed_sec": 69.961,
+            "query_cache_skip": false,
+            "search_scope_done": false
+          },
+          {
+            "pass": 3,
+            "min_match_score": 0.64,
+            "created_count": 0,
+            "created_ids": [],
+            "elapsed_sec": 103.878,
+            "query_cache_skip": false,
+            "search_scope_done": false
+          }
+        ]
+      },
+      "source_model_backfill": {
+        "enabled": true,
+        "ran": false,
+        "reason": "no_model_codes",
+        "model_code_count": 0,
+        "queries": [],
+        "added_items": 0,
+        "errors": []
+      },
+      "liquidity_rpa_refresh": {
+        "enabled": true,
+        "ran": true,
+        "reason": "ok",
+        "returncode": 0,
+        "queries": [
+          "trading_cards"
+        ],
+        "query_count": 1,
+        "output_path": "/Users/tadamichikimura/Downloads/dev-HQ/ebayminer/data/liquidity_rpa_signals.jsonl",
+        "python_exec": "/Users/tadamichikimura/Downloads/dev-HQ/ebayminer/.venv/bin/python",
+        "started_at_epoch": 1771647644,
+        "ended_at_epoch": 1771647670,
+        "stdout_tail": [
+          "[1/1] query=trading_cards",
+          "  -> sold_90d=0 min=-1.0 median=-1.0 ccy=USD conf=0.55",
+          "saved 77 rows -> /Users/tadamichikimura/Downloads/dev-HQ/ebayminer/data/liquidity_rpa_signals.jsonl"
+        ],
+        "stderr_tail": [],
+        "mode": "rpa_json",
+        "cooldown_sec": 300,
+        "cooldown_override_reason": "signal_missing",
+        "missing_queries": [
+          "trading_cards"
+        ]
+      }
+    },
+    {
+      "category": "video_game_consoles",
+      "created_count": 0,
+      "skipped_low_match": 38,
+      "skipped_missing_sold_min": 0,
+      "skipped_low_liquidity": 0,
+      "errors": [
+        {
+          "site": "rakuten",
+          "message": "楽天検索失敗: http=400 (wrong_parameter)"
+        }
+      ],
+      "timed_fetch": {
+        "enabled": true,
+        "min_target_candidates": 3,
+        "timebox_sec": 90,
+        "max_passes": 6,
+        "continue_after_target": true,
+        "passes_run": 2,
+        "stop_reason": "consecutive_no_gain",
+        "elapsed_sec": 63.025,
+        "reached_min_target": false,
+        "adaptive_min_match_floor": 0.58,
+        "adaptive_min_match_step": 0.04,
+        "passes": [
+          {
+            "pass": 1,
+            "min_match_score": 0.72,
+            "created_count": 0,
+            "created_ids": [],
+            "elapsed_sec": 30.9,
+            "query_cache_skip": false,
+            "search_scope_done": false
+          },
+          {
+            "pass": 2,
+            "min_match_score": 0.68,
+            "created_count": 0,
+            "created_ids": [],
+            "elapsed_sec": 63.025,
+            "query_cache_skip": false,
+            "search_scope_done": false
+          }
+        ]
+      },
+      "source_model_backfill": {
+        "enabled": true,
+        "ran": false
+      },
+      "liquidity_rpa_refresh": {
+        "enabled": true,
+        "ran": true,
+        "reason": "ok",
+        "returncode": 0,
+        "queries": [
+          "video_game_consoles"
+        ],
+        "query_count": 1,
+        "output_path": "/Users/tadamichikimura/Downloads/dev-HQ/ebayminer/data/liquidity_rpa_signals.jsonl",
+        "python_exec": "/Users/tadamichikimura/Downloads/dev-HQ/ebayminer/.venv/bin/python",
+        "started_at_epoch": 1771647812,
+        "ended_at_epoch": 1771647838,
+        "stdout_tail": [
+          "[1/1] query=video_game_consoles",
+          "  -> sold_90d=0 min=-1.0 median=-1.0 ccy=USD conf=0.55",
+          "saved 77 rows -> /Users/tadamichikimura/Downloads/dev-HQ/ebayminer/data/liquidity_rpa_signals.jsonl"
+        ],
+        "stderr_tail": [],
+        "mode": "rpa_json",
+        "cooldown_sec": 300,
+        "cooldown_override_reason": "signal_missing",
+        "missing_queries": [
+          "video_game_consoles"
+        ]
+      }
+    },
+    {
+      "category": "watch",
+      "created_count": 0,
+      "skipped_low_match": 134,
+      "skipped_missing_sold_min": 9,
+      "skipped_low_liquidity": 0,
+      "errors": [],
+      "timed_fetch": {
+        "enabled": true,
+        "min_target_candidates": 3,
+        "timebox_sec": 90,
+        "max_passes": 6,
+        "continue_after_target": true,
+        "passes_run": 1,
+        "stop_reason": "timebox_reached",
+        "elapsed_sec": 102.592,
+        "reached_min_target": false,
+        "adaptive_min_match_floor": 0.58,
+        "adaptive_min_match_step": 0.04,
+        "passes": [
+          {
+            "pass": 1,
+            "min_match_score": 0.72,
+            "created_count": 0,
+            "created_ids": [],
+            "elapsed_sec": 102.592,
+            "query_cache_skip": false,
+            "search_scope_done": false
+          }
+        ]
+      },
+      "source_model_backfill": {
+        "enabled": true,
+        "ran": true,
+        "reason": "ok",
+        "model_code_count": 3,
+        "queries": [
+          {
+            "site": "rakuten",
+            "query": "SARY187",
+            "ok": true,
+            "count": 18,
+            "info": {
+              "http": 200,
+              "raw_total": -1,
+              "cache_hit": false,
+              "budget_remaining": -1
+            }
+          },
+          {
+            "site": "rakuten",
+            "query": "GA-2100",
+            "ok": true,
+            "count": 15,
+            "info": {
+              "http": 200,
+              "raw_total": -1,
+              "cache_hit": false,
+              "budget_remaining": -1
+            }
+          },
+          {
+            "site": "rakuten",
+            "query": "SPB121",
+            "ok": true,
+            "count": 18,
+            "info": {
+              "http": 200,
+              "raw_total": -1,
+              "cache_hit": false,
+              "budget_remaining": -1
+            }
+          }
+        ],
+        "added_items": 50,
+        "errors": [],
+        "unique_added_items": 47
+      },
+      "liquidity_rpa_refresh": {
+        "enabled": true,
+        "ran": true,
+        "reason": "ok",
+        "returncode": 0,
+        "queries": [
+          "SBEJ009",
+          "SRPL15",
+          "SARY187"
+        ],
+        "query_count": 3,
+        "output_path": "/Users/tadamichikimura/Downloads/dev-HQ/ebayminer/data/liquidity_rpa_signals.jsonl",
+        "python_exec": "/Users/tadamichikimura/Downloads/dev-HQ/ebayminer/.venv/bin/python",
+        "started_at_epoch": 1771647256,
+        "ended_at_epoch": 1771647324,
+        "stdout_tail": [
+          "[1/3] query=SBEJ009",
+          "  -> sold_90d=5 min=700.0 median=926.69 ccy=USD conf=0.95",
+          "[2/3] query=SRPL15",
+          "  -> sold_90d=8 min=399.0 median=423.19 ccy=USD conf=0.95",
+          "[3/3] query=SARY187",
+          "  -> sold_90d=7 min=371.31 median=411.94 ccy=USD conf=0.95",
+          "saved 74 rows -> /Users/tadamichikimura/Downloads/dev-HQ/ebayminer/data/liquidity_rpa_signals.jsonl"
+        ],
+        "stderr_tail": [],
+        "mode": "rpa_json",
+        "cooldown_sec": 300
+      }
+    }
+  ]
+}

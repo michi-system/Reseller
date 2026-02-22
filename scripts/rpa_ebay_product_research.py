@@ -51,7 +51,11 @@ _RE_HTML_ROW_LINK = re.compile(
     re.IGNORECASE | re.DOTALL,
 )
 _RE_HTML_IMG_SRC = re.compile(
-    r'<img[^>]+src="([^"]+)"',
+    r'<img[^>]+(?:data-src|data-zoom-src|data-image|src)="([^"]+)"',
+    re.IGNORECASE,
+)
+_RE_HTML_IMG_SRCSET = re.compile(
+    r'<img[^>]+srcset="([^"]+)"',
     re.IGNORECASE,
 )
 _RE_HTML_ROW_START = re.compile(
@@ -59,6 +63,18 @@ _RE_HTML_ROW_START = re.compile(
     re.IGNORECASE,
 )
 _RE_HTML_TAG = re.compile(r"<[^>]+>")
+_RE_DAILY_LIMIT_PHRASES = (
+    re.compile(r"exceeded\s+the\s+number\s+of\s+requests\s+allowed\s+in\s+one\s+day", re.IGNORECASE),
+    re.compile(r"please\s+try\s+again\s+tomorrow", re.IGNORECASE),
+    re.compile(r"number\s+of\s+requests\s+allowed\s+in\s+one\s+day", re.IGNORECASE),
+)
+_RE_NO_SOLD_PHRASES = (
+    re.compile(r"\bno\s+sold\s+(?:items?|results?|found)\b", re.IGNORECASE),
+    re.compile(r"\bno\s+sales?\s+(?:found|data|history)\b", re.IGNORECASE),
+    re.compile(r"\b0\s+sold\b", re.IGNORECASE),
+    re.compile(r"売れた商品はありません"),
+    re.compile(r"販売実績がありません"),
+)
 
 _QUERY_STOPWORDS = {
     "NEW",
@@ -87,10 +103,6 @@ _ACCESSORY_TERMS = {
     "BUCKLE",
     "LINK",
     "REPLACEMENT",
-    "COMPATIBLE",
-    "PART",
-    "PARTS",
-    "CASE",
     "COVER",
     "EARPAD",
     "EAR PAD",
@@ -108,7 +120,6 @@ _ACCESSORY_TERMS = {
     "コマ",
     "部品",
     "パーツ",
-    "ケース",
     "カバー",
     "イヤーパッド",
     "イヤーチップ",
@@ -271,6 +282,88 @@ def _is_candidate_price_path(path: str) -> bool:
     return key.endswith(".price") and any(hint in key for hint in ("research", "row", "item"))
 
 
+def _contains_daily_limit_message(text: str) -> bool:
+    haystack = str(text or "")
+    if not haystack:
+        return False
+    matched = 0
+    for pattern in _RE_DAILY_LIMIT_PHRASES:
+        if pattern.search(haystack):
+            matched += 1
+    # "try again tomorrow" 単体の誤検出を避ける。
+    return matched >= 2
+
+
+def _page_has_daily_limit_message(page: Any) -> bool:
+    try:
+        body_text = page.inner_text("body")
+        if _contains_daily_limit_message(body_text):
+            return True
+    except Exception:
+        pass
+    try:
+        html_text = page.content()
+        if _contains_daily_limit_message(html_text):
+            return True
+    except Exception:
+        pass
+    return False
+
+
+def _contains_no_sold_message(text: str) -> bool:
+    haystack = str(text or "")
+    if not haystack:
+        return False
+    for pattern in _RE_NO_SOLD_PHRASES:
+        if pattern.search(haystack):
+            return True
+    return False
+
+
+def _page_has_no_sold_message(page: Any) -> bool:
+    try:
+        body_text = page.inner_text("body")
+        if _contains_no_sold_message(body_text):
+            return True
+    except Exception:
+        pass
+    try:
+        html_text = page.content()
+        if _contains_no_sold_message(html_text):
+            return True
+    except Exception:
+        pass
+    return False
+
+
+def _should_short_circuit_no_sold(
+    *,
+    query: str,
+    lookback_days: int,
+    no_sold_detected: bool,
+    lookback_selected: str,
+) -> bool:
+    if not bool(no_sold_detected):
+        return False
+    if int(lookback_days) != 90:
+        return False
+    if not _extract_query_codes(query):
+        return False
+    lb = str(lookback_selected or "").strip().lower()
+    if lb and lb != "last 90 days":
+        return False
+    return True
+
+
+def _is_transient_navigation_error(err: Exception) -> bool:
+    text = str(err or "").lower()
+    return (
+        "err_aborted" in text
+        or ("navigation to" in text and "interrupted" in text)
+        or "execution context was destroyed" in text
+    )
+
+
 def _trim_low_price_outliers(prices: List[float]) -> List[float]:
     if not prices:
         return []
@@ -353,11 +446,21 @@ def _extract_filtered_rows_from_html(
                         title_raw = _strip_html_text(str(link_match.group(2) or ""))
                         if title_raw:
                             sample["title"] = title_raw[:220]
+                    img_src = ""
                     img_match = _RE_HTML_IMG_SRC.search(block)
                     if img_match:
-                        src = str(img_match.group(1) or "").strip()
-                        if src:
-                            sample["image_url"] = urllib.parse.urljoin("https://www.ebay.com", src)
+                        img_src = str(img_match.group(1) or "").strip()
+                    if not img_src:
+                        srcset_match = _RE_HTML_IMG_SRCSET.search(block)
+                        if srcset_match:
+                            srcset_text = str(srcset_match.group(1) or "").strip()
+                            for chunk in srcset_text.split(","):
+                                url = chunk.strip().split(" ", 1)[0].strip()
+                                if url:
+                                    img_src = url
+                                    break
+                    if img_src:
+                        sample["image_url"] = urllib.parse.urljoin("https://www.ebay.com", img_src)
                     sold_sample = sample
         date_match = _RE_HTML_ROW_DATE.search(block)
         if date_match:
@@ -557,8 +660,12 @@ class MetricAccumulator:
     def finalize(self) -> Dict[str, Any]:
         sold = max(self.sold_counts) if self.sold_counts else -1
         filtered_sold = max(self.filtered_sold_counts) if self.filtered_sold_counts else -1
-        if filtered_sold >= 0:
+        # filtered側が0件かつ価格抽出も空のときは抽出失敗の可能性が高いので、
+        # DOM由来の件数を優先して偽陰性(売却0)を避ける。
+        if filtered_sold > 0:
             sold = filtered_sold
+        elif filtered_sold == 0 and self.filtered_row_prices:
+            sold = 0
         active = max(self.active_counts) if self.active_counts else -1
         min_price = min(self.min_prices) if self.min_prices else -1.0
         if self.sold_range_mins:
@@ -592,6 +699,24 @@ class MetricAccumulator:
             confidence += 0.20
         if active >= 0:
             confidence += 0.05
+        best_sold_sample: Dict[str, Any] = {}
+        best_sold_sample_price = -1.0
+        for sample in self.filtered_sold_samples:
+            if not isinstance(sample, dict) or not sample:
+                continue
+            sample_price = _to_float(sample.get("sold_price"), -1.0)
+            if sample_price <= 0:
+                if not best_sold_sample:
+                    best_sold_sample = sample
+                continue
+            if best_sold_sample_price <= 0 or sample_price < best_sold_sample_price:
+                best_sold_sample = sample
+                best_sold_sample_price = sample_price
+        if not best_sold_sample and self.filtered_sold_samples:
+            first = self.filtered_sold_samples[0]
+            if isinstance(first, dict):
+                best_sold_sample = first
+
         return {
             "sold_90d_count": sold,
             "active_count": active,
@@ -601,7 +726,7 @@ class MetricAccumulator:
             "confidence": round(min(0.95, max(0.0, confidence)), 4),
             "raw_row_count": len(self.row_prices),
             "filtered_row_count": len(self.filtered_row_prices),
-            "sold_sample": self.filtered_sold_samples[0] if self.filtered_sold_samples else {},
+            "sold_sample": best_sold_sample,
         }
 
 
@@ -630,19 +755,54 @@ def _load_queries(args: argparse.Namespace) -> List[str]:
 
 
 def _search_and_wait(page: Any, query: str, wait_seconds: int) -> None:
+    wait_until = str(os.getenv("LIQUIDITY_RPA_GOTO_WAIT_UNTIL", "commit") or "commit").strip().lower()
+    if wait_until not in {"commit", "domcontentloaded", "load"}:
+        wait_until = "commit"
+    settle_ms = max(0, _to_int(os.getenv("LIQUIDITY_RPA_POST_GOTO_SETTLE_MS", "70"), 70))
+    nav_retry = max(0, _to_int(os.getenv("LIQUIDITY_RPA_GOTO_RETRY_COUNT", "2"), 2))
+    nav_retry_wait_ms = max(80, _to_int(os.getenv("LIQUIDITY_RPA_GOTO_RETRY_WAIT_MS", "220"), 220))
     encoded = urllib.parse.quote_plus(query)
     url = f"https://www.ebay.com/sh/research?marketplace=EBAY-US&keywords={encoded}"
-    page.goto(url, wait_until="domcontentloaded")
-    page.wait_for_timeout(400)
+
+    def _goto_with_retry(target_url: str) -> bool:
+        last_error: Optional[Exception] = None
+        for attempt in range(nav_retry + 1):
+            try:
+                page.goto(target_url, wait_until=wait_until)
+                return True
+            except Exception as err:
+                last_error = err
+                if _is_transient_navigation_error(err) and attempt < nav_retry:
+                    page.wait_for_timeout(nav_retry_wait_ms)
+                    continue
+                if _is_transient_navigation_error(err):
+                    return False
+                raise
+        if last_error is not None and not _is_transient_navigation_error(last_error):
+            raise last_error
+        return False
+
+    _goto_with_retry(url)
+    if settle_ms > 0:
+        page.wait_for_timeout(settle_ms)
     if "/sh/research" not in str(page.url or ""):
-        page.goto(url, wait_until="domcontentloaded")
-        page.wait_for_timeout(300)
-    _wait_for_research_ready(page, wait_seconds)
+        _goto_with_retry(url)
+        if settle_ms > 0:
+            page.wait_for_timeout(settle_ms)
+    pre_filter_wait = max(
+        1,
+        _to_int(
+            os.getenv("LIQUIDITY_RPA_PRE_FILTER_WAIT_SECONDS", str(max(1, min(2, int(wait_seconds))))),
+            max(1, min(2, int(wait_seconds))),
+        ),
+    )
+    _wait_for_research_interactive(page, pre_filter_wait)
 
 
 def _wait_for_research_ready(page: Any, wait_seconds: int) -> bool:
     timeout_ms = int(max(1000, wait_seconds * 1000))
     deadline = time.time() + (timeout_ms / 1000.0)
+    poll_ms = max(80, _to_int(os.getenv("LIQUIDITY_RPA_READY_POLL_MS", "120"), 120))
     while time.time() < deadline:
         try:
             ready = page.evaluate(
@@ -655,11 +815,45 @@ def _wait_for_research_ready(page: Any, wait_seconds: int) -> bool:
                 }"""
             )
             if bool(ready):
-                page.wait_for_timeout(120)
+                page.wait_for_timeout(min(140, poll_ms))
                 return True
         except Exception:
             pass
-        page.wait_for_timeout(180)
+        page.wait_for_timeout(poll_ms)
+    return False
+
+
+def _wait_for_research_interactive(page: Any, wait_seconds: int) -> bool:
+    timeout_ms = int(max(900, wait_seconds * 1000))
+    deadline = time.time() + (timeout_ms / 1000.0)
+    poll_ms = max(60, _to_int(os.getenv("LIQUIDITY_RPA_READY_POLL_MS", "120"), 120))
+    while time.time() < deadline:
+        try:
+            interactive = page.evaluate(
+                """() => {
+                  const visible = (el) => {
+                    if (!el) return false;
+                    const st = window.getComputedStyle(el);
+                    if (st.display === "none" || st.visibility === "hidden") return false;
+                    const r = el.getBoundingClientRect();
+                    return r.width > 0 && r.height > 0;
+                  };
+                  const soldTab = [...document.querySelectorAll("[role='tab'], button, div")].some((el) => {
+                    const t = (el.textContent || "").trim().toLowerCase();
+                    return visible(el) && t === "sold";
+                  });
+                  const hasFilterButton = [...document.querySelectorAll("button, [role='button']")].some((el) => {
+                    const t = (el.textContent || "").trim().toLowerCase();
+                    return visible(el) && (t.includes("condition filter") || t.includes("format filter") || t.startsWith("last "));
+                  });
+                  return soldTab || hasFilterButton;
+                }"""
+            )
+            if bool(interactive):
+                return True
+        except Exception:
+            pass
+        page.wait_for_timeout(poll_ms)
     return False
 
 
@@ -738,6 +932,26 @@ def _set_lookback_days(page: Any, days: int) -> Optional[str]:
         1095: "Last 3 years",
     }
     target = label_map.get(int(days), "Last 90 days")
+    skip_when_default = bool(_to_int(os.getenv("LIQUIDITY_RPA_SKIP_LOOKBACK_WHEN_DEFAULT", "1"), 1))
+    if skip_when_default and int(days) == 90:
+        current_label = page.evaluate(
+            """() => {
+              const candidates = [
+                ...document.querySelectorAll("button, [role='button'], [role='tab'], span, div"),
+              ];
+              for (const el of candidates) {
+                const style = window.getComputedStyle(el);
+                if (style.display === "none" || style.visibility === "hidden") continue;
+                const txt = (el.textContent || "").trim();
+                if (!txt) continue;
+                if (/^last\\s+90\\s+days$/i.test(txt)) return txt;
+              }
+              return "";
+            }"""
+        )
+        selected = str(current_label or "").strip()
+        if selected:
+            return selected
     opened = _click_first(
         page,
         [
@@ -747,7 +961,7 @@ def _set_lookback_days(page: Any, days: int) -> Optional[str]:
     )
     if not opened:
         return None
-    page.wait_for_timeout(250)
+    page.wait_for_timeout(max(40, _to_int(os.getenv("LIQUIDITY_RPA_LOOKBACK_MENU_SETTLE_MS", "120"), 120)))
     picked = page.evaluate(
         """(target) => {
           const items = [...document.querySelectorAll("div[role='menuitemradio']")];
@@ -767,6 +981,38 @@ def _set_lookback_days(page: Any, days: int) -> Optional[str]:
     return text or None
 
 
+def _set_lock_selected_filters(page: Any) -> str:
+    status = page.evaluate(
+        """() => {
+          const norm = (s) => (s || "").toLowerCase().replace(/\\s+/g, " ").trim();
+          const nodes = [
+            ...document.querySelectorAll(
+              "div[role='menuitemcheckbox'], [role='checkbox'], label, button, [role='button'], span"
+            ),
+          ];
+          for (const el of nodes) {
+            const style = window.getComputedStyle(el);
+            if (style.display === "none" || style.visibility === "hidden") continue;
+            const txt = norm(el.textContent);
+            if (!txt.includes("lock selected filters")) continue;
+            const ariaChecked = norm(el.getAttribute("aria-checked"));
+            const pressed = norm(el.getAttribute("aria-pressed"));
+            let checked = (ariaChecked === "true") || (pressed === "true");
+            const input = el.querySelector("input[type='checkbox']");
+            if (input && (input.checked || norm(input.getAttribute("aria-checked")) === "true")) checked = true;
+            if (checked) return "already_on";
+            el.click();
+            return "enabled";
+          }
+          return "not_found";
+        }"""
+    )
+    text = str(status or "").strip().lower()
+    if text in {"enabled", "already_on", "not_found"}:
+        return text
+    return "not_found"
+
+
 def _apply_ui_filters(
     page: Any,
     *,
@@ -775,25 +1021,34 @@ def _apply_ui_filters(
     strict_condition: bool,
     fixed_price_only: bool,
 ) -> Dict[str, Any]:
+    filter_settle_ms = max(25, _to_int(os.getenv("LIQUIDITY_RPA_FILTER_SETTLE_MS", "45"), 45))
     state: Dict[str, Any] = {
         "sold_tab_selected": False,
         "lookback_selected": "",
+        "lookback_default_kept": False,
         "condition_target": condition,
         "condition_selected": [],
         "condition_missing": False,
         "format_fixed_price_selected": False,
+        "lock_selected_filters": "",
         "strict_blocked": False,
         "strict_reason": "",
     }
 
     if _click_first(page, ["[role='tab']:visible:has-text('Sold')", "div[role='tab']:visible:has-text('Sold')"]):
         state["sold_tab_selected"] = True
-        page.wait_for_timeout(120)
+        page.wait_for_timeout(filter_settle_ms)
 
     picked_lookback = _set_lookback_days(page, lookback_days)
     if picked_lookback:
         state["lookback_selected"] = picked_lookback
-        page.wait_for_timeout(120)
+        state["lookback_default_kept"] = str(picked_lookback).strip().lower() == "last 90 days"
+        page.wait_for_timeout(filter_settle_ms)
+
+    if bool(_to_int(os.getenv("LIQUIDITY_RPA_ENABLE_LOCK_SELECTED_FILTERS", "1"), 1)):
+        state["lock_selected_filters"] = _set_lock_selected_filters(page)
+        if state["lock_selected_filters"] in {"enabled", "already_on"}:
+            page.wait_for_timeout(filter_settle_ms)
 
     opened = _click_first(
         page,
@@ -803,7 +1058,7 @@ def _apply_ui_filters(
         ],
     )
     if opened:
-        page.wait_for_timeout(100)
+        page.wait_for_timeout(filter_settle_ms)
         if str(condition or "").strip().lower() not in {"", "any", "all"}:
             token_map = {
                 "new": ["new(", "brand new", "new with", "新品"],
@@ -834,7 +1089,7 @@ def _apply_ui_filters(
                 "[role='button']:visible:has-text('Format filter')",
             ],
         ):
-            page.wait_for_timeout(100)
+            page.wait_for_timeout(filter_settle_ms)
             picked = _toggle_visible_checkbox_by_tokens(page, ["fixed price"])
             if picked:
                 state["format_fixed_price_selected"] = True
@@ -911,6 +1166,50 @@ def _parse_signal_key_map(items: List[str]) -> Dict[str, str]:
     return out
 
 
+def _effective_wait_seconds_for_query(query: str, default_wait: int) -> int:
+    base = max(2, int(default_wait))
+    has_code = bool(_extract_query_codes(query))
+    if has_code:
+        code_wait = max(2, _to_int(os.getenv("LIQUIDITY_RPA_WAIT_SECONDS_CODE", "5"), 5))
+        return min(base, code_wait)
+    is_broad = (not re.search(r"\d", str(query or ""))) and len(str(query or "").strip().split()) <= 3
+    if is_broad:
+        broad_wait = max(2, _to_int(os.getenv("LIQUIDITY_RPA_WAIT_SECONDS_BROAD", "7"), 7))
+        return min(base, broad_wait)
+    return base
+
+
+def _emit_progress(
+    *,
+    phase: str,
+    message: str,
+    progress_percent: float,
+    query: str = "",
+    query_index: int = 0,
+    total_queries: int = 0,
+    extra: Optional[Dict[str, Any]] = None,
+) -> None:
+    payload: Dict[str, Any] = {
+        "phase": str(phase or "").strip() or "unknown",
+        "message": str(message or "").strip() or "-",
+        "progress_percent": round(max(0.0, min(100.0, float(progress_percent))), 2),
+        "query": str(query or "").strip(),
+        "query_index": max(0, int(query_index)),
+        "total_queries": max(0, int(total_queries)),
+        "at": _utc_iso_now(),
+    }
+    if isinstance(extra, dict) and extra:
+        payload["extra"] = extra
+    print(f"[progress] {json.dumps(payload, ensure_ascii=False)}", flush=True)
+
+
+def _query_progress_percent(query_index: int, total_queries: int, phase_ratio: float) -> float:
+    total = max(1, int(total_queries))
+    idx = max(1, min(total, int(query_index)))
+    ratio = max(0.0, min(1.0, float(phase_ratio)))
+    return ((idx - 1) + ratio) * (100.0 / total)
+
+
 def run(args: argparse.Namespace) -> int:
     queries = _load_queries(args)
     if not queries:
@@ -936,31 +1235,78 @@ def run(args: argparse.Namespace) -> int:
 
     existing = _load_existing_rows(output)
     records: Dict[str, Dict[str, Any]] = dict(existing)
+    _emit_progress(
+        phase="startup",
+        message="Product Research 取得を開始します",
+        progress_percent=0.5,
+        total_queries=len(queries),
+        extra={"headless": bool(args.headless)},
+    )
     with sync_playwright() as p:
         context = p.chromium.launch_persistent_context(
             user_data_dir=str(profile_dir),
             headless=bool(args.headless),
             viewport={"width": 1440, "height": 960},
+            service_workers="block" if bool(_to_int(os.getenv("LIQUIDITY_RPA_BLOCK_SERVICE_WORKERS", "1"), 1)) else "allow",
             args=["--disable-blink-features=AutomationControlled"],
         )
         page = context.pages[0] if context.pages else context.new_page()
+        page.set_default_timeout(max(1500, int(_to_int(os.getenv("LIQUIDITY_RPA_ACTION_TIMEOUT_MS", "4500"), 4500))))
+        page.set_default_navigation_timeout(
+            max(3000, int(_to_int(os.getenv("LIQUIDITY_RPA_NAV_TIMEOUT_MS", "9000"), 9000)))
+        )
 
         if args.login_url:
             page.goto(args.login_url, wait_until="domcontentloaded")
             page.wait_for_timeout(1000)
+            _emit_progress(
+                phase="login_url_loaded",
+                message="Product Research画面へ遷移しました",
+                progress_percent=1.5,
+                total_queries=len(queries),
+            )
         if args.pause_for_login > 0:
             print(
                 f"[login] waiting {args.pause_for_login}s. Complete sign-in + 2FA if needed.",
                 flush=True,
             )
             page.wait_for_timeout(int(args.pause_for_login * 1000))
+            _emit_progress(
+                phase="login_pause_completed",
+                message="ログイン待機が完了しました",
+                progress_percent=2.0,
+                total_queries=len(queries),
+            )
+
+        daily_limit_reached = False
+        if _page_has_daily_limit_message(page):
+            print("[daily_limit] Product Research daily request limit reached before query loop.", flush=True)
+            _emit_progress(
+                phase="daily_limit_reached",
+                message="Product Researchの1日上限に到達しています",
+                progress_percent=100.0,
+                total_queries=len(queries),
+            )
+            daily_limit_reached = True
 
         for index, query in enumerate(queries, start=1):
+            if daily_limit_reached:
+                break
             print(f"[{index}/{len(queries)}] query={query}", flush=True)
+            _emit_progress(
+                phase="query_start",
+                message=f"検索語を処理中: {query}",
+                progress_percent=_query_progress_percent(index, len(queries), 0.05),
+                query=query,
+                query_index=index,
+                total_queries=len(queries),
+            )
             acc = MetricAccumulator.create(query=query)
             captured = {"responses": 0, "json_responses": 0}
             query_started = time.perf_counter()
             timings: Dict[str, float] = {}
+            effective_wait = _effective_wait_seconds_for_query(query, int(args.wait_seconds))
+            query_halted = False
 
             def on_response(resp: Any) -> None:
                 try:
@@ -977,30 +1323,147 @@ def run(args: argparse.Namespace) -> int:
                     return
 
             page.on("response", on_response)
-            t_search = time.perf_counter()
-            _search_and_wait(page, query, args.wait_seconds)
-            timings["search_wait_sec"] = round(max(0.0, time.perf_counter() - t_search), 4)
-            t_filters = time.perf_counter()
-            filter_state = _apply_ui_filters(
-                page,
-                lookback_days=int(args.lookback_days),
-                condition=str(args.condition or "new"),
-                strict_condition=bool(args.strict_condition),
-                fixed_price_only=bool(args.fixed_price_only),
-            )
-            timings["filter_apply_sec"] = round(max(0.0, time.perf_counter() - t_filters), 4)
-            _wait_for_research_ready(page, max(1, int(args.wait_seconds // 2) or 1))
+            filter_state: Dict[str, Any] = {}
+            early_no_sold_stage = ""
+            short_circuit_no_sold = False
             try:
-                html_text = page.content()
-                acc.ingest_html(html_text)
-            except Exception:
-                pass
-            try:
-                body_text = page.inner_text("body")
-                acc.ingest_dom_text(body_text)
-            except Exception:
-                pass
-            page.remove_listener("response", on_response)
+                t_search = time.perf_counter()
+                _search_and_wait(page, query, effective_wait)
+                timings["search_wait_sec"] = round(max(0.0, time.perf_counter() - t_search), 4)
+                _emit_progress(
+                    phase="search_done",
+                    message="検索結果を読み込みました",
+                    progress_percent=_query_progress_percent(index, len(queries), 0.34),
+                    query=query,
+                    query_index=index,
+                    total_queries=len(queries),
+                    extra={"search_wait_sec": timings["search_wait_sec"]},
+                )
+                if _page_has_daily_limit_message(page):
+                    print(f"[daily_limit] query={query} after search", flush=True)
+                    _emit_progress(
+                        phase="daily_limit_reached",
+                        message="検索中にProduct Research上限へ到達しました",
+                        progress_percent=_query_progress_percent(index, len(queries), 1.0),
+                        query=query,
+                        query_index=index,
+                        total_queries=len(queries),
+                    )
+                    daily_limit_reached = True
+                    query_halted = True
+                    continue
+                current_lookback = ""
+                if int(args.lookback_days) == 90:
+                    try:
+                        current_lookback = str(
+                            page.evaluate(
+                                """() => {
+                                  const nodes = [...document.querySelectorAll("button, [role='button'], [role='tab'], span, div")];
+                                  for (const el of nodes) {
+                                    const style = window.getComputedStyle(el);
+                                    if (style.display === "none" || style.visibility === "hidden") continue;
+                                    const txt = (el.textContent || "").trim();
+                                    if (/^last\\s+90\\s+days$/i.test(txt)) return txt;
+                                  }
+                                  return "";
+                                }"""
+                            )
+                            or ""
+                        ).strip()
+                    except Exception:
+                        current_lookback = ""
+                if _should_short_circuit_no_sold(
+                    query=query,
+                    lookback_days=int(args.lookback_days),
+                    no_sold_detected=_page_has_no_sold_message(page),
+                    lookback_selected=current_lookback,
+                ):
+                    short_circuit_no_sold = True
+                    early_no_sold_stage = "after_search"
+                    filter_state["sold_tab_selected"] = True
+                    filter_state["lookback_selected"] = current_lookback or "Last 90 days"
+                    filter_state["early_no_sold_detected"] = True
+                t_filters = time.perf_counter()
+                if not short_circuit_no_sold:
+                    _emit_progress(
+                        phase="filters_applying",
+                        message="フィルタを設定しています",
+                        progress_percent=_query_progress_percent(index, len(queries), 0.56),
+                        query=query,
+                        query_index=index,
+                        total_queries=len(queries),
+                    )
+                    filter_state = _apply_ui_filters(
+                        page,
+                        lookback_days=int(args.lookback_days),
+                        condition=str(args.condition or "new"),
+                        strict_condition=bool(args.strict_condition),
+                        fixed_price_only=bool(args.fixed_price_only),
+                    )
+                timings["filter_apply_sec"] = round(max(0.0, time.perf_counter() - t_filters), 4)
+                _emit_progress(
+                    phase="filters_done",
+                    message="フィルタ設定が完了しました",
+                    progress_percent=_query_progress_percent(index, len(queries), 0.72),
+                    query=query,
+                    query_index=index,
+                    total_queries=len(queries),
+                    extra={"filter_apply_sec": timings["filter_apply_sec"]},
+                )
+                if _page_has_daily_limit_message(page):
+                    print(f"[daily_limit] query={query} after filters", flush=True)
+                    _emit_progress(
+                        phase="daily_limit_reached",
+                        message="フィルタ適用中にProduct Research上限へ到達しました",
+                        progress_percent=_query_progress_percent(index, len(queries), 1.0),
+                        query=query,
+                        query_index=index,
+                        total_queries=len(queries),
+                    )
+                    daily_limit_reached = True
+                    query_halted = True
+                    continue
+                if not short_circuit_no_sold and _should_short_circuit_no_sold(
+                    query=query,
+                    lookback_days=int(args.lookback_days),
+                    no_sold_detected=_page_has_no_sold_message(page),
+                    lookback_selected=str(filter_state.get("lookback_selected", "") or ""),
+                ):
+                    short_circuit_no_sold = True
+                    early_no_sold_stage = "after_filters"
+                    filter_state["early_no_sold_detected"] = True
+                if short_circuit_no_sold:
+                    timings["collection_short_circuit"] = 1.0
+                else:
+                    try:
+                        page.wait_for_response(
+                            lambda resp: bool(_is_research_response(resp)),
+                            timeout=max(1200, int(effective_wait * 1000 * 0.7)),
+                        )
+                    except Exception:
+                        pass
+                    _wait_for_research_ready(page, max(1, int(effective_wait // 2) or 1))
+                    try:
+                        html_text = page.content()
+                        acc.ingest_html(html_text)
+                        if _contains_daily_limit_message(html_text):
+                            print(f"[daily_limit] query={query} from html content", flush=True)
+                            daily_limit_reached = True
+                            query_halted = True
+                            continue
+                    except Exception:
+                        pass
+                    # DOM全文の走査は重いので、HTML解析で十分な場合はスキップして高速化する。
+                    if not acc.filtered_row_prices and not acc.row_prices:
+                        try:
+                            body_text = page.inner_text("body")
+                            acc.ingest_dom_text(body_text)
+                        except Exception:
+                            pass
+            finally:
+                page.remove_listener("response", on_response)
+            if query_halted:
+                continue
 
             metrics = acc.finalize()
             timings["total_query_sec"] = round(max(0.0, time.perf_counter() - query_started), 4)
@@ -1027,7 +1490,7 @@ def run(args: argparse.Namespace) -> int:
                     "url": page.url,
                     "response_count": captured["responses"],
                     "json_response_count": captured["json_responses"],
-                    "wait_seconds": args.wait_seconds,
+                    "wait_seconds": int(effective_wait),
                     "headless": bool(args.headless),
                     "pass_label": str(args.pass_label or "primary_new"),
                     "filter_state": filter_state,
@@ -1046,6 +1509,14 @@ def run(args: argparse.Namespace) -> int:
                 row["sold_price_median"] = -1.0
                 row["confidence"] = 0.1
                 row["metadata"]["strict_filter_reason"] = str(filter_state.get("strict_reason", "filter_blocked"))
+            elif bool(filter_state.get("early_no_sold_detected")):
+                row["sold_90d_count"] = 0
+                row["active_count"] = -1
+                row["sold_price_min"] = -1.0
+                row["sold_price_median"] = -1.0
+                row["confidence"] = max(0.6, _to_float(row.get("confidence"), 0.3))
+                row["metadata"]["no_sales_in_window_inferred"] = True
+                row["metadata"]["early_no_sold_stage"] = str(early_no_sold_stage or "unknown")
             else:
                 # Distinguish unknown (-1) from confirmed zero sales in the selected window.
                 if (
@@ -1068,6 +1539,19 @@ def run(args: argparse.Namespace) -> int:
                 ),
                 flush=True,
             )
+            _emit_progress(
+                phase="query_done",
+                message=f"検索語の処理が完了しました: {query}",
+                progress_percent=_query_progress_percent(index, len(queries), 1.0),
+                query=query,
+                query_index=index,
+                total_queries=len(queries),
+                extra={
+                    "sold_90d_count": int(row["sold_90d_count"]),
+                    "sold_price_min": float(row["sold_price_min"]),
+                    "sold_price_median": float(row["sold_price_median"]),
+                },
+            )
             if args.inter_query_sleep > 0 and index < len(queries):
                 time.sleep(args.inter_query_sleep)
 
@@ -1075,6 +1559,15 @@ def run(args: argparse.Namespace) -> int:
 
     _save_rows(output, records)
     print(f"saved {len(records)} rows -> {output}")
+    _emit_progress(
+        phase="completed",
+        message="Product Research取得が完了しました",
+        progress_percent=100.0,
+        total_queries=len(queries),
+        extra={"saved_rows": len(records)},
+    )
+    if daily_limit_reached:
+        return 75
     return 0
 
 
@@ -1146,7 +1639,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--inter-query-sleep",
         type=float,
-        default=1.0,
+        default=0.25,
         help="Sleep seconds between queries",
     )
     parser.add_argument("--headless", action="store_true", help="Run browser headless")

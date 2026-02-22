@@ -171,10 +171,6 @@
               <strong id="sumSoldMin90d">-</strong>
             </div>
             <div class="summary-cell">
-              <span>アクティブ / STR</span>
-              <strong id="sumLiquidityActiveStr">-</strong>
-            </div>
-            <div class="summary-cell">
               <span>流動性Gate</span>
               <strong id="sumLiquidityGate">-</strong>
             </div>
@@ -201,6 +197,16 @@
         <section class="panel fetch-panel">
           <h2>探索ログ</h2>
           <p id="fetchStatusHeadline" class="hint strong">まだ探索を実行していません。</p>
+          <div id="rpaProgressWrap" class="rpa-progress" hidden>
+            <div class="rpa-progress-head">
+              <strong id="rpaProgressLabel">待機中</strong>
+              <span id="rpaProgressPercent">0%</span>
+            </div>
+            <div class="rpa-progress-bar">
+              <span id="rpaProgressFill"></span>
+            </div>
+            <p id="rpaProgressDetail" class="fetch-note">-</p>
+          </div>
           <details class="detail-toggle">
             <summary>サイト別ログを開く</summary>
             <div id="fetchStatsRows" class="fetch-stats"></div>

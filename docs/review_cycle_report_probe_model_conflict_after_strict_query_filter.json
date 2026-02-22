@@ -1,0 +1,434 @@
+{
+  "cycle_id": "cycle-20260221-115241",
+  "started_at": "2026-02-21T11:52:08Z",
+  "ended_at": "2026-02-21T11:52:41Z",
+  "run_seq": 90,
+  "target_count": 3,
+  "hard_cap": 4,
+  "batch_size": 0,
+  "cycle_ready": false,
+  "initial_reviewable_pending": 0,
+  "final_reviewable_pending": 0,
+  "delta_reviewable_pending": 0,
+  "min_match_score": 0.7,
+  "min_profit_usd": 0.01,
+  "min_margin_rate": 0.03,
+  "condition": "new",
+  "stopped_reason": "completed_rounds",
+  "selected_candidate_ids": [],
+  "cache_only": false,
+  "query_reordered": true,
+  "query_order": [
+    "citizen nb1050 watch",
+    "orient fac00009n watch"
+  ],
+  "max_zero_gain_strikes": 9999,
+  "historical_min_attempts": 3,
+  "historical_min_network_calls": 6,
+  "historical_min_gain_per_network_call": 0.0,
+  "historical_retry_every_runs": 4,
+  "duplicate_heavy_cooldown_enabled": false,
+  "duplicate_heavy_ratio_threshold": 0.7,
+  "duplicate_heavy_min_evaluated": 12,
+  "duplicate_heavy_min_duplicates": 8,
+  "rpa_refresh": {
+    "enabled": true,
+    "mode": "rpa_json",
+    "cache_only": false,
+    "ran": true,
+    "output_path": "/Users/tadamichikimura/Downloads/dev-HQ/ebayminer/data/liquidity_rpa_signals.jsonl",
+    "primary": {
+      "ran": true,
+      "reason": "ok",
+      "query_count": 2,
+      "queries": [
+        "citizen nb1050 watch",
+        "orient fac00009n watch"
+      ],
+      "condition": "new",
+      "strict_condition": true,
+      "fixed_price_only": false,
+      "pass_label": "primary_new",
+      "started_at": "2026-02-21T11:51:39Z",
+      "ended_at": "2026-02-21T11:52:08Z",
+      "returncode": 0,
+      "stdout_tail": [
+        "[1/2] query=citizen nb1050 watch",
+        "  -> sold_90d=10 min=317.95 median=368.685 ccy=USD conf=0.95",
+        "[2/2] query=orient fac00009n watch",
+        "  -> sold_90d=0 min=-1.0 median=-1.0 ccy=USD conf=0.55",
+        "saved 164 rows -> /Users/tadamichikimura/Downloads/dev-HQ/ebayminer/data/liquidity_rpa_signals.jsonl"
+      ],
+      "stderr_tail": []
+    },
+    "fallback": {},
+    "model_backfill": {},
+    "missing_before": 2,
+    "missing_after_primary": 0,
+    "missing_after_fallback": 0,
+    "missing_after_model_backfill": 0,
+    "reason": "no_missing_after_primary"
+  },
+  "liquidity_backfill": {
+    "updated": false,
+    "added_entries": 0,
+    "touched_entries": 0,
+    "total_entries": 6
+  },
+  "query_skipped_count": 0,
+  "duplicate_heavy_cooldown_count": 0,
+  "query_efficiency_snapshot": [
+    {
+      "query": "citizen nb1050 watch",
+      "attempts": 32,
+      "network_calls": 38,
+      "queue_gain_total": 77,
+      "gain_per_network_call": 2.0263,
+      "zero_gain_streak": 6
+    },
+    {
+      "query": "orient fac00009n watch",
+      "attempts": 7,
+      "network_calls": 24,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 0.0,
+      "zero_gain_streak": 6
+    }
+  ],
+  "api_efficiency_summary": {
+    "total_calls": 2,
+    "cache_hits": 2,
+    "network_calls": 0,
+    "by_site": {
+      "ebay": {
+        "calls_made": 2,
+        "cache_hits": 2,
+        "network_calls": 0,
+        "budget_remaining": -1
+      },
+      "rakuten": {
+        "calls_made": 0,
+        "cache_hits": 0,
+        "network_calls": 0,
+        "budget_remaining": -1
+      },
+      "yahoo": {
+        "calls_made": 0,
+        "cache_hits": 0,
+        "network_calls": 0,
+        "budget_remaining": -1
+      }
+    },
+    "cache_hit_rate": 1.0
+  },
+  "runs": [
+    {
+      "round": 1,
+      "query": "citizen nb1050 watch",
+      "created_count": 0,
+      "added_to_reviewable_queue": 0,
+      "queue_before": 0,
+      "queue_after": 0,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 69,
+          "calls_made": 1,
+          "cache_hits": 1,
+          "network_calls": 0,
+          "budget_remaining": -1,
+          "max_calls": 1,
+          "per_call_limit": 70,
+          "target_items": 12,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "require_in_stock": true,
+          "autotune_in": {
+            "enabled": true,
+            "applied": true,
+            "updated_at": 1771673831,
+            "updated_at_iso": "2026-02-21T11:37:11Z",
+            "ema_efficiency": 48.1581,
+            "min_new_items": 1
+          },
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 0,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "CITIZEN NB1050 NEW",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 69,
+              "new_count": 69,
+              "duration_ms": 418,
+              "info": {
+                "http": 200,
+                "raw_total": 201,
+                "page": 1,
+                "offset": 0,
+                "cache_hit": true,
+                "cache_age_sec": 1168,
+                "budget_remaining": -1
+              }
+            }
+          ],
+          "knowledge": {
+            "applied": false,
+            "category_key": "",
+            "category_name": "",
+            "active_season_tags": [],
+            "query_count": 0
+          },
+          "category_relevance_filter_enabled": false,
+          "category_relevance_term_count": 0,
+          "category_relevance_filtered_out": 0,
+          "min_queries_before_target": 1,
+          "touched_query_count": 1,
+          "autotune_out": {
+            "enabled": true,
+            "saved": false,
+            "reason": "no_network_calls"
+          },
+          "query_model_code_filter": {
+            "enabled": true,
+            "applied": true,
+            "query_codes": [
+              "NB1050"
+            ],
+            "before": 69,
+            "after": 0,
+            "dropped": 69,
+            "fallback_no_match": false,
+            "strict_drop_all": true
+          }
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 0,
+          "calls_made": 0,
+          "cache_hits": 0,
+          "network_calls": 0,
+          "budget_remaining": -1,
+          "stop_reason": "skipped_no_market_hits",
+          "require_in_stock": true
+        },
+        "yahoo": {
+          "ok": true,
+          "count": 0,
+          "calls_made": 0,
+          "cache_hits": 0,
+          "network_calls": 0,
+          "budget_remaining": -1,
+          "stop_reason": "skipped_no_market_hits",
+          "require_in_stock": true
+        }
+      },
+      "errors": [],
+      "skipped_duplicates": 0,
+      "skipped_low_match": 0,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 0,
+      "skipped_low_margin": 0,
+      "skipped_low_ev90": 0,
+      "skipped_low_liquidity": 0,
+      "skipped_liquidity_unavailable": 0,
+      "skipped_ambiguous_model_title": 0,
+      "liquidity_unavailable_model_codes": [],
+      "low_match_reason_counts": {},
+      "low_match_samples": [],
+      "hints": [
+        "eBay側のヒットがないため、日本側取得をスキップしました（API節約）。",
+        "eBay側のヒットがありません。型番入りで再検索してください。"
+      ],
+      "api_efficiency": {
+        "total_calls": 1,
+        "cache_hits": 1,
+        "network_calls": 0,
+        "by_site": {
+          "ebay": {
+            "calls_made": 1,
+            "cache_hits": 1,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "rakuten": {
+            "calls_made": 0,
+            "cache_hits": 0,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "yahoo": {
+            "calls_made": 0,
+            "cache_hits": 0,
+            "network_calls": 0,
+            "budget_remaining": -1
+          }
+        }
+      },
+      "evaluated_candidate_count": 0,
+      "duplicate_ratio": 0.0,
+      "duplicate_heavy_cooldown_applied": false
+    },
+    {
+      "round": 1,
+      "query": "orient fac00009n watch",
+      "created_count": 0,
+      "added_to_reviewable_queue": 0,
+      "queue_before": 0,
+      "queue_after": 0,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 69,
+          "calls_made": 1,
+          "cache_hits": 1,
+          "network_calls": 0,
+          "budget_remaining": -1,
+          "max_calls": 1,
+          "per_call_limit": 70,
+          "target_items": 12,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "require_in_stock": true,
+          "autotune_in": {
+            "enabled": true,
+            "applied": true,
+            "updated_at": 1771673831,
+            "updated_at_iso": "2026-02-21T11:37:11Z",
+            "ema_efficiency": 48.1581,
+            "min_new_items": 1
+          },
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 0,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "ORIENT FAC00009N NEW",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 69,
+              "new_count": 69,
+              "duration_ms": 4,
+              "info": {
+                "http": 200,
+                "raw_total": 70,
+                "page": 1,
+                "offset": 0,
+                "cache_hit": true,
+                "cache_age_sec": 1414,
+                "budget_remaining": -1
+              }
+            }
+          ],
+          "knowledge": {
+            "applied": false,
+            "category_key": "",
+            "category_name": "",
+            "active_season_tags": [],
+            "query_count": 0
+          },
+          "category_relevance_filter_enabled": false,
+          "category_relevance_term_count": 0,
+          "category_relevance_filtered_out": 0,
+          "min_queries_before_target": 1,
+          "touched_query_count": 1,
+          "autotune_out": {
+            "enabled": true,
+            "saved": false,
+            "reason": "no_network_calls"
+          },
+          "query_model_code_filter": {
+            "enabled": true,
+            "applied": true,
+            "query_codes": [
+              "FAC00009N"
+            ],
+            "before": 69,
+            "after": 0,
+            "dropped": 69,
+            "fallback_no_match": false,
+            "strict_drop_all": true
+          }
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 0,
+          "calls_made": 0,
+          "cache_hits": 0,
+          "network_calls": 0,
+          "budget_remaining": -1,
+          "stop_reason": "skipped_no_market_hits",
+          "require_in_stock": true
+        },
+        "yahoo": {
+          "ok": true,
+          "count": 0,
+          "calls_made": 0,
+          "cache_hits": 0,
+          "network_calls": 0,
+          "budget_remaining": -1,
+          "stop_reason": "skipped_no_market_hits",
+          "require_in_stock": true
+        }
+      },
+      "errors": [],
+      "skipped_duplicates": 0,
+      "skipped_low_match": 0,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 0,
+      "skipped_low_margin": 0,
+      "skipped_low_ev90": 0,
+      "skipped_low_liquidity": 0,
+      "skipped_liquidity_unavailable": 0,
+      "skipped_ambiguous_model_title": 0,
+      "liquidity_unavailable_model_codes": [],
+      "low_match_reason_counts": {},
+      "low_match_samples": [],
+      "hints": [
+        "eBay側のヒットがないため、日本側取得をスキップしました（API節約）。",
+        "eBay側のヒットがありません。型番入りで再検索してください。"
+      ],
+      "api_efficiency": {
+        "total_calls": 1,
+        "cache_hits": 1,
+        "network_calls": 0,
+        "by_site": {
+          "ebay": {
+            "calls_made": 1,
+            "cache_hits": 1,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "rakuten": {
+            "calls_made": 0,
+            "cache_hits": 0,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "yahoo": {
+            "calls_made": 0,
+            "cache_hits": 0,
+            "network_calls": 0,
+            "budget_remaining": -1
+          }
+        }
+      },
+      "evaluated_candidate_count": 0,
+      "duplicate_ratio": 0.0,
+      "duplicate_heavy_cooldown_applied": false
+    }
+  ]
+}

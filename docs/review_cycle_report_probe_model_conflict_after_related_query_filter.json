@@ -1,0 +1,1094 @@
+{
+  "cycle_id": "cycle-20260221-115548",
+  "started_at": "2026-02-21T11:54:07Z",
+  "ended_at": "2026-02-21T11:55:48Z",
+  "run_seq": 91,
+  "target_count": 3,
+  "hard_cap": 4,
+  "batch_size": 0,
+  "cycle_ready": false,
+  "initial_reviewable_pending": 0,
+  "final_reviewable_pending": 0,
+  "delta_reviewable_pending": 0,
+  "min_match_score": 0.7,
+  "min_profit_usd": 0.01,
+  "min_margin_rate": 0.03,
+  "condition": "new",
+  "stopped_reason": "completed_rounds",
+  "selected_candidate_ids": [],
+  "cache_only": false,
+  "query_reordered": true,
+  "query_order": [
+    "citizen nb1050 watch",
+    "orient fac00009n watch"
+  ],
+  "max_zero_gain_strikes": 9999,
+  "historical_min_attempts": 3,
+  "historical_min_network_calls": 6,
+  "historical_min_gain_per_network_call": 0.0,
+  "historical_retry_every_runs": 4,
+  "duplicate_heavy_cooldown_enabled": false,
+  "duplicate_heavy_ratio_threshold": 0.7,
+  "duplicate_heavy_min_evaluated": 12,
+  "duplicate_heavy_min_duplicates": 8,
+  "rpa_refresh": {
+    "enabled": true,
+    "mode": "rpa_json",
+    "cache_only": false,
+    "ran": true,
+    "output_path": "/Users/tadamichikimura/Downloads/dev-HQ/ebayminer/data/liquidity_rpa_signals.jsonl",
+    "primary": {
+      "ran": true,
+      "reason": "ok",
+      "query_count": 2,
+      "queries": [
+        "citizen nb1050 watch",
+        "orient fac00009n watch"
+      ],
+      "condition": "new",
+      "strict_condition": true,
+      "fixed_price_only": false,
+      "pass_label": "primary_new",
+      "started_at": "2026-02-21T11:53:38Z",
+      "ended_at": "2026-02-21T11:54:07Z",
+      "returncode": 0,
+      "stdout_tail": [
+        "[1/2] query=citizen nb1050 watch",
+        "  -> sold_90d=10 min=317.95 median=368.685 ccy=USD conf=0.95",
+        "[2/2] query=orient fac00009n watch",
+        "  -> sold_90d=0 min=-1.0 median=-1.0 ccy=USD conf=0.55",
+        "saved 164 rows -> /Users/tadamichikimura/Downloads/dev-HQ/ebayminer/data/liquidity_rpa_signals.jsonl"
+      ],
+      "stderr_tail": []
+    },
+    "fallback": {},
+    "model_backfill": {},
+    "missing_before": 2,
+    "missing_after_primary": 0,
+    "missing_after_fallback": 0,
+    "missing_after_model_backfill": 0,
+    "reason": "no_missing_after_primary"
+  },
+  "liquidity_backfill": {
+    "updated": false,
+    "added_entries": 0,
+    "touched_entries": 0,
+    "total_entries": 6
+  },
+  "query_skipped_count": 0,
+  "duplicate_heavy_cooldown_count": 0,
+  "query_efficiency_snapshot": [
+    {
+      "query": "citizen nb1050 watch",
+      "attempts": 33,
+      "network_calls": 38,
+      "queue_gain_total": 77,
+      "gain_per_network_call": 2.0263,
+      "zero_gain_streak": 6
+    },
+    {
+      "query": "orient fac00009n watch",
+      "attempts": 8,
+      "network_calls": 24,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 0.0,
+      "zero_gain_streak": 6
+    }
+  ],
+  "api_efficiency_summary": {
+    "total_calls": 12,
+    "cache_hits": 12,
+    "network_calls": 0,
+    "by_site": {
+      "ebay": {
+        "calls_made": 2,
+        "cache_hits": 2,
+        "network_calls": 0,
+        "budget_remaining": -1
+      },
+      "sold_first_source_backfill": {
+        "calls_made": 0,
+        "cache_hits": 0,
+        "network_calls": 0,
+        "budget_remaining": -1
+      },
+      "rakuten": {
+        "calls_made": 6,
+        "cache_hits": 6,
+        "network_calls": 0,
+        "budget_remaining": -1
+      },
+      "yahoo": {
+        "calls_made": 4,
+        "cache_hits": 4,
+        "network_calls": 0,
+        "budget_remaining": -1
+      },
+      "source_budget_filter": {
+        "calls_made": 0,
+        "cache_hits": 0,
+        "network_calls": 0,
+        "budget_remaining": -1
+      },
+      "source_model_backfill": {
+        "calls_made": 0,
+        "cache_hits": 0,
+        "network_calls": 0,
+        "budget_remaining": -1
+      }
+    },
+    "cache_hit_rate": 1.0
+  },
+  "runs": [
+    {
+      "round": 1,
+      "query": "citizen nb1050 watch",
+      "created_count": 0,
+      "added_to_reviewable_queue": 0,
+      "queue_before": 0,
+      "queue_after": 0,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 69,
+          "calls_made": 1,
+          "cache_hits": 1,
+          "network_calls": 0,
+          "budget_remaining": -1,
+          "max_calls": 1,
+          "per_call_limit": 70,
+          "target_items": 12,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "require_in_stock": true,
+          "autotune_in": {
+            "enabled": true,
+            "applied": true,
+            "updated_at": 1771673831,
+            "updated_at_iso": "2026-02-21T11:37:11Z",
+            "ema_efficiency": 48.1581,
+            "min_new_items": 1
+          },
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 0,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "CITIZEN NB1050 NEW",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 69,
+              "new_count": 69,
+              "duration_ms": 380,
+              "info": {
+                "http": 200,
+                "raw_total": 201,
+                "page": 1,
+                "offset": 0,
+                "cache_hit": true,
+                "cache_age_sec": 1287,
+                "budget_remaining": -1
+              }
+            }
+          ],
+          "knowledge": {
+            "applied": false,
+            "category_key": "",
+            "category_name": "",
+            "active_season_tags": [],
+            "query_count": 0
+          },
+          "category_relevance_filter_enabled": false,
+          "category_relevance_term_count": 0,
+          "category_relevance_filtered_out": 0,
+          "min_queries_before_target": 1,
+          "touched_query_count": 1,
+          "autotune_out": {
+            "enabled": true,
+            "saved": false,
+            "reason": "no_network_calls"
+          },
+          "query_model_code_filter": {
+            "enabled": true,
+            "applied": true,
+            "query_codes": [
+              "NB1050"
+            ],
+            "before": 69,
+            "after": 69,
+            "dropped": 0,
+            "fallback_no_match": false
+          },
+          "rpa_prefetch_queries": [
+            "NB1050-59E",
+            "NB1050-59A",
+            "NB1050-59H"
+          ],
+          "sold_first": {
+            "enabled": true,
+            "applied": true,
+            "codes_considered": 5,
+            "codes_passed": 1,
+            "selected_codes": [
+              "NB105059A"
+            ],
+            "reason": "ok",
+            "rows": [
+              {
+                "code": "NB1050",
+                "signal_key": "code:NB1050",
+                "sold_90d_count": 2,
+                "sold_price_median": 427.9,
+                "sold_price_min": 396.75,
+                "sale_basis_usd": 396.75,
+                "sale_basis_type": "sold_price_min_90d",
+                "gate_pass": false,
+                "gate_reason": "liquidity_sold_90d_below_threshold",
+                "max_purchase_total_jpy": 46844.88,
+                "pass": false
+              },
+              {
+                "code": "NB1050-59E",
+                "signal_key": "model:NB1050-59E",
+                "sold_90d_count": 1,
+                "sold_price_median": 356.0,
+                "sold_price_min": 356.0,
+                "sale_basis_usd": 356.0,
+                "sale_basis_type": "sold_price_min_90d",
+                "gate_pass": false,
+                "gate_reason": "liquidity_sold_90d_below_threshold",
+                "max_purchase_total_jpy": 41747.99,
+                "pass": false
+              },
+              {
+                "code": "NB1050-59A",
+                "signal_key": "model:NB1050-59A",
+                "sold_90d_count": 5,
+                "sold_price_median": 360.98,
+                "sold_price_min": 317.95,
+                "sale_basis_usd": 317.95,
+                "sale_basis_type": "sold_price_min_90d",
+                "gate_pass": true,
+                "gate_reason": "liquidity_sold_based_pass",
+                "max_purchase_total_jpy": 36988.8,
+                "pass": true
+              },
+              {
+                "code": "NB1050-59H",
+                "signal_key": "model:NB1050-59H",
+                "sold_90d_count": 2,
+                "sold_price_median": 427.9,
+                "sold_price_min": 396.75,
+                "sale_basis_usd": 396.75,
+                "sale_basis_type": "sold_price_min_90d",
+                "gate_pass": false,
+                "gate_reason": "liquidity_sold_90d_below_threshold",
+                "max_purchase_total_jpy": 46844.88,
+                "pass": false
+              },
+              {
+                "code": "NB1050-59L",
+                "signal_key": "model:NB1050-59L",
+                "sold_90d_count": 2,
+                "sold_price_median": 427.9,
+                "sold_price_min": 396.75,
+                "sale_basis_usd": 396.75,
+                "sale_basis_type": "sold_price_min_90d",
+                "gate_pass": false,
+                "gate_reason": "liquidity_sold_90d_below_threshold",
+                "max_purchase_total_jpy": 46844.88,
+                "pass": false
+              }
+            ],
+            "query_code_filter_applied": true,
+            "query_code_filter_before": 1,
+            "query_code_filter_after": 1
+          },
+          "sold_first_market_filter": {
+            "enabled": true,
+            "applied": true,
+            "query_codes": [
+              "NB105059A"
+            ],
+            "before": 69,
+            "after": 69,
+            "dropped": 0,
+            "fallback_no_match": false
+          },
+          "model_backfill": {
+            "enabled": true,
+            "ran": false,
+            "skipped_reason": "specific_query_codes",
+            "query_specific_code_count": 1
+          }
+        },
+        "sold_first_source_backfill": {
+          "enabled": true,
+          "ran": true,
+          "reason": "ok",
+          "model_code_count": 1,
+          "queries": [
+            {
+              "site": "rakuten",
+              "query": "NB105059A",
+              "ok": true,
+              "count": 8,
+              "info": {
+                "http": 200,
+                "raw_total": -1,
+                "cache_hit": true,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "site": "yahoo",
+              "query": "NB105059A",
+              "ok": true,
+              "count": 3,
+              "info": {
+                "http": 200,
+                "raw_total": 3,
+                "cache_hit": true,
+                "budget_remaining": -1
+              }
+            }
+          ],
+          "added_items": 11,
+          "errors": []
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 26,
+          "calls_made": 2,
+          "cache_hits": 2,
+          "network_calls": 0,
+          "budget_remaining": -1,
+          "max_calls": 4,
+          "per_call_limit": 30,
+          "target_items": 10,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "require_in_stock": true,
+          "autotune_in": {
+            "enabled": true,
+            "applied": true,
+            "updated_at": 1771674570,
+            "updated_at_iso": "2026-02-21T11:49:30Z",
+            "ema_efficiency": 12.5544,
+            "min_new_items": 0
+          },
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 1,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "citizen nb1050 watch",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 3,
+              "new_count": 3,
+              "duration_ms": 3,
+              "info": {
+                "http": 200,
+                "raw_count": 3,
+                "page": 1,
+                "cache_hit": true,
+                "cache_age_sec": 589,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "query": "CITIZEN NB1050",
+              "query_index": 1,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 23,
+              "new_count": 23,
+              "duration_ms": 35,
+              "info": {
+                "http": 200,
+                "raw_count": 189,
+                "page": 1,
+                "cache_hit": true,
+                "cache_age_sec": 589,
+                "budget_remaining": -1
+              }
+            }
+          ],
+          "knowledge": {
+            "applied": false,
+            "category_key": "",
+            "category_name": "",
+            "active_season_tags": [],
+            "query_count": 0
+          },
+          "category_relevance_filter_enabled": false,
+          "category_relevance_term_count": 0,
+          "category_relevance_filtered_out": 0,
+          "min_queries_before_target": 1,
+          "touched_query_count": 2,
+          "autotune_out": {
+            "enabled": true,
+            "saved": false,
+            "reason": "no_network_calls"
+          },
+          "query_model_code_filter": {
+            "enabled": true,
+            "applied": true,
+            "query_codes": [
+              "NB1050"
+            ],
+            "before": 26,
+            "after": 26,
+            "dropped": 0,
+            "fallback_no_match": false
+          }
+        },
+        "yahoo": {
+          "ok": true,
+          "count": 0,
+          "calls_made": 0,
+          "cache_hits": 0,
+          "network_calls": 0,
+          "budget_remaining": -1,
+          "stop_reason": "skipped_by_sold_first_preselection",
+          "require_in_stock": true
+        },
+        "source_budget_filter": {
+          "enabled": true,
+          "applied": true,
+          "before": 37,
+          "after": 17,
+          "dropped_no_code": 19,
+          "dropped_over_budget": 1,
+          "slack_ratio": 2.0
+        },
+        "source_model_backfill": {
+          "enabled": true,
+          "ran": false,
+          "skipped_reason": "specific_query_codes",
+          "query_specific_code_count": 1
+        }
+      },
+      "errors": [],
+      "skipped_duplicates": 2,
+      "skipped_low_match": 0,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 0,
+      "skipped_low_margin": 0,
+      "skipped_low_ev90": 0,
+      "skipped_low_liquidity": 1,
+      "skipped_liquidity_unavailable": 0,
+      "skipped_ambiguous_model_title": 0,
+      "liquidity_unavailable_model_codes": [],
+      "low_match_reason_counts": {},
+      "low_match_samples": [],
+      "hints": [
+        "Product Research(RPA)を実行しました: queries=3, rc=0",
+        "同一候補は既に取り込み済みです。別の型番やシリーズで検索してください。",
+        "90日売却流動性の閾値で除外されています。回転率の高い型番で再検索してください。"
+      ],
+      "api_efficiency": {
+        "total_calls": 3,
+        "cache_hits": 3,
+        "network_calls": 0,
+        "by_site": {
+          "ebay": {
+            "calls_made": 1,
+            "cache_hits": 1,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "sold_first_source_backfill": {
+            "calls_made": 0,
+            "cache_hits": 0,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "rakuten": {
+            "calls_made": 2,
+            "cache_hits": 2,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "yahoo": {
+            "calls_made": 0,
+            "cache_hits": 0,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "source_budget_filter": {
+            "calls_made": 0,
+            "cache_hits": 0,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "source_model_backfill": {
+            "calls_made": 0,
+            "cache_hits": 0,
+            "network_calls": 0,
+            "budget_remaining": -1
+          }
+        }
+      },
+      "evaluated_candidate_count": 3,
+      "duplicate_ratio": 0.6667,
+      "duplicate_heavy_cooldown_applied": false
+    },
+    {
+      "round": 1,
+      "query": "orient fac00009n watch",
+      "created_count": 0,
+      "added_to_reviewable_queue": 0,
+      "queue_before": 0,
+      "queue_after": 0,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 69,
+          "calls_made": 1,
+          "cache_hits": 1,
+          "network_calls": 0,
+          "budget_remaining": -1,
+          "max_calls": 1,
+          "per_call_limit": 70,
+          "target_items": 12,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "require_in_stock": true,
+          "autotune_in": {
+            "enabled": true,
+            "applied": true,
+            "updated_at": 1771673831,
+            "updated_at_iso": "2026-02-21T11:37:11Z",
+            "ema_efficiency": 48.1581,
+            "min_new_items": 1
+          },
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 0,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "ORIENT FAC00009N NEW",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 69,
+              "new_count": 69,
+              "duration_ms": 5,
+              "info": {
+                "http": 200,
+                "raw_total": 70,
+                "page": 1,
+                "offset": 0,
+                "cache_hit": true,
+                "cache_age_sec": 1558,
+                "budget_remaining": -1
+              }
+            }
+          ],
+          "knowledge": {
+            "applied": false,
+            "category_key": "",
+            "category_name": "",
+            "active_season_tags": [],
+            "query_count": 0
+          },
+          "category_relevance_filter_enabled": false,
+          "category_relevance_term_count": 0,
+          "category_relevance_filtered_out": 0,
+          "min_queries_before_target": 1,
+          "touched_query_count": 1,
+          "autotune_out": {
+            "enabled": true,
+            "saved": false,
+            "reason": "no_network_calls"
+          },
+          "query_model_code_filter": {
+            "enabled": true,
+            "applied": true,
+            "query_codes": [
+              "FAC00009N"
+            ],
+            "before": 69,
+            "after": 5,
+            "dropped": 64,
+            "fallback_no_match": false
+          },
+          "rpa_prefetch_queries": [
+            "FAC00009N0",
+            "FAC00009W0",
+            "FAC0000DB"
+          ],
+          "sold_first": {
+            "enabled": true,
+            "applied": true,
+            "codes_considered": 5,
+            "codes_passed": 1,
+            "selected_codes": [
+              "FAC00009N0"
+            ],
+            "reason": "ok",
+            "rows": [
+              {
+                "code": "FAC00009N",
+                "signal_key": "model:FAC00009N",
+                "sold_90d_count": 0,
+                "sold_price_median": -1.0,
+                "sold_price_min": -1.0,
+                "sale_basis_usd": -1.0,
+                "sale_basis_type": "active_listing_price",
+                "gate_pass": false,
+                "gate_reason": "liquidity_sold_90d_below_threshold",
+                "max_purchase_total_jpy": -1.0,
+                "pass": false
+              },
+              {
+                "code": "FAC00009N0",
+                "signal_key": "model:FAC00009N0",
+                "sold_90d_count": 4,
+                "sold_price_median": 212.345,
+                "sold_price_min": 190.0,
+                "sale_basis_usd": 190.0,
+                "sale_basis_type": "sold_price_min_90d",
+                "gate_pass": true,
+                "gate_reason": "liquidity_sold_based_pass",
+                "max_purchase_total_jpy": 20985.17,
+                "pass": true
+              },
+              {
+                "code": "FAC00009W0",
+                "signal_key": "model:FAC00009W0",
+                "sold_90d_count": 1,
+                "sold_price_median": 200.0,
+                "sold_price_min": 200.0,
+                "sale_basis_usd": 200.0,
+                "sale_basis_type": "sold_price_min_90d",
+                "gate_pass": false,
+                "gate_reason": "liquidity_sold_90d_below_threshold",
+                "max_purchase_total_jpy": 22235.95,
+                "pass": false
+              },
+              {
+                "code": "FAC0000DD",
+                "signal_key": "model:FAC0000DD",
+                "sold_90d_count": -1,
+                "sold_price_median": -1.0,
+                "sold_price_min": -1.0,
+                "sale_basis_usd": -1.0,
+                "sale_basis_type": "active_listing_price",
+                "gate_pass": false,
+                "gate_reason": "liquidity_unavailable_required",
+                "max_purchase_total_jpy": -1.0,
+                "pass": false
+              },
+              {
+                "code": "FAC0000DB",
+                "signal_key": "model:FAC0000DB",
+                "sold_90d_count": 0,
+                "sold_price_median": -1.0,
+                "sold_price_min": -1.0,
+                "sale_basis_usd": -1.0,
+                "sale_basis_type": "active_listing_price",
+                "gate_pass": false,
+                "gate_reason": "liquidity_sold_90d_below_threshold",
+                "max_purchase_total_jpy": -1.0,
+                "pass": false
+              }
+            ],
+            "query_code_filter_applied": true,
+            "query_code_filter_before": 1,
+            "query_code_filter_after": 1
+          },
+          "sold_first_market_filter": {
+            "enabled": true,
+            "applied": true,
+            "query_codes": [
+              "FAC00009N0"
+            ],
+            "before": 5,
+            "after": 5,
+            "dropped": 0,
+            "fallback_no_match": false
+          }
+        },
+        "sold_first_source_backfill": {
+          "enabled": true,
+          "ran": true,
+          "reason": "ok",
+          "model_code_count": 1,
+          "queries": [
+            {
+              "site": "rakuten",
+              "query": "FAC00009N0",
+              "ok": true,
+              "count": 2,
+              "info": {
+                "http": 200,
+                "raw_total": -1,
+                "cache_hit": false,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "site": "yahoo",
+              "query": "FAC00009N0",
+              "ok": true,
+              "count": 1,
+              "info": {
+                "http": 200,
+                "raw_total": 1,
+                "cache_hit": false,
+                "budget_remaining": -1
+              }
+            }
+          ],
+          "added_items": 3,
+          "errors": []
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 31,
+          "calls_made": 4,
+          "cache_hits": 4,
+          "network_calls": 0,
+          "budget_remaining": -1,
+          "max_calls": 4,
+          "per_call_limit": 30,
+          "target_items": 10,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "require_in_stock": true,
+          "autotune_in": {
+            "enabled": true,
+            "applied": true,
+            "updated_at": 1771674570,
+            "updated_at_iso": "2026-02-21T11:49:30Z",
+            "ema_efficiency": 12.5544,
+            "min_new_items": 0
+          },
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 3,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "orient fac00009n watch",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 3,
+              "new_count": 3,
+              "duration_ms": 1,
+              "info": {
+                "http": 200,
+                "raw_count": 3,
+                "page": 1,
+                "cache_hit": true,
+                "cache_age_sec": 591,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "query": "ORIENT FAC00009N",
+              "query_index": 1,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 3,
+              "new_count": 0,
+              "duration_ms": 3,
+              "info": {
+                "http": 200,
+                "raw_count": 6,
+                "page": 1,
+                "cache_hit": true,
+                "cache_age_sec": 590,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "query": "FAC00009N",
+              "query_index": 2,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 3,
+              "new_count": 0,
+              "duration_ms": 2,
+              "info": {
+                "http": 200,
+                "raw_count": 6,
+                "page": 1,
+                "cache_hit": true,
+                "cache_age_sec": 590,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "query": "ORIENT WATCH",
+              "query_index": 3,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 28,
+              "new_count": 28,
+              "duration_ms": 13,
+              "info": {
+                "http": 200,
+                "raw_count": 927,
+                "page": 1,
+                "cache_hit": true,
+                "cache_age_sec": 361,
+                "budget_remaining": -1
+              }
+            }
+          ],
+          "knowledge": {
+            "applied": false,
+            "category_key": "",
+            "category_name": "",
+            "active_season_tags": [],
+            "query_count": 0
+          },
+          "category_relevance_filter_enabled": false,
+          "category_relevance_term_count": 0,
+          "category_relevance_filtered_out": 0,
+          "min_queries_before_target": 1,
+          "touched_query_count": 4,
+          "autotune_out": {
+            "enabled": true,
+            "saved": false,
+            "reason": "no_network_calls"
+          },
+          "query_model_code_filter": {
+            "enabled": true,
+            "applied": true,
+            "query_codes": [
+              "FAC00009N"
+            ],
+            "before": 31,
+            "after": 3,
+            "dropped": 28,
+            "fallback_no_match": false
+          }
+        },
+        "yahoo": {
+          "ok": true,
+          "count": 98,
+          "calls_made": 4,
+          "cache_hits": 4,
+          "network_calls": 0,
+          "budget_remaining": -1,
+          "max_calls": 4,
+          "per_call_limit": 100,
+          "target_items": 10,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "require_in_stock": true,
+          "autotune_in": {
+            "enabled": true,
+            "applied": true,
+            "updated_at": 1771674112,
+            "updated_at_iso": "2026-02-21T11:41:52Z",
+            "ema_efficiency": 18.719,
+            "min_new_items": 0
+          },
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 3,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "orient fac00009n watch",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 2,
+              "new_count": 2,
+              "duration_ms": 0,
+              "info": {
+                "http": 200,
+                "raw_total": 2,
+                "page": 1,
+                "start": 1,
+                "cache_hit": true,
+                "cache_age_sec": 820,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "query": "ORIENT FAC00009N",
+              "query_index": 1,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 2,
+              "new_count": 0,
+              "duration_ms": 0,
+              "info": {
+                "http": 200,
+                "raw_total": 2,
+                "page": 1,
+                "start": 1,
+                "cache_hit": true,
+                "cache_age_sec": 820,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "query": "FAC00009N",
+              "query_index": 2,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 2,
+              "new_count": 0,
+              "duration_ms": 0,
+              "info": {
+                "http": 200,
+                "raw_total": 2,
+                "page": 1,
+                "start": 1,
+                "cache_hit": true,
+                "cache_age_sec": 820,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "query": "ORIENT WATCH",
+              "query_index": 3,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 97,
+              "new_count": 96,
+              "duration_ms": 15,
+              "info": {
+                "http": 200,
+                "raw_total": 370,
+                "page": 1,
+                "start": 1,
+                "cache_hit": true,
+                "cache_age_sec": 819,
+                "budget_remaining": -1
+              }
+            }
+          ],
+          "knowledge": {
+            "applied": false,
+            "category_key": "",
+            "category_name": "",
+            "active_season_tags": [],
+            "query_count": 0
+          },
+          "category_relevance_filter_enabled": false,
+          "category_relevance_term_count": 0,
+          "category_relevance_filtered_out": 0,
+          "min_queries_before_target": 1,
+          "touched_query_count": 4,
+          "autotune_out": {
+            "enabled": true,
+            "saved": false,
+            "reason": "no_network_calls"
+          },
+          "query_model_code_filter": {
+            "enabled": true,
+            "applied": true,
+            "query_codes": [
+              "FAC00009N"
+            ],
+            "before": 98,
+            "after": 2,
+            "dropped": 96,
+            "fallback_no_match": false
+          }
+        },
+        "source_budget_filter": {
+          "enabled": true,
+          "applied": true,
+          "before": 8,
+          "after": 0,
+          "dropped_no_code": 2,
+          "dropped_over_budget": 6,
+          "slack_ratio": 2.0
+        }
+      },
+      "errors": [],
+      "skipped_duplicates": 0,
+      "skipped_low_match": 0,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 0,
+      "skipped_low_margin": 0,
+      "skipped_low_ev90": 0,
+      "skipped_low_liquidity": 0,
+      "skipped_liquidity_unavailable": 0,
+      "skipped_ambiguous_model_title": 0,
+      "liquidity_unavailable_model_codes": [],
+      "low_match_reason_counts": {},
+      "low_match_samples": [],
+      "hints": [
+        "日本側のヒットがありません。キーワードを少し広げるか、在庫フィルタを解除して再検索してください。"
+      ],
+      "api_efficiency": {
+        "total_calls": 9,
+        "cache_hits": 9,
+        "network_calls": 0,
+        "by_site": {
+          "ebay": {
+            "calls_made": 1,
+            "cache_hits": 1,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "sold_first_source_backfill": {
+            "calls_made": 0,
+            "cache_hits": 0,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "rakuten": {
+            "calls_made": 4,
+            "cache_hits": 4,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "yahoo": {
+            "calls_made": 4,
+            "cache_hits": 4,
+            "network_calls": 0,
+            "budget_remaining": -1
+          },
+          "source_budget_filter": {
+            "calls_made": 0,
+            "cache_hits": 0,
+            "network_calls": 0,
+            "budget_remaining": -1
+          }
+        }
+      },
+      "evaluated_candidate_count": 0,
+      "duplicate_ratio": 0.0,
+      "duplicate_heavy_cooldown_applied": false
+    }
+  ]
+}

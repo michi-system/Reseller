@@ -1,0 +1,616 @@
+{
+  "cycle_id": "cycle-20260221-120939",
+  "started_at": "2026-02-21T12:08:38Z",
+  "ended_at": "2026-02-21T12:09:39Z",
+  "run_seq": 93,
+  "target_count": 3,
+  "hard_cap": 4,
+  "batch_size": 0,
+  "cycle_ready": false,
+  "initial_reviewable_pending": 0,
+  "final_reviewable_pending": 0,
+  "delta_reviewable_pending": 0,
+  "min_match_score": 0.7,
+  "min_profit_usd": 0.01,
+  "min_margin_rate": 0.03,
+  "condition": "new",
+  "stopped_reason": "completed_rounds",
+  "selected_candidate_ids": [],
+  "cache_only": false,
+  "query_reordered": true,
+  "query_order": [
+    "CASIO G-SHOCK G-STEEL GST-B400CX-1AJR Limited Eternal Snake Solar"
+  ],
+  "max_zero_gain_strikes": 9999,
+  "historical_min_attempts": 3,
+  "historical_min_network_calls": 6,
+  "historical_min_gain_per_network_call": 0.0,
+  "historical_retry_every_runs": 4,
+  "duplicate_heavy_cooldown_enabled": false,
+  "duplicate_heavy_ratio_threshold": 0.7,
+  "duplicate_heavy_min_evaluated": 12,
+  "duplicate_heavy_min_duplicates": 8,
+  "rpa_refresh": {
+    "enabled": true,
+    "mode": "rpa_json",
+    "cache_only": false,
+    "ran": true,
+    "output_path": "/Users/tadamichikimura/Downloads/dev-HQ/ebayminer/data/liquidity_rpa_signals.jsonl",
+    "primary": {
+      "ran": true,
+      "reason": "ok",
+      "query_count": 1,
+      "queries": [
+        "CASIO G-SHOCK G-STEEL GST-B400CX-1AJR Limited Eternal Snake Solar"
+      ],
+      "condition": "new",
+      "strict_condition": true,
+      "fixed_price_only": false,
+      "pass_label": "primary_new",
+      "started_at": "2026-02-21T12:08:20Z",
+      "ended_at": "2026-02-21T12:08:38Z",
+      "returncode": 0,
+      "stdout_tail": [
+        "[1/1] query=CASIO G-SHOCK G-STEEL GST-B400CX-1AJR Limited Eternal Snake Solar",
+        "  -> sold_90d=0 min=-1.0 median=-1.0 ccy=USD conf=0.55",
+        "saved 170 rows -> /Users/tadamichikimura/Downloads/dev-HQ/ebayminer/data/liquidity_rpa_signals.jsonl"
+      ],
+      "stderr_tail": []
+    },
+    "fallback": {},
+    "model_backfill": {},
+    "missing_before": 1,
+    "missing_after_primary": 0,
+    "missing_after_fallback": 0,
+    "missing_after_model_backfill": 0,
+    "reason": "no_missing_after_primary"
+  },
+  "liquidity_backfill": {
+    "updated": false,
+    "added_entries": 0,
+    "touched_entries": 0,
+    "total_entries": 7
+  },
+  "query_skipped_count": 0,
+  "duplicate_heavy_cooldown_count": 0,
+  "query_efficiency_snapshot": [
+    {
+      "query": "CASIO G-SHOCK G-STEEL GST-B400CX-1AJR Limited Eternal Snake Solar",
+      "attempts": 1,
+      "network_calls": 6,
+      "queue_gain_total": 0,
+      "gain_per_network_call": 0.0,
+      "zero_gain_streak": 1
+    }
+  ],
+  "api_efficiency_summary": {
+    "total_calls": 6,
+    "cache_hits": 0,
+    "network_calls": 6,
+    "by_site": {
+      "ebay": {
+        "calls_made": 1,
+        "cache_hits": 0,
+        "network_calls": 1,
+        "budget_remaining": -1
+      },
+      "rakuten": {
+        "calls_made": 2,
+        "cache_hits": 0,
+        "network_calls": 2,
+        "budget_remaining": -1
+      },
+      "yahoo": {
+        "calls_made": 3,
+        "cache_hits": 0,
+        "network_calls": 3,
+        "budget_remaining": -1
+      }
+    },
+    "cache_hit_rate": 0.0
+  },
+  "runs": [
+    {
+      "round": 1,
+      "query": "CASIO G-SHOCK G-STEEL GST-B400CX-1AJR Limited Eternal Snake Solar",
+      "created_count": 0,
+      "added_to_reviewable_queue": 0,
+      "queue_before": 0,
+      "queue_after": 0,
+      "fetched": {
+        "ebay": {
+          "ok": true,
+          "count": 55,
+          "calls_made": 1,
+          "cache_hits": 0,
+          "network_calls": 1,
+          "budget_remaining": -1,
+          "max_calls": 1,
+          "per_call_limit": 70,
+          "target_items": 12,
+          "max_pages_per_query": 2,
+          "stop_reason": "target_reached",
+          "require_in_stock": true,
+          "autotune_in": {
+            "enabled": true,
+            "applied": true,
+            "updated_at": 1771673831,
+            "updated_at_iso": "2026-02-21T11:37:11Z",
+            "ema_efficiency": 48.1581,
+            "min_new_items": 1
+          },
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 0,
+            "page": 2
+          },
+          "queries": [
+            {
+              "query": "CASIO GST-B400CX-1AJR NEW",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 55,
+              "new_count": 55,
+              "duration_ms": 1474,
+              "info": {
+                "http": 200,
+                "raw_total": 56,
+                "page": 1,
+                "offset": 0,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": -1
+              }
+            }
+          ],
+          "knowledge": {
+            "applied": false,
+            "category_key": "",
+            "category_name": "",
+            "active_season_tags": [],
+            "query_count": 0
+          },
+          "category_relevance_filter_enabled": false,
+          "category_relevance_term_count": 0,
+          "category_relevance_filtered_out": 0,
+          "min_queries_before_target": 1,
+          "touched_query_count": 1,
+          "autotune_out": {
+            "enabled": true,
+            "saved": true,
+            "max_calls": 1,
+            "per_call_limit": 70,
+            "min_new_items": 1,
+            "ema_efficiency": 50.2107,
+            "updated_at": 1771675719,
+            "updated_at_iso": "2026-02-21T12:08:39Z"
+          },
+          "query_model_code_filter": {
+            "enabled": true,
+            "applied": true,
+            "query_codes": [
+              "GSTB400CX1AJR"
+            ],
+            "before": 55,
+            "after": 55,
+            "dropped": 0,
+            "fallback_no_match": false
+          },
+          "rpa_prefetch_queries": [
+            "GST-B400CX-1AJR",
+            "GST-B400BB-1AJF",
+            "GST-B400D-1AJF"
+          ],
+          "sold_first": {
+            "enabled": true,
+            "applied": false,
+            "codes_considered": 10,
+            "codes_passed": 0,
+            "selected_codes": [],
+            "reason": "no_codes_passed",
+            "rows": [
+              {
+                "code": "GST-B400CX-1AJR",
+                "signal_key": "model:GST-B400CX-1AJR",
+                "sold_90d_count": 0,
+                "sold_price_median": -1.0,
+                "sold_price_min": -1.0,
+                "sale_basis_usd": -1.0,
+                "sale_basis_type": "active_listing_price",
+                "gate_pass": false,
+                "gate_reason": "liquidity_sold_90d_below_threshold",
+                "max_purchase_total_jpy": -1.0,
+                "pass": false
+              },
+              {
+                "code": "GST-B400BB-1AJF",
+                "signal_key": "model:GST-B400BB-1AJF",
+                "sold_90d_count": 1,
+                "sold_price_median": 267.75,
+                "sold_price_min": 267.75,
+                "sale_basis_usd": 267.75,
+                "sale_basis_type": "sold_price_min_90d",
+                "gate_pass": false,
+                "gate_reason": "liquidity_sold_90d_below_threshold",
+                "max_purchase_total_jpy": 30709.93,
+                "pass": false
+              },
+              {
+                "code": "GST-B400D-1AJF",
+                "signal_key": "model:GST-B400D-1AJF",
+                "sold_90d_count": 1,
+                "sold_price_median": 296.49,
+                "sold_price_min": 296.49,
+                "sale_basis_usd": 296.49,
+                "sale_basis_type": "sold_price_min_90d",
+                "gate_pass": false,
+                "gate_reason": "liquidity_sold_90d_below_threshold",
+                "max_purchase_total_jpy": 34304.64,
+                "pass": false
+              },
+              {
+                "code": "GST-B400-1AJF",
+                "signal_key": "model:GST-B400-1AJF",
+                "sold_90d_count": 1,
+                "sold_price_median": 296.49,
+                "sold_price_min": 296.49,
+                "sale_basis_usd": 296.49,
+                "sale_basis_type": "sold_price_min_90d",
+                "gate_pass": false,
+                "gate_reason": "liquidity_sold_90d_below_threshold",
+                "max_purchase_total_jpy": 34304.64,
+                "pass": false
+              },
+              {
+                "code": "GST-B400BD-1A2JF",
+                "signal_key": "model:GST-B400BD-1A2JF",
+                "sold_90d_count": 1,
+                "sold_price_median": 296.49,
+                "sold_price_min": 296.49,
+                "sale_basis_usd": 296.49,
+                "sale_basis_type": "sold_price_min_90d",
+                "gate_pass": false,
+                "gate_reason": "liquidity_sold_90d_below_threshold",
+                "max_purchase_total_jpy": 34304.64,
+                "pass": false
+              },
+              {
+                "code": "GST-B400",
+                "signal_key": "model:GST-B400",
+                "sold_90d_count": 1,
+                "sold_price_median": 296.49,
+                "sold_price_min": 296.49,
+                "sale_basis_usd": 296.49,
+                "sale_basis_type": "sold_price_min_90d",
+                "gate_pass": false,
+                "gate_reason": "liquidity_sold_90d_below_threshold",
+                "max_purchase_total_jpy": 34304.64,
+                "pass": false
+              },
+              {
+                "code": "GST-B400XD-1A2JF",
+                "signal_key": "model:GST-B400XD-1A2JF",
+                "sold_90d_count": 1,
+                "sold_price_median": 296.49,
+                "sold_price_min": 296.49,
+                "sale_basis_usd": 296.49,
+                "sale_basis_type": "sold_price_min_90d",
+                "gate_pass": false,
+                "gate_reason": "liquidity_sold_90d_below_threshold",
+                "max_purchase_total_jpy": 34304.64,
+                "pass": false
+              },
+              {
+                "code": "GST-B400BB-1A",
+                "signal_key": "model:GST-B400BB-1A",
+                "sold_90d_count": 1,
+                "sold_price_median": 267.75,
+                "sold_price_min": 267.75,
+                "sale_basis_usd": 267.75,
+                "sale_basis_type": "sold_price_min_90d",
+                "gate_pass": false,
+                "gate_reason": "liquidity_sold_90d_below_threshold",
+                "max_purchase_total_jpy": 30709.93,
+                "pass": false
+              },
+              {
+                "code": "GST-B400AD-1A4JF",
+                "signal_key": "model:GST-B400AD-1A4JF",
+                "sold_90d_count": 1,
+                "sold_price_median": 296.49,
+                "sold_price_min": 296.49,
+                "sale_basis_usd": 296.49,
+                "sale_basis_type": "sold_price_min_90d",
+                "gate_pass": false,
+                "gate_reason": "liquidity_sold_90d_below_threshold",
+                "max_purchase_total_jpy": 34304.64,
+                "pass": false
+              },
+              {
+                "code": "GST-B400-1AER",
+                "signal_key": "model:GST-B400-1AER",
+                "sold_90d_count": 1,
+                "sold_price_median": 296.49,
+                "sold_price_min": 296.49,
+                "sale_basis_usd": 296.49,
+                "sale_basis_type": "sold_price_min_90d",
+                "gate_pass": false,
+                "gate_reason": "liquidity_sold_90d_below_threshold",
+                "max_purchase_total_jpy": 34304.64,
+                "pass": false
+              }
+            ]
+          }
+        },
+        "rakuten": {
+          "ok": true,
+          "count": 0,
+          "calls_made": 2,
+          "cache_hits": 0,
+          "network_calls": 2,
+          "budget_remaining": -1,
+          "max_calls": 3,
+          "per_call_limit": 30,
+          "target_items": 12,
+          "max_pages_per_query": 2,
+          "stop_reason": "low_yield_stop",
+          "require_in_stock": true,
+          "autotune_in": {
+            "enabled": true,
+            "applied": true,
+            "updated_at": 1771675367,
+            "updated_at_iso": "2026-02-21T12:02:47Z",
+            "ema_efficiency": 8.9712,
+            "min_new_items": 1
+          },
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 2,
+            "page": 1
+          },
+          "queries": [
+            {
+              "query": "CASIO G-SHOCK G-STEEL GST-B400CX-1AJR Limited Eternal Snake Solar",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 0,
+              "new_count": 0,
+              "duration_ms": 213,
+              "info": {
+                "http": 200,
+                "raw_count": 0,
+                "page": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "query": "CASIO GST-B400CX-1AJR",
+              "query_index": 1,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 0,
+              "new_count": 0,
+              "duration_ms": 152,
+              "info": {
+                "http": 200,
+                "raw_count": 0,
+                "page": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": -1
+              }
+            }
+          ],
+          "knowledge": {
+            "applied": false,
+            "category_key": "",
+            "category_name": "",
+            "active_season_tags": [],
+            "query_count": 0
+          },
+          "category_relevance_filter_enabled": false,
+          "category_relevance_term_count": 0,
+          "category_relevance_filtered_out": 0,
+          "min_queries_before_target": 1,
+          "touched_query_count": 2,
+          "autotune_out": {
+            "enabled": true,
+            "saved": true,
+            "max_calls": 2,
+            "per_call_limit": 25,
+            "min_new_items": 2,
+            "ema_efficiency": 6.2798,
+            "updated_at": 1771675760,
+            "updated_at_iso": "2026-02-21T12:09:20Z"
+          },
+          "query_model_code_filter": {
+            "enabled": true,
+            "applied": true,
+            "query_codes": [
+              "GSTB400CX1AJR"
+            ],
+            "before": 0,
+            "after": 0,
+            "dropped": 0,
+            "fallback_no_match": false,
+            "strict_drop_all": true
+          }
+        },
+        "yahoo": {
+          "ok": true,
+          "count": 0,
+          "calls_made": 3,
+          "cache_hits": 0,
+          "network_calls": 3,
+          "budget_remaining": -1,
+          "max_calls": 4,
+          "per_call_limit": 100,
+          "target_items": 12,
+          "max_pages_per_query": 2,
+          "stop_reason": "low_yield_stop",
+          "require_in_stock": true,
+          "autotune_in": {
+            "enabled": true,
+            "applied": true,
+            "updated_at": 1771674112,
+            "updated_at_iso": "2026-02-21T11:41:52Z",
+            "ema_efficiency": 18.719,
+            "min_new_items": 0
+          },
+          "cursor_start": {
+            "query_index": 0,
+            "page": 1
+          },
+          "cursor_next": {
+            "query_index": 3,
+            "page": 1
+          },
+          "queries": [
+            {
+              "query": "CASIO G-SHOCK G-STEEL GST-B400CX-1AJR Limited Eternal Snake Solar",
+              "query_index": 0,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 0,
+              "new_count": 0,
+              "duration_ms": 190,
+              "info": {
+                "http": 200,
+                "raw_total": 0,
+                "page": 1,
+                "start": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "query": "CASIO GST-B400CX-1AJR",
+              "query_index": 1,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 0,
+              "new_count": 0,
+              "duration_ms": 119,
+              "info": {
+                "http": 200,
+                "raw_total": 0,
+                "page": 1,
+                "start": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": -1
+              }
+            },
+            {
+              "query": "GST-B400CX-1AJR",
+              "query_index": 2,
+              "page": 1,
+              "ok": true,
+              "fetched_count": 0,
+              "new_count": 0,
+              "duration_ms": 121,
+              "info": {
+                "http": 200,
+                "raw_total": 0,
+                "page": 1,
+                "start": 1,
+                "cache_hit": false,
+                "cache_age_sec": -1,
+                "budget_remaining": -1
+              }
+            }
+          ],
+          "knowledge": {
+            "applied": false,
+            "category_key": "",
+            "category_name": "",
+            "active_season_tags": [],
+            "query_count": 0
+          },
+          "category_relevance_filter_enabled": false,
+          "category_relevance_term_count": 0,
+          "category_relevance_filtered_out": 0,
+          "min_queries_before_target": 1,
+          "touched_query_count": 3,
+          "autotune_out": {
+            "enabled": true,
+            "saved": true,
+            "max_calls": 3,
+            "per_call_limit": 80,
+            "min_new_items": 1,
+            "ema_efficiency": 13.1033,
+            "updated_at": 1771675761,
+            "updated_at_iso": "2026-02-21T12:09:21Z"
+          },
+          "query_model_code_filter": {
+            "enabled": true,
+            "applied": true,
+            "query_codes": [
+              "GSTB400CX1AJR"
+            ],
+            "before": 0,
+            "after": 0,
+            "dropped": 0,
+            "fallback_no_match": false,
+            "strict_drop_all": true
+          }
+        }
+      },
+      "errors": [],
+      "skipped_duplicates": 0,
+      "skipped_low_match": 0,
+      "skipped_invalid_price": 0,
+      "skipped_unprofitable": 0,
+      "skipped_low_margin": 0,
+      "skipped_low_ev90": 0,
+      "skipped_low_liquidity": 0,
+      "skipped_liquidity_unavailable": 0,
+      "skipped_ambiguous_model_title": 0,
+      "liquidity_unavailable_model_codes": [],
+      "low_match_reason_counts": {},
+      "low_match_samples": [],
+      "hints": [
+        "日本側のヒットがありません。キーワードを少し広げるか、在庫フィルタを解除して再検索してください。"
+      ],
+      "api_efficiency": {
+        "total_calls": 6,
+        "cache_hits": 0,
+        "network_calls": 6,
+        "by_site": {
+          "ebay": {
+            "calls_made": 1,
+            "cache_hits": 0,
+            "network_calls": 1,
+            "budget_remaining": -1
+          },
+          "rakuten": {
+            "calls_made": 2,
+            "cache_hits": 0,
+            "network_calls": 2,
+            "budget_remaining": -1
+          },
+          "yahoo": {
+            "calls_made": 3,
+            "cache_hits": 0,
+            "network_calls": 3,
+            "budget_remaining": -1
+          }
+        }
+      },
+      "evaluated_candidate_count": 0,
+      "duplicate_ratio": 0.0,
+      "duplicate_heavy_cooldown_applied": false
+    }
+  ]
+}
