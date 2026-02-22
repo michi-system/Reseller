@@ -68,6 +68,8 @@
 | `docs/daily_reports/*.md` | 日次作業レポート（`scripts/generate_daily_report.py` で生成） |
 | `logs/` | 実行ログ置き場 |
 | `backups/` | 手動バックアップ置き場 |
+| `backups/checkpoints/` | 一括移行前のローカル復帰チェックポイント（`scripts/create_local_checkpoint.py`） |
+| `backups/sqlite_exports/` | Supabase移行用CSVバンドル（`scripts/export_sqlite_bundle.py`） |
 | `docs/archive/manual/` | 手動作成レポートの退避先 |
 
 ## 7. 参照優先順

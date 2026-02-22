@@ -17,6 +17,7 @@
 11. `docs/daily_reports/TEMPLATE.md`
 12. `docs/OPERATOR_OPERATIONS_SPEC.md`
 13. `docs/OPERATOR_EFFORT_TABLE.md`
+14. `docs/SUPABASE_BIG_BANG_MIGRATION.md`
 
 ## 2. 正本（Single Source of Truth）
 | 種別 | 正本 | 用途 |
@@ -33,6 +34,7 @@
 | Operator運用仕様 | `docs/OPERATOR_OPERATIONS_SPEC.md` | 出品/監視/停止判定の運用定義 |
 | Operator工数表 | `docs/OPERATOR_EFFORT_TABLE.md` | 0->1開発の工数見積と分解 |
 | DB戦略 | `docs/LOCAL_DB_STRATEGY.md` | ローカルDB継続と移行条件 |
+| Supabase一括移行 | `docs/SUPABASE_BIG_BANG_MIGRATION.md` | 一括移行とローカル即時ロールバック手順 |
 | internal名移行 | `docs/INTERNAL_NAME_MIGRATION.md` | 新旧internal名の段階移行計画 |
 | データ契約 | `docs/DATA_CONTRACT_APPROVED_LISTING.md` | Tool間の受け渡し仕様 |
 | 記録先ルール | `docs/DOCS_GOVERNANCE.md` | 散乱防止ルール |
@@ -48,6 +50,8 @@
 - `docs/query_width_strategy.md`: API探索幅の戦略サマリ
 - `docs/RPA_SPEEDUP_NOTES_2026-02-21.md`: RPA高速化メモ
 - `docs/LOCAL_DB_STRATEGY.md`: ローカルDB運用と移行計画
+- `docs/SUPABASE_BIG_BANG_MIGRATION.md`: Supabase一括移行とロールバック手順
+- `docs/sql/reseller_supabase_schema.sql`: Supabase投入用の初期スキーマSQL
 - `docs/DATA_CONTRACT_APPROVED_LISTING.md`: 承認済み商品の契約定義
 
 ## 4. 生成物・状態ファイル

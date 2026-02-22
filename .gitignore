@@ -1,5 +1,7 @@
 .env.local
 data/
+backups/checkpoints/
+backups/sqlite_exports/
 .venv/
 scripts/__pycache__/
 reselling/__pycache__/

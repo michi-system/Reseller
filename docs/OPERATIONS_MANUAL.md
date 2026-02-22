@@ -105,3 +105,24 @@ python3 scripts/generate_daily_report.py --date YYYY-MM-DD --operator @github_id
 - オーナー: 要件決定、承認基準、最終マージ判断。
 - メンバー: 実装、テスト、PR作成、ログ整理。
 - 共通: `docs/WORKBOARD.md` 更新、日報作成、週次レビュー参加。
+
+## 14. 一括移行運用（Supabase）
+- 一括移行時は `docs/SUPABASE_BIG_BANG_MIGRATION.md` を正本にする。
+- スキーマ初期化は `docs/sql/reseller_supabase_schema.sql` を使う。
+- 切替前に必ず次を実行する。
+
+```bash
+python3 scripts/create_local_checkpoint.py --tag pre-supabase-bigbang
+```
+
+- データ投入用CSVを次で一括出力する。
+
+```bash
+python3 scripts/export_sqlite_bundle.py --tag pre-supabase-bigbang
+```
+
+- 不具合時の即時復帰は次を実行する。
+
+```bash
+python3 scripts/restore_local_checkpoint.py --apply
+```

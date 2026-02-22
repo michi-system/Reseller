@@ -26,7 +26,7 @@
 3. Phase C: 共有DB移行
 - 契約形式をそのまま共有DBへ保存。
 - Operatorは共有DBから直接取得。
-- 切替期間は JSONL とDBを並行運用し、差分を比較する。
+- 並行運用は行わず、一括切替 + ローカル復帰チェックポイント方式で実施する。
 
 ## 4. バックアップ/復旧ルール
 - 毎日: SQLiteバックアップを1世代追加。
@@ -57,3 +57,7 @@
 ```bash
 python3 scripts/migrate_db_to_reseller.py
 ```
+
+Supabaseへの一括移行（ローカル復帰前提）は次を参照。
+
+- `docs/SUPABASE_BIG_BANG_MIGRATION.md`
