@@ -22,6 +22,7 @@
 11. `docs/OPERATOR_OPERATIONS_SPEC.md` を読む（Operator運用仕様）。
 12. `docs/OPERATOR_EFFORT_TABLE.md` を読む（Operator工数見積）。
 13. `docs/SUPABASE_BIG_BANG_MIGRATION.md` を読む（一括移行とローカル復帰手順）。
+14. `docs/CODEX_COLLAB_ONBOARDING.md` を読む（別Mac/別アカウント参加手順）。
 
 ## 3. 正本の責務（Single Source of Truth）
 | 種別 | 正本ファイル | 役割 |
@@ -39,6 +40,7 @@
 | Operator工数表 | `docs/OPERATOR_EFFORT_TABLE.md` | 0->1開発の工数見積と分解 |
 | DB方針 | `docs/LOCAL_DB_STRATEGY.md` | ローカルDB継続と移行基準 |
 | Supabase一括移行 | `docs/SUPABASE_BIG_BANG_MIGRATION.md` | 一括移行とローカル即時ロールバック手順 |
+| 共同開発参加手順 | `docs/CODEX_COLLAB_ONBOARDING.md` | 別Mac/別アカウントCodexの参加手順 |
 | internal名移行 | `docs/INTERNAL_NAME_MIGRATION.md` | 新旧internal名の段階移行計画 |
 | データ契約 | `docs/DATA_CONTRACT_APPROVED_LISTING.md` | 承認済みデータ受け渡し定義 |
 | ナレッジ | `docs/KNOWLEDGE_LIBRARY.md` + `data/category_knowledge_seeds_v1.json` | カテゴリ展開知識 |

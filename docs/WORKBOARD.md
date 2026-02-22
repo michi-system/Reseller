@@ -56,6 +56,7 @@
 | 2026-02-22 | WB-MIG-003 | CSVバンドル投入スクリプトを実装（dry-run + truncate投入 + シーケンス同期） | `scripts/import_csv_bundle_to_postgres.py`, `docs/SUPABASE_BIG_BANG_MIGRATION.md` |
 | 2026-02-22 | WB-MIG-004 | DBランタイムをSQLite/PostgreSQL両対応化し、Supabase切替運用を有効化 | `reselling/db_runtime.py`, `reselling/models.py`, `listing_ops/models.py`, `reselling/review.py`, `listing_ops/ingest.py`, `reselling/env.py` |
 | 2026-02-22 | WB-OPS-006 | Operator運用UIと手動介入APIを実装（一覧/詳細/ジョブ実行/手動状態遷移） | `web/operator.*`, `listing_ops/manual_actions.py`, `reselling/api_server.py`, `tests/test_operator_manual_actions.py` |
+| 2026-02-22 | WB-OPS-007 | 別Mac/別アカウントCodex向けの共同開発オンボーディング手順を整備 | `docs/CODEX_COLLAB_ONBOARDING.md`, `docs/README.md`, `docs/START_HERE.md`, `docs/OPERATIONS_MANUAL.md` |
 
 ## 4. Backlog
 | ID | 優先 | 種別 | 内容 | 着手条件 |
@@ -96,6 +97,7 @@
 | 2026-02-22 | DEC-019 | Supabase移行入力はSQLite全表のCSVバンドルを正本にし、手動テーブル投入手順を固定する | DB間差分を可視化しつつ、移行時の再実行性を確保するため |
 | 2026-02-22 | DEC-020 | CSV投入は `import_csv_bundle_to_postgres.py` を正本にし、`--dry-run` と `--truncate --apply` の2段運用に固定する | 投入ミスを防ぎ、毎回同じ手順で再現可能にするため |
 | 2026-02-22 | DEC-021 | DB接続は共通ラッパー (`reselling/db_runtime.py`) でSQLite/PG差分を吸収し、`.env.local` の `DB_BACKEND` / `SUPABASE_DB_URL` で切替する | 実装速度を維持したまま本番移行とローカル復帰を両立するため |
+| 2026-02-22 | DEC-022 | 共同開発の初回参加手順は `docs/CODEX_COLLAB_ONBOARDING.md` に一本化する | 別環境の参加準備を標準化し、設定漏れとアカウント混在を減らすため |
 
 ## 7. 次エージェント向け起点
 1. `Now` の `in_progress` を上から順に処理。

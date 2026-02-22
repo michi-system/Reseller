@@ -12,6 +12,7 @@
 - 全体索引: `/Users/tadamichikimura/Downloads/dev-HQ/ebayminer/docs/README.md`
 - 2ツール全体像: `/Users/tadamichikimura/Downloads/dev-HQ/ebayminer/docs/PROGRAM_OVERVIEW.md`
 - 運用手順 (Codex + GitHub): `/Users/tadamichikimura/Downloads/dev-HQ/ebayminer/docs/OPERATIONS_MANUAL.md`
+- 共同開発参加手順 (別Mac/別アカウント): `/Users/tadamichikimura/Downloads/dev-HQ/ebayminer/docs/CODEX_COLLAB_ONBOARDING.md`
 - GitHub初期設定: `/Users/tadamichikimura/Downloads/dev-HQ/ebayminer/docs/GITHUB_PROJECT_SETUP.md`
 - ローカルDB方針: `/Users/tadamichikimura/Downloads/dev-HQ/ebayminer/docs/LOCAL_DB_STRATEGY.md`
 - internal名移行計画: `/Users/tadamichikimura/Downloads/dev-HQ/ebayminer/docs/INTERNAL_NAME_MIGRATION.md`

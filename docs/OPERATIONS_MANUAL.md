@@ -133,3 +133,7 @@ python3 scripts/import_csv_bundle_to_postgres.py --bundle-dir backups/sqlite_exp
 ```bash
 python3 scripts/restore_local_checkpoint.py --apply
 ```
+
+## 15. 別アカウント参加手順
+- 別Mac / 別GitHubアカウントで参加する場合は、次を入口にする。
+- `docs/CODEX_COLLAB_ONBOARDING.md`
