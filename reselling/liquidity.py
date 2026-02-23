@@ -8,78 +8,25 @@ import os
 import re
 import statistics
 import time
-import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
-from datetime import datetime, timezone
 from typing import Any, Dict, Optional, Sequence, Tuple
 
+from .coerce import env_bool as _env_bool
+from .coerce import env_float as _env_float
+from .coerce import env_int as _env_int
+from .coerce import to_float as _to_float
+from .coerce import to_int as _to_int
 from .config import ROOT_DIR, Settings, load_settings
+from .http_json import request_json as _http_request_json
+from .json_utils import extract_json_path as _extract_json_path
 from .models import connect, init_db
+from .time_utils import iso_to_epoch as _iso_to_epoch
+from .time_utils import utc_iso as _utc_iso
 
 _IDENTIFIER_KEYS = ("jan", "upc", "ean", "gtin", "mpn")
 _CODE_RE = re.compile(r"[A-Z0-9][A-Z0-9-]{3,}")
-
-
-def _utc_iso(ts: Optional[float] = None) -> str:
-    if ts is None:
-        dt = datetime.now(timezone.utc)
-    else:
-        dt = datetime.fromtimestamp(float(ts), tz=timezone.utc)
-    return dt.replace(microsecond=0).isoformat().replace("+00:00", "Z")
-
-
-def _iso_to_epoch(text: str) -> int:
-    raw = str(text or "").strip()
-    if not raw:
-        return 0
-    try:
-        if raw.endswith("Z"):
-            raw = raw[:-1] + "+00:00"
-        dt = datetime.fromisoformat(raw)
-        return int(dt.timestamp())
-    except ValueError:
-        return 0
-
-
-def _to_int(value: Any, default: int = 0) -> int:
-    try:
-        if value is None:
-            return default
-        return int(value)
-    except (TypeError, ValueError):
-        return default
-
-
-def _to_float(value: Any, default: float = 0.0) -> float:
-    try:
-        if value is None:
-            return default
-        return float(value)
-    except (TypeError, ValueError):
-        return default
-
-
-def _env_int(key: str, default: int) -> int:
-    raw = (os.getenv(key, "") or "").strip()
-    if not raw:
-        return default
-    return _to_int(raw, default)
-
-
-def _env_float(key: str, default: float) -> float:
-    raw = (os.getenv(key, "") or "").strip()
-    if not raw:
-        return default
-    return _to_float(raw, default)
-
-
-def _env_bool(key: str, default: bool = False) -> bool:
-    raw = (os.getenv(key, "") or "").strip().lower()
-    if not raw:
-        return default
-    return raw in {"1", "true", "yes", "on"}
 
 
 def _extract_codes(text: str) -> Sequence[str]:
@@ -171,45 +118,19 @@ def resolve_liquidity_key(
     return f"query:{fallback_key[:80]}"
 
 
-def _extract_json_path(payload: Dict[str, Any], path: str) -> Any:
-    current: Any = payload
-    for part in str(path or "").split("."):
-        key = str(part or "").strip()
-        if not key:
-            continue
-        if not isinstance(current, dict) or key not in current:
-            return None
-        current = current.get(key)
-    return current
-
-
 def _request_json(
     url: str,
     *,
     headers: Optional[Dict[str, str]] = None,
     timeout: int = 15,
 ) -> Tuple[int, Dict[str, str], Dict[str, Any]]:
-    req = urllib.request.Request(url=url, method="GET")
-    for key, value in (headers or {}).items():
-        req.add_header(key, value)
-    try:
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
-            raw = resp.read().decode("utf-8", errors="replace")
-            payload = json.loads(raw) if raw else {}
-            if not isinstance(payload, dict):
-                payload = {"data": payload}
-            return int(resp.status), dict(resp.headers.items()), payload
-    except urllib.error.HTTPError as err:
-        body = err.read().decode("utf-8", errors="replace")
-        payload: Dict[str, Any]
-        try:
-            parsed = json.loads(body) if body else {}
-            payload = parsed if isinstance(parsed, dict) else {"data": parsed}
-        except json.JSONDecodeError:
-            payload = {"raw": body[:800]}
-        return int(err.code), dict(err.headers.items()), payload
-    except urllib.error.URLError as err:
-        return 0, {}, {"error": str(err)}
+    return _http_request_json(
+        url,
+        headers=headers,
+        timeout=timeout,
+        raw_limit=800,
+        wrap_non_dict=True,
+    )
 
 
 def _ebay_access_token(timeout: int) -> str:

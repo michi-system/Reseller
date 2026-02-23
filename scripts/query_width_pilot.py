@@ -10,7 +10,6 @@ import os
 import sys
 import time
 import urllib.parse
-import urllib.request
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
@@ -18,61 +17,12 @@ from typing import Dict, List, Optional, Tuple
 ROOT_DIR = Path(__file__).resolve().parents[1]
 ENV_PATH = ROOT_DIR / ".env.local"
 EBAY_TOKEN_CACHE: Optional[str] = None
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
 
-
-def load_dotenv(path: Path) -> None:
-    if not path.exists():
-        return
-    for raw_line in path.read_text(encoding="utf-8").splitlines():
-        line = raw_line.strip()
-        if not line or line.startswith("#") or "=" not in line:
-            continue
-        key, value = line.split("=", 1)
-        key = key.strip()
-        value = value.strip()
-        if len(value) >= 2 and (
-            (value.startswith('"') and value.endswith('"'))
-            or (value.startswith("'") and value.endswith("'"))
-        ):
-            value = value[1:-1]
-        if key and key not in os.environ:
-            os.environ[key] = value
-
-
-def request_json(
-    url: str,
-    *,
-    method: str = "GET",
-    data: bytes | None = None,
-    headers: Dict[str, str] | None = None,
-    timeout: int = 20,
-) -> Tuple[int, Dict[str, str], Dict]:
-    req = urllib.request.Request(url=url, data=data, method=method)
-    for k, v in (headers or {}).items():
-        req.add_header(k, v)
-    try:
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
-            raw = resp.read().decode("utf-8", errors="replace")
-            payload = json.loads(raw) if raw else {}
-            return int(resp.status), dict(resp.headers.items()), payload
-    except Exception as err:  # urllib HTTPError/URLError
-        code = getattr(err, "code", 0)
-        hdrs = dict(getattr(err, "headers", {}).items()) if hasattr(err, "headers") else {}
-        body = ""
-        if hasattr(err, "read"):
-            try:
-                body = err.read().decode("utf-8", errors="replace")
-            except Exception:
-                body = str(err)
-        payload = {}
-        if body:
-            try:
-                payload = json.loads(body)
-            except json.JSONDecodeError:
-                payload = {"raw": body[:400]}
-        else:
-            payload = {"error": str(err)}
-        return int(code), hdrs, payload
+from reselling.coerce import to_int as as_int
+from reselling.env import load_dotenv
+from reselling.http_json import request_json
 
 
 def request_with_retry(
@@ -85,7 +35,13 @@ def request_with_retry(
     retries: int = 1,
 ) -> Tuple[int, Dict[str, str], Dict]:
     status, resp_headers, payload = request_json(
-        url, method=method, data=data, headers=headers, timeout=timeout
+        url,
+        method=method,
+        data=data,
+        headers=headers,
+        timeout=timeout,
+        raw_limit=400,
+        catch_all=True,
     )
     if status != 429 or retries <= 0:
         return status, resp_headers, payload
@@ -105,15 +61,6 @@ def request_with_retry(
         timeout=timeout,
         retries=retries - 1,
     )
-
-
-def as_int(value: object, default: int = 0) -> int:
-    try:
-        if value is None:
-            return default
-        return int(value)
-    except Exception:
-        return default
 
 
 def ebay_token(timeout: int) -> Optional[str]:

@@ -30,13 +30,23 @@ body {
 
 .header {
   display: flex;
-  justify-content: space-between;
-  gap: 18px;
-  align-items: flex-end;
-  padding: 20px 24px 14px;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px 24px 12px;
   border-bottom: 1px solid var(--line);
   background: #fdf9f1cc;
   backdrop-filter: blur(2px);
+}
+
+.header-main {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: flex-end;
+}
+
+.header-title {
+  min-width: 0;
 }
 
 .eyebrow {
@@ -57,6 +67,35 @@ h1 {
   gap: 10px;
   flex-wrap: wrap;
   align-items: flex-end;
+}
+
+.header-seed-status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  border: 1px solid #d8e3ee;
+  background: #f7fbff;
+  border-radius: 10px;
+  padding: 8px 10px;
+}
+
+.header-seed-chip {
+  font-size: 12px;
+  border-radius: 999px;
+  padding: 4px 9px;
+  background: #e9f0f8;
+  color: #28425a;
+  font-weight: 700;
+}
+
+.header-seed-status.warn {
+  border-color: #f0b7ab;
+  background: #fff3ef;
+}
+
+.header-seed-status.warn .header-seed-chip {
+  background: #fce2dc;
+  color: #8a2f1f;
 }
 
 label {
@@ -211,7 +250,7 @@ button:disabled {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 14px;
   padding: 14px 24px 20px;
-  height: calc(100vh - 120px);
+  height: calc(100vh - 170px);
   min-height: 0;
   overflow: hidden;
 }
@@ -994,6 +1033,56 @@ button:disabled {
   margin-top: 8px;
 }
 
+.seed-pool-summary {
+  margin-top: 8px;
+  margin-bottom: 8px;
+  border: 1px solid #d8e3ee;
+  background: #f7fbff;
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #2a3d4e;
+}
+
+.seed-pool-summary .compact-list {
+  margin: 6px 0 0;
+  padding-left: 16px;
+  display: grid;
+  gap: 2px;
+}
+
+.seed-pool-summary .compact-list li {
+  font-size: 11px;
+  color: #385067;
+}
+
+.seed-pool-summary strong {
+  color: #163552;
+}
+
+.seed-pool-summary.warn {
+  border-color: #f0b7ab;
+  background: #fff3ef;
+  color: #7b2417;
+}
+
+.seed-pool-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.seed-pool-chip {
+  font-size: 11px;
+  border-radius: 999px;
+  padding: 3px 8px;
+  background: #e9f0f8;
+  color: #28425a;
+  font-weight: 700;
+}
+
 .fetch-alert {
   border-radius: 9px;
   padding: 8px 10px;
@@ -1012,6 +1101,9 @@ button:disabled {
   border-radius: 9px;
   padding: 8px;
   background: #fefbf6;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .fetch-row .head {
@@ -1324,6 +1416,11 @@ textarea {
 
 @media (max-width: 900px) {
   .header {
+    align-items: stretch;
+    padding: 14px 12px 10px;
+  }
+
+  .header-main {
     flex-direction: column;
     align-items: stretch;
   }

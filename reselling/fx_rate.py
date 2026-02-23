@@ -4,16 +4,17 @@ from __future__ import annotations
 
 import json
 import os
-import urllib.error
 import urllib.parse
-import urllib.request
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Optional, Tuple
 from urllib.parse import urlparse
 
 from .config import Settings, load_settings
+from .http_json import request_json as _http_request_json
+from .json_utils import extract_json_path as _extract_json_path
 from .models import connect, get_fx_rate_state, init_db, upsert_fx_rate_state
+from .time_utils import utc_iso
 
 
 @dataclass(frozen=True)
@@ -29,47 +30,13 @@ class FxRateSnapshot:
 _PROCESS_CACHE: Dict[str, FxRateSnapshot] = {}
 
 
-def _utc_now() -> datetime:
-    return datetime.now(timezone.utc)
-
-
-def _to_iso(dt: datetime) -> str:
-    return dt.astimezone(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
-
-
 def _from_iso(value: str) -> datetime:
     cleaned = value.replace("Z", "+00:00")
     return datetime.fromisoformat(cleaned).astimezone(timezone.utc)
 
 
 def _request_json(url: str, timeout: int = 20) -> Tuple[int, Dict[str, str], Dict[str, Any]]:
-    req = urllib.request.Request(url=url, method="GET")
-    try:
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
-            raw = resp.read().decode("utf-8", errors="replace")
-            payload = json.loads(raw) if raw else {}
-            return int(resp.status), dict(resp.headers.items()), payload
-    except urllib.error.HTTPError as err:
-        body = err.read().decode("utf-8", errors="replace")
-        try:
-            payload = json.loads(body) if body else {}
-        except json.JSONDecodeError:
-            payload = {"raw": body[:500]}
-        return int(err.code), dict(err.headers.items()), payload
-    except urllib.error.URLError as err:
-        return 0, {}, {"error": str(err)}
-
-
-def _extract_json_path(payload: Dict[str, Any], path: str) -> Any:
-    current: Any = payload
-    for part in path.split("."):
-        if not isinstance(current, dict):
-            return None
-        if part not in current:
-            return None
-        current = current[part]
-    return current
-
+    return _http_request_json(url, timeout=timeout, raw_limit=500)
 
 def _pair(settings: Settings) -> str:
     return f"{settings.fx_base_ccy}{settings.fx_quote_ccy}"
@@ -96,7 +63,7 @@ def _resolve_fx_url(settings: Settings) -> Tuple[str, str]:
 
 
 def _default_snapshot(settings: Settings) -> FxRateSnapshot:
-    now_iso = _to_iso(_utc_now())
+    now_iso = utc_iso()
     return FxRateSnapshot(
         pair=_pair(settings),
         rate=float(settings.fx_usd_jpy_default),
@@ -154,8 +121,8 @@ def maybe_refresh_usd_jpy_rate(
 ) -> Dict[str, Any]:
     settings = settings or load_settings()
     pair = _pair(settings)
-    now = _utc_now()
-    now_iso = _to_iso(now)
+    now = datetime.now(timezone.utc)
+    now_iso = utc_iso(now.timestamp())
 
     with connect(settings.db_path) as conn:
         init_db(conn)
@@ -195,7 +162,7 @@ def maybe_refresh_usd_jpy_rate(
                 )
             rate = float(raw_rate)
             source = urlparse(url).netloc or settings.fx_provider
-            next_refresh_at = _to_iso(now + timedelta(seconds=settings.fx_refresh_seconds))
+            next_refresh_at = utc_iso((now + timedelta(seconds=settings.fx_refresh_seconds)).timestamp())
             upsert_fx_rate_state(
                 conn,
                 pair=pair,

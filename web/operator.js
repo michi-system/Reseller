@@ -27,17 +27,22 @@ const refs = {
   jobList: document.getElementById("jobList"),
   jobEmpty: document.getElementById("jobEmpty"),
   stateFilter: document.getElementById("stateFilter"),
+  keywordFilter: document.getElementById("keywordFilter"),
   listLimit: document.getElementById("listLimit"),
+  listMeta: document.getElementById("listMeta"),
+  quickActionBar: document.getElementById("quickActionBar"),
+  quickActionTitle: document.getElementById("quickActionTitle"),
+  quickManualNote: document.getElementById("quickManualNote"),
+  quickManualAlertBtn: document.getElementById("quickManualAlertBtn"),
+  quickManualStopBtn: document.getElementById("quickManualStopBtn"),
+  quickManualKeepListedBtn: document.getElementById("quickManualKeepListedBtn"),
+  quickManualResumeReadyBtn: document.getElementById("quickManualResumeReadyBtn"),
   reloadListBtn: document.getElementById("reloadListBtn"),
   listingBody: document.getElementById("listingBody"),
   listingEmpty: document.getElementById("listingEmpty"),
   detailTitle: document.getElementById("detailTitle"),
+  nextActionHint: document.getElementById("nextActionHint"),
   detailMetrics: document.getElementById("detailMetrics"),
-  manualNote: document.getElementById("manualNote"),
-  manualAlertBtn: document.getElementById("manualAlertBtn"),
-  manualStopBtn: document.getElementById("manualStopBtn"),
-  manualKeepListedBtn: document.getElementById("manualKeepListedBtn"),
-  manualResumeReadyBtn: document.getElementById("manualResumeReadyBtn"),
   eventList: document.getElementById("eventList"),
   eventEmpty: document.getElementById("eventEmpty"),
   snapshotList: document.getElementById("snapshotList"),
@@ -46,6 +51,7 @@ const refs = {
 };
 
 const state = {
+  sourceListings: [],
   listings: [],
   selectedId: null,
   selectedListing: null,
@@ -313,6 +319,9 @@ function renderListings() {
     })
     .join("");
   refs.listingEmpty.hidden = rows.length > 0;
+  if (refs.listMeta) {
+    refs.listMeta.textContent = `表示: ${rows.length}件`;
+  }
   refs.listingBody.querySelectorAll("tr[data-id]").forEach((tr) => {
     tr.addEventListener("click", () => {
       const id = toInt(tr.dataset.id, 0);
@@ -322,19 +331,96 @@ function renderListings() {
       }
     });
   });
+  renderQuickActionBar();
 }
 
 function metric(label, value) {
   return `<div class="metric"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`;
 }
 
+function nextActionText(listingState) {
+  const key = String(listingState || "").trim().toLowerCase();
+  if (key === "ready") {
+    return "次にやること: STEP 2の「出品サイクル実行」を押して出品へ進めてください。";
+  }
+  if (key === "listed") {
+    return "次にやること: STEP 3の「軽量監視」を定期実行してください。異常時のみ手動停止してください。";
+  }
+  if (key === "alert_review") {
+    return "次にやること: 詳細を確認し、「出品継続」または「停止」を選択してください。";
+  }
+  if (key === "stopped") {
+    return "次にやること: 再開する場合は「準備中へ戻す」を実行し、STEP 2で再出品してください。";
+  }
+  return "次にやること: 一覧で対象を選んでください。";
+}
+
+function clearRecommendedButtons() {
+  [
+    refs.listingCycleBtn,
+    refs.monitorLightBtn,
+  ].forEach((el) => el?.classList.remove("recommended"));
+}
+
+function setRecommendedButtons(listingState) {
+  clearRecommendedButtons();
+  const key = String(listingState || "").trim().toLowerCase();
+  if (key === "ready") {
+    refs.listingCycleBtn?.classList.add("recommended");
+    return;
+  }
+  if (key === "listed") {
+    refs.monitorLightBtn?.classList.add("recommended");
+    return;
+  }
+  if (key === "alert_review") {
+    return;
+  }
+  if (key === "stopped") {
+    return;
+  }
+}
+
+function renderQuickActionBar() {
+  if (!refs.quickActionBar || !refs.quickActionTitle) return;
+  const controls = [
+    refs.quickManualAlertBtn,
+    refs.quickManualStopBtn,
+    refs.quickManualKeepListedBtn,
+    refs.quickManualResumeReadyBtn,
+  ];
+  refs.quickActionBar.hidden = false;
+  if (!state.selectedId || !state.selectedListing) {
+    refs.quickActionTitle.textContent = "選択中: なし（一覧から対象を選択してください）";
+    controls.forEach((el) => {
+      if (el) el.disabled = true;
+    });
+    return;
+  }
+  controls.forEach((el) => {
+    if (el) el.disabled = false;
+  });
+  const title = String(state.selectedListing.title || "").trim() || "(タイトルなし)";
+  refs.quickActionTitle.textContent = `選択中: #${state.selectedId} ${title}`;
+}
+
 function renderListingDetail(listing) {
   if (!listing) {
-    refs.detailTitle.textContent = "一覧から1件選択してね";
+    refs.detailTitle.textContent = "一覧から1件選択してください。";
     refs.detailMetrics.innerHTML = "";
+    if (refs.nextActionHint) {
+      refs.nextActionHint.textContent = "次にやること: 一覧で対象を選んでください。";
+    }
+    clearRecommendedButtons();
+    renderQuickActionBar();
     return;
   }
   refs.detailTitle.textContent = `#${toInt(listing.id, 0)} ${listing.title || "(タイトルなし)"}`;
+  if (refs.nextActionHint) {
+    refs.nextActionHint.textContent = nextActionText(listing.listing_state);
+  }
+  setRecommendedButtons(listing.listing_state);
+  renderQuickActionBar();
   refs.detailMetrics.innerHTML = [
     metric("状態", labelState(listing.listing_state)),
     metric("承認ID", listing.approved_id || "-"),
@@ -410,14 +496,24 @@ async function loadConfig() {
   setConfigInputs(payload.active_config || {});
 }
 
-async function loadListings() {
-  const stateFilter = String(refs.stateFilter.value || "").trim();
-  const limit = Math.max(1, toInt(refs.listLimit.value, 100));
-  const qs = new URLSearchParams();
-  if (stateFilter) qs.set("state", stateFilter);
-  qs.set("limit", String(limit));
-  const payload = await api(`/v1/operator/listings?${qs.toString()}`);
-  state.listings = Array.isArray(payload.items) ? payload.items : [];
+function applyClientFilters() {
+  const keyword = String(refs.keywordFilter?.value || "").trim().toLowerCase();
+  let rows = Array.isArray(state.sourceListings) ? state.sourceListings : [];
+  if (keyword) {
+    rows = rows.filter((row) => {
+      const text = [
+        row.id,
+        row.sku_key,
+        row.title,
+        row.approved_id,
+        row.channel_listing_id,
+      ]
+        .map((v) => String(v || "").toLowerCase())
+        .join(" ");
+      return text.includes(keyword);
+    });
+  }
+  state.listings = rows;
   renderListings();
 
   if (state.selectedId && !state.listings.some((row) => toInt(row.id, 0) === state.selectedId)) {
@@ -427,6 +523,18 @@ async function loadListings() {
     renderEvents([]);
     renderSnapshots([]);
   }
+  renderQuickActionBar();
+}
+
+async function loadListings() {
+  const stateFilter = String(refs.stateFilter.value || "").trim();
+  const limit = Math.max(1, toInt(refs.listLimit.value, 100));
+  const qs = new URLSearchParams();
+  if (stateFilter) qs.set("state", stateFilter);
+  qs.set("limit", String(limit));
+  const payload = await api(`/v1/operator/listings?${qs.toString()}`);
+  state.sourceListings = Array.isArray(payload.items) ? payload.items : [];
+  applyClientFilters();
 }
 
 async function loadEvents(listingId) {
@@ -520,13 +628,13 @@ function buildManualPayload(defaultReason) {
   return {
     actor_id: String(refs.actorId.value || "").trim(),
     reason_code: defaultReason,
-    note: String(refs.manualNote.value || "").trim(),
+    note: String(refs.quickManualNote?.value || "").trim(),
   };
 }
 
 async function runManualAction(pathSuffix, defaultReason, buttonRef) {
   if (!state.selectedId) {
-    showToast("先に一覧から対象を選んでね");
+    showToast("先に一覧から対象を選択してください。");
     return;
   }
   setBusy(buttonRef, true);
@@ -572,9 +680,9 @@ function bindEvents() {
     void (async () => {
       try {
         await refreshAll();
-        showToast("更新したよ");
+        showToast("更新しました。");
       } catch (err) {
-        showToast(String(err.message || err));
+        showToast(`更新に失敗しました: ${String(err.message || err)}`);
       }
     })();
   });
@@ -584,7 +692,7 @@ function bindEvents() {
       try {
         await loadListings();
       } catch (err) {
-        showToast(String(err.message || err));
+        showToast(`一覧更新に失敗しました: ${String(err.message || err)}`);
       }
     })();
   });
@@ -594,9 +702,13 @@ function bindEvents() {
       try {
         await loadListings();
       } catch (err) {
-        showToast(String(err.message || err));
+        showToast(`一覧取得に失敗しました: ${String(err.message || err)}`);
       }
     })();
+  });
+
+  refs.keywordFilter?.addEventListener("input", () => {
+    applyClientFilters();
   });
 
   refs.ingestBtn.addEventListener("click", () => {
@@ -604,7 +716,7 @@ function bindEvents() {
       try {
         await runIngest();
       } catch (err) {
-        showToast(`取込失敗: ${String(err.message || err)}`);
+        showToast(`取込に失敗しました: ${String(err.message || err)}`);
       }
     })();
   });
@@ -614,7 +726,7 @@ function bindEvents() {
       try {
         await runListingCycle();
       } catch (err) {
-        showToast(`出品失敗: ${String(err.message || err)}`);
+        showToast(`出品処理に失敗しました: ${String(err.message || err)}`);
       }
     })();
   });
@@ -624,7 +736,7 @@ function bindEvents() {
       try {
         await runMonitor("light", refs.monitorLightBtn);
       } catch (err) {
-        showToast(`監視失敗: ${String(err.message || err)}`);
+        showToast(`軽量監視に失敗しました: ${String(err.message || err)}`);
       }
     })();
   });
@@ -634,7 +746,7 @@ function bindEvents() {
       try {
         await runMonitor("heavy", refs.monitorHeavyBtn);
       } catch (err) {
-        showToast(`監視失敗: ${String(err.message || err)}`);
+        showToast(`重量監視に失敗しました: ${String(err.message || err)}`);
       }
     })();
   });
@@ -644,32 +756,32 @@ function bindEvents() {
       try {
         await saveConfig();
       } catch (err) {
-        showToast(`設定保存失敗: ${String(err.message || err)}`);
+        showToast(`設定保存に失敗しました: ${String(err.message || err)}`);
       }
     })();
   });
 
-  refs.manualAlertBtn.addEventListener("click", () => {
-    void runManualAction("manual-alert", "manual_alert_review", refs.manualAlertBtn).catch((err) => {
-      showToast(`手動操作失敗: ${String(err.message || err)}`);
+  refs.quickManualAlertBtn?.addEventListener("click", () => {
+    void runManualAction("manual-alert", "manual_alert_review", refs.quickManualAlertBtn).catch((err) => {
+      showToast(`手動操作に失敗しました: ${String(err.message || err)}`);
     });
   });
 
-  refs.manualStopBtn.addEventListener("click", () => {
-    void runManualAction("manual-stop", "manual_stop", refs.manualStopBtn).catch((err) => {
-      showToast(`手動操作失敗: ${String(err.message || err)}`);
+  refs.quickManualStopBtn?.addEventListener("click", () => {
+    void runManualAction("manual-stop", "manual_stop", refs.quickManualStopBtn).catch((err) => {
+      showToast(`手動操作に失敗しました: ${String(err.message || err)}`);
     });
   });
 
-  refs.manualKeepListedBtn.addEventListener("click", () => {
-    void runManualAction("manual-keep-listed", "manual_keep_listed", refs.manualKeepListedBtn).catch((err) => {
-      showToast(`手動操作失敗: ${String(err.message || err)}`);
+  refs.quickManualKeepListedBtn?.addEventListener("click", () => {
+    void runManualAction("manual-keep-listed", "manual_keep_listed", refs.quickManualKeepListedBtn).catch((err) => {
+      showToast(`手動操作に失敗しました: ${String(err.message || err)}`);
     });
   });
 
-  refs.manualResumeReadyBtn.addEventListener("click", () => {
-    void runManualAction("manual-resume-ready", "manual_resume_ready", refs.manualResumeReadyBtn).catch((err) => {
-      showToast(`手動操作失敗: ${String(err.message || err)}`);
+  refs.quickManualResumeReadyBtn?.addEventListener("click", () => {
+    void runManualAction("manual-resume-ready", "manual_resume_ready", refs.quickManualResumeReadyBtn).catch((err) => {
+      showToast(`手動操作に失敗しました: ${String(err.message || err)}`);
     });
   });
 }
@@ -679,7 +791,7 @@ async function bootstrap() {
   try {
     await refreshAll();
   } catch (err) {
-    showToast(`初期化失敗: ${String(err.message || err)}`);
+    showToast(`初期化に失敗しました: ${String(err.message || err)}`);
   }
 }
 

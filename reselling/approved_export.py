@@ -7,6 +7,7 @@ import re
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Tuple
 
+from .coerce import to_float as _to_float
 from .models import connect, init_db
 
 REQUIRED_FIELDS = (
@@ -38,15 +39,6 @@ def _parse_json_object(raw: Any) -> Dict[str, Any]:
         return parsed if isinstance(parsed, dict) else {}
     except json.JSONDecodeError:
         return {}
-
-
-def _to_float(value: Any, default: float = 0.0) -> float:
-    try:
-        if value is None:
-            return default
-        return float(value)
-    except (TypeError, ValueError):
-        return default
 
 
 def _text(value: Any, default: str = "") -> str:

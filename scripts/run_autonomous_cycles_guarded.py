@@ -4,43 +4,21 @@
 from __future__ import annotations
 
 import argparse
-import json
 import shlex
 import subprocess
 import sys
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
 
-
-def _now_iso() -> str:
-    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
-
-
-def _to_int(value: Any, default: int = 0) -> int:
-    try:
-        if value is None:
-            return default
-        return int(value)
-    except (TypeError, ValueError):
-        return default
-
-
-def _load_json(path: Path) -> Dict[str, Any]:
-    if not path.exists():
-        return {}
-    try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
-    except Exception:
-        return {}
-    return payload if isinstance(payload, dict) else {}
-
-
-def _save_json(path: Path, payload: Dict[str, Any]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+from reselling.coerce import to_int as _to_int
+from reselling.json_utils import load_json_dict as _load_json
+from reselling.json_utils import save_json_dict as _save_json
+from reselling.metrics import safe_rate as _safe_rate
+from reselling.time_utils import utc_iso as _now_iso
 
 
 def _run_cmd(args: List[str]) -> subprocess.CompletedProcess[str]:
@@ -59,12 +37,6 @@ def _snapshot_file(src: Path, dst: Path) -> None:
         return
     dst.parent.mkdir(parents=True, exist_ok=True)
     dst.write_text(src.read_text(encoding="utf-8"), encoding="utf-8")
-
-
-def _safe_rate(n: int, d: int) -> float:
-    if d <= 0:
-        return 0.0
-    return float(n) / float(d)
 
 
 def _extract_review_kpi(review_report: Dict[str, Any]) -> Dict[str, Any]:

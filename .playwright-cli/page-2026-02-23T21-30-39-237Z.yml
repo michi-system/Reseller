@@ -1,0 +1,121 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - paragraph [ref=e5]: Reseller / Miner
+        - heading "同一商品・利益確認" [level=1] [ref=e6]
+      - generic [ref=e7]:
+        - generic [ref=e8]:
+          - text: カテゴリ
+          - combobox "カテゴリ" [ref=e9]:
+            - option "腕時計" [selected]
+            - option "スニーカー"
+            - option "ストリートウェア"
+            - option "トレーディングカード"
+            - option "ホビー・コレクティブル"
+            - option "ゲーム機本体"
+            - option "交換レンズ"
+        - button "探索開始" [ref=e10] [cursor=pointer]
+        - button "一覧更新" [ref=e11] [cursor=pointer]
+        - button "詳細設定" [ref=e12] [cursor=pointer]
+    - generic [ref=e13]:
+      - generic [ref=e14]: "カテゴリ: watch"
+      - generic [ref=e15]: Seed情報を取得中
+  - paragraph [ref=e16]: "API接続先: http://127.0.0.1:8012"
+  - main [ref=e17]:
+    - generic [ref=e19]:
+      - heading "レビュー候補一覧" [level=2] [ref=e20]
+      - tablist "レビュー候補タブ" [ref=e21]:
+        - tab "レビュー待ち 0" [selected] [ref=e22] [cursor=pointer]
+        - tab "レビュー済み 0" [ref=e23] [cursor=pointer]
+      - paragraph [ref=e24]: 候補を選択してください
+      - list
+      - paragraph [ref=e25]: 候補がありません。
+    - complementary [ref=e26]:
+      - article [ref=e27]:
+        - generic [ref=e28]:
+          - heading "計算と判定" [level=2] [ref=e29]
+          - generic [ref=e30]:
+            - generic [ref=e31]: 現在の判定
+            - strong [ref=e32]: "-"
+            - generic [ref=e33]: 候補を選択してください
+          - generic [ref=e35]: 理由を判定中
+          - generic [ref=e36]:
+            - generic [ref=e37]:
+              - generic [ref=e38]: 売上見込み
+              - strong [ref=e39]: "-"
+              - generic [ref=e40]: "-"
+            - generic [ref=e41]:
+              - generic [ref=e42]: 仕入原価
+              - strong [ref=e43]: "-"
+              - generic [ref=e44]: "-"
+            - generic [ref=e45]:
+              - generic [ref=e46]: 諸経費合計
+              - strong [ref=e47]: "-"
+              - generic [ref=e48]: "-"
+            - generic [ref=e49]:
+              - generic [ref=e50]: 最終利益（手数料後）
+              - strong [ref=e51]: "-"
+              - generic [ref=e52]: "-"
+          - paragraph [ref=e53]: 最終利益 = 売上見込み - 仕入原価 - 諸経費合計
+          - generic [ref=e54]:
+            - generic [ref=e55]:
+              - generic [ref=e56]: 90日売却
+              - strong [ref=e57]: "-"
+            - generic [ref=e58]:
+              - generic [ref=e59]: 90日最低成約
+              - strong [ref=e60]: "-"
+            - generic [ref=e61]:
+              - generic [ref=e62]: 流動性Gate
+              - strong [ref=e63]: "-"
+          - group [ref=e64]:
+            - generic "▶ 為替・手数料の詳細を開く" [ref=e65] [cursor=pointer]
+        - generic [ref=e66]:
+          - heading "探索ログ" [level=2] [ref=e67]
+          - paragraph [ref=e68]: まだ探索を実行していません。
+          - generic [ref=e69]: Seedプール情報を取得しています。
+          - group [ref=e70]:
+            - generic "▶ サイト別ログを開く" [ref=e71] [cursor=pointer]
+        - generic [ref=e72]:
+          - heading "算出に使ったデータ" [level=2] [ref=e73]
+          - paragraph [ref=e74]: 候補を選択してください。
+          - group [ref=e75]:
+            - generic "▶ 算出データ詳細を開く" [ref=e76] [cursor=pointer]
+        - generic [ref=e77]:
+          - heading "レビュー操作" [level=2] [ref=e78]
+          - generic [ref=e79]:
+            - button "同一商品・利益OK（承認）" [ref=e80] [cursor=pointer]
+            - paragraph [ref=e81]: 承認するとダミー出品ステータスに遷移します。
+          - generic [ref=e82]:
+            - generic [ref=e83]:
+              - generic [ref=e84]:
+                - checkbox "型番" [ref=e85]
+                - generic [ref=e86]: 型番
+              - generic [ref=e87]:
+                - checkbox "ブランド" [ref=e88]
+                - generic [ref=e89]: ブランド
+              - generic [ref=e90]:
+                - checkbox "色" [ref=e91]
+                - generic [ref=e92]: 色
+              - generic [ref=e93]:
+                - checkbox "状態" [ref=e94]
+                - generic [ref=e95]: 状態
+              - generic [ref=e96]:
+                - checkbox "価格" [ref=e97]
+                - generic [ref=e98]: 価格
+              - generic [ref=e99]:
+                - checkbox "付属品" [ref=e100]
+                - generic [ref=e101]: 付属品
+              - generic [ref=e102]:
+                - checkbox "同梱差分" [ref=e103]
+                - generic [ref=e104]: 同梱差分
+              - generic [ref=e105]:
+                - checkbox "送料/配送" [ref=e106]
+                - generic [ref=e107]: 送料/配送
+              - generic [ref=e108]:
+                - checkbox "その他" [ref=e109]
+                - generic [ref=e110]: その他
+            - group [ref=e111]:
+              - generic "▶ 否認理由（任意）" [ref=e112] [cursor=pointer]
+            - button "否認して保存" [ref=e113] [cursor=pointer]
+  - status

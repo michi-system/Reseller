@@ -19,6 +19,12 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 from reselling.env import load_dotenv
+from reselling.coerce import to_bool as _to_bool
+from reselling.coerce import env_bool as _env_bool
+from reselling.coerce import to_float as _to_float
+from reselling.coerce import to_int as _to_int
+from reselling.json_utils import load_json_dict as _load_json
+from reselling.metrics import safe_rate as _safe_rate
 
 
 def run_cmd(args: list[str]) -> None:
@@ -26,45 +32,114 @@ def run_cmd(args: list[str]) -> None:
     subprocess.run(args, cwd=str(ROOT_DIR), check=True)
 
 
-def _load_json(path: Path) -> Dict[str, Any]:
-    if not path.exists():
-        return {}
-    try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
-    except Exception:
-        return {}
-    return payload if isinstance(payload, dict) else {}
+def _policy_enabled(env_req: Dict[str, Any], key: str, default: bool = True) -> bool:
+    return _to_bool(env_req.get(key, default), default)
 
 
-def _safe_rate(n: int, d: int) -> float:
-    if d <= 0:
-        return 0.0
-    return float(n) / float(d)
+def _flag(enabled: bool, name: str) -> list[str]:
+    return [name] if bool(enabled) else []
 
 
-def _to_int(value: Any, default: int = 0) -> int:
-    try:
-        if value is None:
-            return default
-        return int(value)
-    except (TypeError, ValueError):
-        return default
+def _kv_if_non_negative(name: str, value: Any) -> list[str]:
+    iv = _to_int(value, -1)
+    if iv < 0:
+        return []
+    return [name, str(iv)]
 
 
-def _to_float(value: Any, default: float = 0.0) -> float:
-    try:
-        if value is None:
-            return default
-        return float(value)
-    except (TypeError, ValueError):
-        return default
+def _kv_if_non_empty(name: str, value: Any) -> list[str]:
+    text = str(value or "").strip()
+    if not text:
+        return []
+    return [name, text]
 
 
-def _env_bool(name: str, default: bool) -> bool:
-    raw = (os.getenv(name, "") or "").strip().lower()
-    if not raw:
-        return default
-    return raw in {"1", "true", "yes", "on"}
+def _build_run_miner_cycle_args(args: argparse.Namespace) -> list[str]:
+    return [
+        "python3",
+        "scripts/run_miner_cycle.py",
+        "--target-count",
+        str(args.target_count),
+        "--hard-cap",
+        str(args.hard_cap),
+        "--min-profit-usd",
+        str(args.min_profit_usd),
+        "--min-margin-rate",
+        str(args.min_margin_rate),
+        "--min-match-score",
+        str(args.min_match_score),
+        "--max-rounds",
+        str(args.max_rounds),
+        "--sleep-seconds",
+        str(args.sleep_seconds),
+        "--max-zero-gain-strikes",
+        str(args.max_zero_gain_strikes),
+        "--historical-min-attempts",
+        str(args.historical_min_attempts),
+        "--historical-min-network-calls",
+        str(args.historical_min_network_calls),
+        "--historical-min-gain-per-network-call",
+        str(args.historical_min_gain_per_network_call),
+        "--historical-retry-every-runs",
+        str(args.historical_retry_every_runs),
+        "--duplicate-heavy-ratio-threshold",
+        str(args.duplicate_heavy_ratio_threshold),
+        "--duplicate-heavy-min-evaluated",
+        str(args.duplicate_heavy_min_evaluated),
+        "--duplicate-heavy-min-duplicates",
+        str(args.duplicate_heavy_min_duplicates),
+        *_flag(not bool(args.allow_partial_batch), "--require-full-batch"),
+        *_flag(bool(args.disable_duplicate_heavy_cooldown), "--disable-duplicate-heavy-cooldown"),
+        *_flag(bool(args.disable_query_reorder), "--disable-query-reorder"),
+        *_kv_if_non_negative("--daily-budget-ebay", args.daily_budget_ebay),
+        *_kv_if_non_negative("--daily-budget-rakuten", args.daily_budget_rakuten),
+        *_kv_if_non_negative("--daily-budget-yahoo", args.daily_budget_yahoo),
+        *_flag(bool(args.cache_only), "--cache-only"),
+        *_kv_if_non_negative("--cache-ttl-seconds", args.cache_ttl_seconds),
+        *_kv_if_non_empty("--queries", args.queries),
+    ]
+
+
+def _build_auto_miner_cycle_args(args: argparse.Namespace) -> list[str]:
+    return [
+        "python3",
+        "scripts/auto_miner_cycle.py",
+        "--min-profit-usd",
+        str(args.min_profit_usd),
+        "--min-margin-rate",
+        str(args.min_margin_rate),
+        "--min-ev90-usd",
+        str(args.min_ev90_usd),
+        "--min-match-score",
+        str(args.min_match_score),
+        "--min-auto-approve-score",
+        str(args.min_auto_approve_score),
+        "--min-token-jaccard",
+        str(args.min_token_jaccard),
+        "--max-score-drift",
+        str(args.max_score_drift),
+        "--output",
+        str(args.auto_miner_report),
+    ]
+
+
+def _build_close_miner_cycle_args(args: argparse.Namespace) -> list[str]:
+    return [
+        "python3",
+        "scripts/close_miner_cycle.py",
+        "--reject-floor",
+        str(args.reject_floor),
+        "--min-reviewed-ratio",
+        str(args.close_min_reviewed_ratio),
+        "--min-reject-rate",
+        str(args.close_min_reject_rate),
+        "--min-reject-with-issue-count",
+        str(args.close_min_reject_with_issue_count),
+        "--auto-miner-report",
+        str(args.auto_miner_report),
+        "--output",
+        str(args.close_report),
+    ]
 
 
 def _validate_operation_policy(
@@ -117,18 +192,11 @@ def _validate_operation_policy(
     if expected_condition and actual_condition != expected_condition:
         errors.append(f"ITEM_CONDITION={actual_condition} (expected {expected_condition})")
 
-    require_liquidity = str(env_req.get("LIQUIDITY_REQUIRE_SIGNAL", "1") or "1").strip().lower() in {
-        "1",
-        "true",
-        "yes",
-        "on",
-    }
+    require_liquidity = _policy_enabled(env_req, "LIQUIDITY_REQUIRE_SIGNAL", True)
     if require_liquidity and not _env_bool("LIQUIDITY_REQUIRE_SIGNAL", False):
         errors.append("LIQUIDITY_REQUIRE_SIGNAL must be enabled by policy")
 
-    require_auto_liquidity = str(
-        env_req.get("AUTO_MINER_REQUIRE_LIQUIDITY_SIGNAL", "1") or "1"
-    ).strip().lower() in {"1", "true", "yes", "on"}
+    require_auto_liquidity = _policy_enabled(env_req, "AUTO_MINER_REQUIRE_LIQUIDITY_SIGNAL", True)
     if require_auto_liquidity and not _env_bool("AUTO_MINER_REQUIRE_LIQUIDITY_SIGNAL", False):
         errors.append("AUTO_MINER_REQUIRE_LIQUIDITY_SIGNAL must be enabled by policy")
 
@@ -216,6 +284,56 @@ def _validate_cycle_reports(
             "progressed": bool(auto_actions > 0),
         },
     }
+
+
+def _run_policy_guard(args: argparse.Namespace) -> int:
+    if bool(args.skip_policy_check):
+        return 0
+    policy_path = Path(str(args.policy_file or "").strip() or str(ROOT_DIR / "docs" / "OPERATION_POLICY.json"))
+    if not policy_path.exists():
+        print(f"[cycle-error] policy file not found: {policy_path}")
+        return 6
+    policy = _load_json(policy_path)
+    if not policy:
+        print(f"[cycle-error] invalid policy JSON: {policy_path}")
+        return 6
+    policy_check = _validate_operation_policy(policy=policy, args=args)
+    print(f"[cycle-summary] policy_file={policy_path} ok={policy_check.get('ok')}")
+    for msg in policy_check.get("warnings", []):
+        print(f"[cycle-warning] {msg}")
+    for msg in policy_check.get("errors", []):
+        print(f"[cycle-error] {msg}")
+    if not bool(policy_check.get("ok", False)):
+        return 6
+    return 0
+
+
+def _maybe_apply_and_sync(
+    *,
+    args: argparse.Namespace,
+    close_ready: bool,
+    close_ready_light: bool,
+    rejected_with_issue_count: int,
+) -> None:
+    allow_light_tuning = not bool(args.disable_light_tuning)
+    light_threshold = max(1, int(args.light_tuning_min_reject_with_issue_count))
+    can_apply_light = (
+        allow_light_tuning
+        and close_ready_light
+        and rejected_with_issue_count >= light_threshold
+    )
+    if args.skip_apply_when_not_ready and not close_ready and not can_apply_light:
+        print("[cycle-summary] skip apply_cycle_improvements (ready_for_tuning=false, light_tuning=false)")
+    else:
+        if not close_ready and can_apply_light:
+            print(
+                "[cycle-summary] apply_cycle_improvements in light mode "
+                f"(rejected_with_issue_count={rejected_with_issue_count})"
+            )
+        run_cmd(["python3", "scripts/apply_cycle_improvements.py"])
+
+    if not args.no_sync_rejected_blocklist:
+        run_cmd(["python3", "scripts/sync_rejected_blocklist.py"])
 
 
 def main() -> int:
@@ -309,130 +427,32 @@ def main() -> int:
     args = parser.parse_args()
     load_dotenv(ENV_PATH)
 
-    if not bool(args.skip_policy_check):
-        policy_path = Path(str(args.policy_file or "").strip() or str(ROOT_DIR / "docs" / "OPERATION_POLICY.json"))
-        if not policy_path.exists():
-            print(f"[cycle-error] policy file not found: {policy_path}")
-            return 6
-        policy = _load_json(policy_path)
-        if not policy:
-            print(f"[cycle-error] invalid policy JSON: {policy_path}")
-            return 6
-        policy_check = _validate_operation_policy(policy=policy, args=args)
-        print(f"[cycle-summary] policy_file={policy_path} ok={policy_check.get('ok')}")
-        for msg in policy_check.get("warnings", []):
-            print(f"[cycle-warning] {msg}")
-        for msg in policy_check.get("errors", []):
-            print(f"[cycle-error] {msg}")
-        if not bool(policy_check.get("ok", False)):
-            return 6
+    guard_rc = _run_policy_guard(args)
+    if guard_rc != 0:
+        return guard_rc
 
-    run_cmd(
-        [
-            "python3",
-            "scripts/run_miner_cycle.py",
-            "--target-count",
-            str(args.target_count),
-            "--hard-cap",
-            str(args.hard_cap),
-            "--min-profit-usd",
-            str(args.min_profit_usd),
-            "--min-margin-rate",
-            str(args.min_margin_rate),
-            "--min-match-score",
-            str(args.min_match_score),
-            "--max-rounds",
-            str(args.max_rounds),
-            "--sleep-seconds",
-            str(args.sleep_seconds),
-            "--max-zero-gain-strikes",
-            str(args.max_zero_gain_strikes),
-            "--historical-min-attempts",
-            str(args.historical_min_attempts),
-            "--historical-min-network-calls",
-            str(args.historical_min_network_calls),
-            "--historical-min-gain-per-network-call",
-            str(args.historical_min_gain_per_network_call),
-            "--historical-retry-every-runs",
-            str(args.historical_retry_every_runs),
-            "--duplicate-heavy-ratio-threshold",
-            str(args.duplicate_heavy_ratio_threshold),
-            "--duplicate-heavy-min-evaluated",
-            str(args.duplicate_heavy_min_evaluated),
-            "--duplicate-heavy-min-duplicates",
-            str(args.duplicate_heavy_min_duplicates),
-            *(["--require-full-batch"] if not bool(args.allow_partial_batch) else []),
-            *(["--disable-duplicate-heavy-cooldown"] if bool(args.disable_duplicate_heavy_cooldown) else []),
-            *(["--disable-query-reorder"] if bool(args.disable_query_reorder) else []),
-            *(["--daily-budget-ebay", str(args.daily_budget_ebay)] if int(args.daily_budget_ebay) >= 0 else []),
-            *(
-                ["--daily-budget-rakuten", str(args.daily_budget_rakuten)]
-                if int(args.daily_budget_rakuten) >= 0
-                else []
-            ),
-            *(["--daily-budget-yahoo", str(args.daily_budget_yahoo)] if int(args.daily_budget_yahoo) >= 0 else []),
-            *(["--cache-only"] if bool(args.cache_only) else []),
-            *(["--cache-ttl-seconds", str(args.cache_ttl_seconds)] if int(args.cache_ttl_seconds) >= 0 else []),
-            *(["--queries", args.queries] if str(args.queries).strip() else []),
-        ]
-    )
-
-    run_cmd(
-        [
-            "python3",
-            "scripts/auto_miner_cycle.py",
-            "--min-profit-usd",
-            str(args.min_profit_usd),
-            "--min-margin-rate",
-            str(args.min_margin_rate),
-            "--min-ev90-usd",
-            str(args.min_ev90_usd),
-            "--min-match-score",
-            str(args.min_match_score),
-            "--min-auto-approve-score",
-            str(args.min_auto_approve_score),
-            "--min-token-jaccard",
-            str(args.min_token_jaccard),
-            "--max-score-drift",
-            str(args.max_score_drift),
-            "--output",
-            str(args.auto_miner_report),
-        ]
-    )
-
-    run_cmd(
-        [
-            "python3",
-            "scripts/close_miner_cycle.py",
-            "--reject-floor",
-            str(args.reject_floor),
-            "--min-reviewed-ratio",
-            str(args.close_min_reviewed_ratio),
-            "--min-reject-rate",
-            str(args.close_min_reject_rate),
-            "--min-reject-with-issue-count",
-            str(args.close_min_reject_with_issue_count),
-            "--auto-miner-report",
-            str(args.auto_miner_report),
-            "--output",
-            str(args.close_report),
-        ]
-    )
+    run_cmd(_build_run_miner_cycle_args(args))
+    run_cmd(_build_auto_miner_cycle_args(args))
+    run_cmd(_build_close_miner_cycle_args(args))
 
     review_report = _load_json(Path(args.miner_report))
     auto_report = _load_json(Path(args.auto_miner_report))
     close_report = _load_json(Path(args.close_report))
 
-    batch_size = int(review_report.get("batch_size", 0) or 0)
-    cycle_ready = bool(review_report.get("cycle_ready", False))
-    auto_counts = auto_report.get("counts", {}) if isinstance(auto_report.get("counts"), dict) else {}
-    auto_approve = int(auto_counts.get("approve", 0) or 0)
-    auto_reject = int(auto_counts.get("reject", 0) or 0)
-    auto_total = auto_approve + auto_reject
-    auto_reject_rate = _safe_rate(auto_reject, auto_total)
-    close_ready = bool(close_report.get("ready_for_tuning", False))
+    validation = _validate_cycle_reports(
+        review_report=review_report,
+        auto_report=auto_report,
+        close_report=close_report,
+    )
+    metrics = validation.get("metrics", {}) if isinstance(validation.get("metrics"), dict) else {}
+    batch_size = _to_int(metrics.get("batch_size"), 0)
+    cycle_ready = bool(metrics.get("cycle_ready", False))
+    auto_approve = _to_int(metrics.get("auto_approve"), 0)
+    auto_reject = _to_int(metrics.get("auto_reject"), 0)
+    auto_reject_rate = _to_float(metrics.get("auto_reject_rate"), 0.0)
+    close_ready = bool(metrics.get("close_ready", False))
     close_ready_light = bool(close_report.get("ready_for_light_tuning", False))
-    rejected_with_issue_count = int(close_report.get("rejected_with_issue_count", 0) or 0)
+    rejected_with_issue_count = _to_int(close_report.get("rejected_with_issue_count"), 0)
 
     print(
         "[cycle-summary] "
@@ -441,11 +461,6 @@ def main() -> int:
         f"close_ready={close_ready} close_ready_light={close_ready_light}"
     )
 
-    validation = _validate_cycle_reports(
-        review_report=review_report,
-        auto_report=auto_report,
-        close_report=close_report,
-    )
     validation_path = Path(args.validation_report)
     validation_path.parent.mkdir(parents=True, exist_ok=True)
     validation_path.write_text(json.dumps(validation, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -463,25 +478,12 @@ def main() -> int:
         print("[cycle-error] fail-on-validation-warning enabled")
         return 5
 
-    allow_light_tuning = not bool(args.disable_light_tuning)
-    light_threshold = max(1, int(args.light_tuning_min_reject_with_issue_count))
-    can_apply_light = (
-        allow_light_tuning
-        and close_ready_light
-        and rejected_with_issue_count >= light_threshold
+    _maybe_apply_and_sync(
+        args=args,
+        close_ready=close_ready,
+        close_ready_light=close_ready_light,
+        rejected_with_issue_count=rejected_with_issue_count,
     )
-    if args.skip_apply_when_not_ready and not close_ready and not can_apply_light:
-        print("[cycle-summary] skip apply_cycle_improvements (ready_for_tuning=false, light_tuning=false)")
-    else:
-        if not close_ready and can_apply_light:
-            print(
-                "[cycle-summary] apply_cycle_improvements in light mode "
-                f"(rejected_with_issue_count={rejected_with_issue_count})"
-            )
-        run_cmd(["python3", "scripts/apply_cycle_improvements.py"])
-
-    if not args.no_sync_rejected_blocklist:
-        run_cmd(["python3", "scripts/sync_rejected_blocklist.py"])
 
     return 0
 

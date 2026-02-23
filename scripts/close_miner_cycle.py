@@ -8,7 +8,6 @@ import json
 import statistics
 import sys
 from collections import Counter
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -19,29 +18,19 @@ if str(ROOT_DIR) not in sys.path:
 
 from reselling.config import load_settings
 from reselling.env import load_dotenv
+from reselling.json_utils import load_json_dict
+from reselling.metrics import safe_rate as _safe_rate
 from reselling.models import connect, init_db
-
-
-def _now_iso() -> str:
-    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+from reselling.time_utils import utc_iso as _now_iso
 
 
 def _load_json(path: Path, *, required: bool = True) -> Dict[str, Any]:
-    if not path.exists():
-        if required:
-            raise FileNotFoundError(f"not found: {path}")
-        return {}
-    try:
-        raw = json.loads(path.read_text(encoding="utf-8"))
-    except Exception:
-        if required:
-            raise
-        return {}
-    if not isinstance(raw, dict):
-        if required:
-            raise ValueError("manifest must be a JSON object")
-        return {}
-    return raw
+    return load_json_dict(
+        path,
+        required=required,
+        missing_message=f"not found: {path}",
+        invalid_message="manifest must be a JSON object",
+    )
 
 
 def _recommendation_from_issue(issue: str) -> str:
@@ -59,12 +48,6 @@ def _recommendation_from_issue(issue: str) -> str:
         "accessories": "付属品キーワードを抽出し、同梱差異が大きい候補を除外する",
     }
     return mapping.get(issue, "否認理由を分類し、判定ルールへ反映する")
-
-
-def _safe_rate(n: int, d: int) -> float:
-    if d <= 0:
-        return 0.0
-    return float(n) / float(d)
 
 
 def _float_or_none(value: Any) -> float | None:

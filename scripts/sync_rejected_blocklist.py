@@ -6,7 +6,6 @@ from __future__ import annotations
 import json
 import os
 import sys
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -18,27 +17,11 @@ if str(ROOT_DIR) not in sys.path:
 
 from reselling.env import load_dotenv
 from reselling.live_miner_fetch import _pair_signature
+from reselling.json_utils import load_json_dict as _load_json
+from reselling.json_utils import save_json_dict as _save_json
 from reselling.config import load_settings
 from reselling.models import connect, init_db
-
-
-def _now_iso() -> str:
-    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
-
-
-def _load_json(path: Path) -> Dict[str, Any]:
-    if not path.exists():
-        return {}
-    try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
-        return payload if isinstance(payload, dict) else {}
-    except Exception:
-        return {}
-
-
-def _save_json(path: Path, payload: Dict[str, Any]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+from reselling.time_utils import utc_iso as _now_iso
 
 
 def main() -> int:

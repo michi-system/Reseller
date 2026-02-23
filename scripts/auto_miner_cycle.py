@@ -5,9 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import sys
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Set, Tuple
 
@@ -17,6 +15,12 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 from reselling.env import load_dotenv
+from reselling.coerce import env_bool as _env_bool
+from reselling.coerce import env_float as _env_float
+from reselling.coerce import env_int as _env_int
+from reselling.coerce import to_float as _to_float
+from reselling.coerce import to_int as _to_int
+from reselling.time_utils import utc_iso as _now_iso
 from reselling.live_miner_fetch import (
     MarketItem,
     _contains_out_of_stock_marker,
@@ -77,49 +81,6 @@ def _is_color_missing_market_reason(reason: str) -> bool:
     if not key:
         return False
     return "color_missing_market" in key
-
-
-def _now_iso() -> str:
-    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
-
-
-def _to_float(value: Any, default: float = 0.0) -> float:
-    try:
-        if value is None:
-            return default
-        return float(value)
-    except (TypeError, ValueError):
-        return default
-
-
-def _to_int(value: Any, default: int = 0) -> int:
-    try:
-        if value is None:
-            return default
-        return int(value)
-    except (TypeError, ValueError):
-        return default
-
-
-def _env_bool(name: str, default: bool) -> bool:
-    raw = (os.getenv(name, "") or "").strip().lower()
-    if not raw:
-        return default
-    return raw in {"1", "true", "yes", "on"}
-
-
-def _env_float(name: str, default: float) -> float:
-    raw = (os.getenv(name, "") or "").strip()
-    if not raw:
-        return default
-    return _to_float(raw, default)
-
-
-def _env_int(name: str, default: int) -> int:
-    raw = (os.getenv(name, "") or "").strip()
-    if not raw:
-        return default
-    return _to_int(raw, default)
 
 
 def _jaccard(a: Set[str], b: Set[str]) -> float:

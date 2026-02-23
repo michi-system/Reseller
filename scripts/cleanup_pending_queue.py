@@ -13,19 +13,10 @@ ENV_PATH = ROOT_DIR / ".env.local"
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
+from reselling.coerce import to_float as _to_float
 from reselling.env import load_dotenv
 from reselling.live_miner_fetch import _is_accessory_title, _is_new_listing
 from reselling.miner import list_miner_queue, reject_miner_candidate
-
-
-def _to_float(v: Any, default: float = 0.0) -> float:
-    try:
-        if v is None:
-            return default
-        return float(v)
-    except (TypeError, ValueError):
-        return default
-
 
 def judge(
     candidate: Dict[str, Any],

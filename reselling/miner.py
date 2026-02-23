@@ -3,30 +3,19 @@
 from __future__ import annotations
 
 import json
-import os
 import time
-from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
+from .coerce import env_bool as _env_bool
 from .config import Settings, load_settings
 from .fx_rate import get_current_usd_jpy_snapshot
 from .models import connect, init_db
 from .db_runtime import is_postgres_connection
+from .time_utils import utc_iso as _utc_iso
 
 
 VALID_STATUSES = {"pending", "approved", "rejected", "listed"}
 REVIEWED_STATUSES = ("approved", "rejected", "listed")
-
-
-def _utc_iso() -> str:
-    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
-
-
-def _env_bool(key: str, default: bool = False) -> bool:
-    raw = (os.getenv(key, "") or "").strip().lower()
-    if not raw:
-        return default
-    return raw in {"1", "true", "yes", "on"}
 
 
 def _row_to_candidate(row: Any) -> Dict[str, Any]:

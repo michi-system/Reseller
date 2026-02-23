@@ -5,37 +5,21 @@ from __future__ import annotations
 
 import argparse
 import base64
-import json
 import os
 import sys
-import urllib.error
 import urllib.parse
-import urllib.request
 from pathlib import Path
 from typing import Dict, Tuple
 
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
 ENV_PATH = ROOT_DIR / ".env.local"
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
 
-
-def load_dotenv(path: Path) -> None:
-    if not path.exists():
-        return
-    for raw_line in path.read_text(encoding="utf-8").splitlines():
-        line = raw_line.strip()
-        if not line or line.startswith("#") or "=" not in line:
-            continue
-        key, value = line.split("=", 1)
-        key = key.strip()
-        value = value.strip()
-        if len(value) >= 2 and (
-            (value.startswith('"') and value.endswith('"'))
-            or (value.startswith("'") and value.endswith("'"))
-        ):
-            value = value[1:-1]
-        if key and key not in os.environ:
-            os.environ[key] = value
+from reselling.env import load_dotenv
+from reselling.http_json import request_json
+from reselling.json_utils import extract_json_path
 
 
 def mask(value: str) -> str:
@@ -83,34 +67,6 @@ def require_env() -> Tuple[bool, Dict[str, str]]:
     fx_config_ok = fx_provider_ok or (fx_ok and fx_tpl_ok)
     print_result("env:FX_CONFIG", fx_config_ok, "ready" if fx_config_ok else "missing usable config")
     return all_ok, env_map
-
-
-def request_json(
-    url: str,
-    *,
-    method: str = "GET",
-    data: bytes | None = None,
-    headers: Dict[str, str] | None = None,
-    timeout: int = 15,
-) -> Tuple[int, Dict[str, str], Dict]:
-    req = urllib.request.Request(url=url, data=data, method=method)
-    for k, v in (headers or {}).items():
-        req.add_header(k, v)
-    try:
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
-            raw = resp.read().decode("utf-8", errors="replace")
-            payload = json.loads(raw) if raw else {}
-            return int(resp.status), dict(resp.headers.items()), payload
-    except urllib.error.HTTPError as err:
-        body = err.read().decode("utf-8", errors="replace")
-        payload = {}
-        try:
-            payload = json.loads(body) if body else {}
-        except json.JSONDecodeError:
-            payload = {"raw": body[:500]}
-        return int(err.code), dict(err.headers.items()), payload
-    except urllib.error.URLError as err:
-        return 0, {}, {"error": str(err)}
 
 
 def check_ebay(query: str, timeout: int) -> bool:
@@ -222,17 +178,6 @@ def check_rakuten(query: str, timeout: int) -> bool:
         detail = f"{detail} payload={payload}"
     print_result("Rakuten:IchibaItemSearch", ok, detail)
     return ok
-
-
-def extract_json_path(payload: Dict, path: str) -> object:
-    current: object = payload
-    for part in path.split("."):
-        if not isinstance(current, dict):
-            return None
-        if part not in current:
-            return None
-        current = current[part]
-    return current
 
 
 def check_fx(timeout: int) -> bool:

@@ -4,9 +4,7 @@
 from __future__ import annotations
 
 import argparse
-import json
 import sys
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -17,27 +15,11 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 from reselling.env import load_dotenv
+from reselling.json_utils import load_json_dict as _load_json
+from reselling.json_utils import save_json_dict as _save_json
 from reselling.live_miner_fetch import _pair_signature
 from reselling.miner import get_miner_candidate
-
-
-def _now_iso() -> str:
-    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
-
-
-def _load_json(path: Path) -> Dict[str, Any]:
-    if not path.exists():
-        return {}
-    try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
-        return payload if isinstance(payload, dict) else {}
-    except Exception:
-        return {}
-
-
-def _save_json(path: Path, payload: Dict[str, Any]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+from reselling.time_utils import utc_iso as _now_iso
 
 
 def main() -> int:
@@ -58,9 +40,12 @@ def main() -> int:
     manifest_path = Path(args.active_manifest)
     if not manifest_path.exists():
         raise FileNotFoundError(f"not found: {manifest_path}")
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    if not isinstance(manifest, dict):
-        raise ValueError("invalid manifest")
+    manifest = _load_json(
+        manifest_path,
+        required=True,
+        missing_message=f"not found: {manifest_path}",
+        invalid_message="invalid manifest",
+    )
     cycle_id = str(manifest.get("cycle_id", "") or "")
     ids = [int(v) for v in (manifest.get("selected_candidate_ids") or [])]
     if not ids:

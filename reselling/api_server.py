@@ -13,12 +13,15 @@ import re
 from typing import Any, Callable, Dict, List, Optional
 from urllib.parse import parse_qs, urlparse
 
+from .coerce import to_bool as _to_bool
+from .coerce import to_float as _to_float
+from .coerce import to_int as _to_int
 from .fx_rate import get_current_usd_jpy_snapshot, maybe_refresh_usd_jpy_rate
 from .live_miner_fetch import (
     backfill_candidate_market_images,
-    fetch_live_miner_candidates,
     get_rpa_progress_snapshot,
 )
+from .miner_seed_pool import get_seed_pool_status, run_seeded_fetch
 from .profit import ProfitInput, calculate_profit
 from .miner import (
     approve_miner_candidate,
@@ -71,6 +74,22 @@ def _default_fetch_progress() -> Dict[str, Any]:
         "max_passes": 0,
         "created_count": 0,
         "stop_reason": "",
+        "seed_count": 0,
+        "selected_seed_count": 0,
+        "pool_available": 0,
+        "refill_reason": "",
+        "current_seed_query": "",
+        "current_seed_quality_score": 0,
+        "stage1_candidate_count": 0,
+        "stage2_created_count": 0,
+        "stage1_pass_total": 0,
+        "stage2_runs": 0,
+        "stage1_skip_top_reason": "",
+        "stage1_skip_top_count": 0,
+        "stage1_seed_baseline_reject_total": 0,
+        "skipped_low_quality_count": 0,
+        "select_min_seed_score": 0,
+        "elapsed_sec": 0.0,
     }
 
 
@@ -79,40 +98,6 @@ _FETCH_PROGRESS_STATE: Dict[str, Any] = _default_fetch_progress()
 
 def _json_error(message: str, *, code: str) -> Dict[str, Any]:
     return {"error": {"code": code, "message": message}}
-
-
-def _to_bool(value: Any, default: bool = False) -> bool:
-    if isinstance(value, bool):
-        return value
-    if isinstance(value, (int, float)):
-        return int(value) != 0
-    if isinstance(value, str):
-        norm = value.strip().lower()
-        if not norm:
-            return default
-        if norm in {"1", "true", "yes", "on"}:
-            return True
-        if norm in {"0", "false", "no", "off"}:
-            return False
-    return default
-
-
-def _to_int(value: Any, default: int) -> int:
-    try:
-        if value is None:
-            return default
-        return int(value)
-    except (TypeError, ValueError):
-        return default
-
-
-def _to_float(value: Any, default: float) -> float:
-    try:
-        if value is None:
-            return default
-        return float(value)
-    except (TypeError, ValueError):
-        return default
 
 
 def _resolve_local_path(value: Any, *, default_path: Path) -> Path:
@@ -162,7 +147,10 @@ def _get_fetch_progress_snapshot() -> Dict[str, Any]:
         snap = dict(_FETCH_PROGRESS_STATE)
     now_ts = int(time.time())
     updated_at = _to_int(snap.get("updated_at_epoch"), 0)
+    started_at = _to_int(snap.get("started_at_epoch"), 0)
     snap["updated_ago_sec"] = max(0, now_ts - updated_at) if updated_at > 0 else -1
+    if str(snap.get("status", "")).lower() == "running" and started_at > 0:
+        snap["elapsed_sec"] = round(max(0.0, float(now_ts - started_at)), 3)
     rpa = get_rpa_progress_snapshot()
     snap["rpa"] = rpa
     if str(snap.get("status", "")).lower() == "running":
@@ -198,247 +186,6 @@ def _get_fetch_progress_snapshot() -> Dict[str, Any]:
             if rpa_message:
                 snap["message"] = f"{str(snap.get('message', '') or '').strip()} / Product Research: {rpa_message}"
     return snap
-
-
-def _fetch_live_miner_candidates_timed(
-    *,
-    query: str,
-    source_sites: List[str],
-    market_site: str,
-    limit_per_site: int,
-    max_candidates: int,
-    min_match_score: float,
-    min_profit_usd: float,
-    min_margin_rate: float,
-    require_in_stock: bool,
-    timeout: int,
-    min_target_candidates: int,
-    timebox_sec: int,
-    max_passes: int,
-    continue_after_target: bool,
-    progress_callback: Optional[Callable[[Dict[str, Any]], None]] = None,
-) -> Dict[str, Any]:
-    started = time.monotonic()
-    pass_rows: List[Dict[str, Any]] = []
-    created_ids: List[int] = []
-    created_items: List[Dict[str, Any]] = []
-    created_seen: set[int] = set()
-    zero_gain_streak = 0
-    stop_reason = "timebox"
-    reached_min_target = False
-    current_min_match_score = float(min_match_score)
-    broad_query = bool((not re.search(r"\d", str(query or ""))) and len(str(query or "").strip().split()) <= 3)
-    adaptive_floor = 0.54 if broad_query else 0.64
-    adaptive_step = 0.05 if broad_query else 0.03
-
-    aggregate_counts: Dict[str, int] = {
-        "created_count": 0,
-        "skipped_duplicates": 0,
-        "skipped_low_match": 0,
-        "skipped_invalid_price": 0,
-        "skipped_unprofitable": 0,
-        "skipped_low_margin": 0,
-        "skipped_low_ev90": 0,
-        "skipped_low_liquidity": 0,
-        "skipped_liquidity_unavailable": 0,
-        "skipped_missing_sold_min": 0,
-        "skipped_missing_sold_sample": 0,
-        "skipped_below_sold_min": 0,
-        "skipped_implausible_sold_min": 0,
-        "skipped_blocked": 0,
-        "skipped_group_cap": 0,
-        "skipped_ambiguous_model_title": 0,
-    }
-
-    latest_result: Dict[str, Any] = {}
-    if callable(progress_callback):
-        progress_callback(
-            {
-                "phase": "timed_fetch_start",
-                "message": "探索パスを開始しました",
-                "progress_percent": 6.0,
-                "pass_index": 0,
-                "max_passes": max(1, int(max_passes)),
-                "created_count": 0,
-            }
-        )
-
-    for pass_index in range(max(1, int(max_passes))):
-        elapsed_before = time.monotonic() - started
-        if elapsed_before >= float(max(1, int(timebox_sec))):
-            stop_reason = "timebox_reached_before_next_pass"
-            break
-        if callable(progress_callback):
-            # 前パス完了値より下がらないよう、running開始点を単調増加にする。
-            phase_progress = 12.0 + (72.0 * (pass_index / max(1, int(max_passes))))
-            progress_callback(
-                {
-                    "phase": "pass_running",
-                    "message": f"{pass_index + 1}パス目を探索中",
-                    "progress_percent": phase_progress,
-                    "pass_index": pass_index + 1,
-                    "max_passes": max(1, int(max_passes)),
-                    "created_count": len(created_ids),
-                }
-            )
-
-        result = fetch_live_miner_candidates(
-            query=query,
-            source_sites=source_sites,
-            market_site=market_site,
-            limit_per_site=limit_per_site,
-            max_candidates=max_candidates,
-            min_match_score=current_min_match_score,
-            min_profit_usd=min_profit_usd,
-            min_margin_rate=min_margin_rate,
-            require_in_stock=require_in_stock,
-            timeout=timeout,
-        )
-        latest_result = result if isinstance(result, dict) else {}
-
-        pass_created_ids = []
-        for raw in latest_result.get("created_ids", []) if isinstance(latest_result.get("created_ids"), list) else []:
-            cid = _to_int(raw, -1)
-            if cid <= 0:
-                continue
-            pass_created_ids.append(cid)
-            if cid in created_seen:
-                continue
-            created_seen.add(cid)
-            created_ids.append(cid)
-
-        pass_created_items = latest_result.get("created", [])
-        if isinstance(pass_created_items, list):
-            for row in pass_created_items:
-                if not isinstance(row, dict):
-                    continue
-                cid = _to_int(row.get("id"), -1)
-                if cid <= 0 or cid not in created_seen:
-                    continue
-                if any(_to_int(existing.get("id"), -1) == cid for existing in created_items):
-                    continue
-                created_items.append(row)
-
-        pass_created_count = len(pass_created_ids)
-        if pass_created_count > 0:
-            zero_gain_streak = 0
-        else:
-            zero_gain_streak += 1
-
-        for key in list(aggregate_counts.keys()):
-            aggregate_counts[key] += max(0, _to_int(latest_result.get(key), 0))
-
-        elapsed_after = time.monotonic() - started
-        pass_rows.append(
-            {
-                "pass": pass_index + 1,
-                "min_match_score": round(current_min_match_score, 4),
-                "created_count": int(pass_created_count),
-                "created_ids": pass_created_ids,
-                "elapsed_sec": round(elapsed_after, 3),
-                "query_cache_skip": bool(latest_result.get("query_cache_skip")),
-                "search_scope_done": bool(latest_result.get("search_scope_done")),
-            }
-        )
-
-        reached_min_target = len(created_ids) >= max(1, int(min_target_candidates))
-        if callable(progress_callback):
-            phase_progress = 12.0 + (72.0 * ((pass_index + 1) / max(1, int(max_passes))))
-            progress_callback(
-                {
-                    "phase": "pass_completed",
-                    "message": f"{pass_index + 1}パス目を完了",
-                    "progress_percent": min(88.0, phase_progress),
-                    "pass_index": pass_index + 1,
-                    "max_passes": max(1, int(max_passes)),
-                    "created_count": len(created_ids),
-                }
-            )
-        if elapsed_after >= float(max(1, int(timebox_sec))):
-            stop_reason = "timebox_reached"
-            break
-        if bool(latest_result.get("query_cache_skip")):
-            stop_reason = "query_cache_skip"
-            break
-        if bool(latest_result.get("rpa_daily_limit_reached")):
-            stop_reason = "rpa_daily_limit_reached"
-            break
-        if bool(latest_result.get("search_scope_done")) and pass_created_count <= 0:
-            stop_reason = "search_scope_done_no_gain"
-            break
-        low_match = max(0, _to_int(latest_result.get("skipped_low_match"), 0))
-        low_match_reason_counts = (
-            latest_result.get("low_match_reason_counts")
-            if isinstance(latest_result.get("low_match_reason_counts"), dict)
-            else {}
-        )
-        dominant_reason = ""
-        if low_match_reason_counts:
-            dominant_reason = str(
-                sorted(low_match_reason_counts.items(), key=lambda kv: _to_int(kv[1], 0), reverse=True)[0][0]
-            ).strip()
-        should_relax_match = (
-            pass_created_count <= 0
-            and low_match >= 12
-            and current_min_match_score > adaptive_floor
-            and (
-                dominant_reason in {
-                    "token_overlap",
-                    "model_code_conflict",
-                    "color_missing_market",
-                    "variant_color_missing_market",
-                    "variant_color_missing_source",
-                }
-                or not dominant_reason
-            )
-        )
-        if dominant_reason == "token_overlap" and pass_index >= 1 and pass_created_count <= 0:
-            adaptive_step = max(adaptive_step, 0.06 if broad_query else 0.04)
-        if should_relax_match:
-            current_min_match_score = max(adaptive_floor, round(current_min_match_score - adaptive_step, 4))
-            continue
-        if zero_gain_streak >= 2:
-            stop_reason = "consecutive_no_gain"
-            break
-        if reached_min_target and (not continue_after_target):
-            stop_reason = "min_target_reached"
-            break
-    else:
-        stop_reason = "max_passes_reached"
-
-    final_result = dict(latest_result) if isinstance(latest_result, dict) else {}
-    final_result["created_ids"] = created_ids
-    final_result["created"] = created_items
-    final_result["created_count"] = len(created_ids)
-    for key, value in aggregate_counts.items():
-        final_result[key] = int(value)
-    final_result["timed_fetch"] = {
-        "enabled": True,
-        "min_target_candidates": max(1, int(min_target_candidates)),
-        "timebox_sec": max(1, int(timebox_sec)),
-        "max_passes": max(1, int(max_passes)),
-        "continue_after_target": bool(continue_after_target),
-        "passes_run": len(pass_rows),
-        "stop_reason": stop_reason,
-        "elapsed_sec": round(time.monotonic() - started, 3),
-        "reached_min_target": bool(reached_min_target),
-        "adaptive_min_match_floor": adaptive_floor,
-        "adaptive_min_match_step": adaptive_step,
-        "passes": pass_rows,
-    }
-    if callable(progress_callback):
-        progress_callback(
-            {
-                "phase": "timed_fetch_finalize",
-                "message": "探索結果を集計しています",
-                "progress_percent": 94.0,
-                "pass_index": len(pass_rows),
-                "max_passes": max(1, int(max_passes)),
-                "created_count": len(created_ids),
-                "stop_reason": stop_reason,
-            }
-        )
-    return final_result
 
 
 class ApiHandler(BaseHTTPRequestHandler):
@@ -486,53 +233,153 @@ class ApiHandler(BaseHTTPRequestHandler):
             raise ValueError("JSON body must be an object")
         return parsed
 
-    def log_message(self, fmt: str, *args: Any) -> None:  # pragma: no cover
-        # Keep logs concise for local usage.
-        print(f"[api] {self.address_string()} - {fmt % args}")
+    @staticmethod
+    def _q_raw(query: Dict[str, List[str]], key: str, default: str = "") -> str:
+        values = query.get(key, [default])
+        if not values:
+            return default
+        return str(values[0] or "").strip()
 
-    def do_OPTIONS(self) -> None:
-        self._send(HTTPStatus.NO_CONTENT, {})
+    @classmethod
+    def _q_str(cls, query: Dict[str, List[str]], key: str, default: str = "") -> str:
+        raw = cls._q_raw(query, key, default)
+        return raw if raw else default
 
-    def do_GET(self) -> None:
-        parsed = urlparse(self.path)
-        query = parse_qs(parsed.query)
-        path = parsed.path
-        if path in {"/", "/miner"}:
-            self._send_file(WEB_DIR / "miner.html", content_type="text/html; charset=utf-8")
-            return
-        if path == "/operator":
-            self._send_file(WEB_DIR / "operator.html", content_type="text/html; charset=utf-8")
-            return
-        if path == "/static/miner.css":
-            self._send_file(WEB_DIR / "miner.css", content_type="text/css; charset=utf-8")
-            return
-        if path == "/static/miner.js":
-            self._send_file(
-                WEB_DIR / "miner.js",
-                content_type="application/javascript; charset=utf-8",
-            )
-            return
-        if path == "/static/operator.css":
-            self._send_file(WEB_DIR / "operator.css", content_type="text/css; charset=utf-8")
-            return
-        if path == "/static/operator.js":
-            self._send_file(
-                WEB_DIR / "operator.js",
-                content_type="application/javascript; charset=utf-8",
-            )
-            return
+    @classmethod
+    def _q_int(
+        cls,
+        query: Dict[str, List[str]],
+        key: str,
+        default: int,
+        *,
+        strict: bool = False,
+        min_value: Optional[int] = None,
+        max_value: Optional[int] = None,
+    ) -> int:
+        raw = cls._q_raw(query, key, str(default))
+        if strict:
+            try:
+                value = int(raw)
+            except (TypeError, ValueError) as err:
+                raise ValueError(f"invalid integer query param: {key}") from err
+        else:
+            value = _to_int(raw, default)
+        if min_value is not None:
+            value = max(min_value, value)
+        if max_value is not None:
+            value = min(max_value, value)
+        return value
+
+    @classmethod
+    def _q_float(
+        cls,
+        query: Dict[str, List[str]],
+        key: str,
+        default: Optional[float] = None,
+        *,
+        strict: bool = False,
+    ) -> Optional[float]:
+        raw = cls._q_raw(query, key, "")
+        if not raw:
+            return default
+        if strict:
+            try:
+                return float(raw)
+            except (TypeError, ValueError) as err:
+                raise ValueError(f"invalid float query param: {key}") from err
+        return _to_float(raw, default if default is not None else 0.0)
+
+    @classmethod
+    def _q_bool(cls, query: Dict[str, List[str]], key: str, default: bool = False) -> bool:
+        raw = cls._q_raw(query, key, "")
+        if not raw:
+            return default
+        return _to_bool(raw, default)
+
+    @classmethod
+    def _q_optional_int(cls, query: Dict[str, List[str]], key: str) -> Optional[int]:
+        raw = cls._q_raw(query, key, "")
+        if not raw:
+            return None
+        try:
+            return int(raw)
+        except (TypeError, ValueError):
+            return None
+
+    @staticmethod
+    def _csv_ints(text: str) -> List[int]:
+        out: List[int] = []
+        for part in str(text or "").split(","):
+            token = part.strip()
+            if not token:
+                continue
+            try:
+                value = int(token)
+            except (TypeError, ValueError) as err:
+                raise ValueError(f"invalid integer token in CSV list: {token}") from err
+            if value <= 0:
+                raise ValueError(f"CSV ids must be positive integers: {token}")
+            out.append(value)
+        return out
+
+    @staticmethod
+    def _path_id(path: str, route_pattern: str) -> Optional[int]:
+        match = re.fullmatch(route_pattern, path)
+        if not match:
+            return None
+        return int(match.group(1))
+
+    def _handle_manual_operator_action(
+        self,
+        *,
+        path: str,
+        body: Dict[str, Any],
+        route_pattern: str,
+        action: Callable[..., Dict[str, Any]],
+        default_reason_code: str,
+    ) -> bool:
+        match = re.fullmatch(route_pattern, path)
+        if not match:
+            return False
+        settings = load_operator_settings()
+        listing_id = int(match.group(1))
+        payload = action(
+            db_path=settings.db_path,
+            listing_id=listing_id,
+            actor_id=str(body.get("actor_id", "") or "").strip(),
+            reason_code=str(body.get("reason_code", default_reason_code) or default_reason_code).strip(),
+            note=str(body.get("note", "") or "").strip(),
+        )
+        self._send(HTTPStatus.OK, payload)
+        return True
+
+    def _send_if_static_route(self, path: str) -> bool:
+        static_files = {
+            "/": (WEB_DIR / "miner.html", "text/html; charset=utf-8"),
+            "/miner": (WEB_DIR / "miner.html", "text/html; charset=utf-8"),
+            "/operator": (WEB_DIR / "operator.html", "text/html; charset=utf-8"),
+            "/static/miner.css": (WEB_DIR / "miner.css", "text/css; charset=utf-8"),
+            "/static/miner.js": (WEB_DIR / "miner.js", "application/javascript; charset=utf-8"),
+            "/static/operator.css": (WEB_DIR / "operator.css", "text/css; charset=utf-8"),
+            "/static/operator.js": (WEB_DIR / "operator.js", "application/javascript; charset=utf-8"),
+        }
+        route = static_files.get(path)
+        if route is None:
+            return False
+        file_path, content_type = route
+        self._send_file(file_path, content_type=content_type)
+        return True
+
+    def _send_if_system_get(self, path: str) -> bool:
         if path == "/healthz":
             self._send(HTTPStatus.OK, {"ok": True})
-            return
-
+            return True
         if path == "/v1/system/rpa-progress":
             self._send(HTTPStatus.OK, get_rpa_progress_snapshot())
-            return
-
+            return True
         if path == "/v1/system/fetch-progress":
             self._send(HTTPStatus.OK, _get_fetch_progress_snapshot())
-            return
-
+            return True
         if path == "/v1/system/fx-rate":
             snap = get_current_usd_jpy_snapshot()
             self._send(
@@ -546,31 +393,478 @@ class ApiHandler(BaseHTTPRequestHandler):
                     "provenance": snap.provenance,
                 },
             )
+            return True
+        return False
+
+    def _query_limit_offset(self, query: Dict[str, List[str]], default_limit: int) -> tuple[int, int]:
+        limit = self._q_int(query, "limit", default_limit, min_value=1)
+        offset = self._q_int(query, "offset", 0, min_value=0)
+        return limit, offset
+
+    def _send_operator_records(
+        self,
+        *,
+        query: Dict[str, List[str]],
+        query_fn: Callable[..., Dict[str, Any]],
+        default_limit: int = 100,
+    ) -> None:
+        settings = load_operator_settings()
+        listing_id = self._q_optional_int(query, "listing_id")
+        limit, offset = self._query_limit_offset(query, default_limit)
+        payload = query_fn(
+            settings.db_path,
+            listing_id=listing_id,
+            limit=limit,
+            offset=offset,
+        )
+        self._send(HTTPStatus.OK, payload)
+
+    @staticmethod
+    def _body_str(body: Dict[str, Any], key: str, default: str = "") -> str:
+        return str(body.get(key, default) or default).strip()
+
+    @staticmethod
+    def _body_int(
+        body: Dict[str, Any],
+        key: str,
+        default: int,
+        *,
+        min_value: Optional[int] = None,
+        max_value: Optional[int] = None,
+    ) -> int:
+        value = _to_int(body.get(key, default), default)
+        if min_value is not None:
+            value = max(min_value, value)
+        if max_value is not None:
+            value = min(max_value, value)
+        return value
+
+    @staticmethod
+    def _body_bool(body: Dict[str, Any], key: str, default: bool = False) -> bool:
+        return _to_bool(body.get(key, default), default)
+
+    def _handle_operator_post(self, *, path: str, body: Dict[str, Any]) -> bool:
+        if path == "/v1/operator/ingest":
+            settings = load_operator_settings()
+            input_path = _resolve_local_path(
+                body.get("input_path", ""),
+                default_path=DEFAULT_APPROVED_JSONL_PATH,
+            )
+            payload = ingest_approved_listing_jsonl(
+                db_path=settings.db_path,
+                input_path=input_path,
+            )
+            self._send(HTTPStatus.OK, payload)
+            return True
+
+        if path == "/v1/operator/listing-cycle":
+            settings = load_operator_settings()
+            payload = run_listing_cycle(
+                db_path=settings.db_path,
+                limit=self._body_int(body, "limit", 20, min_value=1),
+                dry_run=self._body_bool(body, "dry_run", True),
+                actor_id=self._body_str(body, "actor_id"),
+            )
+            self._send(HTTPStatus.OK, payload)
+            return True
+
+        if path == "/v1/operator/monitor-cycle":
+            settings = load_operator_settings()
+            raw_obs = body.get("observation_jsonl_path", "")
+            obs_path = None
+            if str(raw_obs or "").strip():
+                obs_path = _resolve_local_path(
+                    raw_obs,
+                    default_path=ROOT_DIR / "data" / "operator_observations.jsonl",
+                )
+            payload = run_monitor_cycle(
+                db_path=settings.db_path,
+                check_type=self._body_str(body, "check_type", "light").lower() or "light",
+                observation_jsonl_path=obs_path,
+                limit=self._body_int(body, "limit", 300, min_value=1),
+                actor_id=self._body_str(body, "actor_id"),
+            )
+            self._send(HTTPStatus.OK, payload)
+            return True
+
+        manual_routes = (
+            (r"/v1/operator/listings/(\d+)/manual-stop", manual_stop_listing, "manual_stop"),
+            (r"/v1/operator/listings/(\d+)/manual-alert", manual_mark_alert_review, "manual_alert_review"),
+            (r"/v1/operator/listings/(\d+)/manual-resume-ready", manual_resume_to_ready, "manual_resume_ready"),
+            (r"/v1/operator/listings/(\d+)/manual-keep-listed", manual_mark_listed, "manual_keep_listed"),
+        )
+        for route_pattern, action, default_reason_code in manual_routes:
+            if self._handle_manual_operator_action(
+                path=path,
+                body=body,
+                route_pattern=route_pattern,
+                action=action,
+                default_reason_code=default_reason_code,
+            ):
+                return True
+
+        if path == "/v1/operator/config":
+            settings = load_operator_settings()
+            active = load_or_default(settings.db_path)
+            payload = create_config_version(
+                db_path=settings.db_path,
+                config_version=self._body_str(body, "config_version"),
+                created_by=self._body_str(body, "created_by", settings.default_actor_id) or settings.default_actor_id,
+                min_profit_jpy=_to_float(body.get("min_profit_jpy"), float(active["min_profit_jpy"])),
+                min_profit_rate=_to_float(body.get("min_profit_rate"), float(active["min_profit_rate"])),
+                stop_consecutive_fail_count=_to_int(
+                    body.get("stop_consecutive_fail_count"),
+                    int(active["stop_consecutive_fail_count"]),
+                ),
+                light_interval_new_hours=_to_int(
+                    body.get("light_interval_new_hours"),
+                    int(active["light_interval_new_hours"]),
+                ),
+                light_interval_stable_hours=_to_int(
+                    body.get("light_interval_stable_hours"),
+                    int(active["light_interval_stable_hours"]),
+                ),
+                light_interval_stopped_hours=_to_int(
+                    body.get("light_interval_stopped_hours"),
+                    int(active["light_interval_stopped_hours"]),
+                ),
+                heavy_interval_days=_to_int(body.get("heavy_interval_days"), int(active["heavy_interval_days"])),
+            )
+            self._send(HTTPStatus.OK, {"db_path": str(settings.db_path), "active_config": payload})
+            return True
+
+        return False
+
+    def _handle_operator_get(self, *, path: str, query: Dict[str, List[str]]) -> bool:
+        if path == "/v1/operator/summary":
+            settings = load_operator_settings()
+            payload = get_operator_summary(settings.db_path)
+            payload["db_path"] = str(settings.db_path)
+            self._send(HTTPStatus.OK, payload)
+            return True
+
+        if path == "/v1/operator/config":
+            settings = load_operator_settings()
+            payload = load_or_default(settings.db_path)
+            self._send(
+                HTTPStatus.OK,
+                {
+                    "db_path": str(settings.db_path),
+                    "active_config": payload,
+                },
+            )
+            return True
+
+        if path == "/v1/operator/listings":
+            settings = load_operator_settings()
+            state = self._q_str(query, "state", "").lower()
+            limit, offset = self._query_limit_offset(query, 50)
+            payload = list_operator_listings(
+                settings.db_path,
+                listing_state=state,
+                limit=limit,
+                offset=offset,
+            )
+            self._send(HTTPStatus.OK, payload)
+            return True
+
+        listing_id = self._path_id(path, r"/v1/operator/listings/(\d+)")
+        if listing_id is not None:
+            settings = load_operator_settings()
+            row = get_operator_listing(settings.db_path, listing_id)
+            if row is None:
+                self._send(
+                    HTTPStatus.NOT_FOUND,
+                    _json_error("listing not found", code="listing_not_found"),
+                )
+                return True
+            self._send(HTTPStatus.OK, row)
+            return True
+
+        if path == "/v1/operator/events":
+            self._send_operator_records(query=query, query_fn=list_operator_events, default_limit=100)
+            return True
+
+        if path == "/v1/operator/snapshots":
+            self._send_operator_records(query=query, query_fn=list_operator_snapshots, default_limit=100)
+            return True
+
+        return False
+
+    def _handle_miner_fetch_post(self, body: Dict[str, Any]) -> None:
+        query_text = str(body.get("query", "") or "")
+        source_sites = body.get("source_sites", ["rakuten", "yahoo"])
+        if not isinstance(source_sites, list):
+            raise ValueError("source_sites must be an array")
+        timed_mode = _to_bool(body.get("timed_mode", True), True)
+        min_target_candidates = max(1, _to_int(body.get("target_min_candidates", 3), 3))
+        timebox_sec = max(10, _to_int(body.get("fetch_timebox_sec", 60), 60))
+        max_passes = max(1, min(12, _to_int(body.get("fetch_max_passes", 4), 4)))
+        continue_after_target = _to_bool(body.get("continue_after_target", True), True)
+        fetch_kwargs = {
+            "limit_per_site": int(body.get("limit_per_site", 20)),
+            "max_candidates": int(body.get("max_candidates", 20)),
+            "min_match_score": float(body.get("min_match_score", 0.72)),
+            "min_profit_usd": float(body.get("min_profit_usd", 0.01)),
+            "min_margin_rate": float(body.get("min_margin_rate", 0.03)),
+            "require_in_stock": _to_bool(body.get("require_in_stock", True), True),
+            "timeout": int(body.get("timeout", 18)),
+        }
+        run_id = f"fetch-{int(time.time() * 1000)}"
+        started_at = int(time.time())
+        _set_fetch_progress(
+            {
+                "status": "running",
+                "phase": "starting",
+                "message": "探索リクエストを受け付けました",
+                "progress_percent": 1.0,
+                "run_id": run_id,
+                "query": query_text,
+                "started_at_epoch": started_at,
+                "ended_at_epoch": 0,
+                "timed_mode": bool(timed_mode),
+                "pass_index": 0,
+                "max_passes": max_passes if timed_mode else 1,
+                "created_count": 0,
+                "stop_reason": "",
+                "selected_seed_count": 0,
+                "pool_available": 0,
+                "refill_reason": "",
+            }
+        )
+
+        def _progress_cb(update: Dict[str, Any]) -> None:
+            if not isinstance(update, dict):
+                return
+            row = {
+                "status": "running",
+                "phase": str(update.get("phase", "running") or "running"),
+                "message": str(update.get("message", "探索中") or "探索中"),
+                "progress_percent": _to_float(update.get("progress_percent"), 0.0),
+                "pass_index": max(0, _to_int(update.get("pass_index"), 0)),
+                "max_passes": max(1, _to_int(update.get("max_passes"), max_passes if timed_mode else 1)),
+                "created_count": max(0, _to_int(update.get("created_count"), 0)),
+                "stop_reason": str(update.get("stop_reason", "") or ""),
+                "seed_count": max(
+                    0,
+                    _to_int(
+                        update.get(
+                            "seed_count",
+                            _to_int(update.get("selected_seed_count"), _to_int(update.get("pool_available"), 0)),
+                        ),
+                        0,
+                    ),
+                ),
+                "selected_seed_count": max(0, _to_int(update.get("selected_seed_count"), 0)),
+                "pool_available": max(0, _to_int(update.get("pool_available"), 0)),
+                "refill_reason": str(update.get("refill_reason", "") or ""),
+                "current_seed_query": str(update.get("current_seed_query", "") or ""),
+                "current_seed_quality_score": _to_int(update.get("current_seed_quality_score"), 0),
+                "stage1_candidate_count": max(0, _to_int(update.get("stage1_candidate_count"), 0)),
+                "stage2_created_count": max(0, _to_int(update.get("stage2_created_count"), 0)),
+                "stage1_pass_total": max(0, _to_int(update.get("stage1_pass_total"), 0)),
+                "stage2_runs": max(0, _to_int(update.get("stage2_runs"), 0)),
+                "stage1_skip_top_reason": str(update.get("stage1_skip_top_reason", "") or ""),
+                "stage1_skip_top_count": max(0, _to_int(update.get("stage1_skip_top_count"), 0)),
+                "stage1_seed_baseline_reject_total": max(
+                    0, _to_int(update.get("stage1_seed_baseline_reject_total"), 0)
+                ),
+                "skipped_low_quality_count": max(0, _to_int(update.get("skipped_low_quality_count"), 0)),
+                "select_min_seed_score": max(0, _to_int(update.get("select_min_seed_score"), 0)),
+                "elapsed_sec": round(max(0.0, _to_float(update.get("elapsed_sec"), 0.0)), 3),
+            }
+            _set_fetch_progress(row)
+
+        try:
+            payload = run_seeded_fetch(
+                category_query=query_text,
+                source_sites=[str(v) for v in source_sites],
+                market_site=str(body.get("market_site", "ebay") or "ebay"),
+                timed_mode=bool(timed_mode),
+                min_target_candidates=min_target_candidates,
+                timebox_sec=timebox_sec,
+                max_passes=max_passes,
+                continue_after_target=continue_after_target,
+                progress_callback=_progress_cb,
+                **fetch_kwargs,
+            )
+            created_count = max(0, _to_int(payload.get("created_count"), 0))
+            stop_reason = str((payload.get("timed_fetch", {}) or {}).get("stop_reason", "") or "")
+            seed_pool = (payload.get("seed_pool", {}) or {}) if isinstance(payload, dict) else {}
+            refill = (seed_pool.get("refill", {}) or {}) if isinstance(seed_pool, dict) else {}
+            seed_count = max(
+                0,
+                _to_int(
+                    seed_pool.get(
+                        "seed_count",
+                        _to_int(seed_pool.get("selected_seed_count"), _to_int(seed_pool.get("available_after_refill"), 0)),
+                    ),
+                    0,
+                ),
+            )
+            _set_fetch_progress(
+                {
+                    "status": "completed",
+                    "phase": "completed",
+                    "message": f"探索完了: 候補 {created_count} 件",
+                    "progress_percent": 100.0,
+                    "created_count": created_count,
+                    "stop_reason": stop_reason,
+                    "seed_count": seed_count,
+                    "selected_seed_count": max(0, _to_int(seed_pool.get("selected_seed_count"), 0)),
+                    "pool_available": max(0, _to_int(seed_pool.get("available_after_refill"), 0)),
+                    "refill_reason": str(refill.get("reason", "") or ""),
+                    "pass_index": max(1, _to_int((payload.get("timed_fetch", {}) or {}).get("passes_run"), 1)),
+                    "max_passes": max(1, _to_int((payload.get("timed_fetch", {}) or {}).get("max_passes"), max_passes if timed_mode else 1)),
+                    "stage1_pass_total": max(
+                        0, _to_int((payload.get("timed_fetch", {}) or {}).get("stage1_pass_total"), 0)
+                    ),
+                    "stage2_runs": max(
+                        0, _to_int((payload.get("timed_fetch", {}) or {}).get("stage2_runs"), 0)
+                    ),
+                    "stage1_skip_top_reason": str(
+                        (
+                            sorted(
+                                ((payload.get("stage1_skip_counts") or {}).items()),
+                                key=lambda kv: kv[1],
+                                reverse=True,
+                            )[0][0]
+                            if isinstance(payload.get("stage1_skip_counts"), dict)
+                            and len(payload.get("stage1_skip_counts")) > 0
+                            else ""
+                        )
+                    ),
+                    "stage1_skip_top_count": max(
+                        0,
+                        _to_int(
+                            (
+                                sorted(
+                                    ((payload.get("stage1_skip_counts") or {}).items()),
+                                    key=lambda kv: kv[1],
+                                    reverse=True,
+                                )[0][1]
+                                if isinstance(payload.get("stage1_skip_counts"), dict)
+                                and len(payload.get("stage1_skip_counts")) > 0
+                                else 0
+                            ),
+                            0,
+                        ),
+                    ),
+                    "stage1_seed_baseline_reject_total": max(
+                        0, _to_int((payload.get("timed_fetch", {}) or {}).get("stage1_seed_baseline_reject_total"), 0)
+                    ),
+                    "skipped_low_quality_count": max(0, _to_int(seed_pool.get("skipped_low_quality_count"), 0)),
+                    "select_min_seed_score": max(0, _to_int(seed_pool.get("select_min_seed_score"), 0)),
+                    "elapsed_sec": round(
+                        max(0.0, _to_float((payload.get("timed_fetch", {}) or {}).get("elapsed_sec"), 0.0)), 3
+                    ),
+                    "ended_at_epoch": int(time.time()),
+                }
+            )
+        except Exception as err:
+            _set_fetch_progress(
+                {
+                    "status": "failed",
+                    "phase": "failed",
+                    "message": f"探索失敗: {err}",
+                    "progress_percent": 100.0,
+                    "ended_at_epoch": int(time.time()),
+                }
+            )
+            raise
+        self._send(HTTPStatus.OK, payload)
+
+    def _handle_profit_calc_post(self, body: Dict[str, Any]) -> None:
+        refresh_fx = _to_bool(body.get("refresh_fx", False), False)
+        force_refresh_fx = _to_bool(body.get("force_refresh_fx", False), False)
+        refresh_info = None
+        if refresh_fx or force_refresh_fx:
+            refresh_info = maybe_refresh_usd_jpy_rate(force=force_refresh_fx)
+
+        required = ["sale_price_usd", "purchase_price_jpy"]
+        missing = [name for name in required if name not in body]
+        if missing:
+            self._send(
+                HTTPStatus.BAD_REQUEST,
+                _json_error(
+                    f"missing required fields: {', '.join(missing)}",
+                    code="missing_fields",
+                ),
+            )
+            return
+
+        profit_input = ProfitInput(
+            sale_price_usd=float(body["sale_price_usd"]),
+            purchase_price_jpy=float(body["purchase_price_jpy"]),
+            domestic_shipping_jpy=float(body.get("domestic_shipping_jpy", 0.0)),
+            international_shipping_usd=float(body.get("international_shipping_usd", 0.0)),
+            customs_usd=float(body.get("customs_usd", 0.0)),
+            packaging_usd=float(body.get("packaging_usd", 0.0)),
+            misc_cost_jpy=float(body.get("misc_cost_jpy", 0.0)),
+            misc_cost_usd=float(body.get("misc_cost_usd", 0.0)),
+            marketplace_fee_rate=float(body.get("marketplace_fee_rate", 0.13)),
+            payment_fee_rate=float(body.get("payment_fee_rate", 0.03)),
+            fixed_fee_usd=float(body.get("fixed_fee_usd", 0.0)),
+        )
+        payload = calculate_profit(profit_input)
+        if refresh_info is not None:
+            payload["fx_refresh"] = refresh_info
+        self._send(HTTPStatus.OK, payload)
+
+    def _handle_miner_candidate_action_post(self, *, path: str, body: Dict[str, Any]) -> bool:
+        approve_id = self._path_id(path, r"/v1/miner/candidates/(\d+)/approve")
+        if approve_id is not None:
+            candidate = approve_miner_candidate(approve_id)
+            self._send(HTTPStatus.OK, candidate)
+            return True
+
+        reject_id = self._path_id(path, r"/v1/miner/candidates/(\d+)/reject")
+        if reject_id is not None:
+            issue_targets = body.get("issue_targets", [])
+            if not isinstance(issue_targets, list):
+                raise ValueError("issue_targets must be an array")
+            reason_text = str(body.get("reason_text", "") or "")
+            candidate = reject_miner_candidate(
+                reject_id,
+                issue_targets=[str(v) for v in issue_targets],
+                reason_text=reason_text,
+            )
+            self._send(HTTPStatus.OK, candidate)
+            return True
+
+        return False
+
+    def log_message(self, fmt: str, *args: Any) -> None:  # pragma: no cover
+        # Keep logs concise for local usage.
+        print(f"[api] {self.address_string()} - {fmt % args}")
+
+    def do_OPTIONS(self) -> None:
+        self._send(HTTPStatus.NO_CONTENT, {})
+
+    def do_GET(self) -> None:
+        parsed = urlparse(self.path)
+        query = parse_qs(parsed.query)
+        path = parsed.path
+        if self._send_if_static_route(path):
+            return
+        if self._send_if_system_get(path):
             return
 
         miner_api_path = path
 
         if miner_api_path == "/v1/miner/queue":
             try:
-                status = (query.get("status", ["pending"])[0] or "pending").strip()
-                limit = int((query.get("limit", ["50"])[0] or "50").strip())
-                offset = int((query.get("offset", ["0"])[0] or "0").strip())
-                min_profit_raw = (query.get("min_profit_usd", [""])[0] or "").strip()
-                min_margin_raw = (query.get("min_margin_rate", [""])[0] or "").strip()
-                min_match_raw = (query.get("min_match_score", [""])[0] or "").strip()
-                condition = (query.get("condition", [""])[0] or "").strip() or None
-                min_profit_usd = float(min_profit_raw) if min_profit_raw else None
-                min_margin_rate = float(min_margin_raw) if min_margin_raw else None
-                min_match_score = float(min_match_raw) if min_match_raw else None
-                candidate_ids_raw = (query.get("candidate_ids", [""])[0] or "").strip()
+                status = self._q_str(query, "status", "pending")
+                limit = self._q_int(query, "limit", 50, strict=True, min_value=1)
+                offset = self._q_int(query, "offset", 0, strict=True, min_value=0)
+                min_profit_usd = self._q_float(query, "min_profit_usd", strict=True)
+                min_margin_rate = self._q_float(query, "min_margin_rate", strict=True)
+                min_match_score = self._q_float(query, "min_match_score", strict=True)
+                condition = self._q_str(query, "condition", "") or None
                 candidate_ids = None
+                candidate_ids_raw = self._q_str(query, "candidate_ids", "")
                 if candidate_ids_raw:
-                    candidate_ids = []
-                    for part in candidate_ids_raw.split(","):
-                        token = part.strip()
-                        if not token:
-                            continue
-                        candidate_ids.append(int(token))
+                    candidate_ids = self._csv_ints(candidate_ids_raw)
                 payload = list_miner_queue(
                     status=status,
                     limit=limit,
@@ -612,9 +906,22 @@ class ApiHandler(BaseHTTPRequestHandler):
             self._send(HTTPStatus.OK, {"items": items})
             return
 
-        m = re.fullmatch(r"/v1/miner/candidates/(\d+)", miner_api_path)
-        if m:
-            candidate_id = int(m.group(1))
+        if miner_api_path == "/v1/miner/seed-pool-status":
+            try:
+                category = self._q_str(query, "category", "")
+                if not category:
+                    category = self._q_str(query, "query", "")
+                payload = get_seed_pool_status(category_query=category)
+                self._send(HTTPStatus.OK, payload)
+            except ValueError as err:
+                self._send(
+                    HTTPStatus.BAD_REQUEST,
+                    _json_error(str(err), code="bad_request"),
+                )
+            return
+
+        candidate_id = self._path_id(miner_api_path, r"/v1/miner/candidates/(\d+)")
+        if candidate_id is not None:
             candidate = get_miner_candidate(candidate_id)
             if candidate is None:
                 self._send(
@@ -646,81 +953,7 @@ class ApiHandler(BaseHTTPRequestHandler):
             self._send(HTTPStatus.OK, payload)
             return
 
-        if path == "/v1/operator/summary":
-            settings = load_operator_settings()
-            payload = get_operator_summary(settings.db_path)
-            payload["db_path"] = str(settings.db_path)
-            self._send(HTTPStatus.OK, payload)
-            return
-
-        if path == "/v1/operator/config":
-            settings = load_operator_settings()
-            payload = load_or_default(settings.db_path)
-            self._send(
-                HTTPStatus.OK,
-                {
-                    "db_path": str(settings.db_path),
-                    "active_config": payload,
-                },
-            )
-            return
-
-        if path == "/v1/operator/listings":
-            settings = load_operator_settings()
-            state = str((query.get("state", [""])[0] or "")).strip().lower()
-            limit = max(1, _to_int((query.get("limit", ["50"])[0] or "50"), 50))
-            offset = max(0, _to_int((query.get("offset", ["0"])[0] or "0"), 0))
-            payload = list_operator_listings(
-                settings.db_path,
-                listing_state=state,
-                limit=limit,
-                offset=offset,
-            )
-            self._send(HTTPStatus.OK, payload)
-            return
-
-        m = re.fullmatch(r"/v1/operator/listings/(\d+)", path)
-        if m:
-            settings = load_operator_settings()
-            listing_id = int(m.group(1))
-            row = get_operator_listing(settings.db_path, listing_id)
-            if row is None:
-                self._send(
-                    HTTPStatus.NOT_FOUND,
-                    _json_error("listing not found", code="listing_not_found"),
-                )
-                return
-            self._send(HTTPStatus.OK, row)
-            return
-
-        if path == "/v1/operator/events":
-            settings = load_operator_settings()
-            raw_listing_id = str((query.get("listing_id", [""])[0] or "")).strip()
-            listing_id = int(raw_listing_id) if raw_listing_id else None
-            limit = max(1, _to_int((query.get("limit", ["100"])[0] or "100"), 100))
-            offset = max(0, _to_int((query.get("offset", ["0"])[0] or "0"), 0))
-            payload = list_operator_events(
-                settings.db_path,
-                listing_id=listing_id,
-                limit=limit,
-                offset=offset,
-            )
-            self._send(HTTPStatus.OK, payload)
-            return
-
-        if path == "/v1/operator/snapshots":
-            settings = load_operator_settings()
-            raw_listing_id = str((query.get("listing_id", [""])[0] or "")).strip()
-            listing_id = int(raw_listing_id) if raw_listing_id else None
-            limit = max(1, _to_int((query.get("limit", ["100"])[0] or "100"), 100))
-            offset = max(0, _to_int((query.get("offset", ["0"])[0] or "0"), 0))
-            payload = list_operator_snapshots(
-                settings.db_path,
-                listing_id=listing_id,
-                limit=limit,
-                offset=offset,
-            )
-            self._send(HTTPStatus.OK, payload)
+        if self._handle_operator_get(path=path, query=query):
             return
 
         self._send(
@@ -745,12 +978,8 @@ class ApiHandler(BaseHTTPRequestHandler):
 
         try:
             if path == "/v1/system/fx-rate/refresh":
-                force_q = (query.get("force", ["false"])[0] or "false").lower() in {
-                    "1",
-                    "true",
-                    "yes",
-                }
-                force_body = bool(body.get("force", False))
+                force_q = self._q_bool(query, "force", False)
+                force_body = _to_bool(body.get("force", False), False)
                 result = maybe_refresh_usd_jpy_rate(force=(force_q or force_body))
                 self._send(HTTPStatus.OK, result)
                 return
@@ -761,318 +990,17 @@ class ApiHandler(BaseHTTPRequestHandler):
                 return
 
             if miner_api_path == "/v1/miner/fetch":
-                query_text = str(body.get("query", "") or "")
-                source_sites = body.get("source_sites", ["rakuten", "yahoo"])
-                if not isinstance(source_sites, list):
-                    raise ValueError("source_sites must be an array")
-                timed_mode = _to_bool(body.get("timed_mode", True), True)
-                min_target_candidates = max(1, _to_int(body.get("target_min_candidates", 3), 3))
-                timebox_sec = max(10, _to_int(body.get("fetch_timebox_sec", 60), 60))
-                max_passes = max(1, min(12, _to_int(body.get("fetch_max_passes", 4), 4)))
-                continue_after_target = _to_bool(body.get("continue_after_target", True), True)
-                fetch_kwargs = {
-                    "query": query_text,
-                    "source_sites": [str(v) for v in source_sites],
-                    "market_site": str(body.get("market_site", "ebay") or "ebay"),
-                    "limit_per_site": int(body.get("limit_per_site", 20)),
-                    "max_candidates": int(body.get("max_candidates", 20)),
-                    "min_match_score": float(body.get("min_match_score", 0.72)),
-                    "min_profit_usd": float(body.get("min_profit_usd", 0.01)),
-                    "min_margin_rate": float(body.get("min_margin_rate", 0.03)),
-                    "require_in_stock": _to_bool(body.get("require_in_stock", True), True),
-                    "timeout": int(body.get("timeout", 18)),
-                }
-                run_id = f"fetch-{int(time.time() * 1000)}"
-                started_at = int(time.time())
-                _set_fetch_progress(
-                    {
-                        "status": "running",
-                        "phase": "starting",
-                        "message": "探索リクエストを受け付けました",
-                        "progress_percent": 1.0,
-                        "run_id": run_id,
-                        "query": query_text,
-                        "started_at_epoch": started_at,
-                        "ended_at_epoch": 0,
-                        "timed_mode": bool(timed_mode),
-                        "pass_index": 0,
-                        "max_passes": max_passes if timed_mode else 1,
-                        "created_count": 0,
-                        "stop_reason": "",
-                    }
-                )
-
-                def _progress_cb(update: Dict[str, Any]) -> None:
-                    if not isinstance(update, dict):
-                        return
-                    row = {
-                        "status": "running",
-                        "phase": str(update.get("phase", "running") or "running"),
-                        "message": str(update.get("message", "探索中") or "探索中"),
-                        "progress_percent": _to_float(update.get("progress_percent"), 0.0),
-                        "pass_index": max(0, _to_int(update.get("pass_index"), 0)),
-                        "max_passes": max(1, _to_int(update.get("max_passes"), max_passes if timed_mode else 1)),
-                        "created_count": max(0, _to_int(update.get("created_count"), 0)),
-                        "stop_reason": str(update.get("stop_reason", "") or ""),
-                    }
-                    _set_fetch_progress(row)
-
-                try:
-                    if timed_mode:
-                        payload = _fetch_live_miner_candidates_timed(
-                            **fetch_kwargs,
-                            min_target_candidates=min_target_candidates,
-                            timebox_sec=timebox_sec,
-                            max_passes=max_passes,
-                            continue_after_target=continue_after_target,
-                            progress_callback=_progress_cb,
-                        )
-                    else:
-                        _progress_cb(
-                            {
-                                "phase": "single_pass_running",
-                                "message": "探索を実行中",
-                                "progress_percent": 45.0,
-                                "pass_index": 1,
-                                "max_passes": 1,
-                            }
-                        )
-                        payload = fetch_live_miner_candidates(
-                            **fetch_kwargs,
-                        )
-                        payload["timed_fetch"] = {
-                            "enabled": False,
-                            "min_target_candidates": min_target_candidates,
-                            "timebox_sec": timebox_sec,
-                            "max_passes": max_passes,
-                            "continue_after_target": bool(continue_after_target),
-                            "passes_run": 1,
-                            "stop_reason": "timed_mode_disabled",
-                            "elapsed_sec": 0.0,
-                            "reached_min_target": int(payload.get("created_count", 0) or 0) >= min_target_candidates,
-                            "passes": [],
-                        }
-                    created_count = max(0, _to_int(payload.get("created_count"), 0))
-                    stop_reason = str((payload.get("timed_fetch", {}) or {}).get("stop_reason", "") or "")
-                    _set_fetch_progress(
-                        {
-                            "status": "completed",
-                            "phase": "completed",
-                            "message": f"探索完了: 候補 {created_count} 件",
-                            "progress_percent": 100.0,
-                            "created_count": created_count,
-                            "stop_reason": stop_reason,
-                            "pass_index": max(1, _to_int((payload.get("timed_fetch", {}) or {}).get("passes_run"), 1)),
-                            "max_passes": max(1, _to_int((payload.get("timed_fetch", {}) or {}).get("max_passes"), max_passes if timed_mode else 1)),
-                            "ended_at_epoch": int(time.time()),
-                        }
-                    )
-                except Exception as err:
-                    _set_fetch_progress(
-                        {
-                            "status": "failed",
-                            "phase": "failed",
-                            "message": f"探索失敗: {err}",
-                            "progress_percent": 100.0,
-                            "ended_at_epoch": int(time.time()),
-                        }
-                    )
-                    raise
-                self._send(HTTPStatus.OK, payload)
+                self._handle_miner_fetch_post(body)
                 return
 
-            m = re.fullmatch(r"/v1/miner/candidates/(\d+)/approve", miner_api_path)
-            if m:
-                candidate_id = int(m.group(1))
-                candidate = approve_miner_candidate(candidate_id)
-                self._send(HTTPStatus.OK, candidate)
+            if self._handle_miner_candidate_action_post(path=miner_api_path, body=body):
                 return
 
-            m = re.fullmatch(r"/v1/miner/candidates/(\d+)/reject", miner_api_path)
-            if m:
-                candidate_id = int(m.group(1))
-                issue_targets = body.get("issue_targets", [])
-                if not isinstance(issue_targets, list):
-                    raise ValueError("issue_targets must be an array")
-                reason_text = str(body.get("reason_text", "") or "")
-                candidate = reject_miner_candidate(
-                    candidate_id,
-                    issue_targets=[str(v) for v in issue_targets],
-                    reason_text=reason_text,
-                )
-                self._send(HTTPStatus.OK, candidate)
-                return
-
-            if path == "/v1/operator/ingest":
-                settings = load_operator_settings()
-                input_path = _resolve_local_path(
-                    body.get("input_path", ""),
-                    default_path=DEFAULT_APPROVED_JSONL_PATH,
-                )
-                payload = ingest_approved_listing_jsonl(
-                    db_path=settings.db_path,
-                    input_path=input_path,
-                )
-                self._send(HTTPStatus.OK, payload)
-                return
-
-            if path == "/v1/operator/listing-cycle":
-                settings = load_operator_settings()
-                limit = max(1, _to_int(body.get("limit", 20), 20))
-                dry_run = _to_bool(body.get("dry_run", True), True)
-                actor_id = str(body.get("actor_id", "") or "").strip()
-                payload = run_listing_cycle(
-                    db_path=settings.db_path,
-                    limit=limit,
-                    dry_run=dry_run,
-                    actor_id=actor_id,
-                )
-                self._send(HTTPStatus.OK, payload)
-                return
-
-            if path == "/v1/operator/monitor-cycle":
-                settings = load_operator_settings()
-                check_type = str(body.get("check_type", "light") or "light").strip().lower()
-                limit = max(1, _to_int(body.get("limit", 300), 300))
-                actor_id = str(body.get("actor_id", "") or "").strip()
-                raw_obs = body.get("observation_jsonl_path", "")
-                obs_path = None
-                if str(raw_obs or "").strip():
-                    obs_path = _resolve_local_path(raw_obs, default_path=ROOT_DIR / "data" / "operator_observations.jsonl")
-                payload = run_monitor_cycle(
-                    db_path=settings.db_path,
-                    check_type=check_type,
-                    observation_jsonl_path=obs_path,
-                    limit=limit,
-                    actor_id=actor_id,
-                )
-                self._send(HTTPStatus.OK, payload)
-                return
-
-            m = re.fullmatch(r"/v1/operator/listings/(\d+)/manual-stop", path)
-            if m:
-                settings = load_operator_settings()
-                listing_id = int(m.group(1))
-                payload = manual_stop_listing(
-                    db_path=settings.db_path,
-                    listing_id=listing_id,
-                    actor_id=str(body.get("actor_id", "") or "").strip(),
-                    reason_code=str(body.get("reason_code", "manual_stop") or "manual_stop").strip(),
-                    note=str(body.get("note", "") or "").strip(),
-                )
-                self._send(HTTPStatus.OK, payload)
-                return
-
-            m = re.fullmatch(r"/v1/operator/listings/(\d+)/manual-alert", path)
-            if m:
-                settings = load_operator_settings()
-                listing_id = int(m.group(1))
-                payload = manual_mark_alert_review(
-                    db_path=settings.db_path,
-                    listing_id=listing_id,
-                    actor_id=str(body.get("actor_id", "") or "").strip(),
-                    reason_code=str(body.get("reason_code", "manual_alert_review") or "manual_alert_review").strip(),
-                    note=str(body.get("note", "") or "").strip(),
-                )
-                self._send(HTTPStatus.OK, payload)
-                return
-
-            m = re.fullmatch(r"/v1/operator/listings/(\d+)/manual-resume-ready", path)
-            if m:
-                settings = load_operator_settings()
-                listing_id = int(m.group(1))
-                payload = manual_resume_to_ready(
-                    db_path=settings.db_path,
-                    listing_id=listing_id,
-                    actor_id=str(body.get("actor_id", "") or "").strip(),
-                    reason_code=str(body.get("reason_code", "manual_resume_ready") or "manual_resume_ready").strip(),
-                    note=str(body.get("note", "") or "").strip(),
-                )
-                self._send(HTTPStatus.OK, payload)
-                return
-
-            m = re.fullmatch(r"/v1/operator/listings/(\d+)/manual-keep-listed", path)
-            if m:
-                settings = load_operator_settings()
-                listing_id = int(m.group(1))
-                payload = manual_mark_listed(
-                    db_path=settings.db_path,
-                    listing_id=listing_id,
-                    actor_id=str(body.get("actor_id", "") or "").strip(),
-                    reason_code=str(body.get("reason_code", "manual_keep_listed") or "manual_keep_listed").strip(),
-                    note=str(body.get("note", "") or "").strip(),
-                )
-                self._send(HTTPStatus.OK, payload)
-                return
-
-            if path == "/v1/operator/config":
-                settings = load_operator_settings()
-                active = load_or_default(settings.db_path)
-                payload = create_config_version(
-                    db_path=settings.db_path,
-                    config_version=str(body.get("config_version", "") or "").strip(),
-                    created_by=str(body.get("created_by", settings.default_actor_id) or settings.default_actor_id).strip(),
-                    min_profit_jpy=_to_float(body.get("min_profit_jpy"), float(active["min_profit_jpy"])),
-                    min_profit_rate=_to_float(body.get("min_profit_rate"), float(active["min_profit_rate"])),
-                    stop_consecutive_fail_count=_to_int(
-                        body.get("stop_consecutive_fail_count"),
-                        int(active["stop_consecutive_fail_count"]),
-                    ),
-                    light_interval_new_hours=_to_int(
-                        body.get("light_interval_new_hours"),
-                        int(active["light_interval_new_hours"]),
-                    ),
-                    light_interval_stable_hours=_to_int(
-                        body.get("light_interval_stable_hours"),
-                        int(active["light_interval_stable_hours"]),
-                    ),
-                    light_interval_stopped_hours=_to_int(
-                        body.get("light_interval_stopped_hours"),
-                        int(active["light_interval_stopped_hours"]),
-                    ),
-                    heavy_interval_days=_to_int(body.get("heavy_interval_days"), int(active["heavy_interval_days"])),
-                )
-                self._send(HTTPStatus.OK, {"db_path": str(settings.db_path), "active_config": payload})
+            if self._handle_operator_post(path=path, body=body):
                 return
 
             if path == "/v1/profit/calc":
-                refresh_fx = bool(body.get("refresh_fx", False))
-                force_refresh_fx = bool(body.get("force_refresh_fx", False))
-                refresh_info = None
-                if refresh_fx or force_refresh_fx:
-                    refresh_info = maybe_refresh_usd_jpy_rate(force=force_refresh_fx)
-
-                required = ["sale_price_usd", "purchase_price_jpy"]
-                missing = [name for name in required if name not in body]
-                if missing:
-                    self._send(
-                        HTTPStatus.BAD_REQUEST,
-                        _json_error(
-                            f"missing required fields: {', '.join(missing)}",
-                            code="missing_fields",
-                        ),
-                    )
-                    return
-
-                profit_input = ProfitInput(
-                    sale_price_usd=float(body["sale_price_usd"]),
-                    purchase_price_jpy=float(body["purchase_price_jpy"]),
-                    domestic_shipping_jpy=float(body.get("domestic_shipping_jpy", 0.0)),
-                    international_shipping_usd=float(
-                        body.get("international_shipping_usd", 0.0)
-                    ),
-                    customs_usd=float(body.get("customs_usd", 0.0)),
-                    packaging_usd=float(body.get("packaging_usd", 0.0)),
-                    misc_cost_jpy=float(body.get("misc_cost_jpy", 0.0)),
-                    misc_cost_usd=float(body.get("misc_cost_usd", 0.0)),
-                    marketplace_fee_rate=float(body.get("marketplace_fee_rate", 0.13)),
-                    payment_fee_rate=float(body.get("payment_fee_rate", 0.03)),
-                    fixed_fee_usd=float(body.get("fixed_fee_usd", 0.0)),
-                )
-                payload = calculate_profit(profit_input)
-                if refresh_info is not None:
-                    payload["fx_refresh"] = refresh_info
-                self._send(HTTPStatus.OK, payload)
+                self._handle_profit_calc_post(body)
                 return
 
             self._send(

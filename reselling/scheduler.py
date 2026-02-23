@@ -4,14 +4,10 @@ from __future__ import annotations
 
 import json
 import time
-from datetime import datetime, timezone
 from typing import Any, Dict
 
 from .fx_rate import maybe_refresh_usd_jpy_rate
-
-
-def _ts() -> str:
-    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+from .time_utils import utc_iso
 
 
 def run_scheduler(interval_seconds: int = 30) -> None:
@@ -23,7 +19,7 @@ def run_scheduler(interval_seconds: int = 30) -> None:
             print(
                 json.dumps(
                     {
-                        "at": _ts(),
+                        "at": utc_iso(),
                         "event": "fx_refresh_tick",
                         "result": result,
                     },
@@ -33,4 +29,3 @@ def run_scheduler(interval_seconds: int = 30) -> None:
             time.sleep(interval_seconds)
     except KeyboardInterrupt:
         print("[scheduler] stopped")
-

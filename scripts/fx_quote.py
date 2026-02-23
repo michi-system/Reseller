@@ -8,64 +8,20 @@ import json
 import os
 import sys
 import time
-import urllib.error
 import urllib.parse
-import urllib.request
 from pathlib import Path
-from typing import Dict, Tuple
+from typing import Dict
 
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
 ENV_PATH = ROOT_DIR / ".env.local"
 CACHE_PATH = ROOT_DIR / "docs" / "fx_rate_cache.json"
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
 
-
-def load_dotenv(path: Path) -> None:
-    if not path.exists():
-        return
-    for raw_line in path.read_text(encoding="utf-8").splitlines():
-        line = raw_line.strip()
-        if not line or line.startswith("#") or "=" not in line:
-            continue
-        key, value = line.split("=", 1)
-        key = key.strip()
-        value = value.strip()
-        if len(value) >= 2 and (
-            (value.startswith('"') and value.endswith('"'))
-            or (value.startswith("'") and value.endswith("'"))
-        ):
-            value = value[1:-1]
-        if key and key not in os.environ:
-            os.environ[key] = value
-
-
-def request_json(url: str, timeout: int) -> Tuple[int, Dict[str, str], Dict]:
-    req = urllib.request.Request(url=url, method="GET")
-    try:
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
-            raw = resp.read().decode("utf-8", errors="replace")
-            payload = json.loads(raw) if raw else {}
-            return int(resp.status), dict(resp.headers.items()), payload
-    except urllib.error.HTTPError as err:
-        body = err.read().decode("utf-8", errors="replace")
-        try:
-            payload = json.loads(body) if body else {}
-        except json.JSONDecodeError:
-            payload = {"raw": body[:500]}
-        return int(err.code), dict(err.headers.items()), payload
-    except urllib.error.URLError as err:
-        return 0, {}, {"error": str(err)}
-
-
-def extract_json_path(payload: Dict, path: str) -> object:
-    current: object = payload
-    for part in path.split("."):
-        if not isinstance(current, dict):
-            return None
-        if part not in current:
-            return None
-        current = current[part]
-    return current
+from reselling.env import load_dotenv
+from reselling.http_json import request_json
+from reselling.json_utils import extract_json_path
 
 
 def read_cache(path: Path) -> Dict:

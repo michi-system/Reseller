@@ -22,9 +22,16 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 from reselling.config import load_settings
+from reselling.coerce import env_bool as _env_bool
 from reselling.env import load_dotenv
+from reselling.json_utils import load_json_dict as _load_json
+from reselling.json_utils import save_json_dict as _save_json
 from reselling.live_miner_fetch import fetch_live_miner_candidates
 from reselling.models import connect, init_db
+from reselling.rpa_runtime import resolve_rpa_output_path as _resolve_rpa_output_path
+from reselling.rpa_runtime import resolve_rpa_python as _resolve_rpa_python
+from reselling.time_utils import iso_to_epoch as _iso_to_epoch
+from reselling.time_utils import utc_iso as _now_iso
 
 
 DEFAULT_QUERIES = [
@@ -53,35 +60,6 @@ DEFAULT_QUERIES = [
     "casio ocw-t200 watch",
 ]
 
-
-def _now_iso() -> str:
-    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
-
-
-def _load_json(path: Path) -> Dict[str, Any]:
-    if not path.exists():
-        return {}
-    try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
-    except Exception:
-        return {}
-    return payload if isinstance(payload, dict) else {}
-
-
-def _save_json(path: Path, payload: Dict[str, Any]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
-
-
-def _iso_to_epoch(text: str) -> int:
-    raw = str(text or "").strip()
-    if not raw:
-        return 0
-    try:
-        norm = raw.replace("Z", "+00:00")
-        return int(datetime.fromisoformat(norm).timestamp())
-    except Exception:
-        return 0
 
 
 def _default_query_stat() -> Dict[str, Any]:
@@ -208,32 +186,6 @@ def collect_api_efficiency(result: Dict[str, Any]) -> Dict[str, Any]:
         "network_calls": network_calls,
         "by_site": out_by_site,
     }
-
-
-def _env_bool(name: str, default: bool = False) -> bool:
-    raw = (os.getenv(name, "") or "").strip().lower()
-    if not raw:
-        return default
-    return raw in {"1", "true", "yes", "on"}
-
-
-def _resolve_rpa_output_path() -> Path:
-    raw = (os.getenv("LIQUIDITY_RPA_JSON_PATH", "") or "").strip() or "data/liquidity_rpa_signals.jsonl"
-    path = Path(raw).expanduser()
-    if not path.is_absolute():
-        path = (ROOT_DIR / path).resolve()
-    return path
-
-
-def _resolve_rpa_python() -> str:
-    raw = (os.getenv("LIQUIDITY_RPA_PYTHON", "") or "").strip()
-    if raw:
-        return raw
-    venv_python = ROOT_DIR / ".venv" / "bin" / "python"
-    if venv_python.exists():
-        return str(venv_python)
-    return sys.executable or "python3"
-
 
 def _load_rpa_rows(path: Path) -> list[Dict[str, Any]]:
     if not path.exists():
@@ -460,7 +412,7 @@ def _run_rpa_collect(
             "stdout_tail": [],
             "stderr_tail": [],
         }
-    runner = _resolve_rpa_python()
+    runner = _resolve_rpa_python(ROOT_DIR)
     script_path = ROOT_DIR / "scripts" / "rpa_market_research.py"
     cmd: list[str] = [
         runner,
@@ -530,7 +482,7 @@ def maybe_refresh_rpa_liquidity(
         "mode": mode,
         "cache_only": bool(cache_only),
         "ran": False,
-        "output_path": str(_resolve_rpa_output_path()),
+        "output_path": str(_resolve_rpa_output_path(ROOT_DIR)),
         "primary": {},
         "fallback": {},
         "model_backfill": {},
@@ -546,7 +498,7 @@ def maybe_refresh_rpa_liquidity(
         summary["reason"] = "cache_only_skip"
         return summary
 
-    output_path = _resolve_rpa_output_path()
+    output_path = _resolve_rpa_output_path(ROOT_DIR)
     primary_fixed = _env_bool("LIQUIDITY_RPA_PRIMARY_FIXED_PRICE_ONLY", True)
     primary = _run_rpa_collect(
         queries=queries,

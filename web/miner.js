@@ -173,6 +173,8 @@ const refs = {
   decisionReasons: document.getElementById("decisionReasons"),
   riskFlags: document.getElementById("riskFlags"),
   fetchStatusHeadline: document.getElementById("fetchStatusHeadline"),
+  headerSeedStatus: document.getElementById("headerSeedStatus"),
+  seedPoolSummary: document.getElementById("seedPoolSummary"),
   fetchStatsRows: document.getElementById("fetchStatsRows"),
   rpaProgressWrap: document.getElementById("rpaProgressWrap"),
   rpaProgressLabel: document.getElementById("rpaProgressLabel"),
@@ -209,6 +211,8 @@ const state = {
   optimisticProgress: 0,
   displayedProgress: 0,
   lastFetchProgressSource: "",
+  seedPoolStatusSeq: 0,
+  lastSeedPoolCategory: "",
   financeHeightRaf: null,
 };
 
@@ -279,7 +283,6 @@ function resolveApiBase() {
 
   const stored = (
     window.localStorage.getItem("miner_api_base")
-    || window.localStorage.getItem("review_api_base")
     || ""
   ).trim();
   if (stored) {
@@ -664,6 +667,9 @@ function stopReasonLabel(reason) {
     low_yield_stop: "増分が少ないため停止",
     skipped_no_market_hits: "eBayヒット0でスキップ",
     rpa_daily_limit_reached: "Product Research上限で停止",
+    seed_batch_completed: "Seedバッチを完了",
+    seed_pool_empty: "有効なSeedなし",
+    timebox_reached: "時間上限で停止",
     error: "APIエラーで停止",
   };
   return map[key] || key;
@@ -687,6 +693,24 @@ function stopReasonDetail(info) {
   return "";
 }
 
+function skipReasonLabel(key) {
+  const k = String(key || "").trim().toLowerCase();
+  const map = {
+    skipped_low_match: "一致不足",
+    skipped_unprofitable: "低利益",
+    skipped_low_margin: "低粗利率",
+    skipped_low_liquidity: "低流動性",
+    skipped_liquidity_unavailable: "流動性未取得",
+    skipped_missing_sold_min: "90日最低未取得",
+    skipped_missing_sold_sample: "売却サンプル欠損",
+    skipped_below_sold_min: "仕入>=90日最低",
+    skipped_implausible_sold_min: "90日最低異常値",
+    skipped_ambiguous_model_title: "曖昧型番タイトル",
+    skipped_blocked: "否認ブロック",
+  };
+  return map[k] || k || "-";
+}
+
 function isRpaDailyLimitReached(payload) {
   if (!payload || typeof payload !== "object") return false;
   if (Boolean(payload.rpa_daily_limit_reached)) return true;
@@ -699,6 +723,147 @@ function isRpaDailyLimitReached(payload) {
   const timedReason = String(payload?.timed_fetch?.stop_reason || "").trim().toLowerCase();
   if (timedReason === "rpa_daily_limit_reached") return true;
   return false;
+}
+
+function refillReasonLabel(reason) {
+  const key = String(reason || "").trim().toLowerCase();
+  if (!key) return "不明";
+  const map = {
+    snapshot: "現在のSeedプール状態",
+    threshold_not_reached: "補充不要（しきい値以上）",
+    bootstrap_refilled: "カテゴリ知識で補充",
+    refilled: "補充実行",
+    target_reached: "目標補充件数に到達",
+    soft_target_reached: "80%到達で補充停止",
+    fresh_window_skip: "7日以内ページのみのため補充待機",
+    zero_history_top_rechecked: "空ページ履歴のため先頭を再確認",
+    category_cooldown: "カテゴリ補充クールダウン中",
+    rank_limit_cooldown: "深掘り上限でクールダウン",
+    empty_result_cooldown: "検索結果空で一時停止",
+    daily_limit_reached: "Product Research上限到達",
+    empty_result_page: "補充ページ0件（既存Seedで探索継続）",
+  };
+  return map[key] || key;
+}
+
+function getSeedPoolView(payload) {
+  const seedPool = (payload && typeof payload === "object" && payload.seed_pool && typeof payload.seed_pool === "object")
+    ? payload.seed_pool
+    : {};
+  const refill = (seedPool.refill && typeof seedPool.refill === "object") ? seedPool.refill : {};
+  const categoryLabel = String(seedPool.category_label || seedPool.category_key || "カテゴリ").trim();
+  const availableAfter = Number(seedPool.available_after_refill || 0);
+  const selectedCount = Number(seedPool.selected_seed_count || 0);
+  const seedCountRaw = Number(seedPool.seed_count ?? availableAfter ?? selectedCount ?? 0);
+  const seedCount = Number.isFinite(seedCountRaw) ? seedCountRaw : 0;
+  const skippedLowQuality = Number(seedPool.skipped_low_quality_count || 0);
+  const reason = refillReasonLabel(refill.reason);
+  const lastRefillAt = String(refill.last_refill_at || "").trim();
+  const cooldownUntil = String(refill.cooldown_until || "").trim();
+  const dailyLimitReached = Boolean(payload?.rpa_daily_limit_reached) || Boolean(refill.daily_limit_reached);
+  const addedCount = Number(refill.added_count || 0);
+  const pageRuns = Array.isArray(refill.page_runs) ? refill.page_runs.length : 0;
+  return {
+    categoryLabel,
+    availableAfter,
+    selectedCount,
+    seedCount,
+    skippedLowQuality,
+    reason,
+    lastRefillAt,
+    cooldownUntil,
+    dailyLimitReached,
+    addedCount,
+    pageRuns,
+  };
+}
+
+function renderHeaderSeedStatus(payload, { loading = false, failed = false } = {}) {
+  if (!refs.headerSeedStatus) return;
+  const category = String(refs.fetchQuery?.value || "").trim() || "-";
+  if (loading) {
+    refs.headerSeedStatus.classList.remove("warn");
+    refs.headerSeedStatus.innerHTML = `
+      <span class="header-seed-chip">カテゴリ: ${escapeHtml(category)}</span>
+      <span class="header-seed-chip">Seed情報を取得中</span>
+    `;
+    return;
+  }
+  if (failed) {
+    refs.headerSeedStatus.classList.add("warn");
+    refs.headerSeedStatus.innerHTML = `
+      <span class="header-seed-chip">カテゴリ: ${escapeHtml(category)}</span>
+      <span class="header-seed-chip">Seed情報の取得に失敗</span>
+    `;
+    return;
+  }
+  if (!payload || typeof payload !== "object") {
+    refs.headerSeedStatus.classList.remove("warn");
+    refs.headerSeedStatus.innerHTML = `
+      <span class="header-seed-chip">カテゴリ: ${escapeHtml(category)}</span>
+      <span class="header-seed-chip">Seed数: -</span>
+      <span class="header-seed-chip">補充状態: -</span>
+      <span class="header-seed-chip">更新: -</span>
+    `;
+    return;
+  }
+  const view = getSeedPoolView(payload);
+  refs.headerSeedStatus.classList.toggle("warn", Boolean(view.dailyLimitReached));
+  refs.headerSeedStatus.innerHTML = `
+    <span class="header-seed-chip">カテゴリ: ${escapeHtml(view.categoryLabel || category)}</span>
+    <span class="header-seed-chip">Seed数: ${Number.isFinite(view.seedCount) ? view.seedCount : 0}件</span>
+    <span class="header-seed-chip">補充状態: ${escapeHtml(view.reason)}</span>
+    <span class="header-seed-chip">更新: ${escapeHtml(view.lastRefillAt ? formatIsoShort(view.lastRefillAt) : "未補充")}</span>
+  `;
+}
+
+function renderSeedPoolSummary(payload) {
+  if (!refs.seedPoolSummary) return;
+  if (!payload || typeof payload !== "object") {
+    refs.seedPoolSummary.classList.remove("warn");
+    refs.seedPoolSummary.textContent = "Seedプール情報を取得できませんでした。";
+    return;
+  }
+  const seedPool = (payload.seed_pool && typeof payload.seed_pool === "object")
+    ? payload.seed_pool
+    : null;
+  if (!seedPool) {
+    refs.seedPoolSummary.classList.remove("warn");
+    refs.seedPoolSummary.textContent = "今回のレスポンスにSeedプール情報は含まれていません。";
+    return;
+  }
+  const refill = (seedPool.refill && typeof seedPool.refill === "object") ? seedPool.refill : {};
+  const view = getSeedPoolView(payload);
+  const cooldownUntil = view.cooldownUntil;
+  const lastRefillAt = view.lastRefillAt;
+  const lastRefillMessage = String(refill.last_refill_message || "").trim();
+  const categoryLabel = view.categoryLabel;
+  const seedCount = view.seedCount;
+  const skippedLowQuality = view.skippedLowQuality;
+  const addedCount = Number(refill.added_count || 0);
+  const beforeCount = Number(refill.available_before || 0);
+  const afterCount = Number(refill.available_after || 0);
+  const pageRuns = view.pageRuns;
+  const skippedFreshPages = Number(refill.skipped_fresh_pages || 0);
+  const reason = view.reason;
+
+  refs.seedPoolSummary.classList.toggle("warn", view.dailyLimitReached);
+  refs.seedPoolSummary.innerHTML = `
+    <div><strong>Seedプール: ${escapeHtml(categoryLabel)}</strong> / ${escapeHtml(reason)}</div>
+    <div class="seed-pool-chip-row">
+      <span class="seed-pool-chip">Seed数 ${Number.isFinite(seedCount) ? seedCount : 0}件</span>
+      <span class="seed-pool-chip">補充 +${Number.isFinite(addedCount) ? addedCount : 0}件</span>
+      ${pageRuns > 0 ? `<span class="seed-pool-chip">補充ページ ${pageRuns}ページ</span>` : ""}
+      ${skippedFreshPages > 0 ? `<span class="seed-pool-chip">直近取得スキップ ${skippedFreshPages}ページ</span>` : ""}
+      ${skippedLowQuality > 0 ? `<span class="seed-pool-chip">低品質除外 ${skippedLowQuality}件</span>` : ""}
+    </div>
+    <ul class="compact-list">
+      <li>補充前: ${Number.isFinite(beforeCount) ? beforeCount : 0}件 / 補充後: ${Number.isFinite(afterCount) ? afterCount : 0}件</li>
+      ${lastRefillAt ? `<li>最終補充時刻: ${escapeHtml(formatIsoShort(lastRefillAt))}</li>` : ""}
+      ${lastRefillMessage ? `<li>補充ログ: ${escapeHtml(lastRefillMessage)}</li>` : ""}
+    </ul>
+    ${cooldownUntil ? `<div class="fetch-note">再補充可能時刻: ${escapeHtml(formatIsoShort(cooldownUntil))}</div>` : ""}
+  `;
 }
 
 function saleBasisLabel(basis) {
@@ -1090,8 +1255,11 @@ function phaseToJa(phase) {
     filters_done: "条件設定完了",
     query_done: "検索完了",
     timed_fetch_start: "探索開始",
+    seed_pool_ready: "Seed準備完了",
     pass_running: "探索中",
-    pass_completed: "探索中",
+    stage1_running: "一次判定",
+    stage2_running: "最終再判定",
+    pass_completed: "集計完了",
     timed_fetch_finalize: "結果集計中",
     single_pass_running: "探索中",
     completed: "完了",
@@ -1135,34 +1303,55 @@ function renderRpaProgress(snapshot, { running = false } = {}) {
   const passIndex = Number(data.pass_index || 0);
   const maxPasses = Number(data.max_passes || 0);
   const createdCount = Number(data.created_count || 0);
+  const currentSeedQuery = String(data.current_seed_query || "").trim();
+  const stage1PassTotal = Number(data.stage1_pass_total || 0);
+  const stage2Runs = Number(data.stage2_runs || 0);
+  const stage1SkipTopReason = String(data.stage1_skip_top_reason || "").trim();
+  const stage1SkipTopCount = Number(data.stage1_skip_top_count || 0);
+  const stage1BaselineRejectTotal = Number(data.stage1_seed_baseline_reject_total || 0);
+  const skippedLowQualityCount = Number(data.skipped_low_quality_count || 0);
+  const elapsedSec = Number(data.elapsed_sec || 0);
   const rpa = (data.rpa && typeof data.rpa === "object") ? data.rpa : null;
   const qIndex = Number(data.query_index || 0);
   const qTotal = Number(data.total_queries || 0);
   const updatedAgoSec = Number(data.updated_ago_sec || 0);
   const runLabel = (passIndex > 0 && maxPasses > 0)
-    ? ` (pass ${passIndex}/${maxPasses})`
+    ? ` (${passIndex}/${maxPasses})`
     : ((qIndex > 0 && qTotal > 0) ? ` (${qIndex}/${qTotal})` : "");
   const statusJa = phaseToJa(phase || status);
   const detailBits = [];
-  detailBits.push(`探索:${statusJa}`);
-  if (query) detailBits.push(`探索語:${compactQueryText(query)}`);
+  if (currentSeedQuery) detailBits.push(`処理中Seed:${compactQueryText(currentSeedQuery, 30)}`);
+  else if (query) detailBits.push(`探索語:${compactQueryText(query, 30)}`);
+  if (Number.isFinite(stage1PassTotal) && stage1PassTotal > 0) detailBits.push(`一次通過:${stage1PassTotal}件`);
+  if (Number.isFinite(stage2Runs) && stage2Runs > 0) detailBits.push(`最終再判定:${stage2Runs}件`);
   if (Number.isFinite(createdCount) && createdCount > 0) detailBits.push(`候補:${createdCount}件`);
+  if (stage1SkipTopReason && Number.isFinite(stage1SkipTopCount) && stage1SkipTopCount > 0) {
+    detailBits.push(`除外トップ:${skipReasonLabel(stage1SkipTopReason)} ${stage1SkipTopCount}件`);
+  }
   if (rpa && typeof rpa === "object") {
     const rpaStatus = String(rpa.status || "").trim().toLowerCase();
     const rpaPhase = String(rpa.phase || "").trim();
     const rpaPhaseJa = phaseToJa(rpaPhase || rpaStatus);
     const rpaPct = clampPercent(rpa.progress_percent);
-    const rpaQuery = String(rpa.query || "").trim();
     const rpaQueryIndex = Number(rpa.query_index || 0);
     const rpaTotalQueries = Number(rpa.total_queries || 0);
-    if (rpaStatus && rpaStatus !== "idle") {
+    const rpaUpdatedAgoSec = Number(rpa.updated_ago_sec || -1);
+    const rpaFresh = Number.isFinite(rpaUpdatedAgoSec) ? (rpaUpdatedAgoSec >= 0 && rpaUpdatedAgoSec <= 120) : true;
+    // 前回runの「completed 100%」を引きずらないよう、実行中かつ新しい更新だけ表示する。
+    if (rpaStatus === "running" && rpaFresh) {
       const rpaRunLabel = rpaQueryIndex > 0 && rpaTotalQueries > 0 ? `(${rpaQueryIndex}/${rpaTotalQueries})` : "";
       detailBits.push(`PR:${rpaPhaseJa}${rpaRunLabel} ${Math.round(rpaPct)}%`);
-      if (rpaQuery) detailBits.push(`PR語:${compactQueryText(rpaQuery)}`);
     }
   }
+  if (Number.isFinite(stage1BaselineRejectTotal) && stage1BaselineRejectTotal > 0) {
+    detailBits.push(`一次価格除外:${stage1BaselineRejectTotal}件`);
+  }
+  if (Number.isFinite(skippedLowQualityCount) && skippedLowQualityCount > 0) {
+    detailBits.push(`低品質除外:${skippedLowQualityCount}件`);
+  }
   if (!detailBits.length && message) detailBits.push(compactQueryText(message, 36));
-  if (Number.isFinite(updatedAgoSec) && updatedAgoSec >= 0) detailBits.push(`更新:${updatedAgoSec}s`);
+  if (Number.isFinite(elapsedSec) && elapsedSec > 0) detailBits.push(`経過:${Math.round(elapsedSec)}s`);
+  if (Number.isFinite(updatedAgoSec) && updatedAgoSec >= 0 && !running) detailBits.push(`更新:${updatedAgoSec}s`);
   const detail = detailBits.join(" / ") || "進捗データ待機中";
 
   refs.rpaProgressWrap.hidden = false;
@@ -1345,36 +1534,35 @@ function renderFetchStats(payload) {
   if (!refs.fetchStatusHeadline || !refs.fetchStatsRows) return;
   if (!payload || typeof payload !== "object") {
     setFetchHeadline("まだ探索を実行していません。", { warn: false, running: false });
+    renderHeaderSeedStatus(null, { loading: false, failed: false });
+    renderSeedPoolSummary(null);
     refs.fetchStatsRows.innerHTML = "";
     hideRpaProgress();
     return;
   }
+  renderHeaderSeedStatus(payload, { loading: false, failed: false });
+  renderSeedPoolSummary(payload);
 
   const createdCount = Number(payload.created_count || 0);
   const searchScopeDone = Boolean(payload.search_scope_done);
   const queryCacheSkip = Boolean(payload.query_cache_skip);
-  const queryCacheTtlSec = Number(payload.query_cache_ttl_sec || 0);
   const errors = Array.isArray(payload.errors) ? payload.errors : [];
-  const appliedFilters = (payload.applied_filters && typeof payload.applied_filters === "object")
-    ? payload.applied_filters
-    : {};
   const fetched = (payload.fetched && typeof payload.fetched === "object") ? payload.fetched : {};
   const dailyLimitReached = isRpaDailyLimitReached(payload);
 
   let headline = `今回の探索: 追加 ${createdCount}件`;
   if (searchScopeDone) headline += " / 探索完走";
-  if (queryCacheSkip) {
-    headline += queryCacheTtlSec > 0
-      ? ` / 同条件スキップ中(${queryCacheTtlSec}秒)`
-      : " / 同条件スキップ中";
-  }
-  headline += Boolean(appliedFilters.require_in_stock) ? " / 在庫あり必須" : " / 在庫条件なし";
+  if (queryCacheSkip) headline += " / 同条件スキップ";
   if (dailyLimitReached) headline += " / Product Research上限到達";
   if (errors.length > 0) headline += ` / エラー${errors.length}件`;
   setFetchHeadline(headline, { warn: dailyLimitReached, running: false });
 
   const rows = Object.entries(fetched);
-  if (rows.length === 0) {
+  const siteRows = rows.filter(([site]) => {
+    const key = String(site || "").trim().toLowerCase();
+    return key === "ebay" || key === "rakuten" || key === "yahoo" || key === "yahoo_shopping" || key === "amazon";
+  });
+  if (siteRows.length === 0) {
     const alertHtml = dailyLimitReached
       ? `
       <div class="fetch-alert warn">
@@ -1400,7 +1588,7 @@ function renderFetchStats(payload) {
     `
     : "";
 
-  refs.fetchStatsRows.innerHTML = warningBlock + rows.map(([site, info]) => {
+  refs.fetchStatsRows.innerHTML = warningBlock + siteRows.map(([site, info]) => {
     const calls = Number(info?.calls_made || 0);
     const networkCalls = Number(info?.network_calls || 0);
     const cacheHits = Number(info?.cache_hits || 0);
@@ -1433,6 +1621,41 @@ function renderFetchStats(payload) {
       </div>
     `;
   }).join("");
+}
+
+async function refreshSeedPoolStatusForCurrentCategory({ updateHeadline = true } = {}) {
+  const category = String(refs.fetchQuery?.value || "").trim();
+  if (!category) return;
+  const seq = ++state.seedPoolStatusSeq;
+  renderHeaderSeedStatus(null, { loading: true });
+  if (!state.fetchInFlight && !state.lastFetch && refs.seedPoolSummary) {
+    refs.seedPoolSummary.classList.remove("warn");
+    refs.seedPoolSummary.textContent = "Seedプール情報を取得しています。";
+  }
+  try {
+    const payload = await api(`/v1/miner/seed-pool-status?category=${encodeURIComponent(category)}`);
+    if (seq !== state.seedPoolStatusSeq) return;
+    state.lastSeedPoolCategory = category;
+    renderHeaderSeedStatus(payload, { loading: false, failed: false });
+    renderSeedPoolSummary(payload);
+    if (updateHeadline && !state.fetchInFlight) {
+      const view = getSeedPoolView(payload);
+      setFetchHeadline(
+        `探索前: ${view.categoryLabel} / Seed数 ${view.seedCount}件`,
+        { warn: Boolean(view.dailyLimitReached), running: false },
+      );
+    }
+  } catch (_) {
+    if (seq !== state.seedPoolStatusSeq) return;
+    renderHeaderSeedStatus(null, { loading: false, failed: true });
+    if (refs.seedPoolSummary) {
+      refs.seedPoolSummary.classList.add("warn");
+      refs.seedPoolSummary.textContent = "Seedプール情報の取得に失敗しました。探索時に再取得します。";
+    }
+    if (updateHeadline && !state.fetchInFlight && !state.lastFetch) {
+      setFetchHeadline("探索前のSeedプール情報を取得できませんでした。", { warn: true, running: false });
+    }
+  }
 }
 
 function renderImage(imgEl, url, clickHref = null, title = "") {
@@ -2577,11 +2800,21 @@ async function onFetchLiveCandidates() {
     const hints = Array.isArray(payload.hints) ? payload.hints : [];
     const timedFetch = (payload && typeof payload.timed_fetch === "object") ? payload.timed_fetch : null;
     const timedPasses = Number(timedFetch?.passes_run || 0);
+    const stage1PassTotal = Number(timedFetch?.stage1_pass_total || 0);
+    const stage2Runs = Number(timedFetch?.stage2_runs || 0);
     const timedReason = String(timedFetch?.stop_reason || "").trim();
+    const stage1SkipCounts = (payload.stage1_skip_counts && typeof payload.stage1_skip_counts === "object")
+      ? payload.stage1_skip_counts
+      : {};
+    const stage1Top = Object.entries(stage1SkipCounts)
+      .map(([k, v]) => [String(k), Number(v)])
+      .filter(([, v]) => Number.isFinite(v) && v > 0)
+      .sort((a, b) => b[1] - a[1])[0];
     const dailyLimitReached = isRpaDailyLimitReached(payload);
 
     let msg = `探索完了: ${createdCount}件追加`;
     if (timedPasses > 1) msg += ` / ${timedPasses}パス`;
+    if (stage1PassTotal > 0 || stage2Runs > 0) msg += ` / 一次通過${stage1PassTotal}件 / 最終再判定${stage2Runs}件`;
     if (duplicateCount > 0) msg += ` / 重複${duplicateCount}件スキップ`;
     if (unprofitableCount > 0) msg += ` / 低利益${unprofitableCount}件除外`;
     if (lowMarginCount > 0) msg += ` / 低粗利率${lowMarginCount}件除外`;
@@ -2600,6 +2833,7 @@ async function onFetchLiveCandidates() {
     }
     if (dailyLimitReached) msg += " / Product Research上限到達";
     if (timedReason) msg += ` / 停止理由:${timedReason}`;
+    if (stage1Top) msg += ` / 一次トップ除外:${skipReasonLabel(stage1Top[0])}${Number(stage1Top[1])}件`;
     if (hints.length > 0) msg += ` / ${hints[0]}`;
     showToast(msg);
   } catch (err) {
@@ -2624,6 +2858,10 @@ async function onFetchLiveCandidates() {
 }
 
 function bindEvents() {
+  refs.fetchQuery.addEventListener("change", () => {
+    void refreshSeedPoolStatusForCurrentCategory({ updateHeadline: true });
+  });
+
   refs.fetchBtn.addEventListener("click", async () => {
     try {
       await onFetchLiveCandidates();
@@ -2746,6 +2984,7 @@ async function init() {
     refs.endpointLabel.textContent = `API接続先: ${endpointLabel}`;
   }
   await loadCategoryOptions();
+  await refreshSeedPoolStatusForCurrentCategory({ updateHeadline: true });
   try {
     await refreshQueues({ preserveSelection: false });
     scheduleFinanceCellHeightSync();

@@ -1,0 +1,25 @@
+{
+  "startedAt": 1771882240015,
+  "endedAt": 1771882240198,
+  "durationMs": 183,
+  "ui": [],
+  "backend": [],
+  "events": [
+    {
+      "t": 1771882240197,
+      "type": "category_selected",
+      "value": "watch"
+    }
+  ],
+  "errors": [
+    {
+      "t": 1771882240198,
+      "phase": "fatal",
+      "message": "ReferenceError: setTimeout is not defined",
+      "stack": "ReferenceError: setTimeout is not defined\n    at evalmachine.<anonymous>:4:49\n    at new Promise (<anonymous>)\n    at wait (evalmachine.<anonymous>:4:24)\n    at evalmachine.<anonymous>:74:11\n    at async evalmachine.<anonymous>:3:26\n    at async /Users/tadamichikimura/.npm/_npx/31e32ef8478fbf80/node_modules/playwright/lib/mcp/browser/tools/runCode.js:67:7\n    at async waitForCompletion (/Users/tadamichikimura/.npm/_npx/31e32ef8478fbf80/node_modules/playwright/lib/mcp/browser/tools/utils.js:35:14)\n    at async Tab._raceAgainstModalStates (/Users/tadamichikimura/.npm/_npx/31e32ef8478fbf80/node_modules/playwright/lib/mcp/browser/tab.js:298:12)\n    at async Tab.waitForCompletion (/Users/tadamichikimura/.npm/_npx/31e32ef8478fbf80/node_modules/playwright/lib/mcp/browser/tab.js:308:5)\n    at async Object.handle (/Users/tadamichikimura/.npm/_npx/31e32ef8478fbf80/node_modules/playwright/lib/mcp/browser/tools/runCode.js:58:5)"
+    }
+  ],
+  "fetchResponseSummary": null,
+  "fetchResponseHints": [],
+  "postQueue": null
+}

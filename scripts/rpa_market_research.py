@@ -12,12 +12,17 @@ import sys
 import time
 import urllib.parse
 from dataclasses import dataclass
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
+
+from reselling.coerce import to_float as _to_float
+from reselling.coerce import to_int as _to_int
+from reselling.time_utils import utc_iso as _utc_iso_now
 
 _RE_SOLD_KEY = re.compile(r"(sold|sale).*(count|total|qty|quantity|items?)")
 _RE_ACTIVE_KEY = re.compile(r"(active|listed|listing).*(count|total|qty|quantity|items?)")
@@ -409,13 +414,28 @@ def _extract_filtered_rows_from_html(
     query_codes: List[str],
     query_tokens: List[str],
 ) -> Tuple[List[float], int, Dict[str, Any]]:
+    prices, sold_count, sold_sample, _ = _extract_filtered_rows_with_rows(
+        html,
+        query_codes=query_codes,
+        query_tokens=query_tokens,
+    )
+    return prices, sold_count, sold_sample
+
+
+def _extract_filtered_rows_with_rows(
+    html: str,
+    *,
+    query_codes: List[str],
+    query_tokens: List[str],
+) -> Tuple[List[float], int, Dict[str, Any], List[Dict[str, Any]]]:
     prices: List[float] = []
     sold_dates: set[str] = set()
     sold_sample: Dict[str, Any] = {}
+    rows: List[Dict[str, Any]] = []
     text = str(html or "")
     starts = [m.start() for m in _RE_HTML_ROW_START.finditer(text)]
     if not starts:
-        return prices, 0, sold_sample
+        return prices, 0, sold_sample, rows
     for idx, start in enumerate(starts):
         end = starts[idx + 1] if (idx + 1) < len(starts) else len(text)
         block = text[start:end]
@@ -426,71 +446,58 @@ def _extract_filtered_rows_from_html(
             continue
         if not _row_matches_query_text(row_text, query_codes=query_codes, query_tokens=query_tokens):
             continue
+        row_entry: Dict[str, Any] = {"title": row_text[:220], "rank": idx + 1}
+        link_match = _RE_HTML_ROW_LINK.search(block)
+        if link_match:
+            href = str(link_match.group(1) or "").strip()
+            if href:
+                row_entry["item_url"] = urllib.parse.urljoin("https://www.ebay.com", href)
+            title_raw = _strip_html_text(str(link_match.group(2) or ""))
+            if title_raw:
+                row_entry["title"] = title_raw[:220]
+        img_src = ""
+        img_match = _RE_HTML_IMG_SRC.search(block)
+        if img_match:
+            img_src = str(img_match.group(1) or "").strip()
+        if not img_src:
+            srcset_match = _RE_HTML_IMG_SRCSET.search(block)
+            if srcset_match:
+                srcset_text = str(srcset_match.group(1) or "").strip()
+                for chunk in srcset_text.split(","):
+                    url = chunk.strip().split(" ", 1)[0].strip()
+                    if url:
+                        img_src = url
+                        break
+        if img_src:
+            row_entry["image_url"] = urllib.parse.urljoin("https://www.ebay.com", img_src)
         price_match = _RE_HTML_ROW_PRICE.search(block)
         if price_match:
             raw = str(price_match.group(1) or "").replace(",", "")
             price = _to_float(raw, -1.0)
             if price > 0:
                 prices.append(price)
+                row_entry["sold_price"] = round(price, 4)
                 current_sample_price = _to_float(sold_sample.get("sold_price"), -1.0)
                 if not sold_sample or current_sample_price <= 0 or price < current_sample_price:
                     sample: Dict[str, Any] = {
                         "title": row_text[:220],
                         "sold_price": round(price, 4),
                     }
-                    link_match = _RE_HTML_ROW_LINK.search(block)
-                    if link_match:
-                        href = str(link_match.group(1) or "").strip()
-                        if href:
-                            sample["item_url"] = urllib.parse.urljoin("https://www.ebay.com", href)
-                        title_raw = _strip_html_text(str(link_match.group(2) or ""))
-                        if title_raw:
-                            sample["title"] = title_raw[:220]
-                    img_src = ""
-                    img_match = _RE_HTML_IMG_SRC.search(block)
-                    if img_match:
-                        img_src = str(img_match.group(1) or "").strip()
-                    if not img_src:
-                        srcset_match = _RE_HTML_IMG_SRCSET.search(block)
-                        if srcset_match:
-                            srcset_text = str(srcset_match.group(1) or "").strip()
-                            for chunk in srcset_text.split(","):
-                                url = chunk.strip().split(" ", 1)[0].strip()
-                                if url:
-                                    img_src = url
-                                    break
-                    if img_src:
-                        sample["image_url"] = urllib.parse.urljoin("https://www.ebay.com", img_src)
+                    if "item_url" in row_entry:
+                        sample["item_url"] = row_entry["item_url"]
+                    if "image_url" in row_entry:
+                        sample["image_url"] = row_entry["image_url"]
+                    if row_entry.get("title"):
+                        sample["title"] = row_entry["title"]
                     sold_sample = sample
+        rows.append(row_entry)
         date_match = _RE_HTML_ROW_DATE.search(block)
         if date_match:
             sold_dates.add(str(date_match.group(1) or "").strip())
     sold_count = len(sold_dates) if sold_dates else len(prices)
     if sold_dates and sold_sample:
         sold_sample["sold_date_count_detected"] = len(sold_dates)
-    return prices, sold_count, sold_sample
-
-
-def _utc_iso_now() -> str:
-    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
-
-
-def _to_int(value: Any, default: int = -1) -> int:
-    try:
-        if value is None:
-            return default
-        return int(value)
-    except (TypeError, ValueError):
-        return default
-
-
-def _to_float(value: Any, default: float = -1.0) -> float:
-    try:
-        if value is None:
-            return default
-        return float(value)
-    except (TypeError, ValueError):
-        return default
+    return prices, sold_count, sold_sample, rows
 
 
 def _norm_query(text: str) -> str:
@@ -546,6 +553,7 @@ class MetricAccumulator:
     filtered_row_prices: List[float]
     filtered_sold_counts: List[int]
     filtered_sold_samples: List[Dict[str, Any]]
+    filtered_result_rows: List[Dict[str, Any]]
     currencies: List[str]
 
     @classmethod
@@ -567,6 +575,7 @@ class MetricAccumulator:
             filtered_row_prices=[],
             filtered_sold_counts=[],
             filtered_sold_samples=[],
+            filtered_result_rows=[],
             currencies=[],
         )
 
@@ -613,7 +622,7 @@ class MetricAccumulator:
         date_count = len(set(_RE_HTML_ROW_DATE.findall(html or "")))
         if date_count > 0:
             self.sold_counts.append(date_count)
-        filtered_prices, filtered_sold, sold_sample = _extract_filtered_rows_from_html(
+        filtered_prices, filtered_sold, sold_sample, filtered_rows = _extract_filtered_rows_with_rows(
             html,
             query_codes=self.query_codes,
             query_tokens=self.query_tokens,
@@ -624,6 +633,8 @@ class MetricAccumulator:
             self.filtered_sold_counts.append(filtered_sold)
         if isinstance(sold_sample, dict) and sold_sample:
             self.filtered_sold_samples.append(sold_sample)
+        if filtered_rows:
+            self.filtered_result_rows.extend(filtered_rows)
         for match in _RE_HTML_ROW_PRICE.finditer(html or ""):
             raw = str(match.group(1) or "").replace(",", "")
             value = _to_float(raw, -1.0)
@@ -716,6 +727,29 @@ class MetricAccumulator:
             first = self.filtered_sold_samples[0]
             if isinstance(first, dict):
                 best_sold_sample = first
+        compact_rows: List[Dict[str, Any]] = []
+        for row in self.filtered_result_rows:
+            if not isinstance(row, dict):
+                continue
+            title = str(row.get("title", "") or "").strip()
+            if not title:
+                continue
+            out_row: Dict[str, Any] = {"title": title[:220]}
+            item_url = str(row.get("item_url", "") or "").strip()
+            if item_url:
+                out_row["item_url"] = item_url
+            image_url = str(row.get("image_url", "") or "").strip()
+            if image_url:
+                out_row["image_url"] = image_url
+            rank = _to_int(row.get("rank"), 0)
+            if rank > 0:
+                out_row["rank"] = rank
+            sold_price = _to_float(row.get("sold_price"), -1.0)
+            if sold_price > 0:
+                out_row["sold_price"] = round(sold_price, 4)
+            compact_rows.append(out_row)
+            if len(compact_rows) >= 120:
+                break
 
         return {
             "sold_90d_count": sold,
@@ -727,6 +761,7 @@ class MetricAccumulator:
             "raw_row_count": len(self.row_prices),
             "filtered_row_count": len(self.filtered_row_prices),
             "sold_sample": best_sold_sample,
+            "filtered_result_rows": compact_rows,
         }
 
 
@@ -754,15 +789,30 @@ def _load_queries(args: argparse.Namespace) -> List[str]:
     return dedup
 
 
-def _search_and_wait(page: Any, query: str, wait_seconds: int) -> None:
+def _search_and_wait(
+    page: Any,
+    query: str,
+    wait_seconds: int,
+    *,
+    result_offset: int = 0,
+    result_limit: int = 50,
+) -> None:
     wait_until = str(os.getenv("LIQUIDITY_RPA_GOTO_WAIT_UNTIL", "commit") or "commit").strip().lower()
     if wait_until not in {"commit", "domcontentloaded", "load"}:
         wait_until = "commit"
     settle_ms = max(0, _to_int(os.getenv("LIQUIDITY_RPA_POST_GOTO_SETTLE_MS", "70"), 70))
     nav_retry = max(0, _to_int(os.getenv("LIQUIDITY_RPA_GOTO_RETRY_COUNT", "2"), 2))
     nav_retry_wait_ms = max(80, _to_int(os.getenv("LIQUIDITY_RPA_GOTO_RETRY_WAIT_MS", "220"), 220))
-    encoded = urllib.parse.quote_plus(query)
-    url = f"https://www.ebay.com/sh/research?marketplace=EBAY-US&keywords={encoded}"
+    params = {
+        "marketplace": "EBAY-US",
+        "keywords": str(query or ""),
+    }
+    safe_offset = max(0, int(result_offset))
+    safe_limit = max(10, min(200, int(result_limit)))
+    if safe_offset > 0:
+        params["offset"] = str(safe_offset)
+    params["limit"] = str(safe_limit)
+    url = "https://www.ebay.com/sh/research?" + urllib.parse.urlencode(params)
 
     def _goto_with_retry(target_url: str) -> bool:
         last_error: Optional[Exception] = None
@@ -1328,7 +1378,13 @@ def run(args: argparse.Namespace) -> int:
             short_circuit_no_sold = False
             try:
                 t_search = time.perf_counter()
-                _search_and_wait(page, query, effective_wait)
+                _search_and_wait(
+                    page,
+                    query,
+                    effective_wait,
+                    result_offset=max(0, int(args.result_offset)),
+                    result_limit=max(10, min(200, int(args.result_limit))),
+                )
                 timings["search_wait_sec"] = round(max(0.0, time.perf_counter() - t_search), 4)
                 _emit_progress(
                     phase="search_done",
@@ -1496,12 +1552,17 @@ def run(args: argparse.Namespace) -> int:
                     "filter_state": filter_state,
                     "filtered_row_count": int(metrics.get("filtered_row_count", 0)),
                     "raw_row_count": int(metrics.get("raw_row_count", 0)),
+                    "result_offset": max(0, int(args.result_offset)),
+                    "result_limit": max(10, min(200, int(args.result_limit))),
                     "timings": timings,
                 },
             }
             sold_sample = metrics.get("sold_sample") if isinstance(metrics.get("sold_sample"), dict) else {}
             if sold_sample:
                 row["metadata"]["sold_sample"] = sold_sample
+            filtered_rows = metrics.get("filtered_result_rows") if isinstance(metrics.get("filtered_result_rows"), list) else []
+            if filtered_rows:
+                row["metadata"]["filtered_result_rows"] = filtered_rows
             if bool(filter_state.get("strict_blocked")):
                 row["sold_90d_count"] = -1
                 row["active_count"] = -1
@@ -1657,6 +1718,18 @@ def build_parser() -> argparse.ArgumentParser:
         type=float,
         default=0.25,
         help="Sleep seconds between queries",
+    )
+    parser.add_argument(
+        "--result-offset",
+        type=int,
+        default=0,
+        help="Result offset for Product Research listing rows (0-based).",
+    )
+    parser.add_argument(
+        "--result-limit",
+        type=int,
+        default=50,
+        help="Result page size hint for Product Research listing rows.",
     )
     parser.add_argument("--headless", action="store_true", help="Run browser headless")
     return parser
