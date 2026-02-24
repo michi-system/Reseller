@@ -15,7 +15,7 @@
 [API]
   |
   |-- プール残数確認
-  |     if active_seed_count > 0 -> B
+  |     if active_seed_count > threshold -> B
   |     else -> A
   |
   |-- A: eBay 90days sold で seed 補充
@@ -37,7 +37,8 @@
 - ビッグワード順（ナレッジ順）
 
 ### 2.3 実行条件
-- プール有効数が 0 件の場合のみ実行。
+- プール有効数が補充閾値以下の場合に実行。
+- 補充閾値の既定値は `0`（`MINER_SEED_POOL_REFILL_THRESHOLD` で変更可能）。
 
 ### 2.4 補充手順
 1. ビッグワードを順番に選ぶ。
@@ -48,6 +49,16 @@
 - Fixed Price
 - カテゴリ選択
 - カテゴリ別の最低価格フィルタ（安すぎる価格帯を除外）
+  - 実装既定値（2026-02-24 時点）:
+    - watch: `$8`
+    - sneakers: `$20`
+    - streetwear: `$15`
+    - trading_cards: `$10`
+    - toys_collectibles: `$12`
+    - video_game_consoles: `$60`
+    - camera_lenses: `$25`
+  - 上記は `MINER_SEED_POOL_MIN_SOLD_PRICE_USD_<CATEGORY_KEY>` でカテゴリ単位上書き可能
+  - 全体共通の既定上書きは `MINER_SEED_POOL_MIN_SOLD_PRICE_USD_DEFAULT`
 4. 1ページ50件から seed 抽出:
 - 特定商品をヒットできる語を seed として抽出。
 - 付属品のみ（カバー等）の場合は本体seedを記録しない。
@@ -131,6 +142,9 @@
 2. 同一商品本体ページ、90日最低価格（送料込み）、販売件数を取得。
 3. 日本側販売価格と比較。
 4. 利益条件を満たす候補のみ pending へ保存。
+5. sold sample URL/価格を取得できない場合は既定で除外する。
+  - `MINER_STAGE2_ALLOW_MISSING_SOLD_SAMPLE=false`（既定）
+  - 例外運用を行う場合のみ `true` に切り替える。
 
 ### 4.3 C段階の記録
 - 日本産seedごと:
@@ -186,6 +200,9 @@
   - `MINER_SEED_POOL_REFILL_TIMEBOX_SEC=300`
   - `MINER_SEED_POOL_MAX_TIMEOUT_PAGES_PER_RUN=2`
   - `MINER_SEED_POOL_TIMEOUT_COOLDOWN_HOURS=1`
+- C段階 sold sample ポリシー:
+  - `MINER_STAGE2_ALLOW_MISSING_SOLD_SAMPLE=false`（既定）
+  - 根拠URLが欠落する候補は pending 化しない
 
 ### 6.4 timed fetch の実行優先順
 - B段階は「古い順20件消化」を優先し、timeboxは保護目的で後段適用する。
@@ -252,8 +269,3 @@
 - Yahoo Shopping API top: https://developer.yahoo.co.jp/webapi/shopping/
 - Yahoo Shopping v3 API: https://developer.yahoo.co.jp/webapi/shopping/v3/
 - Yahoo Shopping help: https://developer.yahoo.co.jp/webapi/shopping/help/
-
-## 12. 実装備考
-
-- 現行コードはこの文書と完全一致ではないため、段階的に合わせる。
-- まずは UI で A/B/C 段階を可視化し、次に A/B/C ロジックの順で一致化する。
