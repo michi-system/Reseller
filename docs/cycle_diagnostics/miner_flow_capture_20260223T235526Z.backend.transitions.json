@@ -1,0 +1,16 @@
+[
+  {
+    "sec": 2.043,
+    "status": "running",
+    "phase": "timed_fetch_start",
+    "progress_percent": 5,
+    "pass_index": 0,
+    "max_passes": 20,
+    "created_count": 0,
+    "seed_count": 0,
+    "current_seed_query": "",
+    "stage1_pass_total": 0,
+    "stage2_runs": 0,
+    "message": "腕時計のSeedプールを確認しています"
+  }
+]

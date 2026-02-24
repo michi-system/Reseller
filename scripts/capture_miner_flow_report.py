@@ -97,7 +97,7 @@ async function(page){
 
     let doneStable = 0;
     const runStarted = Date.now();
-    for (let i = 0; i < 700; i++) {
+    for (let i = 0; i < 2400; i++) {
       const t = Date.now();
       let uiRow = null;
       let backendRow = null;

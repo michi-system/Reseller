@@ -25,6 +25,16 @@ def _dummy_settings(db_path: Path) -> Settings:
 
 
 class MinerSeedPoolTests(unittest.TestCase):
+    def test_normalize_seed_query_strips_condition_suffix_but_keeps_new_balance(self) -> None:
+        self.assertEqual(
+            miner_seed_pool._normalize_seed_query("g-shock New"),
+            "g-shock",
+        )
+        self.assertEqual(
+            miner_seed_pool._normalize_seed_query("New Balance M990GL6"),
+            "New Balance M990GL6",
+        )
+
     def test_extract_seed_queries_from_title_prefers_model_code(self) -> None:
         seeds = miner_seed_pool._extract_seed_queries_from_title(
             "CASIO G-SHOCK GW-M5610U-1JF New",
@@ -41,7 +51,7 @@ class MinerSeedPoolTests(unittest.TestCase):
         keys = [miner_seed_pool._seed_key(v) for v in seeds]
         self.assertTrue(any("4549980658031" in key for key in keys))
 
-    def test_run_seeded_fetch_uses_seed_pool_and_disables_per_seed_rpa_refresh(self) -> None:
+    def test_run_seeded_fetch_runs_stage_b_and_stage_c_pipeline(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             db_path = Path(tmp) / "seed_pool_test.db"
             settings = _dummy_settings(db_path)
@@ -57,20 +67,47 @@ class MinerSeedPoolTests(unittest.TestCase):
 
             created_counter = {"value": 0}
 
-            def _fake_fetch(**kwargs):
+            def _fake_search(query: str, limit: int, timeout: int, page: int = 1, require_in_stock: bool = True):
+                item = miner_seed_pool.MarketItem(
+                    site="rakuten",
+                    item_id=f"rk-{query}-{page}",
+                    title=f"{query} 新品 本体",
+                    item_url=f"https://example.com/{query}/{page}",
+                    image_url="https://example.com/image.jpg",
+                    price=10000.0,
+                    shipping=0.0,
+                    currency="JPY",
+                    condition="new",
+                    identifiers={},
+                    raw={},
+                )
+                return [item], {"status": 200, "category_filter": {"applied": True}, "cache_hit": False}
+
+            def _fake_liquidity(**kwargs):
+                return {
+                    "sold_90d_count": 12,
+                    "metadata": {
+                        "sold_price_min": 180.0,
+                        "sold_sample": {
+                            "item_url": "https://www.ebay.com/itm/123456789012",
+                            "title": "eBay sold title",
+                            "image_url": "https://example.com/sold.jpg",
+                            "sold_price": 180.0,
+                        },
+                    },
+                    "source": "rpa_json",
+                    "unavailable_reason": "",
+                }
+
+            def _fake_create(payload, settings=None):
                 created_counter["value"] += 1
                 cid = created_counter["value"]
                 return {
-                    "created_count": 1,
-                    "created_ids": [cid],
-                    "created": [{"id": cid, "source_title": kwargs.get("query", ""), "market_title": kwargs.get("query", "")}],
-                    "fetched": {
-                        "ebay": {"count": 12, "calls_made": 2, "network_calls": 2, "cache_hits": 0, "stop_reason": "ok"},
-                        "rakuten": {"count": 8, "calls_made": 2, "network_calls": 1, "cache_hits": 1, "stop_reason": "ok"},
-                        "yahoo": {"count": 6, "calls_made": 2, "network_calls": 1, "cache_hits": 1, "stop_reason": "ok"},
-                    },
-                    "errors": [],
-                    "hints": [],
+                    "id": cid,
+                    "source_title": payload.get("source_title", ""),
+                    "market_title": payload.get("market_title", ""),
+                    "match_score": payload.get("match_score", 0.0),
+                    "expected_profit_usd": payload.get("expected_profit_usd", 0.0),
                 }
 
             env = {
@@ -84,7 +121,11 @@ class MinerSeedPoolTests(unittest.TestCase):
             }
             with patch.dict("os.environ", env, clear=False):
                 with patch.object(miner_seed_pool, "_run_rpa_page", return_value={"ok": True, "rows": [fake_page_row], "reason": "ok"}):
-                    with patch.object(miner_seed_pool, "fetch_live_miner_candidates", side_effect=_fake_fetch) as mocked_fetch:
+                    with patch.object(miner_seed_pool, "_search_rakuten", side_effect=_fake_search), patch.object(
+                        miner_seed_pool, "_search_yahoo", side_effect=_fake_search
+                    ), patch.object(miner_seed_pool, "get_liquidity_signal", side_effect=_fake_liquidity), patch.object(
+                        miner_seed_pool, "create_miner_candidate", side_effect=_fake_create
+                    ):
                         payload = miner_seed_pool.run_seeded_fetch(
                             category_query="watch",
                             source_sites=["rakuten", "yahoo"],
@@ -107,11 +148,9 @@ class MinerSeedPoolTests(unittest.TestCase):
             self.assertGreaterEqual(int(payload.get("created_count", 0)), 1)
             self.assertTrue(bool(payload.get("seed_pool")))
             self.assertEqual(str(payload.get("query")), "watch")
-            self.assertGreaterEqual(mocked_fetch.call_count, 2)
-            self.assertTrue(any(bool(call.kwargs.get("run_rpa_refresh", False)) for call in mocked_fetch.call_args_list))
-            self.assertTrue(any(not bool(call.kwargs.get("run_rpa_refresh", True)) for call in mocked_fetch.call_args_list))
-            self.assertTrue(any(not bool(call.kwargs.get("persist_candidates", True)) for call in mocked_fetch.call_args_list))
-            self.assertTrue(any(bool(call.kwargs.get("persist_candidates", False)) for call in mocked_fetch.call_args_list))
+            timed = payload.get("timed_fetch", {}) if isinstance(payload, dict) else {}
+            self.assertGreaterEqual(int(timed.get("stage1_pass_total", 0)), 1)
+            self.assertGreaterEqual(int(timed.get("stage2_runs", 0)), 1)
 
     def test_taken_seed_is_reusable_and_pool_does_not_shrink(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -165,15 +204,8 @@ class MinerSeedPoolTests(unittest.TestCase):
                 "aliases": ["sneakers", "sneaker shoes"],
             }
 
-            def _fake_fetch(**kwargs):
-                return {
-                    "created_count": 0,
-                    "created_ids": [],
-                    "created": [],
-                    "fetched": {},
-                    "errors": [],
-                    "hints": [],
-                }
+            def _empty_search(*args, **kwargs):
+                return [], {"status": 200, "cache_hit": False}
 
             env = {
                 "DB_BACKEND": "sqlite",
@@ -188,7 +220,9 @@ class MinerSeedPoolTests(unittest.TestCase):
             ), patch.object(
                 miner_seed_pool, "_run_rpa_page", return_value={"ok": True, "rows": [], "reason": "ok"}
             ) as mocked_rpa, patch.object(
-                miner_seed_pool, "fetch_live_miner_candidates", side_effect=_fake_fetch
+                miner_seed_pool, "_search_rakuten", side_effect=_empty_search
+            ), patch.object(
+                miner_seed_pool, "_search_yahoo", side_effect=_empty_search
             ):
                 payload = miner_seed_pool.run_seeded_fetch(
                     category_query="sneakers",
@@ -331,7 +365,7 @@ class MinerSeedPoolTests(unittest.TestCase):
             self.assertEqual(len(rows), 1)
             self.assertEqual(str(rows[0].get("seed_key")), "OLDERSEED")
 
-    def test_take_seeds_keeps_trailing_new_variant_as_distinct_seed(self) -> None:
+    def test_take_seeds_normalizes_trailing_new_variant_and_dedupes_existing_rows(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             db_path = Path(tmp) / "seed_pool_variant.db"
             settings = _dummy_settings(db_path)
@@ -381,10 +415,16 @@ class MinerSeedPoolTests(unittest.TestCase):
                         take_count=1,
                         now_ts=now_ts,
                     )
+                    remaining = conn.execute(
+                        "SELECT seed_query, seed_key FROM miner_seed_pool WHERE category_key = ?",
+                        ("sneakers",),
+                    ).fetchall()
 
             self.assertEqual(len(rows), 1)
-            self.assertIn(str(rows[0].get("seed_key")), {"DD1391100", "DD1391100NEW"})
+            self.assertEqual(str(rows[0].get("seed_key")), "DD1391100")
+            self.assertEqual(str(rows[0].get("seed_query")), "DD1391-100")
             self.assertEqual(int(skipped), 0)
+            self.assertEqual(len(remaining), 1)
 
     def test_get_seed_pool_status_returns_current_snapshot_without_refill(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -420,6 +460,279 @@ class MinerSeedPoolTests(unittest.TestCase):
             self.assertGreaterEqual(int(seed_pool.get("available_after_refill", 0)), 1)
             self.assertGreaterEqual(int(seed_pool.get("selected_seed_count", 0)), 1)
             self.assertIn(str(refill.get("reason", "")), {"snapshot", "threshold_not_reached", "refilled"})
+
+    def test_reset_seed_pool_category_state_clears_wait_state_and_page_history(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            db_path = Path(tmp) / "seed_pool_reset.db"
+            settings = _dummy_settings(db_path)
+            now_ts = 1_700_000_000
+            with patch.dict("os.environ", {"DB_BACKEND": "sqlite"}, clear=False):
+                with connect(settings.db_path) as conn:
+                    init_db(conn)
+                    inserted = miner_seed_pool._insert_seed_rows(
+                        conn,
+                        category_key="watch",
+                        rows=[
+                            {
+                                "seed_query": "CASIO GW-M5610U-1JF",
+                                "source_title": "seed",
+                                "source_item_url": "",
+                                "source_rank": 1,
+                                "metadata": {},
+                            }
+                        ],
+                        ttl_days=7,
+                    )
+                    self.assertEqual(inserted, 1)
+                    conn.execute(
+                        """
+                        INSERT INTO miner_seed_refill_state (
+                            category_key, last_refill_at, last_refill_status, last_refill_message,
+                            last_rank_checked, cooldown_until, updated_at
+                        )
+                        VALUES (?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        (
+                            "watch",
+                            miner_seed_pool.utc_iso(now_ts - 600),
+                            "rank_limit_cooldown",
+                            "watch: cooldown active",
+                            2000,
+                            miner_seed_pool.utc_iso(now_ts + 86400),
+                            miner_seed_pool.utc_iso(now_ts - 600),
+                        ),
+                    )
+                    conn.execute(
+                        """
+                        INSERT INTO miner_seed_refill_pages (
+                            category_key, query_key, page_offset, page_size, fetched_at, result_count, new_seed_count, updated_at
+                        )
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        (
+                            "watch",
+                            "watch",
+                            0,
+                            50,
+                            miner_seed_pool.utc_iso(now_ts - 300),
+                            50,
+                            5,
+                            miner_seed_pool.utc_iso(now_ts - 300),
+                        ),
+                    )
+                    conn.commit()
+
+                payload = miner_seed_pool.reset_seed_pool_category_state(
+                    category_query="watch",
+                    settings=settings,
+                )
+
+                self.assertEqual(str(payload.get("category_key")), "watch")
+                self.assertGreaterEqual(int(payload.get("cleared_page_windows", 0)), 1)
+                self.assertTrue(bool(payload.get("had_refill_state")))
+                self.assertEqual(int(payload.get("available_after", 0)), 1)
+
+                with connect(settings.db_path) as conn:
+                    init_db(conn)
+                    row_state = conn.execute(
+                        "SELECT 1 FROM miner_seed_refill_state WHERE category_key = ?",
+                        ("watch",),
+                    ).fetchone()
+                    row_pages = conn.execute(
+                        "SELECT COUNT(*) AS c FROM miner_seed_refill_pages WHERE category_key = ?",
+                        ("watch",),
+                    ).fetchone()
+                    row_pool = conn.execute(
+                        "SELECT COUNT(*) AS c FROM miner_seed_pool WHERE category_key = ?",
+                        ("watch",),
+                    ).fetchone()
+
+                self.assertIsNone(row_state)
+                self.assertEqual(int(row_pages["c"] if row_pages else 0), 0)
+                self.assertEqual(int(row_pool["c"] if row_pool else 0), 1)
+
+    def test_refill_filters_accessory_title(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            db_path = Path(tmp) / "seed_pool_accessory.db"
+            settings = _dummy_settings(db_path)
+            fake_row = {
+                "query": "watch",
+                "sold_90d_count": 10,
+                "sold_price_min": 120.0,
+                "metadata": {
+                    "filtered_result_rows": [
+                        {"title": "CASIO G-SHOCK replacement band", "item_url": "https://www.ebay.com/itm/123456789012", "rank": 1},
+                    ]
+                },
+            }
+            with patch.dict(
+                "os.environ",
+                {
+                    "DB_BACKEND": "sqlite",
+                    "MINER_SEED_POOL_REFILL_THRESHOLD": "60",
+                    "MINER_SEED_POOL_PAGE_SIZE": "50",
+                    "MINER_SEED_POOL_MAX_PAGES": "1",
+                    "MINER_SEED_POOL_TARGET_COUNT": "5",
+                    "MINER_SEED_API_SUPPLEMENT_ENABLED": "0",
+                },
+                clear=False,
+            ), patch.object(miner_seed_pool, "_run_rpa_page", return_value={"ok": True, "rows": [fake_row], "reason": "ok"}):
+                with connect(settings.db_path) as conn:
+                    init_db(conn)
+                    summary = miner_seed_pool._refill_seed_pool(
+                        conn,
+                        category_key="watch",
+                        category_label="腕時計",
+                        category_row={"seed_brands": ["CASIO"]},
+                    )
+
+            self.assertEqual(int(summary.get("added_count", 0)), 0)
+            self.assertGreaterEqual(int(summary.get("accessory_filtered_count", 0)), 1)
+
+    def test_refill_uses_api_backfill_when_title_is_weak(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            db_path = Path(tmp) / "seed_pool_api_backfill.db"
+            settings = _dummy_settings(db_path)
+            fake_row = {
+                "query": "watch",
+                "sold_90d_count": 10,
+                "sold_price_min": 150.0,
+                "metadata": {
+                    "filtered_result_rows": [
+                        {"title": "Seiko watch new", "item_url": "https://www.ebay.com/itm/123456789012", "rank": 1},
+                    ]
+                },
+            }
+            with patch.dict(
+                "os.environ",
+                {
+                    "DB_BACKEND": "sqlite",
+                    "MINER_SEED_POOL_REFILL_THRESHOLD": "60",
+                    "MINER_SEED_POOL_PAGE_SIZE": "50",
+                    "MINER_SEED_POOL_MAX_PAGES": "1",
+                    "MINER_SEED_POOL_TARGET_COUNT": "5",
+                    "MINER_SEED_API_SUPPLEMENT_ENABLED": "1",
+                },
+                clear=False,
+            ), patch.object(
+                miner_seed_pool, "_run_rpa_page", return_value={"ok": True, "rows": [fake_row], "reason": "ok"}
+            ), patch.object(
+                miner_seed_pool,
+                "_api_seed_candidates_from_item_url",
+                return_value=(["SEIKO SBDC101"], "ok"),
+            ):
+                with connect(settings.db_path) as conn:
+                    init_db(conn)
+                    summary = miner_seed_pool._refill_seed_pool(
+                        conn,
+                        category_key="watch",
+                        category_label="腕時計",
+                        category_row={"seed_brands": ["SEIKO"]},
+                    )
+
+            self.assertGreaterEqual(int(summary.get("added_count", 0)), 1)
+            backfill = summary.get("seed_api_backfill", {})
+            self.assertGreaterEqual(int(backfill.get("attempts", 0)), 1)
+            self.assertGreaterEqual(int(backfill.get("hits", 0)), 1)
+
+    def test_refill_stops_on_rpa_timeout_guard(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            db_path = Path(tmp) / "seed_pool_timeout_guard.db"
+            settings = _dummy_settings(db_path)
+            with patch.dict(
+                "os.environ",
+                {
+                    "DB_BACKEND": "sqlite",
+                    "MINER_SEED_POOL_REFILL_THRESHOLD": "60",
+                    "MINER_SEED_POOL_PAGE_SIZE": "50",
+                    "MINER_SEED_POOL_MAX_PAGES": "3",
+                    "MINER_SEED_POOL_TARGET_COUNT": "100",
+                    "MINER_SEED_POOL_MAX_TIMEOUT_PAGES_PER_RUN": "1",
+                },
+                clear=False,
+            ), patch.object(
+                miner_seed_pool,
+                "_run_rpa_page",
+                return_value={"ok": False, "rows": [], "reason": "rpa_failed", "returncode": -9},
+            ):
+                with connect(settings.db_path) as conn:
+                    init_db(conn)
+                    summary = miner_seed_pool._refill_seed_pool(
+                        conn,
+                        category_key="watch",
+                        category_label="腕時計",
+                        category_row={},
+                    )
+
+        self.assertEqual(str(summary.get("reason")), "rpa_timeout_guard")
+        self.assertGreaterEqual(int(summary.get("rpa_timeout_pages", 0)), 1)
+
+    def test_timebox_respects_min_stage1_attempts(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            db_path = Path(tmp) / "seed_pool_min_attempts.db"
+            settings = _dummy_settings(db_path)
+            fake_page_row = {
+                "query": "watch",
+                "sold_90d_count": 12,
+                "sold_price_min": 120.0,
+                "metadata": {
+                    "filtered_result_rows": [
+                        {"title": "CASIO GW-M5610U-1JF watch", "rank": 1},
+                        {"title": "SEIKO SBDC101 watch", "rank": 2},
+                        {"title": "CITIZEN NB1060-12L watch", "rank": 3},
+                    ]
+                },
+            }
+
+            def _empty_search(*args, **kwargs):
+                return [], {"status": 200, "cache_hit": False}
+
+            monotonic_counter = {"value": 0}
+
+            def _fake_monotonic() -> float:
+                monotonic_counter["value"] += 1
+                return float(monotonic_counter["value"] * 11)
+
+            env = {
+                "DB_BACKEND": "sqlite",
+                "MINER_SEED_POOL_REFILL_THRESHOLD": "60",
+                "MINER_SEED_POOL_RUN_BATCH_SIZE": "3",
+                "MINER_SEED_POOL_PAGE_SIZE": "50",
+                "MINER_SEED_POOL_MAX_PAGES": "1",
+                "MINER_SEED_POOL_TARGET_COUNT": "3",
+                "MINER_TIMED_FETCH_MIN_STAGE1_ATTEMPTS": "2",
+            }
+            with patch.dict("os.environ", env, clear=False), patch.object(
+                miner_seed_pool, "_run_rpa_page", return_value={"ok": True, "rows": [fake_page_row], "reason": "ok"}
+            ), patch.object(
+                miner_seed_pool, "_search_rakuten", side_effect=_empty_search
+            ), patch.object(
+                miner_seed_pool, "_search_yahoo", side_effect=_empty_search
+            ), patch.object(
+                miner_seed_pool.time, "monotonic", side_effect=_fake_monotonic
+            ):
+                payload = miner_seed_pool.run_seeded_fetch(
+                    category_query="watch",
+                    source_sites=["rakuten", "yahoo"],
+                    market_site="ebay",
+                    limit_per_site=10,
+                    max_candidates=10,
+                    min_match_score=0.7,
+                    min_profit_usd=0.01,
+                    min_margin_rate=0.03,
+                    require_in_stock=True,
+                    timeout=8,
+                    timed_mode=True,
+                    min_target_candidates=1,
+                    timebox_sec=10,
+                    max_passes=3,
+                    continue_after_target=True,
+                    settings=settings,
+                )
+
+        timed = payload.get("timed_fetch", {}) if isinstance(payload, dict) else {}
+        self.assertEqual(str(timed.get("stop_reason", "")), "timebox_reached")
+        self.assertGreaterEqual(int(timed.get("passes_run", 0)), 2)
 
 
 if __name__ == "__main__":

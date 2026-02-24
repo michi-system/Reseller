@@ -1,0 +1,1892 @@
+[
+  {
+    "sec": 2.043,
+    "fetch_btn": "探索中... 3%",
+    "headline": "探索中 3%",
+    "progress_label": "A: Seed補充 / 準備中",
+    "progress_percent": "3%",
+    "progress_detail": "段階:A: Seed補充",
+    "progress_fill": "3.4%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 3.082,
+    "fetch_btn": "探索中... 5%",
+    "headline": "探索中 5%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "5%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:1s",
+    "progress_fill": "4.8%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 3.858,
+    "fetch_btn": "探索中... 6%",
+    "headline": "探索中 6%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "6%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:1s",
+    "progress_fill": "6.3%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 4.638,
+    "fetch_btn": "探索中... 8%",
+    "headline": "探索中 8%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "8%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:2s",
+    "progress_fill": "7.9%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 5.674,
+    "fetch_btn": "探索中... 10%",
+    "headline": "探索中 10%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "10%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:3s",
+    "progress_fill": "9.6%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 6.45,
+    "fetch_btn": "探索中... 11%",
+    "headline": "探索中 11%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "11%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:4s",
+    "progress_fill": "11.3%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 7.229,
+    "fetch_btn": "探索中... 13%",
+    "headline": "探索中 13%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "13%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:5s",
+    "progress_fill": "13%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 8.0,
+    "fetch_btn": "探索中... 15%",
+    "headline": "探索中 15%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "15%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:6s",
+    "progress_fill": "14.8%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 9.033,
+    "fetch_btn": "探索中... 17%",
+    "headline": "探索中 17%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "17%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:7s",
+    "progress_fill": "16.5%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 9.827,
+    "fetch_btn": "探索中... 18%",
+    "headline": "探索中 18%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "18%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:7s",
+    "progress_fill": "18.3%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 10.61,
+    "fetch_btn": "探索中... 20%",
+    "headline": "探索中 20%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "20%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:8s",
+    "progress_fill": "20%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 11.442,
+    "fetch_btn": "探索中... 22%",
+    "headline": "探索中 22%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "22%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:9s",
+    "progress_fill": "21.8%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 12.241,
+    "fetch_btn": "探索中... 23%",
+    "headline": "探索中 23%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "23%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:10s",
+    "progress_fill": "23.5%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 13.283,
+    "fetch_btn": "探索中... 25%",
+    "headline": "探索中 25%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "25%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:11s",
+    "progress_fill": "25.2%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 14.06,
+    "fetch_btn": "探索中... 27%",
+    "headline": "探索中 27%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "27%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:12s",
+    "progress_fill": "27%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 14.83,
+    "fetch_btn": "探索中... 29%",
+    "headline": "探索中 29%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "29%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:12s",
+    "progress_fill": "28.7%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 15.865,
+    "fetch_btn": "探索中... 30%",
+    "headline": "探索中 30%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "30%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:13s",
+    "progress_fill": "30.5%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 16.637,
+    "fetch_btn": "探索中... 32%",
+    "headline": "探索中 32%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "32%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:14s",
+    "progress_fill": "32.2%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 17.406,
+    "fetch_btn": "探索中... 34%",
+    "headline": "探索中 34%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "34%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:15s",
+    "progress_fill": "33.9%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 18.43,
+    "fetch_btn": "探索中... 36%",
+    "headline": "探索中 36%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "36%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:16s",
+    "progress_fill": "35.7%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 19.201,
+    "fetch_btn": "探索中... 37%",
+    "headline": "探索中 37%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "37%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:17s",
+    "progress_fill": "37.4%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 19.972,
+    "fetch_btn": "探索中... 39%",
+    "headline": "探索中 39%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "39%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:18s",
+    "progress_fill": "39.2%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 20.747,
+    "fetch_btn": "探索中... 41%",
+    "headline": "探索中 41%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "41%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:18s",
+    "progress_fill": "40.9%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 21.779,
+    "fetch_btn": "探索中... 43%",
+    "headline": "探索中 43%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "43%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:19s",
+    "progress_fill": "42.7%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 22.552,
+    "fetch_btn": "探索中... 44%",
+    "headline": "探索中 44%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "44%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:20s",
+    "progress_fill": "44.4%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 23.321,
+    "fetch_btn": "探索中... 46%",
+    "headline": "探索中 46%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "46%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:21s",
+    "progress_fill": "46.1%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 24.355,
+    "fetch_btn": "探索中... 48%",
+    "headline": "探索中 48%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "48%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:22s",
+    "progress_fill": "47.9%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 25.124,
+    "fetch_btn": "探索中... 50%",
+    "headline": "探索中 50%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "50%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:23s",
+    "progress_fill": "49.6%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 25.917,
+    "fetch_btn": "探索中... 51%",
+    "headline": "探索中 51%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "51%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:24s",
+    "progress_fill": "51.4%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 26.689,
+    "fetch_btn": "探索中... 53%",
+    "headline": "探索中 53%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "53%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:24s",
+    "progress_fill": "53.1%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 27.727,
+    "fetch_btn": "探索中... 55%",
+    "headline": "探索中 55%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "55%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:25s",
+    "progress_fill": "54.9%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 28.507,
+    "fetch_btn": "探索中... 57%",
+    "headline": "探索中 57%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "57%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:26s",
+    "progress_fill": "56.6%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 29.276,
+    "fetch_btn": "探索中... 58%",
+    "headline": "探索中 58%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "58%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:27s",
+    "progress_fill": "58.3%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 30.303,
+    "fetch_btn": "探索中... 60%",
+    "headline": "探索中 60%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "60%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:28s",
+    "progress_fill": "60.1%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 31.075,
+    "fetch_btn": "探索中... 62%",
+    "headline": "探索中 62%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "62%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:29s",
+    "progress_fill": "61.8%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 31.847,
+    "fetch_btn": "探索中... 64%",
+    "headline": "探索中 64%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "64%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:29s",
+    "progress_fill": "63.6%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 32.875,
+    "fetch_btn": "探索中... 65%",
+    "headline": "探索中 65%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "65%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:30s",
+    "progress_fill": "65.3%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 33.647,
+    "fetch_btn": "探索中... 67%",
+    "headline": "探索中 67%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "67%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:31s",
+    "progress_fill": "67.1%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 34.419,
+    "fetch_btn": "探索中... 69%",
+    "headline": "探索中 69%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "69%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:32s",
+    "progress_fill": "68.8%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 35.189,
+    "fetch_btn": "探索中... 71%",
+    "headline": "探索中 71%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "71%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:33s",
+    "progress_fill": "70.5%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 36.215,
+    "fetch_btn": "探索中... 72%",
+    "headline": "探索中 72%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "72%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:34s",
+    "progress_fill": "72.3%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 36.99,
+    "fetch_btn": "探索中... 74%",
+    "headline": "探索中 74%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "74%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:35s",
+    "progress_fill": "74%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 37.764,
+    "fetch_btn": "探索中... 76%",
+    "headline": "探索中 76%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "76%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:35s",
+    "progress_fill": "75.8%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 38.814,
+    "fetch_btn": "探索中... 78%",
+    "headline": "探索中 78%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "78%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:36s",
+    "progress_fill": "77.5%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 39.589,
+    "fetch_btn": "探索中... 79%",
+    "headline": "探索中 79%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "79%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:37s",
+    "progress_fill": "79.3%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 40.358,
+    "fetch_btn": "探索中... 81%",
+    "headline": "探索中 81%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "81%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:38s",
+    "progress_fill": "81%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 41.131,
+    "fetch_btn": "探索中... 83%",
+    "headline": "探索中 83%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "83%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:39s",
+    "progress_fill": "82.7%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 42.163,
+    "fetch_btn": "探索中... 84%",
+    "headline": "探索中 84%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "84%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:40s",
+    "progress_fill": "84.5%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 42.936,
+    "fetch_btn": "探索中... 86%",
+    "headline": "探索中 86%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "86%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:41s",
+    "progress_fill": "86.2%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 43.71,
+    "fetch_btn": "探索中... 88%",
+    "headline": "探索中 88%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "88%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:41s",
+    "progress_fill": "88%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 44.744,
+    "fetch_btn": "探索中... 90%",
+    "headline": "探索中 90%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "90%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:42s",
+    "progress_fill": "89.7%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 45.513,
+    "fetch_btn": "探索中... 91%",
+    "headline": "探索中 91%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "91%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:43s",
+    "progress_fill": "91.1%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 46.287,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:44s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 47.317,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:45s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 48.097,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:46s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 49.655,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:47s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 50.689,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:48s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 51.467,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:49s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 52.241,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:50s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 53.27,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:51s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 54.047,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:52s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 55.594,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:53s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 56.621,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:54s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 57.401,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:55s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 58.173,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:56s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 59.204,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:57s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 59.975,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:58s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 61.79,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:59s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 62.562,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:60s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 63.339,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:61s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 64.107,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:62s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 65.142,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:63s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 66.697,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:64s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 67.724,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:65s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 68.499,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:66s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 69.279,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:67s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 70.049,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:68s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 71.086,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:69s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 72.642,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:70s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 73.697,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:71s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 74.469,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:72s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 75.243,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:73s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 76.017,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:74s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 77.046,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:75s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 78.593,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:76s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 79.619,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:77s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 80.389,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:78s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 81.161,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:79s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 81.936,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:80s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 83.74,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:81s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 84.514,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:82s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 85.536,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:83s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 86.313,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:84s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 87.091,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:85s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 88.117,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:86s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 89.679,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:87s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 90.448,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:88s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 91.482,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:89s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 92.25,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:90s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 93.024,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:91s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 94.05,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:92s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 95.592,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:93s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 96.622,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:94s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 97.404,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:95s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 98.18,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:96s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 98.95,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:97s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 100.751,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:98s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 101.52,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:99s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 102.551,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:100s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 103.322,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:101s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 104.096,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:102s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 105.124,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:103s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 106.665,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:104s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 107.435,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:105s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 108.466,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:106s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 109.24,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:107s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 110.03,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:108s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 111.059,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:109s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 112.615,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:110s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 113.396,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:111s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 114.425,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:112s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 115.197,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:113s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 115.965,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:114s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 117.779,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:115s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 118.549,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:116s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 119.588,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:117s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 120.363,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:118s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 121.132,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:119s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 121.905,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:120s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 123.72,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:121s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 124.492,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:122s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 125.524,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:123s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 126.289,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:124s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 127.06,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:125s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 127.831,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:126s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 129.645,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:127s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 130.415,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:128s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 131.443,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:129s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 132.216,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:130s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 132.995,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:131s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 134.81,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:132s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 135.492,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:133s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 136.522,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:134s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 137.295,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:135s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 138.077,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:136s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 139.113,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:137s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 140.662,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:138s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 141.429,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:139s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 142.482,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:140s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 143.257,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:141s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 144.029,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:142s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 145.065,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:143s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 146.602,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:144s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 147.63,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:145s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 148.404,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:146s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 149.175,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:147s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 149.947,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:148s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 151.751,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:149s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 152.522,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:150s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 153.557,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:151s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 154.329,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:152s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 155.105,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:153s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 155.881,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:154s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 157.678,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:155s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 158.448,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:156s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 159.479,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:157s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 160.254,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:158s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 161.026,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:159s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 162.048,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:160s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 163.586,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:161s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 164.628,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:162s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 165.4,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:163s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 166.174,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:164s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 166.956,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:165s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 168.759,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:166s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 169.531,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:167s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 170.561,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:168s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 171.333,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:169s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 172.101,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:170s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 173.133,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:171s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 174.689,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:172s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 175.465,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:173s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 176.495,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:174s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 177.306,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:175s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 178.083,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:176s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 178.851,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:177s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 180.667,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:178s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 181.443,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:179s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 182.471,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "92%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:180s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  }
+]

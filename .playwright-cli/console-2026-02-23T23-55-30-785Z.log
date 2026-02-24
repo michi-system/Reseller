@@ -1,0 +1,2 @@
+[     625ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:8012/favicon.ico:0
+[  307476ms] [ERROR] Failed to load resource: net::ERR_EMPTY_RESPONSE @ http://127.0.0.1:8012/v1/miner/queue?status=pending&limit=5&min_profit_usd=0.01&min_margin_rate=0.03&min_match_score=0.72&condition=new:0

@@ -21,7 +21,7 @@ from .live_miner_fetch import (
     backfill_candidate_market_images,
     get_rpa_progress_snapshot,
 )
-from .miner_seed_pool import get_seed_pool_status, run_seeded_fetch
+from .miner_seed_pool import get_seed_pool_status, reset_seed_pool_category_state, run_seeded_fetch
 from .profit import ProfitInput, calculate_profit
 from .miner import (
     approve_miner_candidate,
@@ -90,6 +90,12 @@ def _default_fetch_progress() -> Dict[str, Any]:
         "skipped_low_quality_count": 0,
         "select_min_seed_score": 0,
         "elapsed_sec": 0.0,
+        "flow_stage": "",
+        "flow_stage_label": "",
+        "flow_stage_index": 0,
+        "flow_stage_total": 0,
+        "pool_threshold": 0,
+        "pool_gate_passed": False,
     }
 
 
@@ -598,8 +604,8 @@ class ApiHandler(BaseHTTPRequestHandler):
             raise ValueError("source_sites must be an array")
         timed_mode = _to_bool(body.get("timed_mode", True), True)
         min_target_candidates = max(1, _to_int(body.get("target_min_candidates", 3), 3))
-        timebox_sec = max(10, _to_int(body.get("fetch_timebox_sec", 60), 60))
-        max_passes = max(1, min(12, _to_int(body.get("fetch_max_passes", 4), 4)))
+        timebox_sec = max(10, _to_int(body.get("fetch_timebox_sec", 300), 300))
+        max_passes = max(1, min(40, _to_int(body.get("fetch_max_passes", 20), 20)))
         continue_after_target = _to_bool(body.get("continue_after_target", True), True)
         fetch_kwargs = {
             "limit_per_site": int(body.get("limit_per_site", 20)),
@@ -630,6 +636,10 @@ class ApiHandler(BaseHTTPRequestHandler):
                 "selected_seed_count": 0,
                 "pool_available": 0,
                 "refill_reason": "",
+                "flow_stage": "A",
+                "flow_stage_label": "A: seed補充",
+                "flow_stage_index": 1,
+                "flow_stage_total": 3,
             }
         )
 
@@ -672,6 +682,12 @@ class ApiHandler(BaseHTTPRequestHandler):
                 "skipped_low_quality_count": max(0, _to_int(update.get("skipped_low_quality_count"), 0)),
                 "select_min_seed_score": max(0, _to_int(update.get("select_min_seed_score"), 0)),
                 "elapsed_sec": round(max(0.0, _to_float(update.get("elapsed_sec"), 0.0)), 3),
+                "flow_stage": str(update.get("flow_stage", "") or ""),
+                "flow_stage_label": str(update.get("flow_stage_label", "") or ""),
+                "flow_stage_index": max(0, _to_int(update.get("flow_stage_index"), 0)),
+                "flow_stage_total": max(0, _to_int(update.get("flow_stage_total"), 0)),
+                "pool_threshold": max(0, _to_int(update.get("pool_threshold"), 0)),
+                "pool_gate_passed": bool(_to_bool(update.get("pool_gate_passed"), False)),
             }
             _set_fetch_progress(row)
 
@@ -758,6 +774,10 @@ class ApiHandler(BaseHTTPRequestHandler):
                     "elapsed_sec": round(
                         max(0.0, _to_float((payload.get("timed_fetch", {}) or {}).get("elapsed_sec"), 0.0)), 3
                     ),
+                    "flow_stage": "C",
+                    "flow_stage_label": "C: eBay最終再判定",
+                    "flow_stage_index": 3,
+                    "flow_stage_total": 3,
                     "ended_at_epoch": int(time.time()),
                 }
             )
@@ -768,6 +788,10 @@ class ApiHandler(BaseHTTPRequestHandler):
                     "phase": "failed",
                     "message": f"探索失敗: {err}",
                     "progress_percent": 100.0,
+                    "flow_stage": "",
+                    "flow_stage_label": "",
+                    "flow_stage_index": 0,
+                    "flow_stage_total": 3,
                     "ended_at_epoch": int(time.time()),
                 }
             )
@@ -991,6 +1015,18 @@ class ApiHandler(BaseHTTPRequestHandler):
 
             if miner_api_path == "/v1/miner/fetch":
                 self._handle_miner_fetch_post(body)
+                return
+
+            if miner_api_path == "/v1/miner/seed-pool-reset":
+                category = str(body.get("category", "") or "").strip()
+                if not category:
+                    category = str(body.get("query", "") or "").strip()
+                clear_pool = _to_bool(body.get("clear_pool", False), False)
+                payload = reset_seed_pool_category_state(
+                    category_query=category,
+                    clear_pool=clear_pool,
+                )
+                self._send(HTTPStatus.OK, payload)
                 return
 
             if self._handle_miner_candidate_action_post(path=miner_api_path, body=body):

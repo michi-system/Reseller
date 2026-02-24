@@ -1,0 +1,92 @@
+[
+  {
+    "sec": 2.104,
+    "fetch_btn": "探索中... 3%",
+    "headline": "探索中 3% /  20/20",
+    "progress_label": "C: eBay最終再判定 / 準備中 (20/20)",
+    "progress_percent": "3%",
+    "progress_detail": "段階:C: eBay最終再判定 / 探索語:watch / 除外トップ:曖昧型番タイトル 165件 / 経過:330s",
+    "progress_fill": "3.4%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 3.153,
+    "fetch_btn": "探索中... 5%",
+    "headline": "探索中 5%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "5%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:1s",
+    "progress_fill": "4.8%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 3.931,
+    "fetch_btn": "探索中... 6%",
+    "headline": "探索中 6%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "6%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:2s",
+    "progress_fill": "6.3%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 4.705,
+    "fetch_btn": "探索中... 8%",
+    "headline": "探索中 8%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "8%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:3s",
+    "progress_fill": "7.9%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 5.745,
+    "fetch_btn": "探索中... 10%",
+    "headline": "探索中 10%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "10%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:4s",
+    "progress_fill": "9.6%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 6.525,
+    "fetch_btn": "探索中... 11%",
+    "headline": "探索中 11%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "11%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:4s",
+    "progress_fill": "11.3%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 7.308,
+    "fetch_btn": "探索中... 13%",
+    "headline": "探索中 13%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "13%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:5s",
+    "progress_fill": "13.1%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 8.143,
+    "fetch_btn": "探索中... 96%",
+    "headline": "今回の探索: 追加 0件 / 探索完走",
+    "progress_label": "C: eBay最終再判定 / 結果集計中",
+    "progress_percent": "96%",
+    "progress_detail": "段階:C: eBay最終再判定",
+    "progress_fill": "96%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 11.265,
+    "fetch_btn": "探索開始",
+    "headline": "今回の探索: 追加 0件 / 探索完走",
+    "progress_label": "C: eBay最終再判定 / 完了",
+    "progress_percent": "100%",
+    "progress_detail": "段階:C: eBay最終再判定 / 更新:0s",
+    "progress_fill": "100%",
+    "progress_hidden": false
+  }
+]

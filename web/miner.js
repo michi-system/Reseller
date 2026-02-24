@@ -106,6 +106,7 @@ const FALLBACK_CATEGORIES = [
 const refs = {
   fetchQuery: document.getElementById("fetchQuery"),
   fetchBtn: document.getElementById("fetchBtn"),
+  resetSeedBtn: document.getElementById("resetSeedBtn"),
   openSettingsBtn: document.getElementById("openSettingsBtn"),
   settingsOverlay: document.getElementById("settingsOverlay"),
   closeSettingsBtn: document.getElementById("closeSettingsBtn"),
@@ -173,14 +174,17 @@ const refs = {
   decisionReasons: document.getElementById("decisionReasons"),
   riskFlags: document.getElementById("riskFlags"),
   fetchStatusHeadline: document.getElementById("fetchStatusHeadline"),
-  headerSeedStatus: document.getElementById("headerSeedStatus"),
   seedPoolSummary: document.getElementById("seedPoolSummary"),
   fetchStatsRows: document.getElementById("fetchStatsRows"),
+  selectedSampleLogHeadline: document.getElementById("selectedSampleLogHeadline"),
+  selectedSampleLogSummary: document.getElementById("selectedSampleLogSummary"),
+  selectedSampleLogRows: document.getElementById("selectedSampleLogRows"),
   rpaProgressWrap: document.getElementById("rpaProgressWrap"),
   rpaProgressLabel: document.getElementById("rpaProgressLabel"),
   rpaProgressPercent: document.getElementById("rpaProgressPercent"),
   rpaProgressFill: document.getElementById("rpaProgressFill"),
-  rpaProgressDetail: document.getElementById("rpaProgressDetail"),
+  rpaProgressDetailTop: document.getElementById("rpaProgressDetailTop"),
+  rpaProgressDetailBottom: document.getElementById("rpaProgressDetailBottom"),
   calcDigest: document.getElementById("calcDigest"),
   calcData: document.getElementById("calcData"),
   rawJson: document.getElementById("rawJson"),
@@ -208,7 +212,6 @@ const state = {
   fetchStartedAtEpochSec: 0,
   fetchProgressRunId: "",
   fetchProgressSawRunning: false,
-  optimisticProgress: 0,
   displayedProgress: 0,
   lastFetchProgressSource: "",
   seedPoolStatusSeq: 0,
@@ -305,10 +308,76 @@ function resolveApiBase() {
 
 const API_BASE = resolveApiBase();
 
-function showToast(message) {
-  refs.toast.textContent = message;
-  refs.toast.classList.add("show");
-  window.setTimeout(() => refs.toast.classList.remove("show"), 2200);
+function normalizeToastInput(input) {
+  if (typeof input === "string" || typeof input === "number") {
+    return {
+      title: "",
+      message: String(input),
+      lines: [],
+      tone: "info",
+    };
+  }
+  const raw = (input && typeof input === "object") ? input : {};
+  const title = String(raw.title || "").trim();
+  const message = String(raw.message || "").trim();
+  const lines = Array.isArray(raw.lines)
+    ? raw.lines.map((row) => String(row || "").trim()).filter(Boolean)
+    : [];
+  const toneRaw = String(raw.tone || "info").trim().toLowerCase();
+  const tone = ["info", "success", "warn", "error"].includes(toneRaw) ? toneRaw : "info";
+  return { title, message, lines, tone };
+}
+
+function showToast(input) {
+  if (!refs.toast) return;
+  const toast = normalizeToastInput(input);
+  const item = document.createElement("article");
+  item.className = `toast-item tone-${toast.tone}`;
+
+  const closeBtn = document.createElement("button");
+  closeBtn.type = "button";
+  closeBtn.className = "toast-close";
+  closeBtn.setAttribute("aria-label", "閉じる");
+  closeBtn.textContent = "×";
+  closeBtn.addEventListener("click", () => {
+    item.remove();
+  });
+
+  const head = document.createElement("div");
+  head.className = "toast-head";
+  if (toast.title) {
+    const title = document.createElement("strong");
+    title.className = "toast-title";
+    title.textContent = toast.title;
+    head.appendChild(title);
+  } else {
+    item.classList.add("no-title");
+  }
+
+  const body = document.createElement("div");
+  body.className = "toast-body";
+  if (toast.lines.length > 0) {
+    const ul = document.createElement("ul");
+    ul.className = "toast-lines";
+    toast.lines.forEach((line) => {
+      const li = document.createElement("li");
+      li.textContent = line;
+      ul.appendChild(li);
+    });
+    body.appendChild(ul);
+  } else {
+    const p = document.createElement("p");
+    p.className = "toast-message";
+    p.textContent = toast.message || toast.title || "";
+    body.appendChild(p);
+  }
+
+  if (toast.title) item.appendChild(head);
+  item.appendChild(closeBtn);
+  item.appendChild(body);
+  item.setAttribute("role", "status");
+  item.setAttribute("aria-live", "polite");
+  refs.toast.prepend(item);
 }
 
 function formatUsd(value) {
@@ -667,10 +736,17 @@ function stopReasonLabel(reason) {
     low_yield_stop: "増分が少ないため停止",
     skipped_no_market_hits: "eBayヒット0でスキップ",
     rpa_daily_limit_reached: "Product Research上限で停止",
-    seed_batch_completed: "Seedバッチを完了",
-    seed_pool_empty: "有効なSeedなし",
+    seed_batch_completed: "seed batchを完了",
+    seed_pool_empty: "有効なseedなし",
     timebox_reached: "時間上限で停止",
     error: "APIエラーで停止",
+    rpa_timeout_guard: "タイムアウト保護で停止",
+    partial_refill: "補充は一部達成",
+    category_cooldown: "カテゴリ補充の待機中",
+    rank_limit_cooldown: "深掘り上限で待機",
+    all_big_words_exhausted: "全big word確認済み",
+    refill_timebox_reached: "補充時間上限で停止",
+    fresh_window_skip: "7日以内ページのみ",
   };
   return map[key] || key;
 }
@@ -707,6 +783,10 @@ function skipReasonLabel(key) {
     skipped_implausible_sold_min: "90日最低異常値",
     skipped_ambiguous_model_title: "曖昧型番タイトル",
     skipped_blocked: "否認ブロック",
+    skipped_fetch_error: "サイト取得エラー",
+    skipped_accessory_title: "付属品タイトル",
+    skipped_invalid_price: "価格データ不備",
+    skipped_duplicates: "重複",
   };
   return map[k] || k || "-";
 }
@@ -729,19 +809,21 @@ function refillReasonLabel(reason) {
   const key = String(reason || "").trim().toLowerCase();
   if (!key) return "不明";
   const map = {
-    snapshot: "現在のSeedプール状態",
-    threshold_not_reached: "補充不要（しきい値以上）",
+    snapshot: "現在のseed pool状態",
+    threshold_not_reached: "補充不要（利用可能seedあり）",
     bootstrap_refilled: "カテゴリ知識で補充",
     refilled: "補充実行",
     target_reached: "目標補充件数に到達",
-    soft_target_reached: "80%到達で補充停止",
     fresh_window_skip: "7日以内ページのみのため補充待機",
-    zero_history_top_rechecked: "空ページ履歴のため先頭を再確認",
     category_cooldown: "カテゴリ補充クールダウン中",
     rank_limit_cooldown: "深掘り上限でクールダウン",
     empty_result_cooldown: "検索結果空で一時停止",
     daily_limit_reached: "Product Research上限到達",
-    empty_result_page: "補充ページ0件（既存Seedで探索継続）",
+    empty_result_page: "補充ページ0件（既存seedで探索継続）",
+    all_big_words_exhausted: "全big word確認済み",
+    refill_timebox_reached: "補充時間上限に到達",
+    rpa_timeout_guard: "補充時のタイムアウト保護で停止",
+    partial_refill: "補充は一部達成",
   };
   return map[key] || key;
 }
@@ -757,71 +839,46 @@ function getSeedPoolView(payload) {
   const seedCountRaw = Number(seedPool.seed_count ?? availableAfter ?? selectedCount ?? 0);
   const seedCount = Number.isFinite(seedCountRaw) ? seedCountRaw : 0;
   const skippedLowQuality = Number(seedPool.skipped_low_quality_count || 0);
+  const reasonKey = String(refill.reason || "").trim().toLowerCase();
   const reason = refillReasonLabel(refill.reason);
   const lastRefillAt = String(refill.last_refill_at || "").trim();
   const cooldownUntil = String(refill.cooldown_until || "").trim();
   const dailyLimitReached = Boolean(payload?.rpa_daily_limit_reached) || Boolean(refill.daily_limit_reached);
   const addedCount = Number(refill.added_count || 0);
   const pageRuns = Array.isArray(refill.page_runs) ? refill.page_runs.length : 0;
+  const hasRefillHistory = Boolean(lastRefillAt) || Boolean(refill.ran) || reasonKey !== "snapshot";
+  const waitingReasons = new Set([
+    "category_cooldown",
+    "rank_limit_cooldown",
+    "empty_result_cooldown",
+    "all_big_words_exhausted",
+    "fresh_window_skip",
+    "daily_limit_reached",
+  ]);
+  const isWaiting = waitingReasons.has(reasonKey);
   return {
     categoryLabel,
     availableAfter,
     selectedCount,
     seedCount,
     skippedLowQuality,
+    reasonKey,
     reason,
     lastRefillAt,
     cooldownUntil,
     dailyLimitReached,
     addedCount,
     pageRuns,
+    hasRefillHistory,
+    isWaiting,
   };
-}
-
-function renderHeaderSeedStatus(payload, { loading = false, failed = false } = {}) {
-  if (!refs.headerSeedStatus) return;
-  const category = String(refs.fetchQuery?.value || "").trim() || "-";
-  if (loading) {
-    refs.headerSeedStatus.classList.remove("warn");
-    refs.headerSeedStatus.innerHTML = `
-      <span class="header-seed-chip">カテゴリ: ${escapeHtml(category)}</span>
-      <span class="header-seed-chip">Seed情報を取得中</span>
-    `;
-    return;
-  }
-  if (failed) {
-    refs.headerSeedStatus.classList.add("warn");
-    refs.headerSeedStatus.innerHTML = `
-      <span class="header-seed-chip">カテゴリ: ${escapeHtml(category)}</span>
-      <span class="header-seed-chip">Seed情報の取得に失敗</span>
-    `;
-    return;
-  }
-  if (!payload || typeof payload !== "object") {
-    refs.headerSeedStatus.classList.remove("warn");
-    refs.headerSeedStatus.innerHTML = `
-      <span class="header-seed-chip">カテゴリ: ${escapeHtml(category)}</span>
-      <span class="header-seed-chip">Seed数: -</span>
-      <span class="header-seed-chip">補充状態: -</span>
-      <span class="header-seed-chip">更新: -</span>
-    `;
-    return;
-  }
-  const view = getSeedPoolView(payload);
-  refs.headerSeedStatus.classList.toggle("warn", Boolean(view.dailyLimitReached));
-  refs.headerSeedStatus.innerHTML = `
-    <span class="header-seed-chip">カテゴリ: ${escapeHtml(view.categoryLabel || category)}</span>
-    <span class="header-seed-chip">Seed数: ${Number.isFinite(view.seedCount) ? view.seedCount : 0}件</span>
-    <span class="header-seed-chip">補充状態: ${escapeHtml(view.reason)}</span>
-    <span class="header-seed-chip">更新: ${escapeHtml(view.lastRefillAt ? formatIsoShort(view.lastRefillAt) : "未補充")}</span>
-  `;
 }
 
 function renderSeedPoolSummary(payload) {
   if (!refs.seedPoolSummary) return;
   if (!payload || typeof payload !== "object") {
     refs.seedPoolSummary.classList.remove("warn");
-    refs.seedPoolSummary.textContent = "Seedプール情報を取得できませんでした。";
+    refs.seedPoolSummary.textContent = "seed pool情報を取得できませんでした。";
     return;
   }
   const seedPool = (payload.seed_pool && typeof payload.seed_pool === "object")
@@ -829,41 +886,256 @@ function renderSeedPoolSummary(payload) {
     : null;
   if (!seedPool) {
     refs.seedPoolSummary.classList.remove("warn");
-    refs.seedPoolSummary.textContent = "今回のレスポンスにSeedプール情報は含まれていません。";
+    refs.seedPoolSummary.textContent = "今回のレスポンスにseed pool情報は含まれていません。";
     return;
   }
   const refill = (seedPool.refill && typeof seedPool.refill === "object") ? seedPool.refill : {};
   const view = getSeedPoolView(payload);
   const cooldownUntil = view.cooldownUntil;
   const lastRefillAt = view.lastRefillAt;
-  const lastRefillMessage = String(refill.last_refill_message || "").trim();
   const categoryLabel = view.categoryLabel;
   const seedCount = view.seedCount;
-  const skippedLowQuality = view.skippedLowQuality;
   const addedCount = Number(refill.added_count || 0);
   const beforeCount = Number(refill.available_before || 0);
   const afterCount = Number(refill.available_after || 0);
+  const reason = view.reason;
   const pageRuns = view.pageRuns;
   const skippedFreshPages = Number(refill.skipped_fresh_pages || 0);
-  const reason = view.reason;
+  const lowQuality = Number(view.skippedLowQuality || 0);
+  const lastRefillMessage = String(refill.last_refill_message || "").trim();
+  const reasonKey = view.reasonKey;
+  const waitPrefix = {
+    category_cooldown: "このカテゴリは現在クールダウン中です。",
+    rank_limit_cooldown: "このカテゴリは上位2,000件まで確認済みのため待機中です。",
+    empty_result_cooldown: "このカテゴリは検索結果が空だったため待機中です。",
+    all_big_words_exhausted: "このカテゴリは全big wordを確認済みのため待機中です。",
+    fresh_window_skip: "このカテゴリは直近取得済みページのみのため待機中です。",
+    daily_limit_reached: "Product Researchの上限到達により待機中です。",
+  };
+  const waitMessage = view.isWaiting
+    ? `${waitPrefix[reasonKey] || "このカテゴリは待機中です。"}${cooldownUntil ? ` 再開目安: ${formatIsoShort(cooldownUntil)}` : ""}`
+    : "";
+  const showAddedChip = Boolean(view.hasRefillHistory);
+  const defaultSnapshotMessage = !view.hasRefillHistory
+    ? `<li>まだ探索を実行していません。</li>`
+    : "";
 
   refs.seedPoolSummary.classList.toggle("warn", view.dailyLimitReached);
   refs.seedPoolSummary.innerHTML = `
-    <div><strong>Seedプール: ${escapeHtml(categoryLabel)}</strong> / ${escapeHtml(reason)}</div>
+    ${waitMessage ? `<div class="seed-pool-wait">${escapeHtml(waitMessage)}</div>` : ""}
+    <div><strong>${escapeHtml(categoryLabel)}</strong> / seed ${Number.isFinite(seedCount) ? seedCount : 0}件</div>
     <div class="seed-pool-chip-row">
-      <span class="seed-pool-chip">Seed数 ${Number.isFinite(seedCount) ? seedCount : 0}件</span>
-      <span class="seed-pool-chip">補充 +${Number.isFinite(addedCount) ? addedCount : 0}件</span>
-      ${pageRuns > 0 ? `<span class="seed-pool-chip">補充ページ ${pageRuns}ページ</span>` : ""}
-      ${skippedFreshPages > 0 ? `<span class="seed-pool-chip">直近取得スキップ ${skippedFreshPages}ページ</span>` : ""}
-      ${skippedLowQuality > 0 ? `<span class="seed-pool-chip">低品質除外 ${skippedLowQuality}件</span>` : ""}
+      <span class="seed-pool-chip">補充状態 ${escapeHtml(reason)}</span>
+      ${showAddedChip ? `<span class="seed-pool-chip">補充 +${Number.isFinite(addedCount) ? addedCount : 0}件</span>` : ""}
+      ${lastRefillAt ? `<span class="seed-pool-chip">更新 ${escapeHtml(formatIsoShort(lastRefillAt))}</span>` : ""}
+      ${cooldownUntil ? `<span class="seed-pool-chip">次回 ${escapeHtml(formatIsoShort(cooldownUntil))}</span>` : ""}
     </div>
     <ul class="compact-list">
-      <li>補充前: ${Number.isFinite(beforeCount) ? beforeCount : 0}件 / 補充後: ${Number.isFinite(afterCount) ? afterCount : 0}件</li>
-      ${lastRefillAt ? `<li>最終補充時刻: ${escapeHtml(formatIsoShort(lastRefillAt))}</li>` : ""}
+      ${defaultSnapshotMessage}
+      <li>補充前 ${Number.isFinite(beforeCount) ? beforeCount : 0}件 → 補充後 ${Number.isFinite(afterCount) ? afterCount : 0}件</li>
+      ${pageRuns > 0 ? `<li>補充ページ ${pageRuns}ページ</li>` : ""}
+      ${skippedFreshPages > 0 ? `<li>直近取得スキップ ${skippedFreshPages}ページ</li>` : ""}
+      ${lowQuality > 0 ? `<li>低品質除外 ${lowQuality}件</li>` : ""}
       ${lastRefillMessage ? `<li>補充ログ: ${escapeHtml(lastRefillMessage)}</li>` : ""}
     </ul>
-    ${cooldownUntil ? `<div class="fetch-note">再補充可能時刻: ${escapeHtml(formatIsoShort(cooldownUntil))}</div>` : ""}
   `;
+}
+
+function formatSampleLogValue(value, { fallback = "-", maxLen = 120 } = {}) {
+  if (value === null || value === undefined) return fallback;
+  if (typeof value === "boolean") return value ? "あり" : "なし";
+  if (typeof value === "number") {
+    if (!Number.isFinite(value)) return fallback;
+    if (Number.isInteger(value)) return String(value);
+    return String(Number(value.toFixed(6)));
+  }
+  if (Array.isArray(value)) {
+    if (value.length === 0) return fallback;
+    const simple = value
+      .map((row) => (row === null || row === undefined ? "" : String(row)))
+      .map((row) => row.trim())
+      .filter(Boolean);
+    if (simple.length > 0) return compactText(simple.join(", "), maxLen);
+    try {
+      return compactText(JSON.stringify(value), maxLen);
+    } catch {
+      return fallback;
+    }
+  }
+  if (typeof value === "object") {
+    try {
+      return compactText(JSON.stringify(value), maxLen);
+    } catch {
+      return fallback;
+    }
+  }
+  const text = String(value).trim();
+  return text ? compactText(text, maxLen) : fallback;
+}
+
+function renderSelectedSampleLog(candidate, normalized, { latestRejection = null, colorRisk = null } = {}) {
+  if (!refs.selectedSampleLogHeadline || !refs.selectedSampleLogSummary || !refs.selectedSampleLogRows) return;
+
+  if (!candidate || !normalized) {
+    refs.selectedSampleLogHeadline.textContent = "候補を選択してください。";
+    refs.selectedSampleLogSummary.classList.remove("warn");
+    refs.selectedSampleLogSummary.textContent = "左側の一覧で候補を選択すると、選択中サンプルの探索ログを表示します。";
+    refs.selectedSampleLogRows.innerHTML = `
+      <div class="fetch-row">
+        <div class="head"><span>探索ログ未選択</span><span class="fetch-stop">待機</span></div>
+        <p class="fetch-note">レビュー候補一覧から候補を選択してください。</p>
+      </div>
+    `;
+    return;
+  }
+
+  const v = normalized;
+  const meta = (v.meta && typeof v.meta === "object") ? v.meta : {};
+  const statusText = labelForStatus(candidate.status);
+  const sourceSite = labelForSite(candidate.source_site || "japan");
+  const marketSite = labelForSite(candidate.market_site || "ebay");
+  const seedQuery = formatSampleLogValue(
+    pick(meta, ["seed_query", "seed_key", "seed", "market_seed_query", "source_seed_query"], ""),
+    { fallback: "未記録", maxLen: 70 },
+  );
+  const bigWord = formatSampleLogValue(
+    pick(meta, ["big_word", "bigword", "query", "fetch_query", "category_query"], ""),
+    { fallback: "未記録", maxLen: 70 },
+  );
+  const matchReason = formatSampleLogValue(
+    pick(meta, ["match_reason", "match_debug_reason", "fetch_reason"], candidate.match_level || ""),
+    { fallback: "未記録", maxLen: 90 },
+  );
+  const sourceCategory = formatSampleLogValue(
+    pick(meta, ["source_category_name", "source_category_key", "source_category_id"], ""),
+    { fallback: "未記録", maxLen: 70 },
+  );
+  const marketCategory = formatSampleLogValue(
+    pick(meta, ["market_category_name", "market_category_key", "market_category_id"], ""),
+    { fallback: "未記録", maxLen: 70 },
+  );
+  const soldCountText = Number.isFinite(v.ebay.soldCount90d) && v.ebay.soldCount90d >= 0
+    ? `${v.ebay.soldCount90d}件`
+    : "未取得";
+  const soldMinText = Number.isFinite(v.ebay.soldMin90d) && v.ebay.soldMin90d > 0
+    ? moneyDualText({ jpy: null, usd: v.ebay.soldMin90d, fxRate: v.fxRate })
+    : "未取得";
+  const sourceTotalText = Number.isFinite(v.jp.totalJpy) || Number.isFinite(v.jp.totalUsd)
+    ? moneyDualText({ jpy: v.jp.totalJpy, usd: v.jp.totalUsd, fxRate: v.fxRate })
+    : "未取得";
+  const profitText = Number.isFinite(v.expectedProfitUsd) || Number.isFinite(v.expectedProfitJpy)
+    ? moneyDualText({ jpy: v.expectedProfitJpy, usd: v.expectedProfitUsd, fxRate: v.fxRate })
+    : "未取得";
+  const marginText = Number.isFinite(v.expectedMarginRate) ? formatPercent(v.expectedMarginRate) : "未取得";
+  const scoreText = Number.isFinite(toNumber(candidate.match_score))
+    ? toNumber(candidate.match_score).toFixed(3)
+    : "未取得";
+  const gateText = v.liquidity
+    ? (v.liquidity.gate_passed ? "通過" : `除外(${v.liquidity.gate_reason || "unknown"})`)
+    : "未取得";
+
+  refs.selectedSampleLogHeadline.textContent = `候補 #${candidate.id} の探索ログ（${statusText}）`;
+  refs.selectedSampleLogSummary.classList.toggle("warn", seedQuery === "未記録" && bigWord === "未記録");
+  refs.selectedSampleLogSummary.innerHTML = `
+    <div><strong>探索対象: ${escapeHtml(sourceSite)} → ${escapeHtml(marketSite)}</strong></div>
+    <div class="seed-pool-chip-row">
+      <span class="seed-pool-chip">一致スコア ${escapeHtml(scoreText)}</span>
+      <span class="seed-pool-chip">期待利益 ${escapeHtml(profitText)}</span>
+      <span class="seed-pool-chip">90日売却 ${escapeHtml(soldCountText)}</span>
+      <span class="seed-pool-chip">流動性Gate ${escapeHtml(gateText)}</span>
+    </div>
+    <ul class="compact-list">
+      <li>seed: ${escapeHtml(seedQuery)}</li>
+      <li>big word: ${escapeHtml(bigWord)}</li>
+      <li>抽出根拠: ${escapeHtml(matchReason)}</li>
+      <li>作成日時: ${escapeHtml(formatIsoShort(candidate.created_at))}</li>
+    </ul>
+  `;
+
+  const debugKeyCandidates = [
+    "seed_query",
+    "seed_key",
+    "query",
+    "source_category_id",
+    "market_category_id",
+    "market_price_basis_type",
+    "source_stock_status",
+    "ebay_sold_item_url",
+  ];
+  const debugLines = debugKeyCandidates
+    .filter((key) => meta[key] !== undefined && meta[key] !== null && `${meta[key]}`.trim() !== "")
+    .map((key) => `${key}: ${formatSampleLogValue(meta[key], { fallback: "-", maxLen: 95 })}`);
+
+  const latestRejectLine = latestRejection
+    ? `${formatIssueTargetsJa(latestRejection.issue_targets)} / ${formatSampleLogValue(latestRejection.reason_text, { fallback: "(未入力)", maxLen: 70 })}`
+    : "なし";
+  const colorRiskLine = colorRisk?.hasColorMissingRisk ? "あり" : "なし";
+
+  const rows = [
+    {
+      title: "A段階（seed抽出）",
+      status: seedQuery === "未記録" && bigWord === "未記録" ? "記録不足" : "記録あり",
+      lines: [
+        `big word: ${bigWord}`,
+        `抽出seed: ${seedQuery}`,
+        `eBayカテゴリ: ${marketCategory}`,
+        `抽出根拠: ${matchReason}`,
+      ],
+    },
+    {
+      title: "B段階（日本側一次検索）",
+      status: v.jp.itemId ? "記録あり" : "記録不足",
+      lines: [
+        `仕入サイト: ${sourceSite}`,
+        `日本カテゴリ: ${sourceCategory}`,
+        `仕入商品ID: ${formatSampleLogValue(v.jp.itemId, { fallback: "未記録", maxLen: 80 })}`,
+        `仕入合計: ${sourceTotalText}`,
+        `在庫判定: ${formatSampleLogValue(v.jp.stockStatus, { fallback: "未記録", maxLen: 50 })}`,
+      ],
+    },
+    {
+      title: "C段階（eBay最終再判定）",
+      status: soldCountText === "未取得" ? "記録不足" : "記録あり",
+      lines: [
+        `eBay価格基準: ${saleBasisLabel(v.ebay.saleBasisType)}`,
+        `90日売却件数: ${soldCountText}`,
+        `90日最低成約: ${soldMinText}`,
+        `流動性Gate: ${gateText}`,
+        `eBay参照: ${formatSampleLogValue(v.ebay.itemUrl, { fallback: "未記録", maxLen: 90 })}`,
+      ],
+    },
+    {
+      title: "判定・監査",
+      status: statusText,
+      lines: [
+        `一致レベル: ${formatSampleLogValue(candidate.match_level, { fallback: "未記録", maxLen: 40 })}`,
+        `一致スコア: ${scoreText}`,
+        `期待利益: ${profitText}`,
+        `期待粗利率: ${marginText}`,
+        `色要確認: ${colorRiskLine}`,
+        `最新否認: ${latestRejectLine}`,
+      ],
+    },
+  ];
+  if (debugLines.length > 0) {
+    rows.push({
+      title: "探索メタデータ（記録キー）",
+      status: "参照用",
+      lines: debugLines,
+    });
+  }
+
+  refs.selectedSampleLogRows.innerHTML = rows.map((row) => `
+    <div class="fetch-row">
+      <div class="head">
+        <span>${escapeHtml(row.title)}</span>
+        <span class="fetch-stop">${escapeHtml(row.status)}</span>
+      </div>
+      <ul class="fetch-list">
+        ${row.lines.map((line) => `<li>${escapeHtml(line)}</li>`).join("")}
+      </ul>
+    </div>
+  `).join("");
 }
 
 function saleBasisLabel(basis) {
@@ -1255,7 +1527,8 @@ function phaseToJa(phase) {
     filters_done: "条件設定完了",
     query_done: "検索完了",
     timed_fetch_start: "探索開始",
-    seed_pool_ready: "Seed準備完了",
+    seed_pool_ready: "seed準備完了",
+    seed_refill_scanning: "候補スキャン中",
     pass_running: "探索中",
     stage1_running: "一次判定",
     stage2_running: "最終再判定",
@@ -1285,11 +1558,33 @@ function clampPercent(raw) {
   return Math.min(100, Math.max(0, n));
 }
 
+function resolveFlowStage(snapshot) {
+  const data = (snapshot && typeof snapshot === "object") ? snapshot : {};
+  const explicit = String(data.flow_stage || "").trim().toUpperCase();
+  if (explicit === "A" || explicit === "B" || explicit === "C") return explicit;
+  const phase = String(data.phase || "").trim().toLowerCase();
+  if (phase === "timed_fetch_start" || phase === "seed_pool_ready" || phase === "starting" || phase === "startup") return "A";
+  if (phase === "stage1_running") return "B";
+  if (phase === "stage2_running" || phase === "pass_completed" || phase === "timed_fetch_finalize" || phase === "completed") return "C";
+  return "";
+}
+
 function setFetchHeadline(text, { warn = false, running = false } = {}) {
   if (!refs.fetchStatusHeadline) return;
   refs.fetchStatusHeadline.textContent = String(text || "");
   refs.fetchStatusHeadline.classList.toggle("warn", Boolean(warn));
   refs.fetchStatusHeadline.classList.toggle("running", Boolean(running));
+}
+
+function currentCategoryLabel() {
+  const select = refs.fetchQuery;
+  if (!(select instanceof HTMLSelectElement)) {
+    return String(select?.value || "").trim() || "カテゴリ";
+  }
+  const selected = select.selectedOptions?.[0];
+  const label = String(selected?.textContent || selected?.label || "").trim();
+  if (label) return label;
+  return String(select.value || "").trim() || "カテゴリ";
 }
 
 function renderRpaProgress(snapshot, { running = false } = {}) {
@@ -1302,15 +1597,16 @@ function renderRpaProgress(snapshot, { running = false } = {}) {
   const query = String(data.query || "").trim();
   const passIndex = Number(data.pass_index || 0);
   const maxPasses = Number(data.max_passes || 0);
-  const createdCount = Number(data.created_count || 0);
   const currentSeedQuery = String(data.current_seed_query || "").trim();
-  const stage1PassTotal = Number(data.stage1_pass_total || 0);
   const stage2Runs = Number(data.stage2_runs || 0);
   const stage1SkipTopReason = String(data.stage1_skip_top_reason || "").trim();
   const stage1SkipTopCount = Number(data.stage1_skip_top_count || 0);
-  const stage1BaselineRejectTotal = Number(data.stage1_seed_baseline_reject_total || 0);
-  const skippedLowQualityCount = Number(data.skipped_low_quality_count || 0);
   const elapsedSec = Number(data.elapsed_sec || 0);
+  const flowStageLabelRaw = String(data.flow_stage_label || "").trim();
+  const flowStage = resolveFlowStage(data);
+  const flowStageLabel = flowStageLabelRaw || (
+    flowStage === "A" ? "A: seed補充" : (flowStage === "B" ? "B: 日本側探索" : (flowStage === "C" ? "C: eBay最終再判定" : ""))
+  );
   const rpa = (data.rpa && typeof data.rpa === "object") ? data.rpa : null;
   const qIndex = Number(data.query_index || 0);
   const qTotal = Number(data.total_queries || 0);
@@ -1319,15 +1615,17 @@ function renderRpaProgress(snapshot, { running = false } = {}) {
     ? ` (${passIndex}/${maxPasses})`
     : ((qIndex > 0 && qTotal > 0) ? ` (${qIndex}/${qTotal})` : "");
   const statusJa = phaseToJa(phase || status);
-  const detailBits = [];
-  if (currentSeedQuery) detailBits.push(`処理中Seed:${compactQueryText(currentSeedQuery, 30)}`);
-  else if (query) detailBits.push(`探索語:${compactQueryText(query, 30)}`);
-  if (Number.isFinite(stage1PassTotal) && stage1PassTotal > 0) detailBits.push(`一次通過:${stage1PassTotal}件`);
-  if (Number.isFinite(stage2Runs) && stage2Runs > 0) detailBits.push(`最終再判定:${stage2Runs}件`);
-  if (Number.isFinite(createdCount) && createdCount > 0) detailBits.push(`候補:${createdCount}件`);
-  if (stage1SkipTopReason && Number.isFinite(stage1SkipTopCount) && stage1SkipTopCount > 0) {
-    detailBits.push(`除外トップ:${skipReasonLabel(stage1SkipTopReason)} ${stage1SkipTopCount}件`);
-  }
+  const targetLabel = currentSeedQuery
+    ? `${flowStage === "A" ? "big word" : "seed"} ${compactQueryText(currentSeedQuery, 36)}`
+    : (query ? `カテゴリ ${compactQueryText(query, 36)}` : "-");
+  const topStageText = flowStageLabel || statusJa || "待機中";
+  const runText = runLabel ? runLabel.replace(/[()]/g, "") : "";
+  const detailTopParts = [`対象: ${targetLabel}`];
+  if (statusJa) detailTopParts.push(`状態: ${statusJa}`);
+  if (runText) detailTopParts.push(`実行: ${runText}`);
+  const detailTop = detailTopParts.join(" / ");
+
+  let prText = "-";
   if (rpa && typeof rpa === "object") {
     const rpaStatus = String(rpa.status || "").trim().toLowerCase();
     const rpaPhase = String(rpa.phase || "").trim();
@@ -1340,42 +1638,80 @@ function renderRpaProgress(snapshot, { running = false } = {}) {
     // 前回runの「completed 100%」を引きずらないよう、実行中かつ新しい更新だけ表示する。
     if (rpaStatus === "running" && rpaFresh) {
       const rpaRunLabel = rpaQueryIndex > 0 && rpaTotalQueries > 0 ? `(${rpaQueryIndex}/${rpaTotalQueries})` : "";
-      detailBits.push(`PR:${rpaPhaseJa}${rpaRunLabel} ${Math.round(rpaPct)}%`);
+      prText = `${rpaPhaseJa}${rpaRunLabel} ${Math.round(rpaPct)}%`;
     }
   }
-  if (Number.isFinite(stage1BaselineRejectTotal) && stage1BaselineRejectTotal > 0) {
-    detailBits.push(`一次価格除外:${stage1BaselineRejectTotal}件`);
+  if (prText === "-" && Number.isFinite(stage2Runs) && stage2Runs > 0) {
+    prText = `最終再判定 ${stage2Runs}件`;
   }
-  if (Number.isFinite(skippedLowQualityCount) && skippedLowQualityCount > 0) {
-    detailBits.push(`低品質除外:${skippedLowQualityCount}件`);
+  const topReject = (stage1SkipTopReason && Number.isFinite(stage1SkipTopCount) && stage1SkipTopCount > 0)
+    ? `${skipReasonLabel(stage1SkipTopReason)} ${stage1SkipTopCount}件`
+    : "-";
+  const elapsedText = (Number.isFinite(elapsedSec) && elapsedSec > 0)
+    ? `${Math.round(elapsedSec)}秒`
+    : "-";
+  const updatedText = Number.isFinite(updatedAgoSec)
+    ? (updatedAgoSec > 12 ? `進捗更新遅延 ${Math.round(updatedAgoSec)}秒` : `進捗更新 ${Math.round(Math.max(0, updatedAgoSec))}秒前`)
+    : "-";
+  const detailBottomParts = [`除外トップ: ${topReject}`, `経過: ${elapsedText}`];
+  if (prText !== "-") {
+    detailBottomParts.push(`PR進捗: ${prText}`);
   }
-  if (!detailBits.length && message) detailBits.push(compactQueryText(message, 36));
-  if (Number.isFinite(elapsedSec) && elapsedSec > 0) detailBits.push(`経過:${Math.round(elapsedSec)}s`);
-  if (Number.isFinite(updatedAgoSec) && updatedAgoSec >= 0 && !running) detailBits.push(`更新:${updatedAgoSec}s`);
-  const detail = detailBits.join(" / ") || "進捗データ待機中";
+  detailBottomParts.push(updatedText);
+  const detailBottom = detailBottomParts.join(" / ");
 
   refs.rpaProgressWrap.hidden = false;
-  if (refs.rpaProgressLabel) refs.rpaProgressLabel.textContent = `${statusJa}${runLabel}`;
+  if (refs.rpaProgressLabel) {
+    const topLabel = flowStageLabel
+      ? (statusJa ? `${flowStageLabel} / ${statusJa}` : flowStageLabel)
+      : (statusJa || "待機中");
+    refs.rpaProgressLabel.textContent = `${topLabel}${runLabel}`;
+  }
   if (refs.rpaProgressPercent) refs.rpaProgressPercent.textContent = `${Math.round(percent)}%`;
   if (refs.rpaProgressFill) refs.rpaProgressFill.style.width = `${percent.toFixed(1)}%`;
-  if (refs.rpaProgressDetail) refs.rpaProgressDetail.textContent = detail;
+  if (refs.rpaProgressDetailTop) refs.rpaProgressDetailTop.textContent = detailTop;
+  if (refs.rpaProgressDetailBottom) refs.rpaProgressDetailBottom.textContent = detailBottom;
 
   if (running) {
     if (refs.fetchBtn && refs.fetchBtn.disabled) {
       refs.fetchBtn.textContent = `探索中... ${Math.round(percent)}%`;
     }
-    const runText = runLabel ? runLabel.replace(/[()]/g, "") : "";
-    const head = runText ? `探索中 ${Math.round(percent)}% / ${runText}` : `探索中 ${Math.round(percent)}%`;
+    const headParts = ["探索中", `${Math.round(percent)}%`];
+    if (runText) headParts.push(runText);
+    if (updatedText.startsWith("進捗更新遅延")) headParts.push(updatedText);
+    const head = headParts.join(" / ");
     setFetchHeadline(head, {
       warn: Boolean(data.daily_limit_reached),
       running: true,
     });
+  } else if (message && refs.fetchStatusHeadline && !refs.fetchStatusHeadline.classList.contains("running")) {
+    setFetchHeadline(message, { warn: Boolean(data.daily_limit_reached), running: false });
   }
 }
 
 function hideRpaProgress() {
   if (!refs.rpaProgressWrap) return;
-  refs.rpaProgressWrap.hidden = true;
+  refs.rpaProgressWrap.hidden = false;
+  if (refs.rpaProgressLabel) refs.rpaProgressLabel.textContent = "待機中";
+  if (refs.rpaProgressPercent) refs.rpaProgressPercent.textContent = "0%";
+  if (refs.rpaProgressFill) refs.rpaProgressFill.style.width = "0%";
+  if (refs.rpaProgressDetailTop) refs.rpaProgressDetailTop.textContent = "対象: - / 状態: -";
+  if (refs.rpaProgressDetailBottom) refs.rpaProgressDetailBottom.textContent = "除外トップ: - / 経過: -";
+}
+
+function resetHeaderForCategorySelection({ loading = false } = {}) {
+  const label = currentCategoryLabel();
+  setFetchHeadline(
+    loading ? `カテゴリ切替中: ${label} の状態を取得しています。` : `探索前: ${label}`,
+    { warn: false, running: false },
+  );
+  hideRpaProgress();
+  if (refs.rpaProgressDetailTop) {
+    refs.rpaProgressDetailTop.textContent = `対象: カテゴリ ${label} / 状態: -`;
+  }
+  if (refs.rpaProgressDetailBottom) {
+    refs.rpaProgressDetailBottom.textContent = "除外トップ: - / 経過: -";
+  }
 }
 
 async function pollRpaProgressOnce() {
@@ -1408,7 +1744,8 @@ async function pollRpaProgressOnce() {
 
     if (state.fetchInFlight) {
       if (!state.fetchProgressSawRunning) {
-        if (status === "running" && isFreshForCurrentFetch) {
+        const canAdoptFresh = status === "running" || status === "completed" || status === "failed" || status === "stopped";
+        if (canAdoptFresh && isFreshForCurrentFetch) {
           state.fetchProgressSawRunning = true;
           if (runId) state.fetchProgressRunId = runId;
         } else {
@@ -1424,29 +1761,17 @@ async function pollRpaProgressOnce() {
       }
     }
 
-    const now = Date.now();
-    const elapsedSec = state.fetchStartedAtMs > 0 ? (now - state.fetchStartedAtMs) / 1000 : 0;
-    const optimistic = Math.min(92, 4 + elapsedSec * 2.05);
     const rawServerPercent = Number.isFinite(Number(snap?.progress_percent))
       ? clampPercent(Number(snap?.progress_percent))
       : 0;
-    const serverPercent = staleSnapshot ? 0 : rawServerPercent;
-    let targetPercent = serverPercent;
-    if (state.fetchInFlight) {
-      targetPercent = Math.max(serverPercent, optimistic);
-      // 実行中は逆戻りさせない。
-      targetPercent = Math.max(targetPercent, state.optimisticProgress);
-    }
-    state.optimisticProgress = clampPercent(targetPercent);
-    const prevDisplay = clampPercent(state.displayedProgress);
-    let displayPercent = state.optimisticProgress;
-    if (state.fetchInFlight) {
-      if (displayPercent < prevDisplay) displayPercent = prevDisplay;
-      // 急なジャンプを軽減し、段階的に追随させる。
-      if (displayPercent > prevDisplay) {
-        const delta = displayPercent - prevDisplay;
-        const step = Math.max(1.4, Math.min(8.0, delta * 0.55));
-        displayPercent = Math.min(displayPercent, prevDisplay + step);
+    const isTerminal = ["completed", "failed", "stopped", "idle"].includes(status);
+    let displayPercent = clampPercent(state.displayedProgress);
+    if (!staleSnapshot) {
+      if (!state.fetchInFlight || isTerminal) {
+        displayPercent = rawServerPercent;
+      } else if (rawServerPercent >= displayPercent) {
+        // 実値ベース: 実行中は後退させず、サーバー進捗のみ採用する。
+        displayPercent = rawServerPercent;
       }
     }
     state.displayedProgress = clampPercent(displayPercent);
@@ -1457,7 +1782,7 @@ async function pollRpaProgressOnce() {
     if (state.fetchInFlight && staleSnapshot) {
       merged.status = "running";
       merged.phase = "startup";
-      merged.message = "探索リクエスト送信中（前回進捗を無視）";
+      merged.message = "探索進捗の受信待ちです（表示は前回値）";
     }
     state.lastFetchProgressSource = source;
     renderRpaProgress(merged, { running: state.fetchInFlight });
@@ -1466,16 +1791,11 @@ async function pollRpaProgressOnce() {
     }
   } catch (_) {
     if (state.fetchInFlight) {
-      const now = Date.now();
-      const elapsedSec = state.fetchStartedAtMs > 0 ? (now - state.fetchStartedAtMs) / 1000 : 0;
-      const optimistic = Math.min(82, 4 + elapsedSec * 1.9);
-      state.optimisticProgress = Math.max(state.optimisticProgress, optimistic);
-      state.displayedProgress = Math.max(state.displayedProgress, Math.min(state.optimisticProgress, state.displayedProgress + 2.2));
       renderRpaProgress(
         {
           status: "running",
           phase: "starting",
-          message: "探索処理中（進捗取得待ち）",
+          message: "探索処理中（進捗情報の取得待ち）",
           progress_percent: state.displayedProgress,
           query_index: 0,
           total_queries: 0,
@@ -1494,8 +1814,7 @@ function startRpaProgressPolling() {
   state.fetchStartedAtEpochSec = Math.floor(state.fetchStartedAtMs / 1000);
   state.fetchProgressRunId = "";
   state.fetchProgressSawRunning = false;
-  state.optimisticProgress = 2;
-  state.displayedProgress = 2;
+  state.displayedProgress = 0;
   state.lastFetchProgressSource = "";
   renderRpaProgress(
     {
@@ -1534,13 +1853,11 @@ function renderFetchStats(payload) {
   if (!refs.fetchStatusHeadline || !refs.fetchStatsRows) return;
   if (!payload || typeof payload !== "object") {
     setFetchHeadline("まだ探索を実行していません。", { warn: false, running: false });
-    renderHeaderSeedStatus(null, { loading: false, failed: false });
     renderSeedPoolSummary(null);
     refs.fetchStatsRows.innerHTML = "";
     hideRpaProgress();
     return;
   }
-  renderHeaderSeedStatus(payload, { loading: false, failed: false });
   renderSeedPoolSummary(payload);
 
   const createdCount = Number(payload.created_count || 0);
@@ -1550,11 +1867,11 @@ function renderFetchStats(payload) {
   const fetched = (payload.fetched && typeof payload.fetched === "object") ? payload.fetched : {};
   const dailyLimitReached = isRpaDailyLimitReached(payload);
 
-  let headline = `今回の探索: 追加 ${createdCount}件`;
-  if (searchScopeDone) headline += " / 探索完走";
+  let headline = `今回探索: 追加 ${createdCount}件`;
+  if (searchScopeDone) headline += " / 完走";
   if (queryCacheSkip) headline += " / 同条件スキップ";
-  if (dailyLimitReached) headline += " / Product Research上限到達";
-  if (errors.length > 0) headline += ` / エラー${errors.length}件`;
+  if (dailyLimitReached) headline += " / PR上限到達";
+  if (errors.length > 0) headline += ` / エラー ${errors.length}件`;
   setFetchHeadline(headline, { warn: dailyLimitReached, running: false });
 
   const rows = Object.entries(fetched);
@@ -1623,37 +1940,45 @@ function renderFetchStats(payload) {
   }).join("");
 }
 
-async function refreshSeedPoolStatusForCurrentCategory({ updateHeadline = true } = {}) {
+async function refreshSeedPoolStatusForCurrentCategory({ updateHeadline = true, showLoading = true } = {}) {
   const category = String(refs.fetchQuery?.value || "").trim();
   if (!category) return;
   const seq = ++state.seedPoolStatusSeq;
-  renderHeaderSeedStatus(null, { loading: true });
-  if (!state.fetchInFlight && !state.lastFetch && refs.seedPoolSummary) {
+  if (!state.fetchInFlight && showLoading && refs.seedPoolSummary) {
     refs.seedPoolSummary.classList.remove("warn");
-    refs.seedPoolSummary.textContent = "Seedプール情報を取得しています。";
+    refs.seedPoolSummary.textContent = "seed pool情報を取得しています。";
   }
   try {
     const payload = await api(`/v1/miner/seed-pool-status?category=${encodeURIComponent(category)}`);
     if (seq !== state.seedPoolStatusSeq) return;
     state.lastSeedPoolCategory = category;
-    renderHeaderSeedStatus(payload, { loading: false, failed: false });
     renderSeedPoolSummary(payload);
     if (updateHeadline && !state.fetchInFlight) {
       const view = getSeedPoolView(payload);
-      setFetchHeadline(
-        `探索前: ${view.categoryLabel} / Seed数 ${view.seedCount}件`,
-        { warn: Boolean(view.dailyLimitReached), running: false },
-      );
+      if (view.isWaiting) {
+        const nextText = view.cooldownUntil ? ` / 再開目安 ${formatIsoShort(view.cooldownUntil)}` : "";
+        setFetchHeadline(
+          `待機中: ${view.categoryLabel}（${view.reason}）${nextText}`,
+          { warn: true, running: false },
+        );
+      } else {
+        setFetchHeadline(
+          `探索前: ${view.categoryLabel}`,
+          { warn: Boolean(view.dailyLimitReached), running: false },
+        );
+      }
     }
   } catch (_) {
     if (seq !== state.seedPoolStatusSeq) return;
-    renderHeaderSeedStatus(null, { loading: false, failed: true });
     if (refs.seedPoolSummary) {
       refs.seedPoolSummary.classList.add("warn");
-      refs.seedPoolSummary.textContent = "Seedプール情報の取得に失敗しました。探索時に再取得します。";
+      refs.seedPoolSummary.textContent = "seed pool情報の取得に失敗しました。探索時に再取得します。";
     }
-    if (updateHeadline && !state.fetchInFlight && !state.lastFetch) {
-      setFetchHeadline("探索前のSeedプール情報を取得できませんでした。", { warn: true, running: false });
+    if (updateHeadline && !state.fetchInFlight) {
+      setFetchHeadline(
+        `${currentCategoryLabel()} のseed pool情報を取得できませんでした。`,
+        { warn: true, running: false },
+      );
     }
   }
 }
@@ -1854,6 +2179,7 @@ function renderCandidate(candidate) {
     refs.approveBtn.textContent = "同一商品・利益OK（承認）";
     setApproveHint("承認するとダミー出品ステータスに遷移します。");
     refs.currentCandidateLabel.textContent = "候補を選択してください";
+    renderSelectedSampleLog(null, null);
     markActiveCandidateInList(null);
     scheduleFinanceCellHeightSync();
     return;
@@ -2200,6 +2526,7 @@ function renderCandidate(candidate) {
     return `<section class="calc-group"><h3>${title}</h3><ul class="calc-list">${rowsHtml}</ul></section>`;
   }).join("");
   refs.rawJson.textContent = JSON.stringify(candidate, null, 2);
+  renderSelectedSampleLog(candidate, v, { latestRejection, colorRisk });
   scheduleFinanceCellHeightSync();
 }
 
@@ -2721,6 +3048,7 @@ async function onFetchLiveCandidates() {
   const cfg = buildFetchConfig();
 
   refs.fetchBtn.disabled = true;
+  if (refs.resetSeedBtn) refs.resetSeedBtn.disabled = true;
   refs.fetchBtn.textContent = "探索中... 0%";
   startRpaProgressPolling();
   try {
@@ -2732,8 +3060,8 @@ async function onFetchLiveCandidates() {
         market_site: "ebay",
         timed_mode: true,
         target_min_candidates: 3,
-        fetch_timebox_sec: 60,
-        fetch_max_passes: 4,
+        fetch_timebox_sec: 300,
+        fetch_max_passes: 20,
         continue_after_target: true,
         require_in_stock: cfg.requireInStock,
         limit_per_site: cfg.limitPerSite,
@@ -2746,14 +3074,12 @@ async function onFetchLiveCandidates() {
 
     state.lastFetch = payload;
     await pollRpaProgressOnce();
-    state.optimisticProgress = Math.max(state.displayedProgress, 96);
-    state.displayedProgress = Math.max(state.displayedProgress, 96);
     renderRpaProgress(
       {
         status: "running",
         phase: "timed_fetch_finalize",
         message: "探索結果を画面へ反映中",
-        progress_percent: state.displayedProgress,
+        progress_percent: Math.max(0, state.displayedProgress),
         updated_ago_sec: 0,
       },
       { running: true }
@@ -2770,7 +3096,6 @@ async function onFetchLiveCandidates() {
       await selectCandidateById(createdIds[0]);
     }
 
-    state.optimisticProgress = 100;
     state.displayedProgress = 100;
     renderRpaProgress(
       {
@@ -2812,39 +3137,49 @@ async function onFetchLiveCandidates() {
       .sort((a, b) => b[1] - a[1])[0];
     const dailyLimitReached = isRpaDailyLimitReached(payload);
 
-    let msg = `探索完了: ${createdCount}件追加`;
-    if (timedPasses > 1) msg += ` / ${timedPasses}パス`;
-    if (stage1PassTotal > 0 || stage2Runs > 0) msg += ` / 一次通過${stage1PassTotal}件 / 最終再判定${stage2Runs}件`;
-    if (duplicateCount > 0) msg += ` / 重複${duplicateCount}件スキップ`;
-    if (unprofitableCount > 0) msg += ` / 低利益${unprofitableCount}件除外`;
-    if (lowMarginCount > 0) msg += ` / 低粗利率${lowMarginCount}件除外`;
-    if (missingSoldMinCount > 0) msg += ` / 90日最低未取得${missingSoldMinCount}件除外`;
-    if (nonMinBasisCount > 0) msg += ` / 90日最低基準外${nonMinBasisCount}件除外`;
-    if (missingSoldSampleCount > 0) msg += ` / 売却済み参照欠損${missingSoldSampleCount}件除外`;
-    if (belowSoldMinCount > 0) msg += ` / 仕入>=90日最低${belowSoldMinCount}件除外`;
-    if (implausibleSoldMinCount > 0) msg += ` / 90日最低異常値${implausibleSoldMinCount}件除外`;
-    if (unresolvedVariantPriceCount > 0) msg += ` / 型番別価格未特定${unresolvedVariantPriceCount}件除外`;
-    if (lowLiquidityCount > 0) msg += ` / 低流動性${lowLiquidityCount}件除外`;
-    if (liquidityUnavailableCount > 0) msg += ` / 流動性未取得${liquidityUnavailableCount}件除外`;
-    if (queryCacheSkip) {
-      msg += queryCacheTtlSec > 0
-        ? ` / 同条件スキップ中(${queryCacheTtlSec}秒)`
-        : " / 同条件スキップ中";
+    const summaryLines = [
+      `追加候補: ${createdCount}件`,
+      `探索パス: ${timedPasses}回`,
+      `一次通過: ${stage1PassTotal}件`,
+      `最終再判定実行: ${stage2Runs}件`,
+    ];
+    const rejectParts = [];
+    if (duplicateCount > 0) rejectParts.push(`重複 ${duplicateCount}件`);
+    if (unprofitableCount > 0) rejectParts.push(`低利益 ${unprofitableCount}件`);
+    if (lowMarginCount > 0) rejectParts.push(`低粗利率 ${lowMarginCount}件`);
+    if (missingSoldMinCount > 0) rejectParts.push(`90日最低未取得 ${missingSoldMinCount}件`);
+    if (nonMinBasisCount > 0) rejectParts.push(`90日最低基準外 ${nonMinBasisCount}件`);
+    if (missingSoldSampleCount > 0) rejectParts.push(`売却参照欠損 ${missingSoldSampleCount}件`);
+    if (belowSoldMinCount > 0) rejectParts.push(`仕入>=90日最低 ${belowSoldMinCount}件`);
+    if (implausibleSoldMinCount > 0) rejectParts.push(`90日最低異常値 ${implausibleSoldMinCount}件`);
+    if (unresolvedVariantPriceCount > 0) rejectParts.push(`型番別価格未特定 ${unresolvedVariantPriceCount}件`);
+    if (lowLiquidityCount > 0) rejectParts.push(`低流動性 ${lowLiquidityCount}件`);
+    if (liquidityUnavailableCount > 0) rejectParts.push(`流動性未取得 ${liquidityUnavailableCount}件`);
+    if (rejectParts.length > 0) {
+      summaryLines.push(`主な除外: ${rejectParts.slice(0, 3).join(" / ")}`);
     }
-    if (dailyLimitReached) msg += " / Product Research上限到達";
-    if (timedReason) msg += ` / 停止理由:${timedReason}`;
-    if (stage1Top) msg += ` / 一次トップ除外:${skipReasonLabel(stage1Top[0])}${Number(stage1Top[1])}件`;
-    if (hints.length > 0) msg += ` / ${hints[0]}`;
-    showToast(msg);
+    if (stage1Top) {
+      summaryLines.push(`一次除外トップ: ${skipReasonLabel(stage1Top[0])} ${Number(stage1Top[1])}件`);
+    }
+    if (queryCacheSkip) {
+      summaryLines.push(queryCacheTtlSec > 0 ? `同条件スキップ中: ${queryCacheTtlSec}秒` : "同条件スキップ中");
+    }
+    if (timedReason) summaryLines.push(`停止理由: ${timedReason}`);
+    if (hints.length > 0) summaryLines.push(`補足: ${hints[0]}`);
+    if (dailyLimitReached) summaryLines.push("Product Research上限に到達しています。");
+
+    showToast({
+      title: "探索が完了しました",
+      lines: summaryLines,
+      tone: dailyLimitReached ? "warn" : "success",
+    });
   } catch (err) {
-    state.optimisticProgress = 100;
-    state.displayedProgress = 100;
     renderRpaProgress(
       {
         status: "failed",
         phase: "failed",
         message: `探索失敗: ${err instanceof Error ? err.message : "unknown"}`,
-        progress_percent: 100,
+        progress_percent: Math.max(0, state.displayedProgress),
         updated_ago_sec: 0,
       },
       { running: false }
@@ -2853,13 +3188,63 @@ async function onFetchLiveCandidates() {
   } finally {
     stopRpaProgressPolling();
     refs.fetchBtn.disabled = false;
+    if (refs.resetSeedBtn) refs.resetSeedBtn.disabled = false;
     refs.fetchBtn.textContent = "探索開始";
+  }
+}
+
+async function onResetSeedPoolCategory() {
+  const category = String(refs.fetchQuery?.value || "").trim();
+  if (!category) {
+    throw new Error("カテゴリを選択してください。");
+  }
+  if (state.fetchInFlight) {
+    throw new Error("探索実行中はカテゴリ補充リセットを実行できません。");
+  }
+
+  const categoryLabel = currentCategoryLabel();
+  const confirmed = window.confirm(
+    `${categoryLabel} の補充待機状態をリセットします。\n` +
+      "7日待機中でも即時に再探索できる状態へ戻ります。よろしいですか？",
+  );
+  if (!confirmed) return;
+
+  if (refs.resetSeedBtn) refs.resetSeedBtn.disabled = true;
+  try {
+    const payload = await api("/v1/miner/seed-pool-reset", {
+      method: "POST",
+      body: JSON.stringify({ category }),
+    });
+    state.lastFetch = null;
+    resetHeaderForCategorySelection({ loading: true });
+    if (refs.fetchStatsRows) refs.fetchStatsRows.innerHTML = "";
+    await refreshSeedPoolStatusForCurrentCategory({ updateHeadline: true, showLoading: false });
+
+    const lines = [
+      `カテゴリ: ${categoryLabel}`,
+      `ページ履歴クリア: ${Number(payload?.cleared_page_windows || 0)}件`,
+      `待機状態: リセット完了`,
+      `利用可能seed: ${Number(payload?.available_after || 0)}件`,
+    ];
+    if (Number(payload?.cleaned_expired_count || 0) > 0) {
+      lines.push(`期限切れ削除: ${Number(payload?.cleaned_expired_count || 0)}件`);
+    }
+    showToast({
+      title: "カテゴリ補充リセットを完了しました",
+      lines,
+      tone: "success",
+    });
+  } finally {
+    if (refs.resetSeedBtn) refs.resetSeedBtn.disabled = false;
   }
 }
 
 function bindEvents() {
   refs.fetchQuery.addEventListener("change", () => {
-    void refreshSeedPoolStatusForCurrentCategory({ updateHeadline: true });
+    state.lastFetch = null;
+    resetHeaderForCategorySelection({ loading: true });
+    if (refs.fetchStatsRows) refs.fetchStatsRows.innerHTML = "";
+    void refreshSeedPoolStatusForCurrentCategory({ updateHeadline: true, showLoading: false });
   });
 
   refs.fetchBtn.addEventListener("click", async () => {
@@ -2867,6 +3252,14 @@ function bindEvents() {
       await onFetchLiveCandidates();
     } catch (err) {
       showToast(`取得エラー: ${err.message}`);
+    }
+  });
+
+  refs.resetSeedBtn?.addEventListener("click", async () => {
+    try {
+      await onResetSeedPoolCategory();
+    } catch (err) {
+      showToast(`リセットエラー: ${err.message}`);
     }
   });
 
@@ -2984,7 +3377,8 @@ async function init() {
     refs.endpointLabel.textContent = `API接続先: ${endpointLabel}`;
   }
   await loadCategoryOptions();
-  await refreshSeedPoolStatusForCurrentCategory({ updateHeadline: true });
+  resetHeaderForCategorySelection({ loading: true });
+  await refreshSeedPoolStatusForCurrentCategory({ updateHeadline: true, showLoading: false });
   try {
     await refreshQueues({ preserveSelection: false });
     scheduleFinanceCellHeightSync();

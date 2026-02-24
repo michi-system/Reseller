@@ -65,8 +65,10 @@ _QUERY_SKIP_PATH = _promote_legacy_data_path("miner_query_skip.json", "review_qu
 _RPA_FETCH_STATE_PATH = _PROJECT_ROOT / "data" / "liquidity_rpa_fetch_state.json"
 _RPA_PROGRESS_PATH = _PROJECT_ROOT / "data" / "liquidity_rpa_progress.json"
 _CATEGORY_KNOWLEDGE_PATH = _PROJECT_ROOT / "data" / "category_knowledge_seeds_v1.json"
+_CATEGORY_SITE_FILTER_CACHE_PATH = _PROJECT_ROOT / "data" / "miner_category_site_filter_cache.json"
 _CATEGORY_KNOWLEDGE_CACHE: Dict[str, Any] = {"mtime": 0.0, "payload": {}}
 _CATEGORY_BRAND_CACHE: Dict[str, Any] = {"mtime": 0.0, "brands": {}}
+_SOURCE_CATEGORY_FILTERS_CACHE: Dict[str, Any] = {"raw": "", "parsed": {}}
 _RPA_DAILY_LIMIT_EXIT_CODE = 75
 _RPA_DAILY_LIMIT_PATTERNS = (
     re.compile(r"exceeded\s+the\s+number\s+of\s+requests\s+allowed\s+in\s+one\s+day", re.IGNORECASE),
@@ -2070,7 +2072,16 @@ def _search_rakuten(
         "hits": str(capped_limit),
         "page": str(safe_page),
         "format": "json",
+        "sort": (_first_env("RAKUTEN_SEARCH_SORT") or "+itemPrice"),
     }
+    category_filter = _resolve_category_filter_for_site("rakuten", query)
+    if bool(category_filter.get("applied")):
+        genre_id = str(category_filter.get("genreId", "") or "").strip()
+        if genre_id:
+            params["genreId"] = genre_id
+    max_price_jpy = max(0, _to_int(_first_env("MINER_ACTIVE_SEED_MAX_PRICE_JPY"), 0))
+    if max_price_jpy > 0:
+        params["maxPrice"] = str(max_price_jpy)
     # 既定は在庫あり必須。カスタム解除時のみ在庫情報フィルタを外す。
     if require_in_stock:
         params["availability"] = "1"
@@ -2194,6 +2205,8 @@ def _search_rakuten(
             "query_used": used_query,
             "query_original": requested_query if query_sanitized else "",
             "query_sanitized": bool(query_sanitized),
+            "category_filter": category_filter,
+            "max_price_jpy": max_price_jpy,
         },
     )
 
@@ -2217,10 +2230,18 @@ def _search_yahoo(
         "query": query,
         "results": str(capped_limit),
         "start": str(start),
-        "sort": "-score",
+        "sort": (_first_env("YAHOO_SEARCH_SORT") or "+price"),
         # 新品固定（MVP方針）。
         "condition": "new",
     }
+    category_filter = _resolve_category_filter_for_site("yahoo", query)
+    if bool(category_filter.get("applied")):
+        genre_category_id = str(category_filter.get("genre_category_id", "") or "").strip()
+        if genre_category_id:
+            params_dict["genre_category_id"] = genre_category_id
+    max_price_jpy = max(0, _to_int(_first_env("MINER_ACTIVE_SEED_MAX_PRICE_JPY"), 0))
+    if max_price_jpy > 0:
+        params_dict["price_to"] = str(max_price_jpy)
     # 既定は在庫あり必須。カスタム解除時は在庫フィルタを外す。
     if require_in_stock:
         params_dict["in_stock"] = "true"
@@ -2295,7 +2316,11 @@ def _search_yahoo(
         total_key="raw_total",
         total_value=payload.get("totalResultsAvailable"),
         page=safe_page,
-        extras={"start": start},
+        extras={
+            "start": start,
+            "category_filter": category_filter,
+            "max_price_jpy": max_price_jpy,
+        },
     )
 
 
@@ -2498,6 +2523,266 @@ def _match_category_row(query: str) -> Optional[Dict[str, Any]]:
     if not _looks_like_category_query(query):
         return None
     return None
+
+
+def _active_category_context(query: str) -> Tuple[str, Optional[Dict[str, Any]]]:
+    active_key = _normalize_category_text(os.getenv("MINER_ACTIVE_CATEGORY_KEY", ""))
+    if active_key:
+        row = _match_category_row(active_key)
+        return active_key.replace(" ", "_"), row if isinstance(row, dict) else None
+    row = _match_category_row(query)
+    if isinstance(row, dict):
+        key = _normalize_category_text(str(row.get("category_key", "") or "")).replace(" ", "_")
+        if key:
+            return key, row
+    return "", None
+
+
+def _category_terms_for_matching(category_key: str, category_row: Optional[Dict[str, Any]]) -> List[str]:
+    terms: List[str] = []
+    if isinstance(category_row, dict):
+        display = str(category_row.get("display_name_ja", "") or "").strip()
+        if display:
+            terms.append(display)
+        aliases = category_row.get("aliases", [])
+        if isinstance(aliases, list):
+            for raw in aliases:
+                text = str(raw or "").strip()
+                if text:
+                    terms.append(text)
+    if category_key:
+        terms.extend(category_key.replace("_", " ").split(" "))
+    out: List[str] = []
+    seen: set[str] = set()
+    for raw in terms:
+        norm = _normalize_category_text(raw)
+        if len(norm) < 2:
+            continue
+        key = norm.upper()
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(norm)
+    return out
+
+
+def _score_category_name(name: str, terms: Sequence[str]) -> int:
+    target = _normalize_category_text(name)
+    if not target or not terms:
+        return 0
+    score = 0
+    compact_target = target.replace(" ", "")
+    for term in terms:
+        t = _normalize_category_text(term)
+        if not t:
+            continue
+        if target == t or compact_target == t.replace(" ", ""):
+            score += 80
+        elif t in target or t.replace(" ", "") in compact_target:
+            score += 20
+    return score
+
+
+def _load_category_site_filter_cache() -> Dict[str, Any]:
+    payload = _load_json_file(_CATEGORY_SITE_FILTER_CACHE_PATH)
+    return payload if isinstance(payload, dict) else {}
+
+
+def _save_category_site_filter_cache(payload: Dict[str, Any]) -> None:
+    if not isinstance(payload, dict):
+        return
+    _save_json_file(_CATEGORY_SITE_FILTER_CACHE_PATH, payload)
+
+
+def _env_category_filter_overrides() -> Dict[str, Any]:
+    raw = str(os.getenv("MINER_SOURCE_CATEGORY_FILTERS_JSON", "") or "").strip()
+    if not raw:
+        return {}
+    if raw == str(_SOURCE_CATEGORY_FILTERS_CACHE.get("raw", "")):
+        parsed = _SOURCE_CATEGORY_FILTERS_CACHE.get("parsed")
+        return parsed if isinstance(parsed, dict) else {}
+    parsed: Dict[str, Any] = {}
+    try:
+        row = json.loads(raw)
+        if isinstance(row, dict):
+            parsed = row
+    except Exception:
+        parsed = {}
+    _SOURCE_CATEGORY_FILTERS_CACHE["raw"] = raw
+    _SOURCE_CATEGORY_FILTERS_CACHE["parsed"] = parsed
+    return parsed
+
+
+def _extract_rakuten_genre_rows(payload: Any) -> List[Tuple[str, str]]:
+    out: List[Tuple[str, str]] = []
+    children = payload.get("children", []) if isinstance(payload, dict) else []
+    if not isinstance(children, list):
+        return out
+    for row in children:
+        child = row.get("child") if isinstance(row, dict) and isinstance(row.get("child"), dict) else {}
+        gid = str(child.get("genreId", "") or "").strip()
+        gname = str(child.get("genreName", "") or "").strip()
+        if gid and gname:
+            out.append((gid, gname))
+    return out
+
+
+def _extract_yahoo_category_nodes(payload: Any) -> List[Tuple[str, str]]:
+    out: List[Tuple[str, str]] = []
+
+    def _name_from_node(node: Any) -> str:
+        if isinstance(node, str):
+            return str(node).strip()
+        if isinstance(node, dict):
+            for key in ("Short", "short", "Name", "name", "Title", "title"):
+                val = node.get(key)
+                text = _name_from_node(val)
+                if text:
+                    return text
+        return ""
+
+    def _walk(node: Any, depth: int = 0) -> None:
+        if depth > 7:
+            return
+        if isinstance(node, dict):
+            raw_id = (
+                node.get("Id")
+                or node.get("id")
+                or node.get("category_id")
+                or node.get("categoryId")
+            )
+            raw_title = node.get("Title") if "Title" in node else node.get("title")
+            if raw_title is None:
+                raw_title = node.get("Name") if "Name" in node else node.get("name")
+            cid = str(raw_id or "").strip()
+            cname = _name_from_node(raw_title)
+            if cid and cname:
+                out.append((cid, cname))
+            for val in node.values():
+                _walk(val, depth + 1)
+            return
+        if isinstance(node, list):
+            for val in node[:120]:
+                _walk(val, depth + 1)
+
+    _walk(payload, 0)
+    dedup: List[Tuple[str, str]] = []
+    seen: set[Tuple[str, str]] = set()
+    for cid, cname in out:
+        key = (str(cid), _normalize_category_text(cname))
+        if key in seen:
+            continue
+        seen.add(key)
+        dedup.append((cid, cname))
+    return dedup
+
+
+def _resolve_category_filter_for_site(site: str, query: str) -> Dict[str, Any]:
+    site_key = str(site or "").strip().lower()
+    category_key, category_row = _active_category_context(query)
+    if not category_key:
+        return {"applied": False, "reason": "no_category_context"}
+
+    # 1) explicit env override
+    overrides = _env_category_filter_overrides()
+    row = overrides.get(category_key) if isinstance(overrides, dict) else None
+    if isinstance(row, dict):
+        site_row = row.get(site_key) if isinstance(row.get(site_key), dict) else {}
+        if site_key == "rakuten":
+            genre_id = str(site_row.get("genreId", "") or "").strip()
+            if genre_id:
+                return {"applied": True, "source": "env_override", "genreId": genre_id}
+        if site_key in {"yahoo", "yahoo_shopping"}:
+            genre_category_id = str(site_row.get("genre_category_id", "") or "").strip()
+            if genre_category_id:
+                return {"applied": True, "source": "env_override", "genre_category_id": genre_category_id}
+
+    # 2) cached value
+    ttl_sec = max(3600, _env_int("MINER_CATEGORY_FILTER_CACHE_TTL_SECONDS", 7 * 86400))
+    cache = _load_category_site_filter_cache()
+    entries = cache.get("entries", {}) if isinstance(cache.get("entries"), dict) else {}
+    cache_key = f"{site_key}:{category_key}"
+    cached = entries.get(cache_key) if isinstance(entries.get(cache_key), dict) else {}
+    now_ts = int(time.time())
+    fetched_at = _to_int(cached.get("fetched_at"), 0)
+    if fetched_at > 0 and (now_ts - fetched_at) <= ttl_sec:
+        if site_key == "rakuten":
+            gid = str(cached.get("genreId", "") or "").strip()
+            if gid:
+                return {"applied": True, "source": "cache", "genreId": gid}
+        if site_key in {"yahoo", "yahoo_shopping"}:
+            yid = str(cached.get("genre_category_id", "") or "").strip()
+            if yid:
+                return {"applied": True, "source": "cache", "genre_category_id": yid}
+
+    terms = _category_terms_for_matching(category_key, category_row)
+
+    # 3) auto resolve from API (single top-level pull)
+    if site_key == "rakuten":
+        app_id = _first_env("RAKUTEN_APPLICATION_ID")
+        if not app_id:
+            return {"applied": False, "reason": "rakuten_app_id_missing"}
+        base_url = (
+            _first_env("RAKUTEN_GENRE_API_BASE_URL")
+            or "https://app.rakuten.co.jp/services/api/IchibaGenre/Search/20140222"
+        )
+        params = {"applicationId": app_id, "genreId": "0", "format": "json"}
+        status, _headers, payload = _request_with_retry(
+            f"{base_url}?{urllib.parse.urlencode(params)}",
+            timeout=max(5, _env_int("MINER_CATEGORY_FILTER_TIMEOUT_SECONDS", 12)),
+            site="rakuten",
+        )
+        if status != 200 or not isinstance(payload, dict):
+            return {"applied": False, "reason": f"rakuten_genre_http_{status if status else 'error'}"}
+        best_id = ""
+        best_score = 0
+        best_name = ""
+        for gid, gname in _extract_rakuten_genre_rows(payload):
+            score = _score_category_name(gname, terms)
+            if score > best_score:
+                best_id, best_score, best_name = gid, score, gname
+        if not best_id or best_score <= 0:
+            return {"applied": False, "reason": "rakuten_genre_not_found"}
+        entries[cache_key] = {
+            "genreId": best_id,
+            "genreName": best_name,
+            "fetched_at": now_ts,
+        }
+        cache["entries"] = entries
+        _save_category_site_filter_cache(cache)
+        return {"applied": True, "source": "auto_api", "genreId": best_id, "genreName": best_name}
+
+    if site_key in {"yahoo", "yahoo_shopping"}:
+        app_id = _first_env("YAHOO_APP_ID", "YAHOO_CLIENT_ID")
+        if not app_id:
+            return {"applied": False, "reason": "yahoo_app_id_missing"}
+        params = {"appid": app_id, "category_id": "1"}
+        status, _headers, payload = _request_with_retry(
+            f"https://shopping.yahooapis.jp/ShoppingWebService/V1/json/categorySearch?{urllib.parse.urlencode(params)}",
+            timeout=max(5, _env_int("MINER_CATEGORY_FILTER_TIMEOUT_SECONDS", 12)),
+            site="yahoo",
+        )
+        if status != 200 or not isinstance(payload, dict):
+            return {"applied": False, "reason": f"yahoo_category_http_{status if status else 'error'}"}
+        best_id = ""
+        best_score = 0
+        best_name = ""
+        for cid, cname in _extract_yahoo_category_nodes(payload):
+            score = _score_category_name(cname, terms)
+            if score > best_score:
+                best_id, best_score, best_name = cid, score, cname
+        if not best_id or best_score <= 0:
+            return {"applied": False, "reason": "yahoo_category_not_found"}
+        entries[cache_key] = {
+            "genre_category_id": best_id,
+            "genreName": best_name,
+            "fetched_at": now_ts,
+        }
+        cache["entries"] = entries
+        _save_category_site_filter_cache(cache)
+        return {"applied": True, "source": "auto_api", "genre_category_id": best_id, "genreName": best_name}
+
+    return {"applied": False, "reason": "unsupported_site"}
 
 
 def _active_season_tags(category_row: Dict[str, Any], month: int) -> List[str]:

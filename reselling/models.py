@@ -7,6 +7,8 @@ from typing import Any, Dict, Optional
 
 from .db_runtime import DbConnection, connect_db, ensure_postgres_schema, is_postgres_connection
 
+_POSTGRES_DDL_READY = False
+
 
 def connect(db_path: Path) -> DbConnection:
     return connect_db(db_path)
@@ -44,7 +46,10 @@ def _migrate_legacy_review_tables(conn: DbConnection) -> None:
 
 
 def init_db(conn: DbConnection) -> None:
+    global _POSTGRES_DDL_READY
     if is_postgres_connection(conn):
+        if _POSTGRES_DDL_READY:
+            return
         ensure_postgres_schema(conn)
         _migrate_legacy_review_tables(conn)
         conn.execute(
@@ -128,6 +133,7 @@ def init_db(conn: DbConnection) -> None:
             """
         )
         conn.commit()
+        _POSTGRES_DDL_READY = True
         return
 
     conn.execute(

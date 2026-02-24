@@ -1,0 +1,1952 @@
+[
+  {
+    "sec": 2.228,
+    "fetch_btn": "探索中... 3%",
+    "headline": "探索中 3%",
+    "progress_label": "A: Seed補充 / 準備中",
+    "progress_percent": "3%",
+    "progress_detail": "段階:A: Seed補充",
+    "progress_fill": "3.4%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 3.269,
+    "fetch_btn": "探索中... 5%",
+    "headline": "探索中 5%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "5%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:1s",
+    "progress_fill": "4.8%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 4.057,
+    "fetch_btn": "探索中... 6%",
+    "headline": "探索中 6%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "6%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:2s",
+    "progress_fill": "6.3%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 4.851,
+    "fetch_btn": "探索中... 8%",
+    "headline": "探索中 8%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "8%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:3s",
+    "progress_fill": "7.9%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 5.65,
+    "fetch_btn": "探索中... 10%",
+    "headline": "探索中 10%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "10%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:3s",
+    "progress_fill": "9.6%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 6.476,
+    "fetch_btn": "探索中... 11%",
+    "headline": "探索中 11%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "11%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:4s",
+    "progress_fill": "11.3%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 7.55,
+    "fetch_btn": "探索中... 13%",
+    "headline": "探索中 13%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "13%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:5s",
+    "progress_fill": "13.1%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 8.335,
+    "fetch_btn": "探索中... 15%",
+    "headline": "探索中 15%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "15%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:6s",
+    "progress_fill": "14.8%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 9.119,
+    "fetch_btn": "探索中... 17%",
+    "headline": "探索中 17%",
+    "progress_label": "A: Seed補充 / 探索開始",
+    "progress_percent": "17%",
+    "progress_detail": "段階:A: Seed補充 / 探索語:watch / 経過:7s",
+    "progress_fill": "16.5%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 9.927,
+    "fetch_btn": "探索中... 20%",
+    "headline": "探索中 20% /  4/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (4/20)",
+    "progress_percent": "20%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SBDC101 / 経過:8s",
+    "progress_fill": "20%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 10.718,
+    "fetch_btn": "探索中... 22%",
+    "headline": "探索中 22% /  4/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (4/20)",
+    "progress_percent": "22%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SBDC101 / 経過:9s",
+    "progress_fill": "21.5%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 11.798,
+    "fetch_btn": "探索中... 23%",
+    "headline": "探索中 23% /  4/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (4/20)",
+    "progress_percent": "23%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SBDC101 / 経過:9s",
+    "progress_fill": "22.9%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 12.645,
+    "fetch_btn": "探索中... 24%",
+    "headline": "探索中 24% /  4/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (4/20)",
+    "progress_percent": "24%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SBDC101 / 経過:10s",
+    "progress_fill": "24.3%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 13.427,
+    "fetch_btn": "探索中... 26%",
+    "headline": "探索中 26% /  4/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (4/20)",
+    "progress_percent": "26%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SBDC101 / 経過:11s",
+    "progress_fill": "25.7%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 14.207,
+    "fetch_btn": "探索中... 27%",
+    "headline": "探索中 27% /  4/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (4/20)",
+    "progress_percent": "27%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SBDC101 / 経過:12s",
+    "progress_fill": "27.2%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 14.985,
+    "fetch_btn": "探索中... 29%",
+    "headline": "探索中 29% /  4/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (4/20)",
+    "progress_percent": "29%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SBDC101 / 経過:13s",
+    "progress_fill": "28.8%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 16.026,
+    "fetch_btn": "探索中... 31%",
+    "headline": "探索中 31% /  4/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (4/20)",
+    "progress_percent": "31%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SBDC101 / 経過:14s",
+    "progress_fill": "30.5%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 16.809,
+    "fetch_btn": "探索中... 32%",
+    "headline": "探索中 32% /  4/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (4/20)",
+    "progress_percent": "32%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SBDC101 / 経過:14s",
+    "progress_fill": "32.2%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 17.584,
+    "fetch_btn": "探索中... 34%",
+    "headline": "探索中 34% /  4/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (4/20)",
+    "progress_percent": "34%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SBDC101 / 経過:15s",
+    "progress_fill": "34%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 18.369,
+    "fetch_btn": "探索中... 36%",
+    "headline": "探索中 36% /  4/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (4/20)",
+    "progress_percent": "36%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SBDC101 / 経過:16s",
+    "progress_fill": "35.7%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 19.407,
+    "fetch_btn": "探索中... 37%",
+    "headline": "探索中 37% /  4/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (4/20)",
+    "progress_percent": "37%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SBDC101 / 経過:17s",
+    "progress_fill": "37.4%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 20.181,
+    "fetch_btn": "探索中... 39%",
+    "headline": "探索中 39% /  4/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (4/20)",
+    "progress_percent": "39%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SBDC101 / 経過:18s",
+    "progress_fill": "39.2%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 21.003,
+    "fetch_btn": "探索中... 41%",
+    "headline": "探索中 41% /  4/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (4/20)",
+    "progress_percent": "41%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SBDC101 / 経過:19s",
+    "progress_fill": "40.9%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 21.798,
+    "fetch_btn": "探索中... 43%",
+    "headline": "探索中 43% /  4/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (4/20)",
+    "progress_percent": "43%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SBDC101 / 経過:20s",
+    "progress_fill": "42.7%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 22.869,
+    "fetch_btn": "探索中... 44%",
+    "headline": "探索中 44% /  4/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (4/20)",
+    "progress_percent": "44%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SBDC101 / 経過:20s",
+    "progress_fill": "44.4%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 23.684,
+    "fetch_btn": "探索中... 46%",
+    "headline": "探索中 46% /  4/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (4/20)",
+    "progress_percent": "46%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SBDC101 / 経過:21s",
+    "progress_fill": "46.1%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 24.468,
+    "fetch_btn": "探索中... 48%",
+    "headline": "探索中 48% /  4/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (4/20)",
+    "progress_percent": "48%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SBDC101 / 経過:22s",
+    "progress_fill": "47.9%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 25.261,
+    "fetch_btn": "探索中... 50%",
+    "headline": "探索中 50% /  4/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (4/20)",
+    "progress_percent": "50%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SBDC101 / 経過:23s",
+    "progress_fill": "49.6%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 26.054,
+    "fetch_btn": "探索中... 51%",
+    "headline": "探索中 51% /  4/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (4/20)",
+    "progress_percent": "51%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SBDC101 / 経過:24s",
+    "progress_fill": "51.4%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 26.872,
+    "fetch_btn": "探索中... 53%",
+    "headline": "探索中 53% /  4/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (4/20)",
+    "progress_percent": "53%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SBDC101 / 経過:25s",
+    "progress_fill": "53.1%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 27.952,
+    "fetch_btn": "探索中... 55%",
+    "headline": "探索中 55% /  4/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (4/20)",
+    "progress_percent": "55%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SBDC101 / 経過:26s",
+    "progress_fill": "54.9%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 28.737,
+    "fetch_btn": "探索中... 57%",
+    "headline": "探索中 57% /  5/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (5/20)",
+    "progress_percent": "57%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-M5610U-1JF NEW / 経過:26s",
+    "progress_fill": "56.6%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 29.528,
+    "fetch_btn": "探索中... 58%",
+    "headline": "探索中 58% /  5/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (5/20)",
+    "progress_percent": "58%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-M5610U-1JF NEW / 経過:27s",
+    "progress_fill": "58.4%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 30.312,
+    "fetch_btn": "探索中... 60%",
+    "headline": "探索中 60% /  5/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (5/20)",
+    "progress_percent": "60%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-M5610U-1JF NEW / 経過:28s",
+    "progress_fill": "60.1%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 31.345,
+    "fetch_btn": "探索中... 62%",
+    "headline": "探索中 62% /  5/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (5/20)",
+    "progress_percent": "62%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-M5610U-1JF NEW / 経過:29s",
+    "progress_fill": "61.8%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 32.125,
+    "fetch_btn": "探索中... 64%",
+    "headline": "探索中 64% /  5/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (5/20)",
+    "progress_percent": "64%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-M5610U-1JF NEW / 経過:30s",
+    "progress_fill": "63.6%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 32.895,
+    "fetch_btn": "探索中... 65%",
+    "headline": "探索中 65% /  5/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (5/20)",
+    "progress_percent": "65%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-M5610U-1JF NEW / 経過:31s",
+    "progress_fill": "65.3%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 33.675,
+    "fetch_btn": "探索中... 67%",
+    "headline": "探索中 67% /  5/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (5/20)",
+    "progress_percent": "67%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-M5610U-1JF NEW / 経過:31s",
+    "progress_fill": "67.1%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 34.713,
+    "fetch_btn": "探索中... 69%",
+    "headline": "探索中 69% /  5/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (5/20)",
+    "progress_percent": "69%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-M5610U-1JF NEW / 経過:32s",
+    "progress_fill": "68.8%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 35.492,
+    "fetch_btn": "探索中... 71%",
+    "headline": "探索中 71% /  5/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (5/20)",
+    "progress_percent": "71%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-M5610U-1JF NEW / 経過:33s",
+    "progress_fill": "70.5%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 36.541,
+    "fetch_btn": "探索中... 72%",
+    "headline": "探索中 72% /  5/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (5/20)",
+    "progress_percent": "72%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-M5610U-1JF NEW / 経過:34s",
+    "progress_fill": "72.4%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 37.066,
+    "fetch_btn": "探索中... 74%",
+    "headline": "探索中 74% /  5/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (5/20)",
+    "progress_percent": "74%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-M5610U-1JF NEW / 経過:35s",
+    "progress_fill": "74.1%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 38.122,
+    "fetch_btn": "探索中... 76%",
+    "headline": "探索中 76% /  5/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (5/20)",
+    "progress_percent": "76%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-M5610U-1JF NEW / 経過:36s",
+    "progress_fill": "75.8%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 38.948,
+    "fetch_btn": "探索中... 78%",
+    "headline": "探索中 78% /  5/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (5/20)",
+    "progress_percent": "78%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-M5610U-1JF NEW / 経過:37s",
+    "progress_fill": "77.5%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 39.807,
+    "fetch_btn": "探索中... 79%",
+    "headline": "探索中 79% /  5/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (5/20)",
+    "progress_percent": "79%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-M5610U-1JF NEW / 経過:37s",
+    "progress_fill": "79.3%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 40.689,
+    "fetch_btn": "探索中... 81%",
+    "headline": "探索中 81% /  5/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (5/20)",
+    "progress_percent": "81%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-M5610U-1JF NEW / 経過:38s",
+    "progress_fill": "81%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 41.533,
+    "fetch_btn": "探索中... 83%",
+    "headline": "探索中 83% /  5/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (5/20)",
+    "progress_percent": "83%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-M5610U-1JF NEW / 経過:39s",
+    "progress_fill": "82.8%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 42.412,
+    "fetch_btn": "探索中... 85%",
+    "headline": "探索中 85% /  5/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (5/20)",
+    "progress_percent": "85%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-M5610U-1JF NEW / 経過:40s",
+    "progress_fill": "84.5%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 43.285,
+    "fetch_btn": "探索中... 86%",
+    "headline": "探索中 86% /  5/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (5/20)",
+    "progress_percent": "86%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-M5610U-1JF NEW / 経過:41s",
+    "progress_fill": "86.3%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 44.057,
+    "fetch_btn": "探索中... 88%",
+    "headline": "探索中 88% /  5/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (5/20)",
+    "progress_percent": "88%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-M5610U-1JF NEW / 経過:42s",
+    "progress_fill": "88%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 44.834,
+    "fetch_btn": "探索中... 90%",
+    "headline": "探索中 90% /  5/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (5/20)",
+    "progress_percent": "90%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-M5610U-1JF NEW / 経過:43s",
+    "progress_fill": "89.7%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 45.616,
+    "fetch_btn": "探索中... 91%",
+    "headline": "探索中 91% /  5/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (5/20)",
+    "progress_percent": "91%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-M5610U-1JF NEW / 経過:43s",
+    "progress_fill": "91.1%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 46.662,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  5/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (5/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-M5610U-1JF NEW / 経過:44s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 47.436,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  5/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (5/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-M5610U-1JF NEW / 経過:45s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 48.206,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  6/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (6/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SBDC101 NEW / 経過:46s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 48.986,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  6/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (6/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SBDC101 NEW / 経過:47s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 50.051,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  6/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (6/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SBDC101 NEW / 経過:48s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 51.623,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  6/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (6/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SBDC101 NEW / 経過:49s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 52.442,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  6/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (6/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SBDC101 NEW / 経過:50s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 53.221,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  6/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (6/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SBDC101 NEW / 経過:51s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 54.263,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  6/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (6/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SBDC101 NEW / 経過:52s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 55.043,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  6/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (6/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SBDC101 NEW / 経過:53s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 55.827,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  6/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (6/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SBDC101 NEW / 経過:54s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 57.651,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  6/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (6/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SBDC101 NEW / 経過:55s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 58.457,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  6/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (6/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SBDC101 NEW / 経過:56s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 59.242,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  6/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (6/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SBDC101 NEW / 経過:57s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 60.025,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  6/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (6/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SBDC101 NEW / 経過:58s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 61.061,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  6/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (6/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SBDC101 NEW / 経過:59s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 61.84,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  6/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (6/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SBDC101 NEW / 経過:60s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 63.662,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  6/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (6/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SBDC101 NEW / 経過:61s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 64.44,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  7/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (7/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:NB1060-12L NEW / 経過:62s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 65.216,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  7/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (7/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:NB1060-12L NEW / 経過:63s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 65.996,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  7/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (7/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:NB1060-12L NEW / 経過:64s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 67.042,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  7/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (7/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:NB1060-12L NEW / 経過:65s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 68.601,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  7/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (7/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:NB1060-12L NEW / 経過:66s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 69.376,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  7/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (7/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:NB1060-12L NEW / 経過:67s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 70.417,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  7/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (7/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:NB1060-12L NEW / 経過:68s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 71.195,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  7/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (7/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:NB1060-12L NEW / 経過:69s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 71.971,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  7/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (7/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:NB1060-12L NEW / 経過:70s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 73.016,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  7/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (7/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:NB1060-12L NEW / 経過:71s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 74.598,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  8/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (8/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-5000U-1JF NEW / 経過:72s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 75.38,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  8/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (8/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-5000U-1JF NEW / 経過:73s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 76.183,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  8/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (8/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-5000U-1JF NEW / 経過:74s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 77.222,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  8/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (8/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-5000U-1JF NEW / 経過:75s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 78.014,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  8/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (8/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-5000U-1JF NEW / 経過:76s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 78.795,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  8/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (8/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-5000U-1JF NEW / 経過:77s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 80.648,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  8/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (8/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-5000U-1JF NEW / 経過:78s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 81.443,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  8/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (8/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-5000U-1JF NEW / 経過:79s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 82.219,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  8/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (8/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-5000U-1JF NEW / 経過:80s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 83.003,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  8/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (8/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-5000U-1JF NEW / 経過:81s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 83.836,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  8/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (8/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-5000U-1JF NEW / 経過:82s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 85.013,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  8/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (8/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-5000U-1JF NEW / 経過:83s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 86.511,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  8/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (8/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-5000U-1JF NEW / 経過:84s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 87.309,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  8/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (8/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-5000U-1JF NEW / 経過:85s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 88.087,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  8/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (8/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-5000U-1JF NEW / 経過:86s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 89.124,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  8/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (8/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-5000U-1JF NEW / 経過:87s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 89.903,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  8/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (8/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-5000U-1JF NEW / 経過:88s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 91.71,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  8/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (8/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-5000U-1JF NEW / 経過:89s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 92.489,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  8/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (8/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-5000U-1JF NEW / 経過:90s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 93.266,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  8/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (8/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-5000U-1JF NEW / 経過:91s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 94.042,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  9/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (9/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:NB1060-12L / 経過:92s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 95.072,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  9/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (9/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:NB1060-12L / 経過:93s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 95.857,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  9/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (9/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:NB1060-12L / 経過:94s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 97.681,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  9/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (9/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:NB1060-12L / 経過:95s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 98.546,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  9/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (9/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:NB1060-12L / 経過:96s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 99.364,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  9/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (9/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:NB1060-12L / 経過:97s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 100.141,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  9/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (9/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:NB1060-12L / 経過:98s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 100.921,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  9/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (9/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:NB1060-12L / 経過:99s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 102.787,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  9/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (9/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:NB1060-12L / 経過:100s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 103.568,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  10/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (10/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-5000U-1JF / 経過:101s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 104.347,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  10/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (10/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-5000U-1JF / 経過:102s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 105.134,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  10/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (10/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-5000U-1JF / 経過:103s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 105.948,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  10/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (10/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-5000U-1JF / 経過:104s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 106.996,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  10/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (10/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-5000U-1JF / 経過:105s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 108.554,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  10/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (10/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-5000U-1JF / 経過:106s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 109.338,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  10/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (10/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-5000U-1JF / 経過:107s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 110.417,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  10/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (10/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-5000U-1JF / 経過:108s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 111.419,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  10/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (10/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-5000U-1JF / 経過:109s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 112.012,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  10/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (10/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-5000U-1JF / 経過:110s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 112.905,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  10/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (10/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-5000U-1JF / 経過:111s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 114.528,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  10/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (10/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-5000U-1JF / 経過:112s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 115.309,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  10/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (10/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-5000U-1JF / 経過:113s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 116.351,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  10/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (10/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-5000U-1JF / 経過:114s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 117.129,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  10/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (10/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-5000U-1JF / 経過:115s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 117.911,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  10/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (10/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-5000U-1JF / 経過:116s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 119.741,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  10/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (10/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GW-5000U-1JF / 経過:117s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 120.516,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  11/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (11/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GA-B2100-1A1JF / 経過:118s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 121.297,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  11/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (11/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GA-B2100-1A1JF / 経過:119s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 122.075,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  11/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (11/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GA-B2100-1A1JF / 経過:120s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 123.11,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  11/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (11/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GA-B2100-1A1JF / 経過:121s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 123.88,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  11/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (11/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GA-B2100-1A1JF / 経過:122s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 125.717,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  11/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (11/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GA-B2100-1A1JF / 経過:123s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 126.825,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  11/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (11/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GA-B2100-1A1JF / 経過:124s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 127.402,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  11/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (11/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GA-B2100-1A1JF / 経過:125s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 128.166,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  11/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (11/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GA-B2100-1A1JF / 経過:126s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 128.943,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  11/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (11/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GA-B2100-1A1JF / 経過:127s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 129.719,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  11/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (11/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GA-B2100-1A1JF / 経過:128s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 131.542,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  11/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (11/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GA-B2100-1A1JF / 経過:129s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 132.312,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  11/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (11/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GA-B2100-1A1JF / 経過:130s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 133.345,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  11/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (11/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GA-B2100-1A1JF / 経過:131s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 134.116,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  12/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (12/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GM-B2100D-1AJF / 経過:132s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 134.894,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  12/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (12/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GM-B2100D-1AJF / 経過:133s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 136.714,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  12/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (12/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GM-B2100D-1AJF / 経過:134s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 137.493,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  12/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (12/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GM-B2100D-1AJF / 経過:135s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 138.272,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  12/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (12/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GM-B2100D-1AJF / 経過:136s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 139.313,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  12/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (12/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GM-B2100D-1AJF / 経過:137s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 140.093,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  12/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (12/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GM-B2100D-1AJF / 経過:138s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 140.868,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  12/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (12/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GM-B2100D-1AJF / 経過:139s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 142.727,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  12/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (12/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GM-B2100D-1AJF / 経過:140s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 143.503,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  12/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (12/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GM-B2100D-1AJF / 経過:141s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 144.283,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  12/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (12/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GM-B2100D-1AJF / 経過:142s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 145.063,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  12/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (12/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GM-B2100D-1AJF / 経過:143s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 146.109,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  12/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (12/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GM-B2100D-1AJF / 経過:144s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 146.887,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  12/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (12/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GM-B2100D-1AJF / 経過:145s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 148.454,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  12/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (12/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GM-B2100D-1AJF / 経過:146s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 149.493,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  12/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (12/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GM-B2100D-1AJF / 経過:147s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 150.28,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  12/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (12/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GM-B2100D-1AJF / 経過:148s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 151.077,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  12/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (12/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GM-B2100D-1AJF / 経過:149s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 151.855,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  13/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (13/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GMW-B5000D-1JF / 経過:150s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 153.664,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  13/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (13/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GMW-B5000D-1JF / 経過:151s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 154.455,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  13/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (13/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GMW-B5000D-1JF / 経過:152s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 155.239,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  13/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (13/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GMW-B5000D-1JF / 経過:153s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 156.31,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  13/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (13/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GMW-B5000D-1JF / 経過:154s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 157.091,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  13/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (13/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GMW-B5000D-1JF / 経過:155s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 157.875,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  13/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (13/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GMW-B5000D-1JF / 経過:156s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 159.56,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  13/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (13/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GMW-B5000D-1JF / 経過:157s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 160.363,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  13/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (13/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GMW-B5000D-1JF / 経過:158s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 161.351,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  13/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (13/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GMW-B5000D-1JF / 経過:159s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 162.037,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  13/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (13/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GMW-B5000D-1JF / 経過:160s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 162.934,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  13/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (13/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GMW-B5000D-1JF / 経過:161s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 163.847,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  13/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (13/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GMW-B5000D-1JF / 経過:162s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 165.456,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  13/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (13/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GMW-B5000D-1JF / 経過:163s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 166.514,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  13/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (13/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GMW-B5000D-1JF / 経過:164s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 167.308,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  13/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (13/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GMW-B5000D-1JF / 経過:165s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 168.088,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  13/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (13/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GMW-B5000D-1JF / 経過:166s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 168.872,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  13/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (13/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GMW-B5000D-1JF / 経過:167s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 170.694,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  13/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (13/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GMW-B5000D-1JF / 経過:168s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 171.471,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  13/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (13/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:GMW-B5000D-1JF / 経過:169s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 172.256,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  14/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (14/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SBSC009 / 経過:170s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 173.29,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  14/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (14/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SBSC009 / 経過:171s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 174.061,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  14/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (14/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SBSC009 / 経過:172s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 174.844,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  14/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (14/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SBSC009 / 経過:173s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 176.546,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  14/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (14/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SBSC009 / 経過:174s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 177.329,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  14/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (14/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SBSC009 / 経過:175s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 178.367,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  14/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (14/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SBSC009 / 経過:176s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 179.152,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  14/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (14/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SBSC009 / 経過:177s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 179.931,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  14/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (14/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SBSC009 / 経過:178s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 180.966,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  14/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (14/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SBSC009 / 経過:179s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 182.527,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  14/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (14/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SBSC009 / 経過:180s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 183.306,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  15/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (15/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SPB143 / 経過:181s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 184.357,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  15/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (15/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SPB143 / 経過:182s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 185.138,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  15/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (15/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SPB143 / 経過:183s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 185.911,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  15/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (15/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SPB143 / 経過:184s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 187.728,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  15/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (15/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SPB143 / 経過:185s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  },
+  {
+    "sec": 188.507,
+    "fetch_btn": "探索中... 92%",
+    "headline": "探索中 92% /  15/20",
+    "progress_label": "B: 日本側探索 / 一次判定 (15/20)",
+    "progress_percent": "92%",
+    "progress_detail": "段階:B: 日本側探索 / 処理中Seed:SPB143 / 経過:186s",
+    "progress_fill": "92%",
+    "progress_hidden": false
+  }
+]

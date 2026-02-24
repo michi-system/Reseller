@@ -25,16 +25,34 @@
             <select id="fetchQuery"></select>
           </label>
           <button id="fetchBtn" type="button">探索開始</button>
+          <button id="resetSeedBtn" type="button" class="secondary">カテゴリ補充リセット</button>
           <button id="reloadBtn" type="button">一覧更新</button>
           <button id="openSettingsBtn" type="button" class="secondary">詳細設定</button>
         </div>
       </div>
-      <div id="headerSeedStatus" class="header-seed-status" aria-live="polite">
-        <span class="header-seed-chip">カテゴリ: -</span>
-        <span class="header-seed-chip">Seed数: -</span>
-        <span class="header-seed-chip">補充状態: -</span>
-        <span class="header-seed-chip">更新: -</span>
-      </div>
+      <section id="headerRunStatus" class="header-runtime" aria-live="polite">
+        <p id="fetchStatusHeadline" class="hint strong">まだ探索を実行していません。</p>
+        <div class="header-runtime-grid">
+          <div id="rpaProgressWrap" class="rpa-progress">
+            <div class="rpa-progress-head">
+              <strong id="rpaProgressLabel">待機中</strong>
+              <span id="rpaProgressPercent">0%</span>
+            </div>
+            <div class="rpa-progress-bar">
+              <span id="rpaProgressFill"></span>
+            </div>
+            <p id="rpaProgressDetailTop" class="fetch-note">対象: - / 状態: -</p>
+            <p id="rpaProgressDetailBottom" class="fetch-note">除外トップ: - / 経過: -</p>
+          </div>
+          <div id="seedPoolSummary" class="seed-pool-summary">
+            seed pool情報は探索実行後に表示されます。
+          </div>
+        </div>
+        <details class="detail-toggle compact header-runtime-detail">
+          <summary>サイト別ログを開く</summary>
+          <div id="fetchStatsRows" class="fetch-stats"></div>
+        </details>
+      </section>
     </header>
 
     <div id="settingsOverlay" class="overlay" hidden>
@@ -204,23 +222,13 @@
 
         <section class="panel fetch-panel">
           <h2>探索ログ</h2>
-          <p id="fetchStatusHeadline" class="hint strong">まだ探索を実行していません。</p>
-          <div id="rpaProgressWrap" class="rpa-progress" hidden>
-            <div class="rpa-progress-head">
-              <strong id="rpaProgressLabel">待機中</strong>
-              <span id="rpaProgressPercent">0%</span>
-            </div>
-            <div class="rpa-progress-bar">
-              <span id="rpaProgressFill"></span>
-            </div>
-            <p id="rpaProgressDetail" class="fetch-note">-</p>
-          </div>
-          <div id="seedPoolSummary" class="seed-pool-summary">
-            Seedプール情報は探索実行後に表示されます。
+          <p id="selectedSampleLogHeadline" class="hint strong">候補を選択してください。</p>
+          <div id="selectedSampleLogSummary" class="seed-pool-summary">
+            左側の一覧で候補を選択すると、選択中サンプルの探索ログを表示します。
           </div>
           <details class="detail-toggle">
-            <summary>サイト別ログを開く</summary>
-            <div id="fetchStatsRows" class="fetch-stats"></div>
+            <summary>探索ログ詳細を開く</summary>
+            <div id="selectedSampleLogRows" class="fetch-stats"></div>
           </details>
         </section>
 
@@ -256,7 +264,7 @@
       </aside>
     </main>
 
-    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <div id="toast" class="toast-stack" aria-live="polite" aria-relevant="additions"></div>
     <script src="/static/miner.js"></script>
   </body>
 </html>
