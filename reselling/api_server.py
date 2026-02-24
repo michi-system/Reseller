@@ -1022,9 +1022,11 @@ class ApiHandler(BaseHTTPRequestHandler):
                 if not category:
                     category = str(body.get("query", "") or "").strip()
                 clear_pool = _to_bool(body.get("clear_pool", False), False)
+                clear_history = _to_bool(body.get("clear_history", False), False)
                 payload = reset_seed_pool_category_state(
                     category_query=category,
                     clear_pool=clear_pool,
+                    clear_history=clear_history,
                 )
                 self._send(HTTPStatus.OK, payload)
                 return

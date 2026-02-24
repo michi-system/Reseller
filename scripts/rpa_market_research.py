@@ -287,6 +287,230 @@ def _is_candidate_price_path(path: str) -> bool:
     return key.endswith(".price") and any(hint in key for hint in ("research", "row", "item"))
 
 
+def _text_from_any(value: Any) -> str:
+    if isinstance(value, str):
+        return re.sub(r"\s+", " ", value).strip()
+    if isinstance(value, dict):
+        for key in ("title", "name", "text", "label", "value", "raw"):
+            raw = value.get(key)
+            if isinstance(raw, str) and raw.strip():
+                return re.sub(r"\s+", " ", raw).strip()
+    return ""
+
+
+def _price_from_any(value: Any) -> float:
+    if isinstance(value, (int, float)):
+        return _to_float(value, -1.0)
+    if isinstance(value, str):
+        raw = value.replace(",", "").strip()
+        return _to_float(raw, -1.0)
+    if isinstance(value, dict):
+        for key in ("value", "amount", "price", "convertedFromValue", "displayValue"):
+            probe = _price_from_any(value.get(key))
+            if probe > 0:
+                return probe
+    return -1.0
+
+
+def _extract_filtered_rows_from_payload(
+    payload: Any,
+    *,
+    query_codes: List[str],
+    query_tokens: List[str],
+) -> Tuple[List[float], int, Dict[str, Any], List[Dict[str, Any]]]:
+    prices: List[float] = []
+    sold_sample: Dict[str, Any] = {}
+    rows: List[Dict[str, Any]] = []
+    sold_count_candidates: List[int] = []
+
+    max_nodes = max(200, _to_int(os.getenv("LIQUIDITY_RPA_PAYLOAD_NODE_LIMIT", "4000"), 4000))
+    stack: List[Any] = [payload]
+    seen_rows: set[str] = set()
+    visited = 0
+
+    while stack and visited < max_nodes:
+        visited += 1
+        node = stack.pop()
+        if isinstance(node, list):
+            for child in node[:120]:
+                stack.append(child)
+            continue
+        if not isinstance(node, dict):
+            continue
+
+        for value in node.values():
+            if isinstance(value, (dict, list)):
+                stack.append(value)
+
+        title = ""
+        item_url = ""
+        image_url = ""
+        best_price_score = -1
+        sold_price = -1.0
+        sold_count_local = -1
+
+        for raw_key, raw_val in node.items():
+            key = str(raw_key or "").strip().lower()
+            if not key:
+                continue
+            if any(token in key for token in ("sold", "sale")) and any(
+                token in key for token in ("count", "total", "qty", "quantity", "items")
+            ):
+                count_value = _to_int(raw_val, -1)
+                if count_value >= 0:
+                    sold_count_local = max(sold_count_local, count_value)
+
+            if (not title) and any(token in key for token in ("title", "itemtitle", "name", "productname")):
+                text = _text_from_any(raw_val)
+                if text:
+                    title = text
+
+            if (not item_url) and "url" in key:
+                maybe_url = _text_from_any(raw_val)
+                if maybe_url.startswith("http"):
+                    item_url = maybe_url
+
+            if (not image_url) and any(token in key for token in ("image", "thumbnail", "picture", "photo")):
+                maybe_image = _text_from_any(raw_val)
+                if maybe_image.startswith("http"):
+                    image_url = maybe_image
+
+            if any(token in key for token in ("price", "amount", "value")):
+                numeric = _price_from_any(raw_val)
+                if numeric > 0:
+                    score = 1
+                    if "sold" in key:
+                        score += 4
+                    if "avg" in key or "median" in key:
+                        score += 2
+                    if score > best_price_score or (score == best_price_score and (sold_price <= 0 or numeric < sold_price)):
+                        best_price_score = score
+                        sold_price = numeric
+
+        if sold_count_local >= 0:
+            sold_count_candidates.append(sold_count_local)
+
+        if not title:
+            continue
+        if _is_accessory_row(title):
+            continue
+        if not _row_matches_query_text(title, query_codes=query_codes, query_tokens=query_tokens):
+            continue
+
+        dedup_key = _normalize_code(title) + "|" + _normalize_code(item_url)
+        if dedup_key in seen_rows:
+            continue
+        seen_rows.add(dedup_key)
+
+        row_entry: Dict[str, Any] = {"title": title[:220], "rank": len(rows) + 1}
+        if item_url:
+            row_entry["item_url"] = item_url
+        if image_url:
+            row_entry["image_url"] = image_url
+        if sold_price > 0:
+            row_entry["sold_price"] = round(sold_price, 4)
+            prices.append(sold_price)
+            current_sample_price = _to_float(sold_sample.get("sold_price"), -1.0)
+            if not sold_sample or current_sample_price <= 0 or sold_price < current_sample_price:
+                sold_sample = {
+                    "title": row_entry.get("title", title[:220]),
+                    "sold_price": round(sold_price, 4),
+                }
+                if item_url:
+                    sold_sample["item_url"] = item_url
+                if image_url:
+                    sold_sample["image_url"] = image_url
+        rows.append(row_entry)
+        if len(rows) >= 240:
+            break
+
+    sold_count = max(sold_count_candidates) if sold_count_candidates else -1
+    if sold_count < 0:
+        sold_count = len(prices) if prices else len(rows)
+    return prices, sold_count, sold_sample, rows
+
+
+def _extract_raw_rows_from_payload(payload: Any) -> Tuple[List[float], List[Dict[str, Any]]]:
+    prices: List[float] = []
+    rows: List[Dict[str, Any]] = []
+    max_nodes = max(200, _to_int(os.getenv("LIQUIDITY_RPA_PAYLOAD_NODE_LIMIT", "4000"), 4000))
+    stack: List[Any] = [payload]
+    seen_rows: set[str] = set()
+    visited = 0
+
+    while stack and visited < max_nodes:
+        visited += 1
+        node = stack.pop()
+        if isinstance(node, list):
+            for child in node[:120]:
+                stack.append(child)
+            continue
+        if not isinstance(node, dict):
+            continue
+
+        for value in node.values():
+            if isinstance(value, (dict, list)):
+                stack.append(value)
+
+        title = ""
+        item_url = ""
+        image_url = ""
+        best_price_score = -1
+        sold_price = -1.0
+
+        for raw_key, raw_val in node.items():
+            key = str(raw_key or "").strip().lower()
+            if not key:
+                continue
+
+            if (not title) and any(token in key for token in ("title", "itemtitle", "name", "productname")):
+                text = _text_from_any(raw_val)
+                if text:
+                    title = text
+
+            if (not item_url) and "url" in key:
+                maybe_url = _text_from_any(raw_val)
+                if maybe_url.startswith("http"):
+                    item_url = maybe_url
+
+            if (not image_url) and any(token in key for token in ("image", "thumbnail", "picture", "photo")):
+                maybe_image = _text_from_any(raw_val)
+                if maybe_image.startswith("http"):
+                    image_url = maybe_image
+
+            if any(token in key for token in ("price", "amount", "value")):
+                numeric = _price_from_any(raw_val)
+                if numeric > 0:
+                    score = 1
+                    if "sold" in key:
+                        score += 4
+                    if "avg" in key or "median" in key:
+                        score += 2
+                    if score > best_price_score or (score == best_price_score and (sold_price <= 0 or numeric < sold_price)):
+                        best_price_score = score
+                        sold_price = numeric
+
+        if not title:
+            continue
+        dedup_key = _normalize_code(title) + "|" + _normalize_code(item_url)
+        if dedup_key in seen_rows:
+            continue
+        seen_rows.add(dedup_key)
+
+        row_entry: Dict[str, Any] = {"title": title[:220], "rank": len(rows) + 1}
+        if item_url:
+            row_entry["item_url"] = item_url
+        if image_url:
+            row_entry["image_url"] = image_url
+        if sold_price > 0:
+            row_entry["sold_price"] = round(sold_price, 4)
+            prices.append(sold_price)
+        rows.append(row_entry)
+        if len(rows) >= 240:
+            break
+    return prices, rows
+
+
 def _contains_daily_limit_message(text: str) -> bool:
     haystack = str(text or "")
     if not haystack:
@@ -500,6 +724,65 @@ def _extract_filtered_rows_with_rows(
     return prices, sold_count, sold_sample, rows
 
 
+def _extract_raw_rows_with_rows(
+    html: str,
+) -> Tuple[List[float], List[Dict[str, Any]]]:
+    prices: List[float] = []
+    rows: List[Dict[str, Any]] = []
+    text = str(html or "")
+    starts = [m.start() for m in _RE_HTML_ROW_START.finditer(text)]
+    if not starts:
+        return prices, rows
+    seen_rows: set[str] = set()
+    for idx, start in enumerate(starts):
+        end = starts[idx + 1] if (idx + 1) < len(starts) else len(text)
+        block = text[start:end]
+        row_text = _strip_html_text(block)
+        if not row_text:
+            continue
+        row_entry: Dict[str, Any] = {"title": row_text[:220], "rank": idx + 1}
+        link_match = _RE_HTML_ROW_LINK.search(block)
+        if link_match:
+            href = str(link_match.group(1) or "").strip()
+            if href:
+                row_entry["item_url"] = urllib.parse.urljoin("https://www.ebay.com", href)
+            title_raw = _strip_html_text(str(link_match.group(2) or ""))
+            if title_raw:
+                row_entry["title"] = title_raw[:220]
+        img_src = ""
+        img_match = _RE_HTML_IMG_SRC.search(block)
+        if img_match:
+            img_src = str(img_match.group(1) or "").strip()
+        if not img_src:
+            srcset_match = _RE_HTML_IMG_SRCSET.search(block)
+            if srcset_match:
+                srcset_text = str(srcset_match.group(1) or "").strip()
+                for chunk in srcset_text.split(","):
+                    url = chunk.strip().split(" ", 1)[0].strip()
+                    if url:
+                        img_src = url
+                        break
+        if img_src:
+            row_entry["image_url"] = urllib.parse.urljoin("https://www.ebay.com", img_src)
+        price_match = _RE_HTML_ROW_PRICE.search(block)
+        if price_match:
+            raw = str(price_match.group(1) or "").replace(",", "")
+            price = _to_float(raw, -1.0)
+            if price > 0:
+                prices.append(price)
+                row_entry["sold_price"] = round(price, 4)
+        dedup_key = _normalize_code(str(row_entry.get("title", ""))) + "|" + _normalize_code(
+            str(row_entry.get("item_url", ""))
+        )
+        if dedup_key in seen_rows:
+            continue
+        seen_rows.add(dedup_key)
+        rows.append(row_entry)
+        if len(rows) >= 240:
+            break
+    return prices, rows
+
+
 def _norm_query(text: str) -> str:
     return re.sub(r"\s+", " ", str(text or "").strip())
 
@@ -554,6 +837,7 @@ class MetricAccumulator:
     filtered_sold_counts: List[int]
     filtered_sold_samples: List[Dict[str, Any]]
     filtered_result_rows: List[Dict[str, Any]]
+    raw_result_rows: List[Dict[str, Any]]
     currencies: List[str]
 
     @classmethod
@@ -576,6 +860,7 @@ class MetricAccumulator:
             filtered_sold_counts=[],
             filtered_sold_samples=[],
             filtered_result_rows=[],
+            raw_result_rows=[],
             currencies=[],
         )
 
@@ -614,6 +899,22 @@ class MetricAccumulator:
             # Keep only realistic sold prices to avoid IDs and timestamps.
             filtered = _trim_low_price_outliers(local_prices)
             self.row_prices.extend(filtered)
+        payload_prices, payload_sold, payload_sample, payload_rows = _extract_filtered_rows_from_payload(
+            payload,
+            query_codes=self.query_codes,
+            query_tokens=self.query_tokens,
+        )
+        if payload_prices:
+            self.filtered_row_prices.extend(payload_prices)
+        if payload_sold >= 0:
+            self.filtered_sold_counts.append(payload_sold)
+        if isinstance(payload_sample, dict) and payload_sample:
+            self.filtered_sold_samples.append(payload_sample)
+        if payload_rows:
+            self.filtered_result_rows.extend(payload_rows)
+        _raw_prices, raw_rows = _extract_raw_rows_from_payload(payload)
+        if raw_rows:
+            self.raw_result_rows.extend(raw_rows)
 
     def ingest_html(self, html: str) -> None:
         row_count = len(_RE_HTML_ROW.findall(html or ""))
@@ -635,6 +936,9 @@ class MetricAccumulator:
             self.filtered_sold_samples.append(sold_sample)
         if filtered_rows:
             self.filtered_result_rows.extend(filtered_rows)
+        _raw_prices, raw_rows = _extract_raw_rows_with_rows(html)
+        if raw_rows:
+            self.raw_result_rows.extend(raw_rows)
         for match in _RE_HTML_ROW_PRICE.finditer(html or ""):
             raw = str(match.group(1) or "").replace(",", "")
             value = _to_float(raw, -1.0)
@@ -750,6 +1054,62 @@ class MetricAccumulator:
             compact_rows.append(out_row)
             if len(compact_rows) >= 120:
                 break
+        compact_raw_rows: List[Dict[str, Any]] = []
+        seen_raw: set[str] = set()
+        for row in self.raw_result_rows:
+            if not isinstance(row, dict):
+                continue
+            title = str(row.get("title", "") or "").strip()
+            if not title:
+                continue
+            item_url = str(row.get("item_url", "") or "").strip()
+            dedup_key = _normalize_code(title) + "|" + _normalize_code(item_url)
+            if dedup_key in seen_raw:
+                continue
+            seen_raw.add(dedup_key)
+            out_row: Dict[str, Any] = {"title": title[:220]}
+            if item_url:
+                out_row["item_url"] = item_url
+            image_url = str(row.get("image_url", "") or "").strip()
+            if image_url:
+                out_row["image_url"] = image_url
+            rank = _to_int(row.get("rank"), 0)
+            if rank > 0:
+                out_row["rank"] = rank
+            sold_price = _to_float(row.get("sold_price"), -1.0)
+            if sold_price > 0:
+                out_row["sold_price"] = round(sold_price, 4)
+            compact_raw_rows.append(out_row)
+            if len(compact_raw_rows) >= 120:
+                break
+
+        # filtered抽出でsampleが作れない場合でも、raw rowsにURL/価格が残っていれば
+        # 最低限のsold sample参照を作る（C段階の根拠参照を確保）。
+        if (not best_sold_sample) and compact_raw_rows:
+            for row in compact_raw_rows:
+                if not isinstance(row, dict):
+                    continue
+                item_url = str(row.get("item_url", "") or "").strip()
+                if not item_url:
+                    continue
+                sample_price = _to_float(row.get("sold_price"), -1.0)
+                if sample_price <= 0 and min_price > 0:
+                    sample_price = float(min_price)
+                if sample_price <= 0:
+                    continue
+                sample_title = str(row.get("title", "") or "").strip()
+                sample: Dict[str, Any] = {
+                    "sold_price": round(sample_price, 4),
+                    "item_url": item_url,
+                    "source": "raw_rows_fallback",
+                }
+                if sample_title:
+                    sample["title"] = sample_title
+                image_url = str(row.get("image_url", "") or "").strip()
+                if image_url:
+                    sample["image_url"] = image_url
+                best_sold_sample = sample
+                break
 
         return {
             "sold_90d_count": sold,
@@ -758,10 +1118,11 @@ class MetricAccumulator:
             "sold_price_median": round(median_price, 4) if median_price > 0 else -1.0,
             "sold_price_currency": currency,
             "confidence": round(min(0.95, max(0.0, confidence)), 4),
-            "raw_row_count": len(self.row_prices),
+            "raw_row_count": max(len(self.row_prices), len(self.raw_result_rows)),
             "filtered_row_count": len(self.filtered_row_prices),
             "sold_sample": best_sold_sample,
             "filtered_result_rows": compact_rows,
+            "raw_result_rows": compact_raw_rows,
         }
 
 
@@ -796,6 +1157,8 @@ def _search_and_wait(
     *,
     result_offset: int = 0,
     result_limit: int = 50,
+    category_id: int = 0,
+    category_slug: str = "",
 ) -> None:
     wait_until = str(os.getenv("LIQUIDITY_RPA_GOTO_WAIT_UNTIL", "commit") or "commit").strip().lower()
     if wait_until not in {"commit", "domcontentloaded", "load"}:
@@ -807,6 +1170,12 @@ def _search_and_wait(
         "marketplace": "EBAY-US",
         "keywords": str(query or ""),
     }
+    safe_category_id = max(0, int(category_id))
+    safe_category_slug = re.sub(r"[^a-z0-9_-]+", "", str(category_slug or "").strip().lower())
+    if safe_category_id > 0:
+        params["categoryId"] = str(safe_category_id)
+    if safe_category_slug:
+        params["category"] = safe_category_slug
     safe_offset = max(0, int(result_offset))
     safe_limit = max(10, min(200, int(result_limit)))
     if safe_offset > 0:
@@ -934,6 +1303,94 @@ def _click_first(page: Any, selectors: List[str], timeout_ms: int = 2500) -> boo
         except Exception:
             continue
     return False
+
+
+def _detect_sold_tab_selected(page: Any) -> bool:
+    try:
+        result = page.evaluate(
+            """() => {
+              const visible = (el) => {
+                if (!el) return false;
+                const st = window.getComputedStyle(el);
+                if (st.display === "none" || st.visibility === "hidden") return false;
+                const r = el.getBoundingClientRect();
+                return r.width > 1 && r.height > 1;
+              };
+              const nodes = [...document.querySelectorAll("[role='tab'], button, [role='button'], a, div")];
+              for (const el of nodes) {
+                if (!visible(el)) continue;
+                const text = (el.textContent || "").trim().toLowerCase();
+                if (!text) continue;
+                if (!(text === "sold" || text.startsWith("sold ") || text.includes(" sold"))) continue;
+                const ariaSelected = (el.getAttribute("aria-selected") || "").toLowerCase();
+                const ariaCurrent = (el.getAttribute("aria-current") || "").toLowerCase();
+                const ariaPressed = (el.getAttribute("aria-pressed") || "").toLowerCase();
+                const className = ((el.className || "") + "").toLowerCase();
+                if (ariaSelected === "true" || ariaCurrent === "true" || ariaPressed === "true") return true;
+                if (className.includes("active") || className.includes("selected")) return true;
+              }
+              return false;
+            }"""
+        )
+        return bool(result)
+    except Exception:
+        return False
+
+
+def _detect_fixed_price_selected(page: Any) -> bool:
+    try:
+        result = page.evaluate(
+            """() => {
+              const visible = (el) => {
+                if (!el) return false;
+                const st = window.getComputedStyle(el);
+                if (st.display === "none" || st.visibility === "hidden") return false;
+                const r = el.getBoundingClientRect();
+                return r.width > 1 && r.height > 1;
+              };
+              const nodes = [
+                ...document.querySelectorAll(
+                  "div[role='menuitemcheckbox'], [role='checkbox'], label, button, [role='button'], span, li"
+                ),
+              ];
+              for (const el of nodes) {
+                if (!visible(el)) continue;
+                const txt = (el.textContent || "").toLowerCase();
+                if (!txt.includes("fixed price")) continue;
+                const ariaChecked = (el.getAttribute("aria-checked") || "").toLowerCase();
+                const ariaPressed = (el.getAttribute("aria-pressed") || "").toLowerCase();
+                const cls = ((el.className || "") + "").toLowerCase();
+                const input = el.querySelector("input[type='checkbox']");
+                const checked = !!(input && input.checked);
+                if (ariaChecked === "true" || ariaPressed === "true" || checked) return true;
+                if (cls.includes("active") || cls.includes("selected") || cls.includes("checked")) return true;
+              }
+              return false;
+            }"""
+        )
+        return bool(result)
+    except Exception:
+        return False
+
+
+def _detect_sold_filters_from_url(page: Any) -> Dict[str, bool]:
+    out = {"tab_sold": False, "fixed_price": False}
+    try:
+        current = str(getattr(page, "url", "") or "").strip()
+    except Exception:
+        current = ""
+    if not current:
+        return out
+    try:
+        parsed = urllib.parse.urlparse(current)
+        params = urllib.parse.parse_qs(parsed.query or "")
+        tab_values = [str(v or "").strip().lower() for v in params.get("tabName", [])]
+        format_values = [str(v or "").strip().lower() for v in params.get("format", [])]
+        out["tab_sold"] = any(value == "sold" for value in tab_values)
+        out["fixed_price"] = any(value == "fixed_price" for value in format_values)
+    except Exception:
+        return out
+    return out
 
 
 def _apply_button_if_visible(page: Any) -> bool:
@@ -1085,9 +1542,18 @@ def _apply_ui_filters(
         "strict_reason": "",
     }
 
-    if _click_first(page, ["[role='tab']:visible:has-text('Sold')", "div[role='tab']:visible:has-text('Sold')"]):
+    state["sold_tab_selected"] = _detect_sold_tab_selected(page)
+    if (not state["sold_tab_selected"]) and _click_first(
+        page, ["[role='tab']:visible:has-text('Sold')", "div[role='tab']:visible:has-text('Sold')"]
+    ):
         state["sold_tab_selected"] = True
         page.wait_for_timeout(filter_settle_ms)
+    if not state["sold_tab_selected"]:
+        state["sold_tab_selected"] = _detect_sold_tab_selected(page)
+    if not state["sold_tab_selected"]:
+        url_state = _detect_sold_filters_from_url(page)
+        if url_state.get("tab_sold"):
+            state["sold_tab_selected"] = True
 
     picked_lookback = _set_lookback_days(page, lookback_days)
     if picked_lookback:
@@ -1128,6 +1594,8 @@ def _apply_ui_filters(
             picked = _toggle_visible_checkbox_by_tokens(page, ["fixed price"])
             if picked:
                 state["format_fixed_price_selected"] = True
+            elif _detect_fixed_price_selected(page):
+                state["format_fixed_price_selected"] = True
         _apply_button_if_visible(page)
         _wait_for_research_ready(page, 2)
 
@@ -1143,8 +1611,16 @@ def _apply_ui_filters(
             picked = _toggle_visible_checkbox_by_tokens(page, ["fixed price"])
             if picked:
                 state["format_fixed_price_selected"] = True
+            elif _detect_fixed_price_selected(page):
+                state["format_fixed_price_selected"] = True
             _apply_button_if_visible(page)
             _wait_for_research_ready(page, 2)
+    if fixed_price_only and not state["format_fixed_price_selected"]:
+        state["format_fixed_price_selected"] = _detect_fixed_price_selected(page)
+    if fixed_price_only and not state["format_fixed_price_selected"]:
+        url_state = _detect_sold_filters_from_url(page)
+        if url_state.get("fixed_price"):
+            state["format_fixed_price_selected"] = True
 
     return state
 
@@ -1193,6 +1669,29 @@ def _save_rows(path: Path, rows: Dict[str, Dict[str, Any]]) -> None:
         return
     lines = [json.dumps(row, ensure_ascii=False) for row in items]
     path.write_text("\n".join(lines) + ("\n" if lines else ""), encoding="utf-8")
+
+
+def _row_quality_rank(row: Dict[str, Any]) -> Tuple[int, int, int, int, float]:
+    sold = _to_int(row.get("sold_90d_count"), -1)
+    confidence = _to_float(row.get("confidence"), 0.0)
+    metadata = row.get("metadata") if isinstance(row.get("metadata"), dict) else {}
+    filter_state = metadata.get("filter_state") if isinstance(metadata.get("filter_state"), dict) else {}
+    strict_blocked = bool(filter_state.get("strict_blocked"))
+    filtered_row_count = _to_int(metadata.get("filtered_row_count"), 0)
+    sold_sample = metadata.get("sold_sample") if isinstance(metadata.get("sold_sample"), dict) else {}
+    has_sample = bool(
+        str(sold_sample.get("item_url", "") or "").strip()
+        and _to_float(sold_sample.get("sold_price"), -1.0) > 0
+    )
+    sold_ok = 1 if sold >= 0 else 0
+    strict_ok = 0 if strict_blocked else 1
+    filtered_ok = 1 if filtered_row_count > 0 else 0
+    sample_ok = 1 if has_sample else 0
+    return (sold_ok, strict_ok, filtered_ok, sample_ok, confidence)
+
+
+def _should_replace_existing_row(existing: Dict[str, Any], incoming: Dict[str, Any]) -> bool:
+    return _row_quality_rank(incoming) >= _row_quality_rank(existing)
 
 
 def _resolve_signal_key(query: str, mapping: Dict[str, str]) -> str:
@@ -1384,6 +1883,8 @@ def run(args: argparse.Namespace) -> int:
                     effective_wait,
                     result_offset=max(0, int(args.result_offset)),
                     result_limit=max(10, min(200, int(args.result_limit))),
+                    category_id=max(0, int(args.category_id)),
+                    category_slug=str(args.category_slug or "").strip(),
                 )
                 timings["search_wait_sec"] = round(max(0.0, time.perf_counter() - t_search), 4)
                 _emit_progress(
@@ -1554,6 +2055,8 @@ def run(args: argparse.Namespace) -> int:
                     "raw_row_count": int(metrics.get("raw_row_count", 0)),
                     "result_offset": max(0, int(args.result_offset)),
                     "result_limit": max(10, min(200, int(args.result_limit))),
+                    "category_id": max(0, int(args.category_id)),
+                    "category_slug": str(args.category_slug or "").strip().lower(),
                     "timings": timings,
                 },
             }
@@ -1563,14 +2066,10 @@ def run(args: argparse.Namespace) -> int:
             filtered_rows = metrics.get("filtered_result_rows") if isinstance(metrics.get("filtered_result_rows"), list) else []
             if filtered_rows:
                 row["metadata"]["filtered_result_rows"] = filtered_rows
-            if bool(filter_state.get("strict_blocked")):
-                row["sold_90d_count"] = -1
-                row["active_count"] = -1
-                row["sold_price_min"] = -1.0
-                row["sold_price_median"] = -1.0
-                row["confidence"] = 0.1
-                row["metadata"]["strict_filter_reason"] = str(filter_state.get("strict_reason", "filter_blocked"))
-            elif bool(filter_state.get("early_no_sold_detected")):
+            raw_rows = metrics.get("raw_result_rows") if isinstance(metrics.get("raw_result_rows"), list) else []
+            if raw_rows:
+                row["metadata"]["raw_result_rows"] = raw_rows
+            if bool(filter_state.get("early_no_sold_detected")):
                 row["sold_90d_count"] = 0
                 row["active_count"] = -1
                 row["sold_price_min"] = -1.0
@@ -1578,6 +2077,13 @@ def run(args: argparse.Namespace) -> int:
                 row["confidence"] = max(0.6, _to_float(row.get("confidence"), 0.3))
                 row["metadata"]["no_sales_in_window_inferred"] = True
                 row["metadata"]["early_no_sold_stage"] = str(early_no_sold_stage or "unknown")
+            elif bool(filter_state.get("strict_blocked")):
+                row["sold_90d_count"] = -1
+                row["active_count"] = -1
+                row["sold_price_min"] = -1.0
+                row["sold_price_median"] = -1.0
+                row["confidence"] = 0.1
+                row["metadata"]["strict_filter_reason"] = str(filter_state.get("strict_reason", "filter_blocked"))
             else:
                 strict_sold_tab_required = bool(
                     _to_int(os.getenv("LIQUIDITY_RPA_REQUIRE_SOLD_TAB_FOR_POSITIVE", "1"), 1)
@@ -1605,7 +2111,12 @@ def run(args: argparse.Namespace) -> int:
                     row["sold_90d_count"] = 0
                     row["confidence"] = max(0.55, _to_float(row.get("confidence"), 0.3))
                     row["metadata"]["no_sales_in_window_inferred"] = True
-            records[signal_key] = row
+            existing_row = records.get(signal_key)
+            if isinstance(existing_row, dict):
+                if _should_replace_existing_row(existing_row, row):
+                    records[signal_key] = row
+            else:
+                records[signal_key] = row
             print(
                 "  -> sold_90d={sold} min={minp} median={med} ccy={ccy} conf={conf}".format(
                     sold=row["sold_90d_count"],
@@ -1730,6 +2241,17 @@ def build_parser() -> argparse.ArgumentParser:
         type=int,
         default=50,
         help="Result page size hint for Product Research listing rows.",
+    )
+    parser.add_argument(
+        "--category-id",
+        type=int,
+        default=0,
+        help="eBay categoryId for Product Research filter (0 disables category filter).",
+    )
+    parser.add_argument(
+        "--category-slug",
+        default="",
+        help="Optional category slug hint (for URL/debug visibility).",
     )
     parser.add_argument("--headless", action="store_true", help="Run browser headless")
     return parser

@@ -105,6 +105,7 @@
 - 新品
 - 価格昇順
 - eBay seed 送料込み価格以下
+- 検索語は seed を基準にしつつ、`source_title` から抽出した同一seed候補で正規化して利用可（ヒット率改善、ロジック順序は不変）
 3. 検索結果そのものを記録（seed精度評価用）。
 4. 同一商品本体と思しき最安候補を seed ごとに最大2件採用。
 5. ヒットなしでも詳細ログを残す（追加API再調査はしない）。
@@ -145,6 +146,7 @@
 5. sold sample URL/価格を取得できない場合は既定で除外する。
   - `MINER_STAGE2_ALLOW_MISSING_SOLD_SAMPLE=false`（既定）
   - 例外運用を行う場合のみ `true` に切り替える。
+  - 実装補足: item単位sample抽出が欠落し、かつ strict sold URL（90日・SOLD）と最低価格がある場合は `reference_type=search_url_fallback` を付けて参照を補完する。
 
 ### 4.3 C段階の記録
 - 日本産seedごと:
@@ -198,6 +200,7 @@
   - `MINER_SEED_API_SUPPLEMENT_ENABLED=1`
 - A段階の実行ガード（補充が長時間固まる場合の保護）:
   - `MINER_SEED_POOL_REFILL_TIMEBOX_SEC=300`
+  - `MINER_SEED_POOL_REFILL_TIMEBOX_RATIO` は未指定を既定とし、指定時のみ探索timebox比率で短縮する
   - `MINER_SEED_POOL_MAX_TIMEOUT_PAGES_PER_RUN=2`
   - `MINER_SEED_POOL_TIMEOUT_COOLDOWN_HOURS=1`
 - C段階 sold sample ポリシー:

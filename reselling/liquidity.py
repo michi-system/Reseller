@@ -525,9 +525,18 @@ def _resolve_rpa_row(
     if len(head) == 2:
         prefix = str(head[0] or "").strip().lower()
         token = str(head[1] or "").strip().upper()
-        if token and prefix in {"model", "code"}:
+        if token and prefix in {"model", "code", "mpn", "gtin", "ean", "upc", "jan"}:
             token_norm = _norm(token)
-            for alt_prefix in ("model", "code"):
+            prefix_candidates: list[str] = [prefix, "model", "code"]
+            seen_prefix: set[str] = set()
+            ordered_prefixes: list[str] = []
+            for candidate in prefix_candidates:
+                name = str(candidate or "").strip().lower()
+                if not name or name in seen_prefix:
+                    continue
+                seen_prefix.add(name)
+                ordered_prefixes.append(name)
+            for alt_prefix in ordered_prefixes:
                 _push_row(entries_by_key.get(f"{alt_prefix}:{token}"))
                 if token_norm and token_norm != token:
                     _push_row(entries_by_key.get(f"{alt_prefix}:{token_norm}"))
@@ -611,6 +620,22 @@ def _rpa_row_has_strict_sold_filters(row: Dict[str, Any]) -> bool:
         return True
     sold_tab_selected = bool(filter_state.get("sold_tab_selected"))
     lookback_selected = str(filter_state.get("lookback_selected", "") or "").strip().lower()
+    sold_90d_count = _to_int(row.get("sold_90d_count"), -1)
+    # 売却0件のケースは sold tab のUI状態が欠損する場合がある。
+    # lookback=90days が明示され sold_90d_count=0 なら strict 扱いにする。
+    if (not sold_tab_selected) and sold_90d_count == 0 and lookback_selected == "last 90 days":
+        return True
+    if lookback_selected == "last 90 days":
+        url_raw = str(metadata.get("url", "") or "").strip()
+        if url_raw:
+            try:
+                parsed = urllib.parse.urlparse(url_raw)
+                params = urllib.parse.parse_qs(parsed.query or "")
+                tab_values = [str(v or "").strip().lower() for v in params.get("tabName", [])]
+                if any(v == "sold" for v in tab_values):
+                    return True
+            except Exception:
+                pass
     return sold_tab_selected and lookback_selected == "last 90 days"
 
 
@@ -644,10 +669,21 @@ def _sanitize_unreliable_rpa_signal(signal: Dict[str, Any]) -> Dict[str, Any]:
     sold_tab_selected = bool(filter_state.get("sold_tab_selected"))
     lookback_selected = str(filter_state.get("lookback_selected", "") or "").strip().lower()
     strict_ok = sold_tab_selected and lookback_selected == "last 90 days"
+    if (not strict_ok) and lookback_selected == "last 90 days":
+        url_raw = str(metadata.get("url", "") or "").strip()
+        if url_raw:
+            try:
+                parsed = urllib.parse.urlparse(url_raw)
+                params = urllib.parse.parse_qs(parsed.query or "")
+                tab_values = [str(v or "").strip().lower() for v in params.get("tabName", [])]
+                strict_ok = any(v == "sold" for v in tab_values)
+            except Exception:
+                strict_ok = False
     filtered_row_count = _to_int(metadata.get("filtered_row_count"), -1)
     has_sample = _has_signal_sold_sample_reference(metadata)
+    accepted_without_filtered_rows = bool(metadata.get("accepted_without_filtered_rows"))
 
-    if strict_ok and (filtered_row_count > 0 or has_sample):
+    if strict_ok and (filtered_row_count > 0 or has_sample or accepted_without_filtered_rows):
         return signal
 
     reason = "rpa_signal_not_strict_sold_last90"
@@ -702,6 +738,7 @@ def _provider_rpa_json(
         return None, "rpa_json_not_strict_sold_filters"
 
     require_filtered_rows_for_positive = _env_bool("LIQUIDITY_RPA_REQUIRE_FILTERED_ROWS_FOR_POSITIVE_SOLD", True)
+    accepted_without_filtered_rows = False
     if require_filtered_rows_for_positive:
         sold_probe = _to_int(row.get("sold_90d_count"), -1)
         if sold_probe > 0:
@@ -713,7 +750,22 @@ def _provider_rpa_json(
                 and _to_float(sold_sample.get("sold_price"), -1.0) > 0
             )
             if filtered_row_count <= 0 and not has_sample:
-                return None, "rpa_json_positive_sold_without_filtered_rows"
+                url_raw = str(metadata_probe.get("url", "") or "").strip()
+                has_url_sold = False
+                if url_raw:
+                    try:
+                        parsed = urllib.parse.urlparse(url_raw)
+                        params = urllib.parse.parse_qs(parsed.query or "")
+                        tab_values = [str(v or "").strip().lower() for v in params.get("tabName", [])]
+                        lookback_selected = str(
+                            (metadata_probe.get("filter_state") or {}).get("lookback_selected", "") if isinstance(metadata_probe.get("filter_state"), dict) else ""
+                        ).strip().lower()
+                        has_url_sold = (lookback_selected == "last 90 days") and any(v == "sold" for v in tab_values)
+                    except Exception:
+                        has_url_sold = False
+                if not has_url_sold:
+                    return None, "rpa_json_positive_sold_without_filtered_rows"
+                accepted_without_filtered_rows = True
 
     # 型番クエリ時は、取得行のクエリ型番と整合している場合のみ採用する。
     requested_codes = _specific_query_codes(query)
@@ -762,6 +814,10 @@ def _provider_rpa_json(
         )
     if sold_price_min > 0:
         metadata["sold_price_min"] = round(sold_price_min, 4)
+    if accepted_without_filtered_rows:
+        metadata["accepted_without_filtered_rows"] = True
+        metadata["accepted_without_filtered_rows_reason"] = "url_tabName_sold"
+        confidence = min(confidence, 0.7)
     signal = _to_signal_dict(
         signal_key=signal_key,
         sold_90d_count=sold_90d_count,

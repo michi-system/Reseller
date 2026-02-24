@@ -20,21 +20,28 @@ git clone https://github.com/michi-system/ebayminer.git
 cd ebayminer
 ```
 
-2. 初期設定を1コマンドで実行する（推奨）。
+2. 初期設定を1コマンドで実行する（推奨、最小構成）。
 
 ```bash
-python3 scripts/setup_collab.py --mode postgres --supabase-db-url 'postgresql://postgres:YOUR_PASSWORD@db.vtspugzncsxmurzlhfyg.supabase.co:5432/postgres'
+python3 scripts/setup_collab.py
 ```
 
 このコマンドで次を自動実行します。
 - `.venv` 作成
-- 必要パッケージ導入（`psycopg[binary]`）
-- `.env.local` の必要キー設定（`DB_BACKEND`, `SUPABASE_DB_URL`, `API_HOST`, `API_PORT`）
+- `.env.local` の基本キー設定（`DB_BACKEND=sqlite`, `API_HOST`, `API_PORT`）
 
-3. ローカルSQLiteで参加したい場合は次を実行する。
+3. `.env.local` にAPIキーだけを設定する（最小）。
+
+- `EBAY_CLIENT_ID`
+- `EBAY_CLIENT_SECRET`
+- `RAKUTEN_APPLICATION_ID`
+- `RAKUTEN_PUBLIC_KEY`
+- `YAHOO_APP_ID`（または `YAHOO_CLIENT_ID`）
+
+4. Supabaseを使う場合だけ、次を実行する。
 
 ```bash
-python3 scripts/setup_collab.py --mode sqlite
+python3 scripts/setup_collab.py --mode postgres --supabase-db-url 'postgresql://postgres:YOUR_PASSWORD@db.vtspugzncsxmurzlhfyg.supabase.co:5432/postgres'
 ```
 
 ## 3. 動作確認（参加直後）

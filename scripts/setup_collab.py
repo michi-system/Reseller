@@ -79,8 +79,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--mode",
         choices=("postgres", "sqlite"),
-        default="postgres",
-        help="DB backend mode for this machine (default: postgres)",
+        default="sqlite",
+        help="DB backend mode for this machine (default: sqlite)",
     )
     parser.add_argument(
         "--supabase-db-url",

@@ -51,6 +51,13 @@ class MinerSeedPoolTests(unittest.TestCase):
         keys = [miner_seed_pool._seed_key(v) for v in seeds]
         self.assertTrue(any("4549980658031" in key for key in keys))
 
+    def test_pick_liquidity_query_prefers_model_when_jp_seed_is_gtin_only(self) -> None:
+        picked = miner_seed_pool._pick_liquidity_query(
+            seed_query="CASIO GW-M5610U-1JF",
+            jp_seed_query="4971850995470",
+        )
+        self.assertEqual(picked, "GW-M5610U-1JF")
+
     def test_run_seeded_fetch_runs_stage_b_and_stage_c_pipeline(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             db_path = Path(tmp) / "seed_pool_test.db"
@@ -426,6 +433,62 @@ class MinerSeedPoolTests(unittest.TestCase):
             self.assertEqual(int(skipped), 0)
             self.assertEqual(len(remaining), 1)
 
+    def test_take_seeds_skips_active_low_liquidity_cooldown_seed(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            db_path = Path(tmp) / "seed_pool_cooldown_skip.db"
+            settings = _dummy_settings(db_path)
+            now_ts = 1_700_000_000
+            with patch.dict("os.environ", {"DB_BACKEND": "sqlite"}, clear=False):
+                with connect(settings.db_path) as conn:
+                    init_db(conn)
+                    inserted = miner_seed_pool._insert_seed_rows(
+                        conn,
+                        category_key="watch",
+                        rows=[
+                            {
+                                "seed_query": "CASIO GW-M5610U-1JF",
+                                "source_title": "seed",
+                                "source_item_url": "",
+                                "source_rank": 1,
+                                "metadata": {},
+                            }
+                        ],
+                        ttl_days=7,
+                    )
+                    self.assertEqual(inserted, 1)
+                    saved = miner_seed_pool._upsert_low_liquidity_cooldowns(
+                        conn,
+                        category_key="watch",
+                        rows=[
+                            {
+                                "seed_query": "CASIO GW-M5610U-1JF",
+                                "seed_key": "CASIOGWM5610U1JF",
+                                "sold_90d_count": 0,
+                                "min_required": 3,
+                                "metadata": {"note": "test"},
+                            }
+                        ],
+                        now_ts=now_ts,
+                    )
+                    self.assertEqual(saved, 1)
+                    preview_count, preview_skipped = miner_seed_pool._preview_seeds_for_run(
+                        conn,
+                        category_key="watch",
+                        take_count=5,
+                        now_ts=now_ts,
+                    )
+                    rows, skipped = miner_seed_pool._take_seeds_for_run(
+                        conn,
+                        category_key="watch",
+                        take_count=5,
+                        now_ts=now_ts,
+                    )
+
+            self.assertEqual(preview_count, 0)
+            self.assertEqual(preview_skipped, 1)
+            self.assertEqual(len(rows), 0)
+            self.assertEqual(skipped, 1)
+
     def test_get_seed_pool_status_returns_current_snapshot_without_refill(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             db_path = Path(tmp) / "seed_pool_status.db"
@@ -520,6 +583,29 @@ class MinerSeedPoolTests(unittest.TestCase):
                             miner_seed_pool.utc_iso(now_ts - 300),
                         ),
                     )
+                    conn.execute(
+                        """
+                        INSERT INTO miner_seed_liquidity_cooldowns (
+                            category_key, seed_key, seed_query, reason_code, sold_90d_count, min_required,
+                            blocked_until, last_rejected_at, reject_count, metadata_json, created_at, updated_at
+                        )
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        (
+                            "watch",
+                            "CASIOGWM5610U1JF",
+                            "CASIO GW-M5610U-1JF",
+                            "sold_zero",
+                            0,
+                            3,
+                            miner_seed_pool.utc_iso(now_ts + 86400),
+                            miner_seed_pool.utc_iso(now_ts - 120),
+                            1,
+                            "{}",
+                            miner_seed_pool.utc_iso(now_ts - 120),
+                            miner_seed_pool.utc_iso(now_ts - 120),
+                        ),
+                    )
                     conn.commit()
 
                 payload = miner_seed_pool.reset_seed_pool_category_state(
@@ -529,6 +615,7 @@ class MinerSeedPoolTests(unittest.TestCase):
 
                 self.assertEqual(str(payload.get("category_key")), "watch")
                 self.assertGreaterEqual(int(payload.get("cleared_page_windows", 0)), 1)
+                self.assertGreaterEqual(int(payload.get("cleared_liquidity_cooldowns", 0)), 1)
                 self.assertTrue(bool(payload.get("had_refill_state")))
                 self.assertEqual(int(payload.get("available_after", 0)), 1)
 
@@ -546,10 +633,138 @@ class MinerSeedPoolTests(unittest.TestCase):
                         "SELECT COUNT(*) AS c FROM miner_seed_pool WHERE category_key = ?",
                         ("watch",),
                     ).fetchone()
+                    row_cooldowns = conn.execute(
+                        "SELECT COUNT(*) AS c FROM miner_seed_liquidity_cooldowns WHERE category_key = ?",
+                        ("watch",),
+                    ).fetchone()
 
                 self.assertIsNone(row_state)
                 self.assertEqual(int(row_pages["c"] if row_pages else 0), 0)
                 self.assertEqual(int(row_pool["c"] if row_pool else 0), 1)
+                self.assertEqual(int(row_cooldowns["c"] if row_cooldowns else 0), 0)
+
+    def test_reset_seed_pool_category_state_clear_history_removes_category_candidates(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            db_path = Path(tmp) / "seed_pool_reset_history.db"
+            settings = _dummy_settings(db_path)
+            journal_path = Path(tmp) / "miner_seed_run_journal.jsonl"
+            now_ts = 1_700_000_000
+            with patch.dict("os.environ", {"DB_BACKEND": "sqlite"}, clear=False), patch.object(
+                miner_seed_pool, "_SEED_RUN_JOURNAL_PATH", journal_path
+            ):
+                with connect(settings.db_path) as conn:
+                    init_db(conn)
+                    inserted = miner_seed_pool._insert_seed_rows(
+                        conn,
+                        category_key="watch",
+                        rows=[
+                            {
+                                "seed_query": "CASIO GW-M5610U-1JF",
+                                "source_title": "seed",
+                                "source_item_url": "",
+                                "source_rank": 1,
+                                "metadata": {},
+                            }
+                        ],
+                        ttl_days=7,
+                    )
+                    self.assertEqual(inserted, 1)
+                    seed_row = conn.execute(
+                        "SELECT id FROM miner_seed_pool WHERE category_key = ? LIMIT 1",
+                        ("watch",),
+                    ).fetchone()
+                    seed_id = int(seed_row["id"]) if seed_row is not None else 0
+                    self.assertGreater(seed_id, 0)
+
+                    candidate_cur = conn.execute(
+                        """
+                        INSERT INTO miner_candidates (
+                            source_site, market_site, source_item_id, market_item_id,
+                            source_title, market_title, condition, match_level, match_score,
+                            expected_profit_usd, expected_margin_rate,
+                            fx_rate, fx_source, status, listing_state, metadata_json,
+                            created_at, updated_at
+                        )
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        (
+                            "rakuten",
+                            "ebay",
+                            "source-1",
+                            "market-1",
+                            "CASIO GW-M5610U-1JF",
+                            "CASIO GW-M5610U-1JF sold",
+                            "new",
+                            "L2_precise",
+                            0.9,
+                            10.0,
+                            0.1,
+                            150.0,
+                            "test",
+                            "pending",
+                            "dummy_pending",
+                            '{"seed_pool":{"id":%d,"seed_query":"CASIO GW-M5610U-1JF","category_key":"watch"}}' % seed_id,
+                            miner_seed_pool.utc_iso(now_ts - 60),
+                            miner_seed_pool.utc_iso(now_ts - 60),
+                        ),
+                    )
+                    candidate_id = int(candidate_cur.lastrowid)
+                    conn.execute(
+                        """
+                        INSERT INTO miner_rejections (candidate_id, issue_targets_json, reason_text, created_at)
+                        VALUES (?, ?, ?, ?)
+                        """,
+                        (
+                            candidate_id,
+                            "[]",
+                            "test reject",
+                            miner_seed_pool.utc_iso(now_ts - 30),
+                        ),
+                    )
+                    conn.commit()
+
+                journal_path.write_text(
+                    "\n".join(
+                        [
+                            '{"run_at":"2026-02-24T00:00:00Z","category_key":"watch","created_count":1}',
+                            '{"run_at":"2026-02-24T00:00:01Z","category_key":"sneakers","created_count":1}',
+                        ]
+                    )
+                    + "\n",
+                    encoding="utf-8",
+                )
+
+                payload = miner_seed_pool.reset_seed_pool_category_state(
+                    category_query="watch",
+                    settings=settings,
+                    clear_history=True,
+                )
+
+                self.assertEqual(int(payload.get("cleared_seed_rows", 0)), 1)
+                self.assertEqual(int(payload.get("cleared_candidate_rows", 0)), 1)
+                self.assertEqual(int(payload.get("cleared_rejection_rows", 0)), 1)
+                self.assertEqual(int(payload.get("cleared_seed_journal_rows", 0)), 1)
+                self.assertEqual(int(payload.get("available_after", 0)), 0)
+
+                with connect(settings.db_path) as conn:
+                    init_db(conn)
+                    row_pool = conn.execute(
+                        "SELECT COUNT(*) AS c FROM miner_seed_pool WHERE category_key = ?",
+                        ("watch",),
+                    ).fetchone()
+                    row_candidates = conn.execute(
+                        "SELECT COUNT(*) AS c FROM miner_candidates",
+                    ).fetchone()
+                    row_rejections = conn.execute(
+                        "SELECT COUNT(*) AS c FROM miner_rejections",
+                    ).fetchone()
+
+                self.assertEqual(int(row_pool["c"] if row_pool else 0), 0)
+                self.assertEqual(int(row_candidates["c"] if row_candidates else 0), 0)
+                self.assertEqual(int(row_rejections["c"] if row_rejections else 0), 0)
+                remaining_journal = journal_path.read_text(encoding="utf-8")
+                self.assertIn('"category_key":"sneakers"', remaining_journal)
+                self.assertNotIn('"category_key":"watch"', remaining_journal)
 
     def test_refill_filters_accessory_title(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -634,6 +849,202 @@ class MinerSeedPoolTests(unittest.TestCase):
             backfill = summary.get("seed_api_backfill", {})
             self.assertGreaterEqual(int(backfill.get("attempts", 0)), 1)
             self.assertGreaterEqual(int(backfill.get("hits", 0)), 1)
+
+    def test_refill_uses_raw_result_rows_fallback_when_filtered_rows_empty(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            db_path = Path(tmp) / "seed_pool_raw_fallback.db"
+            settings = _dummy_settings(db_path)
+            fake_row = {
+                "query": "watch",
+                "sold_90d_count": 9,
+                "sold_price_min": 130.0,
+                "metadata": {
+                    "raw_row_count": 50,
+                    "filtered_row_count": 0,
+                    "filtered_result_rows": [],
+                    "raw_result_rows": [
+                        {
+                            "title": "CASIO G-SHOCK GW-M5610U-1JF watch",
+                            "item_url": "https://www.ebay.com/itm/123456789012",
+                            "rank": 1,
+                        }
+                    ],
+                },
+            }
+            with patch.dict(
+                "os.environ",
+                {
+                    "DB_BACKEND": "sqlite",
+                    "MINER_SEED_POOL_REFILL_THRESHOLD": "60",
+                    "MINER_SEED_POOL_PAGE_SIZE": "50",
+                    "MINER_SEED_POOL_MAX_PAGES": "1",
+                    "MINER_SEED_POOL_TARGET_COUNT": "5",
+                    "MINER_SEED_API_SUPPLEMENT_ENABLED": "0",
+                },
+                clear=False,
+            ), patch.object(miner_seed_pool, "_run_rpa_page", return_value={"ok": True, "rows": [fake_row], "reason": "ok"}):
+                with connect(settings.db_path) as conn:
+                    init_db(conn)
+                    summary = miner_seed_pool._refill_seed_pool(
+                        conn,
+                        category_key="watch",
+                        category_label="腕時計",
+                        category_row={"seed_brands": ["CASIO"]},
+                    )
+
+            self.assertGreaterEqual(int(summary.get("added_count", 0)), 1)
+
+    def test_refill_uses_query_fallback_when_raw_row_count_positive(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            db_path = Path(tmp) / "seed_pool_query_fallback.db"
+            settings = _dummy_settings(db_path)
+            fake_row = {
+                "query": "GW-M5610U-1JF",
+                "sold_90d_count": 7,
+                "sold_price_min": 120.0,
+                "metadata": {
+                    "raw_row_count": 50,
+                    "filtered_row_count": 0,
+                    "filtered_result_rows": [],
+                },
+            }
+            with patch.dict(
+                "os.environ",
+                {
+                    "DB_BACKEND": "sqlite",
+                    "MINER_SEED_POOL_REFILL_THRESHOLD": "60",
+                    "MINER_SEED_POOL_PAGE_SIZE": "50",
+                    "MINER_SEED_POOL_MAX_PAGES": "1",
+                    "MINER_SEED_POOL_TARGET_COUNT": "5",
+                    "MINER_SEED_API_SUPPLEMENT_ENABLED": "0",
+                },
+                clear=False,
+            ), patch.object(miner_seed_pool, "_run_rpa_page", return_value={"ok": True, "rows": [fake_row], "reason": "ok"}):
+                with connect(settings.db_path) as conn:
+                    init_db(conn)
+                    summary = miner_seed_pool._refill_seed_pool(
+                        conn,
+                        category_key="watch",
+                        category_label="腕時計",
+                        category_row={"seed_brands": ["CASIO"]},
+                    )
+
+            self.assertGreaterEqual(int(summary.get("added_count", 0)), 1)
+
+    def test_stage2_liquidity_retry_on_miss_can_recover_signal(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            db_path = Path(tmp) / "seed_pool_liquidity_retry.db"
+            settings = _dummy_settings(db_path)
+            fake_page_row = {
+                "query": "watch",
+                "metadata": {
+                    "filtered_result_rows": [
+                        {"title": "CASIO GW-M5610U-1JF watch", "rank": 1},
+                    ]
+                },
+            }
+            created_counter = {"value": 0}
+            liquidity_calls = {"count": 0}
+            refresh_calls = {"count": 0}
+
+            def _fake_search(query: str, limit: int, timeout: int, page: int = 1, require_in_stock: bool = True):
+                item = miner_seed_pool.MarketItem(
+                    site="rakuten",
+                    item_id=f"rk-{query}-{page}",
+                    title=f"{query} 新品 本体",
+                    item_url=f"https://example.com/{query}/{page}",
+                    image_url="https://example.com/image.jpg",
+                    price=10000.0,
+                    shipping=0.0,
+                    currency="JPY",
+                    condition="new",
+                    identifiers={"mpn": "GW-M5610U-1JF"},
+                    raw={},
+                )
+                return [item], {"status": 200, "category_filter": {"applied": True}, "cache_hit": False}
+
+            def _fake_liquidity(**kwargs):
+                liquidity_calls["count"] += 1
+                if liquidity_calls["count"] == 1:
+                    return {"sold_90d_count": -1, "source": "rpa_json", "unavailable_reason": "rpa_json_no_match", "metadata": {}}
+                return {
+                    "sold_90d_count": 12,
+                    "metadata": {
+                        "sold_price_min": 180.0,
+                        "sold_sample": {
+                            "item_url": "https://www.ebay.com/itm/123456789012",
+                            "title": "eBay sold title",
+                            "image_url": "https://example.com/sold.jpg",
+                            "sold_price": 180.0,
+                        },
+                    },
+                    "source": "rpa_json",
+                    "unavailable_reason": "",
+                }
+
+            def _fake_refresh(*args, **kwargs):
+                refresh_calls["count"] += 1
+                return {"enabled": True, "ran": True, "reason": "ok", "daily_limit_reached": False, "queries": ["GW-M5610U-1JF"]}
+
+            def _fake_create(payload, settings=None):
+                created_counter["value"] += 1
+                cid = created_counter["value"]
+                return {
+                    "id": cid,
+                    "source_title": payload.get("source_title", ""),
+                    "market_title": payload.get("market_title", ""),
+                    "match_score": payload.get("match_score", 0.0),
+                    "expected_profit_usd": payload.get("expected_profit_usd", 0.0),
+                }
+
+            env = {
+                "DB_BACKEND": "sqlite",
+                "LIQUIDITY_PROVIDER_MODE": "rpa_json",
+                "LIQUIDITY_RPA_AUTO_REFRESH": "1",
+                "LIQUIDITY_RPA_RUN_ON_FETCH": "1",
+                "MINER_STAGE2_LIQUIDITY_REFRESH_ON_MISS_ENABLED": "1",
+                "MINER_STAGE2_LIQUIDITY_REFRESH_ON_MISS_BUDGET": "2",
+                "MINER_STAGE2_LIQUIDITY_PREFETCH_MAX_QUERIES": "1",
+                "MINER_SEED_POOL_MAX_PAGES": "1",
+                "MINER_SEED_POOL_TARGET_COUNT": "1",
+                "MINER_SEED_POOL_REFILL_THRESHOLD": "0",
+                "MINER_SEED_POOL_RUN_BATCH_SIZE": "1",
+                "MINER_SEED_POOL_PAGE_SIZE": "50",
+            }
+            with patch.dict("os.environ", env, clear=False), patch.object(
+                miner_seed_pool, "_run_rpa_page", return_value={"ok": True, "rows": [fake_page_row], "reason": "ok"}
+            ), patch.object(
+                miner_seed_pool, "_search_rakuten", side_effect=_fake_search
+            ), patch.object(
+                miner_seed_pool, "_search_yahoo", side_effect=_fake_search
+            ), patch.object(
+                miner_seed_pool, "get_liquidity_signal", side_effect=_fake_liquidity
+            ), patch.object(
+                miner_seed_pool, "_refresh_liquidity_rpa", side_effect=_fake_refresh
+            ), patch.object(
+                miner_seed_pool, "create_miner_candidate", side_effect=_fake_create
+            ):
+                payload = miner_seed_pool.run_seeded_fetch(
+                    category_query="watch",
+                    source_sites=["rakuten"],
+                    market_site="ebay",
+                    limit_per_site=20,
+                    max_candidates=5,
+                    min_match_score=0.72,
+                    min_profit_usd=0.01,
+                    min_margin_rate=0.03,
+                    require_in_stock=True,
+                    timeout=10,
+                    timed_mode=True,
+                    min_target_candidates=1,
+                    timebox_sec=60,
+                    max_passes=2,
+                    continue_after_target=False,
+                    settings=settings,
+                )
+
+            self.assertGreaterEqual(int(payload.get("created_count", 0)), 1)
+            self.assertGreaterEqual(int(refresh_calls["count"]), 1)
 
     def test_refill_stops_on_rpa_timeout_guard(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

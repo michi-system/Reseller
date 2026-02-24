@@ -193,28 +193,22 @@ def list_miner_queue(
         if condition is not None and str(condition).strip():
             where_clauses.append("LOWER(condition) = ?")
             where_params.append(str(condition).strip().lower())
-        # 安全性のため常時厳格化:
         # pending/approved で sold_price_min_90d を採用している候補は
         # 売却サンプルURL(ebay_sold_item_url)が存在するものだけ表示する。
+        # ただし market_price_basis_type 未設定の既存候補まで一律除外しない。
         if is_postgres_connection(conn):
-            where_clauses.append(
-                "(status NOT IN ('pending','approved') OR (metadata_json::jsonb ->> 'market_price_basis_type') = 'sold_price_min_90d')"
-            )
             where_clauses.append(
                 "("
                 "status NOT IN ('pending','approved') "
-                "OR (metadata_json::jsonb ->> 'market_price_basis_type') <> 'sold_price_min_90d' "
+                "OR COALESCE(metadata_json::jsonb ->> 'market_price_basis_type', '') <> 'sold_price_min_90d' "
                 "OR LENGTH(TRIM(COALESCE(metadata_json::jsonb ->> 'ebay_sold_item_url', ''))) > 0"
                 ")"
             )
         else:
             where_clauses.append(
-                "(status NOT IN ('pending','approved') OR json_extract(metadata_json, '$.market_price_basis_type') = 'sold_price_min_90d')"
-            )
-            where_clauses.append(
                 "("
                 "status NOT IN ('pending','approved') "
-                "OR json_extract(metadata_json, '$.market_price_basis_type') <> 'sold_price_min_90d' "
+                "OR COALESCE(json_extract(metadata_json, '$.market_price_basis_type'), '') <> 'sold_price_min_90d' "
                 "OR LENGTH(TRIM(COALESCE(json_extract(metadata_json, '$.ebay_sold_item_url'), ''))) > 0"
                 ")"
             )

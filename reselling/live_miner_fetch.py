@@ -711,6 +711,13 @@ def _run_rpa_collect_for_fetch(queries: Sequence[str]) -> Dict[str, Any]:
     login_url = (os.getenv("LIQUIDITY_RPA_LOGIN_URL", "") or "").strip()
     if login_url:
         cmd.extend(["--login-url", login_url])
+    category_id_raw = (os.getenv("LIQUIDITY_RPA_CATEGORY_ID", "") or "").strip()
+    category_slug = (os.getenv("LIQUIDITY_RPA_CATEGORY_SLUG", "") or "").strip().lower()
+    category_id = _to_int(category_id_raw, 0)
+    if category_id > 0:
+        cmd.extend(["--category-id", str(category_id)])
+    if category_slug:
+        cmd.extend(["--category-slug", category_slug])
     force_headless = _env_bool("LIQUIDITY_RPA_FORCE_HEADLESS", True)
     requested_headless = _env_bool("LIQUIDITY_RPA_HEADLESS", True)
     if force_headless or requested_headless:
@@ -2095,6 +2102,10 @@ def _search_rakuten(
         _first_env("RAKUTEN_API_BASE_URL")
         or "https://openapi.rakuten.co.jp/ichibams/api/IchibaItem/Search/20220601"
     )
+    if ("openapi.rakuten.co.jp/ichibams" in str(base_url)) and (not access_key):
+        raise ValueError(
+            "RAKUTEN_PUBLIC_KEY が未設定です（openapi.rakuten.co.jp/ichibams は accessKey 必須）"
+        )
     requested_query = str(query or "").strip()
     used_query = requested_query
     query_sanitized = False
@@ -2123,12 +2134,165 @@ def _search_rakuten(
         return fallback
 
     def _rakuten_error_detail(raw_payload: Dict[str, Any]) -> str:
+        if not isinstance(raw_payload, dict):
+            return _first_text(raw_payload)
+        errors = raw_payload.get("errors")
+        if isinstance(errors, dict):
+            msg = _first_text(
+                errors.get("errorMessage"),
+                errors.get("message"),
+                errors.get("error"),
+            )
+            if msg:
+                return msg
         desc = _first_text(
             raw_payload.get("error_description"),
             raw_payload.get("error"),
             raw_payload.get("raw"),
         )
         return desc
+
+    def _extract_rakuten_web_listings(html: str) -> List[Dict[str, Any]]:
+        out: List[Dict[str, Any]] = []
+        if not html:
+            return out
+        scripts = re.findall(
+            r'<script[^>]+type=["\']application/ld\+json["\'][^>]*>(.*?)</script>',
+            html,
+            flags=re.IGNORECASE | re.DOTALL,
+        )
+        for script in scripts:
+            payload: Any = None
+            try:
+                payload = json.loads(str(script or "").strip())
+            except Exception:
+                continue
+            nodes = payload if isinstance(payload, list) else [payload]
+            for node in nodes:
+                if not isinstance(node, dict):
+                    continue
+                ntype = str(node.get("@type", "") or "").strip().lower()
+                if ntype != "itemlist":
+                    continue
+                elements = node.get("itemListElement", [])
+                if not isinstance(elements, list):
+                    continue
+                for row in elements:
+                    item = row.get("item") if isinstance(row, dict) and isinstance(row.get("item"), dict) else {}
+                    if not isinstance(item, dict):
+                        continue
+                    title = str(item.get("name", "") or "").strip()
+                    url_text = str(item.get("url", "") or "").strip()
+                    image = item.get("image")
+                    image_url = ""
+                    if isinstance(image, list) and image:
+                        image_url = str(image[0] or "").strip()
+                    elif isinstance(image, str):
+                        image_url = image.strip()
+                    offers = item.get("offers")
+                    price = 0.0
+                    if isinstance(offers, dict):
+                        price = _to_float(offers.get("price"), 0.0)
+                        if price <= 0:
+                            price = _to_float(offers.get("lowPrice"), 0.0)
+                    if not title or not url_text or price <= 0:
+                        continue
+                    out.append(
+                        {
+                            "title": title,
+                            "url": url_text,
+                            "image_url": image_url,
+                            "price": float(price),
+                        }
+                    )
+        return out
+
+    def _search_rakuten_web_fallback(
+        *,
+        query_text: str,
+        page_no: int,
+        row_limit: int,
+        price_cap_jpy: int,
+    ) -> Tuple[List[MarketItem], Dict[str, Any]]:
+        safe_hits = max(1, min(120, int(row_limit)))
+        safe_page_no = max(1, min(100, int(page_no)))
+        params_web: Dict[str, str] = {
+            "s": "2",
+            "f": "1",
+            "nitem": str(safe_hits),
+            "p": str(safe_page_no),
+        }
+        if price_cap_jpy > 0:
+            params_web["max"] = str(price_cap_jpy)
+        web_url = (
+            f"https://search.rakuten.co.jp/search/mall/{urllib.parse.quote(str(query_text or '').strip())}/"
+            f"?{urllib.parse.urlencode(params_web)}"
+        )
+        status_web, headers_web, html_web = _request_text(
+            web_url,
+            timeout=max(8, int(timeout)),
+        )
+        rows = _extract_rakuten_web_listings(html_web)
+        items_web: List[MarketItem] = []
+        for row in rows:
+            title = str(row.get("title", "") or "").strip()
+            condition_text = title
+            if not _passes_market_listing_filters(
+                title=title,
+                condition_text=condition_text,
+                require_in_stock=require_in_stock,
+                in_stock_flag=None,
+                always_check_out_of_stock_marker=True,
+            ):
+                continue
+            price = _to_float(row.get("price"), 0.0)
+            if price <= 0:
+                continue
+            if price_cap_jpy > 0 and price > float(price_cap_jpy):
+                continue
+            item_url = str(row.get("url", "") or "").strip()
+            stable_id = hashlib.md5(item_url.encode("utf-8")).hexdigest()[:24] if item_url else ""
+            identifiers = _with_title_identifier_hints({}, title)
+            model_hint = _extract_primary_model_code(title)
+            if model_hint:
+                identifiers.setdefault("model", model_hint)
+                identifiers.setdefault("mpn", model_hint)
+            items_web.append(
+                MarketItem(
+                    site="rakuten",
+                    item_id=stable_id or f"rakuten-web-{len(items_web) + 1}",
+                    title=title,
+                    item_url=item_url,
+                    image_url=str(row.get("image_url", "") or "").strip(),
+                    price=float(price),
+                    shipping=0.0,
+                    currency="JPY",
+                    condition="new",
+                    identifiers=identifiers,
+                    raw={
+                        "itemName": title,
+                        "itemUrl": item_url,
+                        "itemPrice": float(price),
+                        "availability": 1 if require_in_stock else None,
+                        "source": "rakuten_web_fallback",
+                    },
+                )
+            )
+
+        info_web = _build_fetch_info(
+            status=status_web,
+            headers=headers_web,
+            total_key="raw_count",
+            total_value=len(rows),
+            page=safe_page_no,
+            extras={
+                "query_used": str(query_text or "").strip(),
+                "fallback_mode": "rakuten_web_html",
+                "fallback_url": web_url,
+                "fallback_rows": len(rows),
+            },
+        )
+        return items_web, info_web
 
     status, res_headers, payload = _request_with_retry(
         f"{base_url}?{urllib.parse.urlencode(params)}",
@@ -2148,6 +2312,24 @@ def _search_rakuten(
             )
     if status != 200:
         detail = _rakuten_error_detail(payload)
+        allow_web_fallback = _env_bool("RAKUTEN_WEB_FALLBACK_ENABLED", True)
+        fallback_blocked_errors = {"daily_budget_exhausted", "cache_miss"}
+        error_code = str(payload.get("error", "") or "").strip().lower() if isinstance(payload, dict) else ""
+        if allow_web_fallback and error_code not in fallback_blocked_errors:
+            web_items, web_info = _search_rakuten_web_fallback(
+                query_text=used_query,
+                page_no=safe_page,
+                row_limit=capped_limit,
+                price_cap_jpy=max_price_jpy,
+            )
+            web_info["category_filter"] = category_filter
+            web_info["query_original"] = requested_query if query_sanitized else ""
+            web_info["query_sanitized"] = bool(query_sanitized)
+            web_info["max_price_jpy"] = max_price_jpy
+            web_info["fallback_from_http"] = int(status)
+            if detail:
+                web_info["fallback_from_error"] = detail
+            return web_items, web_info
         suffix = f" ({detail})" if detail else ""
         raise ValueError(f"楽天検索失敗: http={status}{suffix}")
 
@@ -2677,6 +2859,129 @@ def _extract_yahoo_category_nodes(payload: Any) -> List[Tuple[str, str]]:
     return dedup
 
 
+def _is_accessory_like_category_name(name: str) -> bool:
+    normalized = _normalize_category_text(name)
+    if not normalized:
+        return False
+    markers = (
+        "アクセサリー",
+        "パーツ",
+        "部品",
+        "用品",
+        "ベルト",
+        "バンド",
+        "ケース",
+        "ストラップ",
+        "フィルム",
+        "カバー",
+    )
+    return any(marker in normalized for marker in markers)
+
+
+def _yahoo_category_probe_query(category_key: str, category_row: Optional[Dict[str, Any]], terms: Sequence[str]) -> str:
+    if isinstance(category_row, dict):
+        display = str(category_row.get("display_name_ja", "") or "").strip()
+        if display:
+            return display
+        aliases = category_row.get("aliases", [])
+        if isinstance(aliases, list):
+            # 日本語aliasを優先して使う。なければ先頭alias。
+            for raw in aliases:
+                text = str(raw or "").strip()
+                if text and not text.isascii():
+                    return text
+            for raw in aliases:
+                text = str(raw or "").strip()
+                if text:
+                    return text
+    for term in terms:
+        text = str(term or "").strip()
+        if text and not text.isascii():
+            return text
+    for term in terms:
+        text = str(term or "").strip()
+        if text:
+            return text
+    return str(category_key or "").replace("_", " ").strip()
+
+
+def _resolve_yahoo_category_from_item_hits(
+    *,
+    payload: Dict[str, Any],
+    terms: Sequence[str],
+    category_key: str,
+) -> Tuple[str, str, int]:
+    if not isinstance(payload, dict):
+        return "", "", 0
+    hits = payload.get("hits", [])
+    if not isinstance(hits, list):
+        return "", "", 0
+
+    score_by_id: Dict[str, Dict[str, Any]] = {}
+    for row in hits[:200]:
+        if not isinstance(row, dict):
+            continue
+        categories: List[Tuple[str, str, int, bool]] = []
+        genre = row.get("genreCategory")
+        if isinstance(genre, dict):
+            gid = str(genre.get("id", "") or "").strip()
+            gname = str(genre.get("name", "") or "").strip()
+            depth = _to_int(genre.get("depth"), 0)
+            if gid and gname:
+                categories.append((gid, gname, depth, False))
+        parents = row.get("parentGenreCategories")
+        if isinstance(parents, list):
+            for parent in parents:
+                if not isinstance(parent, dict):
+                    continue
+                gid = str(parent.get("id", "") or "").strip()
+                gname = str(parent.get("name", "") or "").strip()
+                depth = _to_int(parent.get("depth"), 0)
+                if gid and gname:
+                    categories.append((gid, gname, depth, True))
+        for gid, gname, depth, is_parent in categories:
+            base_score = _score_category_name(gname, terms)
+            if base_score <= 0:
+                continue
+            depth_bonus = max(0, 8 - (abs(depth - 2) * 2)) if depth > 0 else 0
+            parent_bonus = 6 if is_parent else 0
+            accessory_penalty = 0
+            if str(category_key or "").strip().lower() in {"watch", "watches", "wristwatch"}:
+                if _is_accessory_like_category_name(gname):
+                    accessory_penalty = 18
+            weighted = max(0, base_score + depth_bonus + parent_bonus - accessory_penalty)
+            if weighted <= 0:
+                continue
+            row_score = score_by_id.get(gid, {})
+            row_score["score"] = float(_to_float(row_score.get("score"), 0.0) + float(weighted))
+            row_score["count"] = int(_to_int(row_score.get("count"), 0) + 1)
+            row_score["name"] = str(row_score.get("name", "") or "").strip() or gname
+            best_depth = _to_int(row_score.get("depth"), 0)
+            row_score["depth"] = depth if best_depth <= 0 else min(best_depth, depth if depth > 0 else best_depth)
+            row_score["accessory"] = bool(_is_accessory_like_category_name(str(row_score.get("name", "") or "")))
+            score_by_id[gid] = row_score
+
+    if not score_by_id:
+        return "", "", 0
+
+    ranked = sorted(
+        score_by_id.items(),
+        key=lambda kv: (
+            0 if bool((kv[1] or {}).get("accessory")) else 1,
+            float((kv[1] or {}).get("score", 0.0)),
+            int((kv[1] or {}).get("count", 0)),
+            -abs(_to_int((kv[1] or {}).get("depth"), 2) - 2),
+        ),
+        reverse=True,
+    )
+    chosen_id, chosen_row = ranked[0]
+    return (
+        str(chosen_id or "").strip(),
+        str((chosen_row or {}).get("name", "") or "").strip(),
+        int(_to_int((chosen_row or {}).get("count"), 0)),
+    )
+
+
 def _resolve_category_filter_for_site(site: str, query: str) -> Dict[str, Any]:
     site_key = str(site or "").strip().lower()
     category_key, category_row = _active_category_context(query)
@@ -2722,6 +3027,9 @@ def _resolve_category_filter_for_site(site: str, query: str) -> Dict[str, Any]:
         app_id = _first_env("RAKUTEN_APPLICATION_ID")
         if not app_id:
             return {"applied": False, "reason": "rakuten_app_id_missing"}
+        # 新openapiキー（UUID形式）は genre検索APIと互換がないため、無駄な400を避ける。
+        if not re.fullmatch(r"[0-9]+", str(app_id or "").strip()):
+            return {"applied": False, "reason": "rakuten_genre_skip_non_numeric_app_id"}
         base_url = (
             _first_env("RAKUTEN_GENRE_API_BASE_URL")
             or "https://app.rakuten.co.jp/services/api/IchibaGenre/Search/20140222"
@@ -2772,6 +3080,43 @@ def _resolve_category_filter_for_site(site: str, query: str) -> Dict[str, Any]:
             if score > best_score:
                 best_id, best_score, best_name = cid, score, cname
         if not best_id or best_score <= 0:
+            query_text = _yahoo_category_probe_query(category_key, category_row, terms)
+            if not query_text:
+                return {"applied": False, "reason": "yahoo_category_not_found"}
+            probe_params = {
+                "appid": app_id,
+                "query": query_text,
+                "results": str(max(10, min(100, _env_int("MINER_YAHOO_CATEGORY_RESOLVE_RESULTS", 50)))),
+                "start": "1",
+                "condition": "new",
+            }
+            probe_status, _probe_headers, probe_payload = _request_with_retry(
+                f"https://shopping.yahooapis.jp/ShoppingWebService/V3/itemSearch?{urllib.parse.urlencode(probe_params)}",
+                timeout=max(5, _env_int("MINER_CATEGORY_FILTER_TIMEOUT_SECONDS", 12)),
+                site="yahoo",
+            )
+            if probe_status == 200 and isinstance(probe_payload, dict):
+                resolved_id, resolved_name, hit_count = _resolve_yahoo_category_from_item_hits(
+                    payload=probe_payload,
+                    terms=terms,
+                    category_key=category_key,
+                )
+                if resolved_id:
+                    entries[cache_key] = {
+                        "genre_category_id": resolved_id,
+                        "genreName": resolved_name,
+                        "fetched_at": now_ts,
+                    }
+                    cache["entries"] = entries
+                    _save_category_site_filter_cache(cache)
+                    return {
+                        "applied": True,
+                        "source": "auto_item_hits",
+                        "genre_category_id": resolved_id,
+                        "genreName": resolved_name,
+                        "probe_query": query_text,
+                        "probe_hit_count": int(hit_count),
+                    }
             return {"applied": False, "reason": "yahoo_category_not_found"}
         entries[cache_key] = {
             "genre_category_id": best_id,
@@ -5439,15 +5784,15 @@ def fetch_live_miner_candidates(
     applied_filters = {
         "condition": "new",
         "require_in_stock": require_in_stock_flag,
-        "liquidity_require_signal": _env_bool("LIQUIDITY_REQUIRE_SIGNAL", True),
+        "liquidity_require_signal": _env_bool("LIQUIDITY_REQUIRE_SIGNAL", False),
         "persist_candidates": bool(persist_candidates),
     }
     strict_sold_min_basis = _env_bool("LIQUIDITY_STRICT_SOLD_MIN_BASIS", True)
     applied_filters["strict_sold_min_basis"] = bool(strict_sold_min_basis)
     blocked_pair_signatures = _load_blocked_pair_signatures()
     liquidity_gate_enabled = _env_bool("LIQUIDITY_GATE_ENABLED", True)
-    # 90日売却データ未取得を通さないことをデフォルトにする。
-    liquidity_require_signal = _env_bool("LIQUIDITY_REQUIRE_SIGNAL", True)
+    # クローン直後でも起動しやすいよう、デフォルトはシグナル未取得を許容する。
+    liquidity_require_signal = _env_bool("LIQUIDITY_REQUIRE_SIGNAL", False)
     liquidity_mode = (os.getenv("LIQUIDITY_PROVIDER_MODE", "none") or "none").strip().lower()
     rpa_refresh_enabled = (
         bool(run_rpa_refresh)

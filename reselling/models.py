@@ -104,6 +104,26 @@ def init_db(conn: DbConnection) -> None:
         )
         conn.execute(
             """
+            CREATE TABLE IF NOT EXISTS miner_seed_liquidity_cooldowns (
+                id BIGSERIAL PRIMARY KEY,
+                category_key TEXT NOT NULL,
+                seed_key TEXT NOT NULL,
+                seed_query TEXT NOT NULL DEFAULT '',
+                reason_code TEXT NOT NULL DEFAULT '',
+                sold_90d_count INTEGER NOT NULL DEFAULT -1,
+                min_required INTEGER NOT NULL DEFAULT 0,
+                blocked_until TEXT NOT NULL,
+                last_rejected_at TEXT NOT NULL,
+                reject_count INTEGER NOT NULL DEFAULT 1,
+                metadata_json TEXT NOT NULL DEFAULT '{}',
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL,
+                UNIQUE(category_key, seed_key)
+            )
+            """
+        )
+        conn.execute(
+            """
             CREATE INDEX IF NOT EXISTS idx_miner_candidates_status_created_at
             ON miner_candidates(status, created_at DESC)
             """
@@ -130,6 +150,12 @@ def init_db(conn: DbConnection) -> None:
             """
             CREATE INDEX IF NOT EXISTS idx_miner_seed_refill_pages_category_query
             ON miner_seed_refill_pages(category_key, query_key, page_offset)
+            """
+        )
+        conn.execute(
+            """
+            CREATE INDEX IF NOT EXISTS idx_miner_seed_liquidity_cooldowns_active
+            ON miner_seed_liquidity_cooldowns(category_key, blocked_until)
             """
         )
         conn.commit()
@@ -259,6 +285,26 @@ def init_db(conn: DbConnection) -> None:
     )
     conn.execute(
         """
+        CREATE TABLE IF NOT EXISTS miner_seed_liquidity_cooldowns (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            category_key TEXT NOT NULL,
+            seed_key TEXT NOT NULL,
+            seed_query TEXT NOT NULL DEFAULT '',
+            reason_code TEXT NOT NULL DEFAULT '',
+            sold_90d_count INTEGER NOT NULL DEFAULT -1,
+            min_required INTEGER NOT NULL DEFAULT 0,
+            blocked_until TEXT NOT NULL,
+            last_rejected_at TEXT NOT NULL,
+            reject_count INTEGER NOT NULL DEFAULT 1,
+            metadata_json TEXT NOT NULL DEFAULT '{}',
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            UNIQUE(category_key, seed_key)
+        )
+        """
+    )
+    conn.execute(
+        """
         CREATE INDEX IF NOT EXISTS idx_miner_candidates_status_created_at
         ON miner_candidates(status, created_at DESC)
         """
@@ -291,6 +337,12 @@ def init_db(conn: DbConnection) -> None:
         """
         CREATE INDEX IF NOT EXISTS idx_miner_seed_refill_pages_category_query
         ON miner_seed_refill_pages(category_key, query_key, page_offset)
+        """
+    )
+    conn.execute(
+        """
+        CREATE INDEX IF NOT EXISTS idx_miner_seed_liquidity_cooldowns_active
+        ON miner_seed_liquidity_cooldowns(category_key, blocked_until)
         """
     )
     conn.commit()

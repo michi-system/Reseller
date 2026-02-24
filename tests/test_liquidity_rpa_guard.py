@@ -19,6 +19,7 @@ def _row(
     lookback_selected: str,
     filtered_row_count: int,
     sold_sample: dict | None = None,
+    url: str = "",
 ) -> dict:
     metadata = {
         "filter_state": {
@@ -27,6 +28,8 @@ def _row(
         },
         "filtered_row_count": filtered_row_count,
     }
+    if url:
+        metadata["url"] = url
     if isinstance(sold_sample, dict):
         metadata["sold_sample"] = sold_sample
     return {
@@ -135,6 +138,31 @@ class LiquidityRpaGuardTests(unittest.TestCase):
         self.assertIsNone(signal)
         self.assertEqual(reason, "rpa_json_positive_sold_without_filtered_rows")
 
+    def test_accepts_positive_sold_without_rows_when_url_confirms_sold_tab(self) -> None:
+        signal, reason = self._call_provider(
+            [
+                _row(
+                    signal_key="model:SRPG31",
+                    query="SRPG31",
+                    sold_90d_count=9,
+                    sold_price_min=188.0,
+                    sold_price_median=210.0,
+                    sold_tab_selected=False,
+                    lookback_selected="Last 90 days",
+                    filtered_row_count=0,
+                    sold_sample=None,
+                    url="https://www.ebay.com/sh/research?keywords=SRPG31&tabName=SOLD&format=FIXED_PRICE",
+                )
+            ],
+            query="SRPG31",
+            signal_key="model:SRPG31",
+        )
+        self.assertEqual(reason, "")
+        self.assertIsInstance(signal, dict)
+        self.assertEqual(int(signal.get("sold_90d_count", -1)), 9)
+        metadata = signal.get("metadata") if isinstance(signal.get("metadata"), dict) else {}
+        self.assertTrue(bool(metadata.get("accepted_without_filtered_rows")))
+
     def test_rejects_query_code_mismatch_even_when_key_matches(self) -> None:
         signal, reason = self._call_provider(
             [
@@ -185,6 +213,53 @@ class LiquidityRpaGuardTests(unittest.TestCase):
         self.assertEqual(int(signal.get("sold_90d_count", -1)), 5)
         metadata = signal.get("metadata") if isinstance(signal.get("metadata"), dict) else {}
         self.assertAlmostEqual(float(metadata.get("sold_price_min", -1.0)), 188.0)
+
+    def test_accepts_mpn_key_by_aliasing_to_model_key(self) -> None:
+        signal, reason = self._call_provider(
+            [
+                _row(
+                    signal_key="model:BC0420-61A",
+                    query="BC0420-61A",
+                    sold_90d_count=4,
+                    sold_price_min=188.0,
+                    sold_price_median=201.0,
+                    sold_tab_selected=True,
+                    lookback_selected="Last 90 days",
+                    filtered_row_count=2,
+                    sold_sample={
+                        "item_url": "https://www.ebay.com/itm/123456789012",
+                        "sold_price": 188.0,
+                    },
+                )
+            ],
+            query="BC0420-61A",
+            signal_key="mpn:BC0420-61A",
+        )
+        self.assertEqual(reason, "")
+        self.assertIsInstance(signal, dict)
+        self.assertEqual(int(signal.get("sold_90d_count", -1)), 4)
+
+    def test_accepts_zero_sold_with_lookback_even_if_sold_tab_missing(self) -> None:
+        signal, reason = self._call_provider(
+            [
+                _row(
+                    signal_key="model:BC0420-61A",
+                    query="BC0420-61A",
+                    sold_90d_count=0,
+                    sold_price_min=-1.0,
+                    sold_price_median=-1.0,
+                    sold_tab_selected=False,
+                    lookback_selected="Last 90 days",
+                    filtered_row_count=0,
+                    sold_sample=None,
+                )
+            ],
+            query="BC0420-61A",
+            signal_key="model:BC0420-61A",
+        )
+        self.assertEqual(reason, "")
+        self.assertIsInstance(signal, dict)
+        self.assertEqual(int(signal.get("sold_90d_count", -1)), 0)
 
 
 if __name__ == "__main__":

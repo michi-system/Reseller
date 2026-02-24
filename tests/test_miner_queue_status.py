@@ -72,7 +72,7 @@ class ReviewQueueStatusTests(unittest.TestCase):
             self.assertEqual(int(pending_page["total"]), 1)
             self.assertEqual(int(pending_page["items"][0]["id"]), int(pending["id"]))
 
-    def test_pending_queue_excludes_non_min_price_basis_when_strict(self) -> None:
+    def test_pending_queue_keeps_non_min_price_basis(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             settings = _settings_for(Path(tmp) / "test.db")
             ok_payload = _candidate_payload(10)
@@ -80,11 +80,13 @@ class ReviewQueueStatusTests(unittest.TestCase):
             bad_payload["metadata"] = {"market_price_basis_type": "sold_price_median_fallback_90d"}
 
             keep = create_miner_candidate(ok_payload, settings=settings)
-            create_miner_candidate(bad_payload, settings=settings)
+            keep_non_min = create_miner_candidate(bad_payload, settings=settings)
 
             pending_page = list_miner_queue(status="pending", limit=10, settings=settings)
-            self.assertEqual(int(pending_page["total"]), 1)
-            self.assertEqual(int(pending_page["items"][0]["id"]), int(keep["id"]))
+            ids = {int(row["id"]) for row in pending_page["items"]}
+            self.assertEqual(int(pending_page["total"]), 2)
+            self.assertIn(int(keep["id"]), ids)
+            self.assertIn(int(keep_non_min["id"]), ids)
 
     def test_pending_queue_excludes_min_basis_without_sold_item_url(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

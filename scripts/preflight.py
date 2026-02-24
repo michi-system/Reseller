@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import base64
+import json
 import os
 import sys
 import urllib.parse
@@ -169,6 +170,13 @@ def check_rakuten(query: str, timeout: int) -> bool:
         "RAKUTEN_API_BASE_URL",
         "https://openapi.rakuten.co.jp/ichibams/api/IchibaItem/Search/20220601",
     ).strip()
+    if ("openapi.rakuten.co.jp/ichibams" in str(base_url)) and (not access_key):
+        print_result(
+            "Rakuten:IchibaItemSearch",
+            False,
+            "RAKUTEN_PUBLIC_KEY missing (openapi.rakuten.co.jp/ichibams requires accessKey)",
+        )
+        return False
     url = f"{base_url}?{urllib.parse.urlencode(params)}"
     status, _, payload = request_json(url, timeout=timeout)
     count = payload.get("count")

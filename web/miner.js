@@ -333,15 +333,24 @@ function showToast(input) {
   const toast = normalizeToastInput(input);
   const item = document.createElement("article");
   item.className = `toast-item tone-${toast.tone}`;
+  item.dataset.toastState = "entering";
+
+  const removeToastItem = () => {
+    if (!item.isConnected) return;
+    if (item.dataset.toastState === "closing") return;
+    item.dataset.toastState = "closing";
+    item.classList.add("closing");
+    window.setTimeout(() => {
+      if (item.isConnected) item.remove();
+    }, 240);
+  };
 
   const closeBtn = document.createElement("button");
   closeBtn.type = "button";
   closeBtn.className = "toast-close";
   closeBtn.setAttribute("aria-label", "閉じる");
   closeBtn.textContent = "×";
-  closeBtn.addEventListener("click", () => {
-    item.remove();
-  });
+  closeBtn.addEventListener("click", removeToastItem);
 
   const head = document.createElement("div");
   head.className = "toast-head";
@@ -377,7 +386,11 @@ function showToast(input) {
   item.appendChild(body);
   item.setAttribute("role", "status");
   item.setAttribute("aria-live", "polite");
-  refs.toast.prepend(item);
+  refs.toast.appendChild(item);
+  window.requestAnimationFrame(() => {
+    item.dataset.toastState = "shown";
+    item.classList.remove("closing");
+  });
 }
 
 function formatUsd(value) {
@@ -1414,6 +1427,14 @@ function normalize(candidate) {
   const soldBasisRequiresSoldUrl = saleBasisType === "sold_price_min_90d";
   const soldItemUrlText = String(soldItemUrl || "").trim();
   const soldReferenceLinkAvailable = soldItemUrlText.length > 0;
+  const soldSampleFallbackUsed = Boolean(meta.ebay_sold_sample_fallback_used);
+  const soldSampleReferenceOk = meta.ebay_sold_sample_reference_ok === undefined
+    ? soldReferenceLinkAvailable
+    : Boolean(meta.ebay_sold_sample_reference_ok);
+  const liqSoldSample = (liqMeta && typeof liqMeta.sold_sample === "object") ? liqMeta.sold_sample : {};
+  const soldSampleReferenceTypeRaw = String(liqSoldSample.reference_type || "").trim().toLowerCase();
+  const soldSampleReferenceType = soldSampleReferenceTypeRaw
+    || (soldSampleFallbackUsed ? "search_url_fallback" : (soldReferenceLinkAvailable ? "item_url" : "missing"));
   const sourceStockStatusRaw = pick(meta, ["source_stock_status"], "");
   const sourceStockStatus = String(sourceStockStatusRaw || "").trim();
   const calcInput = (meta && typeof meta.calc_input === "object") ? meta.calc_input : {};
@@ -1471,6 +1492,9 @@ function normalize(candidate) {
       isSoldItemReference: hasSoldItemReference,
       soldReferenceLinkAvailable,
       soldBasisRequiresSoldUrl,
+      soldSampleFallbackUsed,
+      soldSampleReferenceOk,
+      soldSampleReferenceType,
     },
     jp: {
       title: candidate.source_title || "-",
@@ -1507,6 +1531,29 @@ function normalize(candidate) {
       fixedFeeUsd,
       miscCostUsd,
     },
+  };
+}
+
+function soldSampleReferenceInfo(ebay) {
+  const refType = String(ebay?.soldSampleReferenceType || "").trim().toLowerCase();
+  if (refType === "search_url_fallback") {
+    return {
+      short: "検索URL補完",
+      full: "売却参照: 検索URL補完",
+      tone: "warn",
+    };
+  }
+  if (Boolean(ebay?.soldReferenceLinkAvailable)) {
+    return {
+      short: "item URL",
+      full: "売却参照: item URL",
+      tone: "info",
+    };
+  }
+  return {
+    short: "未取得",
+    full: "売却参照: 未取得",
+    tone: "warn",
   };
 }
 
@@ -2357,6 +2404,7 @@ function renderCandidate(candidate) {
     const soldMinText = Number.isFinite(v.ebay.soldMin90d) && v.ebay.soldMin90d > 0
       ? moneyDualInlineHtml({ jpy: null, usd: v.ebay.soldMin90d, fxRate: v.fxRate })
       : "未取得";
+    const soldRef = soldSampleReferenceInfo(v.ebay);
     const profitText = moneyDualHtml({ jpy: v.expectedProfitJpy, usd: v.expectedProfitUsd, fxRate: v.fxRate, align: "left" });
     const grossDiffText = moneyDualInlineHtml({ jpy: null, usd: grossDiffUsd, fxRate: v.fxRate });
     const variableFeeText = moneyDualInlineHtml({ jpy: null, usd: toNumber(v.calc?.variableFeeUsd), fxRate: v.fxRate });
@@ -2368,6 +2416,7 @@ function renderCandidate(candidate) {
         <span class="digest-chip"><strong>一致スコア</strong>${escapeHtml(scoreText)}</span>
         <span class="digest-chip"><strong>90日売却</strong>${escapeHtml(soldText)}</span>
         <span class="digest-chip"><strong>90日最低</strong>${soldMinText}</span>
+        <span class="digest-chip ${soldRef.tone === "warn" ? "warn" : "info"}"><strong>売却参照</strong>${escapeHtml(soldRef.short)}</span>
         <span class="digest-chip"><strong>粗差額</strong>${grossDiffText}</span>
         <span class="digest-chip"><strong>変動手数料</strong>${variableFeeText}</span>
         <span class="digest-chip"><strong>利益式</strong>${profitEquation}</span>
@@ -2387,6 +2436,7 @@ function renderCandidate(candidate) {
 
   const riskBadges = [];
   if (colorRisk.hasColorMissingRisk) riskBadges.push('<span class="risk-chip warn">色未確認マッチ</span>');
+  if (v.ebay.soldSampleFallbackUsed) riskBadges.push('<span class="risk-chip warn">売却参照は検索URL補完</span>');
   if (isAutoApproved) riskBadges.push('<span class="risk-chip info">自動承認済み</span>');
   refs.riskFlags.innerHTML = riskBadges.join("");
 
@@ -2476,6 +2526,8 @@ function renderCandidate(candidate) {
     liquidityRows.push({ key: "流動性ソース", val: v.liquidity.source || "-" });
     liquidityRows.push({ key: "流動性Gate", val: v.liquidity.gate_passed ? "通過" : `除外(${v.liquidity.gate_reason || "unknown"})` });
   }
+  const soldRef = soldSampleReferenceInfo(v.ebay);
+  liquidityRows.push({ key: "売却参照", val: soldRef.full });
 
   if (v.ev90) {
     liquidityRows.push({
@@ -2627,6 +2679,88 @@ function mergeCandidateIntoQueues(candidate) {
   state.queues.reviewed = replace(state.queues.reviewed);
 }
 
+function removeCandidateFromQueue(rows, candidateId) {
+  const id = Number(candidateId);
+  if (!Number.isFinite(id)) return Array.isArray(rows) ? rows : [];
+  return (Array.isArray(rows) ? rows : []).filter((row) => Number(row?.id) !== id);
+}
+
+async function reseatCurrentAfterLocalQueueUpdate() {
+  const currentId = Number(state.current?.id || 0);
+  const activeItems = queueForTab(state.activeTab);
+  if (activeItems.some((row) => Number(row?.id) === currentId)) {
+    renderCandidate(state.current);
+    markActiveCandidateInList(currentId);
+    return;
+  }
+
+  let nextTab = state.activeTab;
+  let nextId = firstCandidateId(activeItems);
+  if (!Number.isFinite(nextId)) {
+    const otherTab = state.activeTab === "pending" ? "reviewed" : "pending";
+    const otherItems = queueForTab(otherTab);
+    const otherId = firstCandidateId(otherItems);
+    if (Number.isFinite(otherId)) {
+      nextTab = otherTab;
+      nextId = otherId;
+    }
+  }
+
+  if (!Number.isFinite(nextId)) {
+    state.current = null;
+    renderCandidate(null);
+    renderReviewList();
+    return;
+  }
+
+  if (state.activeTab !== nextTab) {
+    state.activeTab = nextTab;
+    renderTabState();
+  }
+  renderReviewList();
+  await selectCandidateById(nextId, { skipListRender: true, fetchDetail: false });
+}
+
+async function applyCandidateActionLocally(updatedCandidate, fallbackId) {
+  const id = Number(updatedCandidate?.id || fallbackId || 0);
+  if (!Number.isFinite(id) || id <= 0) return;
+  const statusKey = String(updatedCandidate?.status || "").toLowerCase();
+  const wasInPending = state.queues.pending.some((row) => Number(row?.id) === id);
+  const wasInReviewed = state.queues.reviewed.some((row) => Number(row?.id) === id);
+
+  state.queues.pending = removeCandidateFromQueue(state.queues.pending, id);
+  state.queues.reviewed = removeCandidateFromQueue(state.queues.reviewed, id);
+
+  if (updatedCandidate && isReviewedStatus(statusKey)) {
+    state.queues.reviewed = [updatedCandidate, ...state.queues.reviewed];
+  } else if (updatedCandidate) {
+    state.queues.pending = [updatedCandidate, ...state.queues.pending];
+  }
+
+  if (updatedCandidate) {
+    state.detailCache.set(id, updatedCandidate);
+    if (Number(state.current?.id) === id) {
+      state.current = updatedCandidate;
+    }
+  }
+
+  const pendingTotalRaw = Number(state.queueTotals.pending);
+  const reviewedTotalRaw = Number(state.queueTotals.reviewed);
+  let pendingTotal = Number.isFinite(pendingTotalRaw) ? pendingTotalRaw : state.queues.pending.length + (wasInPending ? 1 : 0);
+  let reviewedTotal = Number.isFinite(reviewedTotalRaw) ? reviewedTotalRaw : state.queues.reviewed.length + (wasInReviewed ? 1 : 0);
+
+  if (wasInPending) pendingTotal -= 1;
+  if (wasInReviewed) reviewedTotal -= 1;
+  if (updatedCandidate && isReviewedStatus(statusKey)) reviewedTotal += 1;
+  if (updatedCandidate && !isReviewedStatus(statusKey)) pendingTotal += 1;
+
+  state.queueTotals.pending = Math.max(state.queues.pending.length, Math.max(0, Math.floor(pendingTotal)));
+  state.queueTotals.reviewed = Math.max(state.queues.reviewed.length, Math.max(0, Math.floor(reviewedTotal)));
+  renderTabState();
+  renderReviewList();
+  await reseatCurrentAfterLocalQueueUpdate();
+}
+
 function candidateNeedsRejectionHydrate(candidate) {
   const status = String(candidate?.status || "").toLowerCase();
   if (status !== "rejected") return false;
@@ -2715,6 +2849,7 @@ function renderReviewList() {
     const soldMin = Number.isFinite(v.ebay.soldMin90d) && v.ebay.soldMin90d > 0
       ? moneyDualInlineHtml({ jpy: null, usd: v.ebay.soldMin90d, fxRate: v.fxRate })
       : "未取得";
+    const soldRef = soldSampleReferenceInfo(v.ebay);
     const rejection = getLatestRejection(item);
     const rejectionTargets = rejection ? formatIssueTargetsJa(rejection.issue_targets) : "";
     const rejectionReason = rejection ? compactText(rejection.reason_text, 38) : "";
@@ -2795,6 +2930,7 @@ function renderReviewList() {
             <span class="pair-chip strong">利益 ${profitText}</span>
             <span class="pair-chip">90日売却 ${escapeHtml(soldCount)}</span>
             <span class="pair-chip">90日最低 ${soldMin}</span>
+            <span class="pair-chip ${soldRef.tone === "warn" ? "warn" : "info"}">${escapeHtml(soldRef.full)}</span>
             <span class="pair-chip muted">score ${Number.isFinite(score) ? score.toFixed(3) : "-"}</span>
             ${warnChip}
             ${rejectedChip}
@@ -2810,10 +2946,6 @@ function renderReviewList() {
 
 async function fetchPendingQueue() {
   const params = new URLSearchParams({ status: "pending", limit: "200" });
-  params.set("min_profit_usd", "0.01");
-  params.set("min_margin_rate", "0.03");
-  params.set("min_match_score", String(DEFAULT_MIN_MATCH_SCORE));
-  params.set("condition", "new");
   const data = await api(`/v1/miner/queue?${params.toString()}`);
   return {
     items: Array.isArray(data.items) ? data.items : [],
@@ -2880,6 +3012,18 @@ async function selectCandidateById(candidateId, options = {}) {
     }
   }
   state.current = selected || null;
+  if (state.current && Number.isFinite(id)) {
+    const statusKey = String(state.current.status || "").toLowerCase();
+    const targetTab = isReviewedStatus(statusKey) ? "reviewed" : "pending";
+    if (!findCandidateInMemory(id)) {
+      if (targetTab === "reviewed") state.queues.reviewed = [state.current, ...state.queues.reviewed];
+      else state.queues.pending = [state.current, ...state.queues.pending];
+    }
+    if (state.activeTab !== targetTab) {
+      state.activeTab = targetTab;
+      renderTabState();
+    }
+  }
   if (skipListRender) {
     markActiveCandidateInList(id);
   } else {
@@ -2965,13 +3109,14 @@ async function onApprove() {
   if (!state.current) return;
   const id = state.current.id;
   const wasAutoApproved = String(state.current.status || "").toLowerCase() === "approved";
-  await api(`/v1/miner/candidates/${id}/approve`, { method: "POST" });
+  const updated = await api(`/v1/miner/candidates/${id}/approve`, { method: "POST" });
+  await applyCandidateActionLocally(updated, id);
   showToast(
     wasAutoApproved
       ? `候補 #${id} を最終承認し、ダミー出品へ遷移しました。`
       : `候補 #${id} を承認し、ダミー出品へ遷移しました。`
   );
-  await refreshQueues({ preserveSelection: false });
+  void refreshQueues({ preserveSelection: true }).catch(() => {});
 }
 
 async function onReject() {
@@ -2983,10 +3128,11 @@ async function onReject() {
   if (!issueTargets.length) {
     throw new Error("指摘箇所を1つ以上選択してください。");
   }
-  await api(`/v1/miner/candidates/${id}/reject`, {
+  const updated = await api(`/v1/miner/candidates/${id}/reject`, {
     method: "POST",
     body: JSON.stringify({ issue_targets: issueTargets, reason_text: reason }),
   });
+  await applyCandidateActionLocally(updated, id);
   refs.reasonText.value = "";
   refs.issueTargets.querySelectorAll('input[type="checkbox"]').forEach((el) => {
     el.checked = false;
@@ -2996,7 +3142,7 @@ async function onReject() {
       ? `候補 #${id}（自動承認済み）を否認として保存しました。`
       : `候補 #${id} を否認として保存しました。`
   );
-  await refreshQueues({ preserveSelection: false });
+  void refreshQueues({ preserveSelection: true }).catch(() => {});
 }
 
 function mountIssueTargets() {
@@ -3199,13 +3345,14 @@ async function onResetSeedPoolCategory() {
     throw new Error("カテゴリを選択してください。");
   }
   if (state.fetchInFlight) {
-    throw new Error("探索実行中はカテゴリ補充リセットを実行できません。");
+    throw new Error("探索実行中はカテゴリ履歴クリアを実行できません。");
   }
 
   const categoryLabel = currentCategoryLabel();
   const confirmed = window.confirm(
-    `${categoryLabel} の補充待機状態をリセットします。\n` +
-      "7日待機中でも即時に再探索できる状態へ戻ります。よろしいですか？",
+    `${categoryLabel} のカテゴリ履歴を全てクリアします。\n` +
+      "seedプール・補充待機・低流動性cooldown・該当候補/否認履歴・seed実行ジャーナルを削除します。\n" +
+      "この操作は取り消せません。実行しますか？",
   );
   if (!confirmed) return;
 
@@ -3213,7 +3360,7 @@ async function onResetSeedPoolCategory() {
   try {
     const payload = await api("/v1/miner/seed-pool-reset", {
       method: "POST",
-      body: JSON.stringify({ category }),
+      body: JSON.stringify({ category, clear_pool: true, clear_history: true }),
     });
     state.lastFetch = null;
     resetHeaderForCategorySelection({ loading: true });
@@ -3222,15 +3369,19 @@ async function onResetSeedPoolCategory() {
 
     const lines = [
       `カテゴリ: ${categoryLabel}`,
-      `ページ履歴クリア: ${Number(payload?.cleared_page_windows || 0)}件`,
-      `待機状態: リセット完了`,
+      `seed削除: ${Number(payload?.cleared_seed_rows || 0)}件`,
+      `補充ページ履歴削除: ${Number(payload?.cleared_page_windows || 0)}件`,
+      `低流動性cooldown削除: ${Number(payload?.cleared_liquidity_cooldowns || 0)}件`,
+      `候補削除: ${Number(payload?.cleared_candidate_rows || 0)}件`,
+      `否認履歴削除: ${Number(payload?.cleared_rejection_rows || 0)}件`,
+      `seed実行ジャーナル削除: ${Number(payload?.cleared_seed_journal_rows || 0)}件`,
       `利用可能seed: ${Number(payload?.available_after || 0)}件`,
     ];
     if (Number(payload?.cleaned_expired_count || 0) > 0) {
       lines.push(`期限切れ削除: ${Number(payload?.cleaned_expired_count || 0)}件`);
     }
     showToast({
-      title: "カテゴリ補充リセットを完了しました",
+      title: "カテゴリ履歴クリアを完了しました",
       lines,
       tone: "success",
     });

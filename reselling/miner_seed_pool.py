@@ -19,6 +19,8 @@ from .config import ROOT_DIR, Settings, load_settings
 from .liquidity import get_liquidity_signal
 from .live_miner_fetch import (
     MarketItem,
+    _maybe_refresh_rpa_for_fetch,
+    _rpa_daily_limit_reached,
     _build_category_seed_queries,
     _ebay_access_token,
     _extract_codes,
@@ -143,8 +145,31 @@ _TARGET_LABELS: Dict[str, str] = {
     "camera_lenses": "レンズ",
 }
 
+_CATEGORY_SEED_MIN_SOLD_PRICE_USD_DEFAULTS: Dict[str, float] = {
+    "watch": 8.0,
+    "sneakers": 20.0,
+    "streetwear": 15.0,
+    "trading_cards": 10.0,
+    "toys_collectibles": 12.0,
+    "video_game_consoles": 60.0,
+    "camera_lenses": 25.0,
+}
+
+_EBAY_PR_CATEGORY_DEFAULTS: Dict[str, Dict[str, Any]] = {
+    "watch": {"id": 31387, "slug": "wristwatches"},
+    "sneakers": {"id": 15709, "slug": "mens-sneakers"},
+    "streetwear": {"id": 1059, "slug": "streetwear"},
+    "trading_cards": {"id": 183454, "slug": "individual-collectible-card-game-cards"},
+    "toys_collectibles": {"id": 220, "slug": "toys-hobbies"},
+    "video_game_consoles": {"id": 139971, "slug": "video-game-consoles"},
+    "camera_lenses": {"id": 3323, "slug": "camera-lenses"},
+}
+
 _SEED_RUN_JOURNAL_PATH = ROOT_DIR / "data" / "miner_seed_run_journal.jsonl"
 _SEED_API_USAGE_PATH = ROOT_DIR / "data" / "miner_seed_api_usage.json"
+_LOW_LIQUIDITY_COOLDOWN_ENABLED_ENV = "MINER_SEED_LOW_LIQUIDITY_COOLDOWN_ENABLED"
+_LOW_LIQUIDITY_COOLDOWN_DAYS_ZERO_ENV = "MINER_SEED_LOW_LIQUIDITY_COOLDOWN_DAYS_ZERO"
+_LOW_LIQUIDITY_COOLDOWN_DAYS_LOW_ENV = "MINER_SEED_LOW_LIQUIDITY_COOLDOWN_DAYS_LOW"
 
 
 @contextmanager
@@ -258,6 +283,123 @@ def _normalize_category_key(text: str) -> str:
     return normalized
 
 
+_BIG_WORD_CONDITION_WORDS: Set[str] = {
+    "NEW",
+    "NIB",
+    "UNUSED",
+    "USED",
+    "PREOWNED",
+    "PRE-OWNED",
+    "OPENBOX",
+    "OPEN-BOX",
+    "JUNK",
+    "REFURBISHED",
+    "RENEWED",
+    "新品",
+    "未使用",
+    "中古",
+    "ジャンク",
+    "訳あり",
+}
+
+_BIG_WORD_DROP_WORDS: Set[str] = {
+    "NEW",
+    "NIB",
+    "UNUSED",
+    "新品",
+    "未使用",
+}
+
+_BIG_WORD_TRAILING_CONDITION_PHRASES: Tuple[Tuple[str, ...], ...] = (
+    ("FOR", "PARTS"),
+    ("PARTS", "ONLY"),
+    ("OPEN", "BOX"),
+    ("LIKE", "NEW"),
+)
+
+
+def _big_word_token_norm(token: str) -> str:
+    return re.sub(
+        r"[^A-Z0-9\u3040-\u30FF\u3400-\u9FFF]+",
+        "",
+        unicodedata.normalize("NFKC", str(token or "")).upper(),
+    )
+
+
+def _normalize_big_word(text: str) -> str:
+    compact = re.sub(r"\s+", " ", unicodedata.normalize("NFKC", str(text or ""))).strip()
+    if not compact:
+        return ""
+    raw_tokens = [v for v in compact.split(" ") if str(v or "").strip()]
+    tokens: List[str] = []
+    token_norms: List[str] = []
+    for raw in raw_tokens:
+        cleaned = re.sub(r"^[^0-9A-Z\u3040-\u30FF\u3400-\u9FFF-]+", "", str(raw or "").strip(), flags=re.IGNORECASE)
+        cleaned = re.sub(r"[^0-9A-Z\u3040-\u30FF\u3400-\u9FFF-]+$", "", cleaned, flags=re.IGNORECASE)
+        cleaned = re.sub(r"\s+", " ", cleaned).strip()
+        if not cleaned:
+            continue
+        norm = _big_word_token_norm(cleaned)
+        if not norm:
+            continue
+        tokens.append(cleaned)
+        token_norms.append(norm)
+
+    if not tokens:
+        return ""
+
+    # 末尾の状態語・状態フレーズは除去。
+    while tokens:
+        removed = False
+        for phrase in _BIG_WORD_TRAILING_CONDITION_PHRASES:
+            n = len(phrase)
+            if len(token_norms) >= n and tuple(token_norms[-n:]) == phrase:
+                del tokens[-n:]
+                del token_norms[-n:]
+                removed = True
+                break
+        if removed:
+            continue
+        if token_norms and token_norms[-1] in _BIG_WORD_CONDITION_WORDS:
+            tokens.pop()
+            token_norms.pop()
+            continue
+        break
+
+    # 先頭の状態語を除去（New Balanceだけは温存）。
+    while token_norms and token_norms[0] in _BIG_WORD_CONDITION_WORDS:
+        if token_norms[0] == "NEW" and len(token_norms) >= 2 and token_norms[1] == "BALANCE":
+            break
+        tokens.pop(0)
+        token_norms.pop(0)
+
+    # 中間の "NEW" 等は基本ノイズなので落とす（New Balanceのみ温存）。
+    pruned_tokens: List[str] = []
+    pruned_norms: List[str] = []
+    for idx, token in enumerate(tokens):
+        norm = token_norms[idx]
+        if norm in _BIG_WORD_DROP_WORDS:
+            prev_norm = pruned_norms[-1] if pruned_norms else ""
+            next_norm = token_norms[idx + 1] if idx + 1 < len(token_norms) else ""
+            if not (norm == "NEW" and (prev_norm == "BALANCE" or next_norm == "BALANCE")):
+                continue
+        pruned_tokens.append(token)
+        pruned_norms.append(norm)
+
+    if not pruned_tokens:
+        return ""
+    normalized = re.sub(r"\s+", " ", " ".join(pruned_tokens)).strip()
+    return normalized
+
+
+def _big_word_dedupe_key(text: str) -> str:
+    return re.sub(
+        r"[^A-Z0-9\u3040-\u30FF\u3400-\u9FFF]+",
+        "",
+        unicodedata.normalize("NFKC", str(text or "")).upper(),
+    )
+
+
 def _resolve_category(category_input: str) -> Tuple[str, str, Dict[str, Any]]:
     row = _match_category_row(str(category_input or ""))
     if isinstance(row, dict):
@@ -267,6 +409,63 @@ def _resolve_category(category_input: str) -> Tuple[str, str, Dict[str, Any]]:
     key = _normalize_category_key(category_input)
     label = _TARGET_LABELS.get(key, key or "カテゴリ")
     return key, label, {}
+
+
+def _category_seed_min_sold_price_usd(category_key: str, category_row: Dict[str, Any]) -> float:
+    key = _normalize_category_key(category_key)
+    env_suffix = re.sub(r"[^A-Z0-9_]+", "_", key.upper())
+    env_value = to_float(os.getenv(f"MINER_SEED_POOL_MIN_SOLD_PRICE_USD_{env_suffix}", ""), -1.0)
+    if env_value > 0:
+        return float(env_value)
+
+    if isinstance(category_row, dict):
+        for value_key in (
+            "seed_min_sold_price_usd",
+            "min_sold_price_usd",
+            "seed_min_price_usd",
+            "min_price_usd",
+        ):
+            value = to_float(category_row.get(value_key), -1.0)
+            if value > 0:
+                return float(value)
+
+    default_value = to_float(_CATEGORY_SEED_MIN_SOLD_PRICE_USD_DEFAULTS.get(key), -1.0)
+    if default_value > 0:
+        return float(default_value)
+
+    return max(0.0, to_float(os.getenv("MINER_SEED_POOL_MIN_SOLD_PRICE_USD_DEFAULT", ""), 0.0))
+
+
+def _resolve_ebay_pr_category_filter(category_key: str, category_row: Dict[str, Any]) -> Dict[str, Any]:
+    key = _normalize_category_key(category_key)
+    defaults = _EBAY_PR_CATEGORY_DEFAULTS.get(key, {})
+    default_id = max(0, to_int(defaults.get("id"), 0))
+    default_slug = str(defaults.get("slug", "") or "").strip().lower()
+
+    row_id = 0
+    row_slug = ""
+    if isinstance(category_row, dict) and category_row:
+        row_id = max(0, to_int(category_row.get("ebay_pr_category_id"), 0))
+        row_slug = str(category_row.get("ebay_pr_category_slug", "") or "").strip().lower()
+        if (not row_id) or (not row_slug):
+            extra = category_row.get("ebay_pr") if isinstance(category_row.get("ebay_pr"), dict) else {}
+            if isinstance(extra, dict):
+                row_id = row_id or max(0, to_int(extra.get("category_id"), 0))
+                row_slug = row_slug or str(extra.get("category_slug", "") or "").strip().lower()
+
+    env_suffix = re.sub(r"[^A-Z0-9_]+", "_", key.upper())
+    env_id = max(0, env_int(f"MINER_EBAY_PR_CATEGORY_ID_{env_suffix}", 0))
+    env_slug = str((os.getenv(f"MINER_EBAY_PR_CATEGORY_SLUG_{env_suffix}", "") or "")).strip().lower()
+
+    category_id = env_id or row_id or default_id
+    category_slug = env_slug or row_slug or default_slug
+    category_slug = re.sub(r"[^a-z0-9_-]+", "", category_slug)
+    enabled = bool(category_id > 0)
+    return {
+        "enabled": enabled,
+        "category_id": int(category_id) if enabled else 0,
+        "category_slug": category_slug if enabled else "",
+    }
 
 
 def _category_big_words(category_key: str, category_row: Dict[str, Any]) -> List[str]:
@@ -295,10 +494,14 @@ def _category_big_words(category_key: str, category_row: Dict[str, Any]) -> List
     out: List[str] = []
     seen: Set[str] = set()
     for raw in candidates:
-        text = re.sub(r"\s+", " ", unicodedata.normalize("NFKC", str(raw or ""))).strip()
+        text = _normalize_big_word(str(raw or ""))
+        if not text:
+            text = re.sub(r"\s+", " ", unicodedata.normalize("NFKC", str(raw or ""))).strip()
         if not text:
             continue
-        key = text.upper()
+        key = _big_word_dedupe_key(text)
+        if not key:
+            key = text.upper()
         if key in seen:
             continue
         seen.add(key)
@@ -741,7 +944,45 @@ def _append_seed_run_journal(row: Dict[str, Any]) -> None:
         pass
 
 
-def _run_rpa_page(*, query: str, offset: int, limit: int) -> Dict[str, Any]:
+def _prune_seed_run_journal_by_category(*, category_key: str) -> int:
+    if not _SEED_RUN_JOURNAL_PATH.exists():
+        return 0
+    removed = 0
+    kept_lines: List[str] = []
+    try:
+        for raw in _SEED_RUN_JOURNAL_PATH.read_text(encoding="utf-8").splitlines():
+            line = str(raw or "").strip()
+            if not line:
+                continue
+            row: Dict[str, Any] = {}
+            try:
+                parsed = json.loads(line)
+                if isinstance(parsed, dict):
+                    row = parsed
+            except Exception:
+                row = {}
+            row_category_key = _normalize_category_key(str(row.get("category_key", "") or ""))
+            if row_category_key and row_category_key == category_key:
+                removed += 1
+                continue
+            kept_lines.append(line)
+        if kept_lines:
+            _SEED_RUN_JOURNAL_PATH.write_text("\n".join(kept_lines) + "\n", encoding="utf-8")
+        else:
+            _SEED_RUN_JOURNAL_PATH.unlink(missing_ok=True)
+    except Exception:
+        return 0
+    return int(removed)
+
+
+def _run_rpa_page(
+    *,
+    query: str,
+    offset: int,
+    limit: int,
+    category_id: int = 0,
+    category_slug: str = "",
+) -> Dict[str, Any]:
     script_path = ROOT_DIR / "scripts" / "rpa_market_research.py"
     if not script_path.exists():
         return {"ok": False, "reason": "rpa_script_missing", "rows": [], "returncode": -1}
@@ -758,6 +999,31 @@ def _run_rpa_page(*, query: str, offset: int, limit: int) -> Dict[str, Any]:
     python_exec = str(ROOT_DIR / ".venv" / "bin" / "python")
     if not Path(python_exec).exists():
         python_exec = os.getenv("PYTHON", "") or "python3"
+    wait_seconds = max(2, env_int("MINER_SEED_POOL_RPA_WAIT_SECONDS", env_int("LIQUIDITY_RPA_WAIT_SECONDS", 8)))
+    force_headless = env_bool("LIQUIDITY_RPA_FORCE_HEADLESS", True)
+    profile_dir_raw = str((os.getenv("LIQUIDITY_RPA_PROFILE_DIR", "") or "").strip())
+    profile_dir_path = Path(profile_dir_raw).expanduser() if profile_dir_raw else (ROOT_DIR / "data" / "rpa" / "ebay_profile")
+    if not profile_dir_path.is_absolute():
+        profile_dir_path = (ROOT_DIR / profile_dir_path).resolve()
+    login_marker_path = profile_dir_path / ".login_ready"
+    visual_login_default_pause = max(30, env_int("LIQUIDITY_RPA_VISUAL_LOGIN_PAUSE_SECONDS", 180))
+    pause_for_login_raw = str((os.getenv("LIQUIDITY_RPA_PAUSE_FOR_LOGIN_SECONDS", "") or "").strip())
+    if force_headless:
+        pause_for_login_sec = 0
+    elif pause_for_login_raw:
+        parsed_pause = max(0, env_int("LIQUIDITY_RPA_PAUSE_FOR_LOGIN_SECONDS", 0))
+        if parsed_pause > 0:
+            pause_for_login_sec = parsed_pause
+        elif login_marker_path.exists():
+            pause_for_login_sec = 0
+        else:
+            # 0指定でも初回可視実行は最低限の手動ログイン時間を確保する。
+            pause_for_login_sec = visual_login_default_pause
+    elif login_marker_path.exists():
+        pause_for_login_sec = 0
+    else:
+        pause_for_login_sec = visual_login_default_pause
+
     cmd: List[str] = [
         python_exec,
         str(script_path),
@@ -766,9 +1032,9 @@ def _run_rpa_page(*, query: str, offset: int, limit: int) -> Dict[str, Any]:
         "--output",
         str(output_path),
         "--pause-for-login",
-        str(max(0, env_int("LIQUIDITY_RPA_PAUSE_FOR_LOGIN_SECONDS", 0))),
+        str(max(0, int(pause_for_login_sec))),
         "--wait-seconds",
-        str(max(3, env_int("LIQUIDITY_RPA_WAIT_SECONDS", 8))),
+        str(wait_seconds),
         "--lookback-days",
         str(max(7, env_int("LIQUIDITY_RPA_LOOKBACK_DAYS", 90))),
         "--condition",
@@ -780,19 +1046,75 @@ def _run_rpa_page(*, query: str, offset: int, limit: int) -> Dict[str, Any]:
         "--result-limit",
         str(max(10, min(200, int(limit)))),
     ]
+    safe_category_id = max(0, int(category_id))
+    safe_category_slug = re.sub(r"[^a-z0-9_-]+", "", str(category_slug or "").strip().lower())
+    if safe_category_id > 0:
+        cmd.extend(["--category-id", str(safe_category_id)])
+    if safe_category_slug:
+        cmd.extend(["--category-slug", safe_category_slug])
     if env_bool("LIQUIDITY_RPA_PRIMARY_STRICT_CONDITION", True):
         cmd.append("--strict-condition")
     if env_bool("LIQUIDITY_RPA_PRIMARY_FIXED_PRICE_ONLY", True):
         cmd.append("--fixed-price-only")
-    if env_bool("LIQUIDITY_RPA_FORCE_HEADLESS", True):
+    if force_headless:
         cmd.append("--headless")
-    profile_dir = str((os.getenv("LIQUIDITY_RPA_PROFILE_DIR", "") or "").strip())
-    if profile_dir:
-        cmd.extend(["--profile-dir", profile_dir])
+    cmd.extend(["--profile-dir", str(profile_dir_path)])
     login_url = str((os.getenv("LIQUIDITY_RPA_LOGIN_URL", "") or "").strip())
     if login_url:
         cmd.extend(["--login-url", login_url])
-    timeout_sec = max(15, env_int("LIQUIDITY_RPA_FETCH_TIMEOUT_SECONDS", 45))
+    timeout_sec = max(
+        15,
+        env_int(
+            "MINER_SEED_POOL_RPA_FETCH_TIMEOUT_SECONDS",
+            min(env_int("LIQUIDITY_RPA_FETCH_TIMEOUT_SECONDS", 45), max(18, (wait_seconds * 4) + 8)),
+        ),
+    )
+    if (not force_headless) and pause_for_login_sec > 0:
+        timeout_sec = max(timeout_sec, int(pause_for_login_sec) + max(90, (wait_seconds * 6)))
+    child_env = os.environ.copy()
+    # seed補充Aは大量に回るので、RPAの待機/遷移設定を軽量化して全体時間を短縮する。
+    child_env["LIQUIDITY_RPA_ACTION_TIMEOUT_MS"] = str(
+        max(1800, env_int("MINER_SEED_POOL_RPA_ACTION_TIMEOUT_MS", env_int("LIQUIDITY_RPA_ACTION_TIMEOUT_MS", 3200)))
+    )
+    child_env["LIQUIDITY_RPA_NAV_TIMEOUT_MS"] = str(
+        max(2600, env_int("MINER_SEED_POOL_RPA_NAV_TIMEOUT_MS", env_int("LIQUIDITY_RPA_NAV_TIMEOUT_MS", 7000)))
+    )
+    child_env["LIQUIDITY_RPA_FILTER_SETTLE_MS"] = str(
+        max(15, env_int("MINER_SEED_POOL_RPA_FILTER_SETTLE_MS", env_int("LIQUIDITY_RPA_FILTER_SETTLE_MS", 30)))
+    )
+    child_env["LIQUIDITY_RPA_READY_POLL_MS"] = str(
+        max(50, env_int("MINER_SEED_POOL_RPA_READY_POLL_MS", env_int("LIQUIDITY_RPA_READY_POLL_MS", 90)))
+    )
+    child_env["LIQUIDITY_RPA_PRE_FILTER_WAIT_SECONDS"] = str(
+        max(
+            1,
+            env_int(
+                "MINER_SEED_POOL_RPA_PRE_FILTER_WAIT_SECONDS",
+                env_int("LIQUIDITY_RPA_PRE_FILTER_WAIT_SECONDS", 1),
+            ),
+        )
+    )
+    child_env["LIQUIDITY_RPA_POST_GOTO_SETTLE_MS"] = str(
+        max(
+            10,
+            env_int(
+                "MINER_SEED_POOL_RPA_POST_GOTO_SETTLE_MS",
+                env_int("LIQUIDITY_RPA_POST_GOTO_SETTLE_MS", 40),
+            ),
+        )
+    )
+    child_env["LIQUIDITY_RPA_GOTO_RETRY_COUNT"] = str(
+        max(0, env_int("MINER_SEED_POOL_RPA_GOTO_RETRY_COUNT", env_int("LIQUIDITY_RPA_GOTO_RETRY_COUNT", 1)))
+    )
+    child_env["LIQUIDITY_RPA_GOTO_RETRY_WAIT_MS"] = str(
+        max(
+            80,
+            env_int(
+                "MINER_SEED_POOL_RPA_GOTO_RETRY_WAIT_MS",
+                env_int("LIQUIDITY_RPA_GOTO_RETRY_WAIT_MS", 160),
+            ),
+        )
+    )
     try:
         proc = subprocess.run(
             cmd,
@@ -801,6 +1123,7 @@ def _run_rpa_page(*, query: str, offset: int, limit: int) -> Dict[str, Any]:
             text=True,
             timeout=timeout_sec,
             check=False,
+            env=child_env,
         )
         return_code = int(proc.returncode)
         stdout = str(proc.stdout or "")
@@ -809,6 +1132,12 @@ def _run_rpa_page(*, query: str, offset: int, limit: int) -> Dict[str, Any]:
         return_code = -9
         stdout = ""
         stderr = "timeout"
+    if (not force_headless) and pause_for_login_sec > 0 and return_code in {0, 75}:
+        try:
+            profile_dir_path.mkdir(parents=True, exist_ok=True)
+            login_marker_path.write_text(utc_iso(), encoding="utf-8")
+        except Exception:
+            pass
     rows: List[Dict[str, Any]] = []
     try:
         if output_path.exists():
@@ -836,6 +1165,10 @@ def _run_rpa_page(*, query: str, offset: int, limit: int) -> Dict[str, Any]:
         "reason": "daily_limit_reached" if daily_limit else ("ok" if return_code == 0 else "rpa_failed"),
         "rows": rows,
         "returncode": return_code,
+        "category_id": safe_category_id,
+        "category_slug": safe_category_slug,
+        "pause_for_login_sec": int(pause_for_login_sec),
+        "timeout_sec": int(timeout_sec),
         "stdout_tail": stdout.splitlines()[-8:],
         "stderr_tail": stderr.splitlines()[-8:],
     }
@@ -844,6 +1177,17 @@ def _run_rpa_page(*, query: str, offset: int, limit: int) -> Dict[str, Any]:
 def _collect_row_entries(row: Dict[str, Any]) -> List[Dict[str, Any]]:
     meta = row.get("metadata") if isinstance(row.get("metadata"), dict) else {}
     entries = meta.get("filtered_result_rows") if isinstance(meta.get("filtered_result_rows"), list) else []
+    raw_entries = meta.get("raw_result_rows") if isinstance(meta.get("raw_result_rows"), list) else []
+    raw_row_count = max(0, to_int(meta.get("raw_row_count"), 0))
+    use_raw_fallback = False
+    if not entries and raw_entries and raw_row_count > 0:
+        entries = raw_entries
+        use_raw_fallback = True
+    if not entries and raw_row_count > 0:
+        fallback_title = str(row.get("query", "") or "").strip()
+        if fallback_title:
+            entries = [{"title": fallback_title, "rank": 1, "seed_entry_source": "query_fallback"}]
+            use_raw_fallback = True
     sold_90d_count = to_int(row.get("sold_90d_count"), -1)
     sold_price_min = to_float(row.get("sold_price_min"), -1.0)
     out: List[Dict[str, Any]] = []
@@ -861,6 +1205,7 @@ def _collect_row_entries(row: Dict[str, Any]) -> List[Dict[str, Any]]:
                 "rank": max(1, to_int(raw.get("rank"), idx)),
                 "sold_90d_count": sold_90d_count,
                 "sold_price_min_90d": sold_price_min,
+                "seed_entry_source": str(raw.get("seed_entry_source", "") or ("raw_fallback" if use_raw_fallback else "filtered")),
             }
         )
     if out:
@@ -879,6 +1224,127 @@ def _collect_row_entries(row: Dict[str, Any]) -> List[Dict[str, Any]]:
             "sold_price_min_90d": sold_price_min,
         }
     ]
+
+
+def _seed_low_liquidity_cooldown_enabled() -> bool:
+    return env_bool(_LOW_LIQUIDITY_COOLDOWN_ENABLED_ENV, True)
+
+
+def _seed_low_liquidity_cooldown_days(*, sold_90d_count: int) -> int:
+    if sold_90d_count <= 0:
+        return max(1, env_int(_LOW_LIQUIDITY_COOLDOWN_DAYS_ZERO_ENV, 7))
+    return max(1, env_int(_LOW_LIQUIDITY_COOLDOWN_DAYS_LOW_ENV, 3))
+
+
+def _low_liquidity_reason_code(*, sold_90d_count: int, min_required: int) -> str:
+    if sold_90d_count <= 0:
+        return "sold_zero"
+    if sold_90d_count < max(0, int(min_required)):
+        return "sold_below_threshold"
+    return "low_liquidity"
+
+
+def _load_active_low_liquidity_seed_keys(conn: Any, *, category_key: str, now_ts: int) -> Set[str]:
+    rows = conn.execute(
+        """
+        SELECT seed_key, blocked_until
+        FROM miner_seed_liquidity_cooldowns
+        WHERE category_key = ?
+        """,
+        (category_key,),
+    ).fetchall()
+    out: Set[str] = set()
+    for row in rows:
+        blocked_until_ts = iso_to_epoch(str(row["blocked_until"] or ""))
+        if blocked_until_ts <= now_ts:
+            continue
+        seed_key = str(row["seed_key"] or "").strip().upper()
+        if seed_key:
+            out.add(seed_key)
+    return out
+
+
+def _upsert_low_liquidity_cooldowns(
+    conn: Any,
+    *,
+    category_key: str,
+    rows: Sequence[Dict[str, Any]],
+    now_ts: Optional[int] = None,
+) -> int:
+    if not rows:
+        return 0
+    if not _seed_low_liquidity_cooldown_enabled():
+        return 0
+    now_ts = int(now_ts) if now_ts is not None else int(time.time())
+    now_iso = utc_iso(now_ts)
+    upserted_keys: Set[str] = set()
+    for raw in rows:
+        seed_query = _normalize_seed_query(str(raw.get("seed_query", "") or ""))
+        seed_key = str(raw.get("seed_key", "") or "").strip().upper()
+        if not seed_key and seed_query:
+            seed_key = _seed_key(seed_query)
+        if not seed_query and seed_key:
+            seed_query = str(raw.get("seed_query", "") or "").strip()
+        if len(seed_key) < 4:
+            continue
+        sold_90d_count = max(0, to_int(raw.get("sold_90d_count"), 0))
+        min_required = max(0, to_int(raw.get("min_required"), 0))
+        cooldown_days = _seed_low_liquidity_cooldown_days(sold_90d_count=sold_90d_count)
+        blocked_until = utc_iso(now_ts + cooldown_days * 86400)
+        metadata = raw.get("metadata") if isinstance(raw.get("metadata"), dict) else {}
+        reason_code = str(raw.get("reason_code", "") or "").strip() or _low_liquidity_reason_code(
+            sold_90d_count=sold_90d_count,
+            min_required=min_required,
+        )
+        conn.execute(
+            """
+            INSERT INTO miner_seed_liquidity_cooldowns (
+                category_key,
+                seed_key,
+                seed_query,
+                reason_code,
+                sold_90d_count,
+                min_required,
+                blocked_until,
+                last_rejected_at,
+                reject_count,
+                metadata_json,
+                created_at,
+                updated_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(category_key, seed_key) DO UPDATE SET
+                seed_query = excluded.seed_query,
+                reason_code = excluded.reason_code,
+                sold_90d_count = excluded.sold_90d_count,
+                min_required = excluded.min_required,
+                blocked_until = CASE
+                    WHEN miner_seed_liquidity_cooldowns.blocked_until > excluded.blocked_until
+                        THEN miner_seed_liquidity_cooldowns.blocked_until
+                    ELSE excluded.blocked_until
+                END,
+                last_rejected_at = excluded.last_rejected_at,
+                reject_count = COALESCE(miner_seed_liquidity_cooldowns.reject_count, 0) + 1,
+                metadata_json = excluded.metadata_json,
+                updated_at = excluded.updated_at
+            """,
+            (
+                category_key,
+                seed_key,
+                seed_query,
+                reason_code,
+                sold_90d_count,
+                min_required,
+                blocked_until,
+                now_iso,
+                1,
+                json.dumps(metadata, ensure_ascii=False),
+                now_iso,
+                now_iso,
+            ),
+        )
+        upserted_keys.add(seed_key)
+    return len(upserted_keys)
 
 
 def _load_active_seed_keys(conn: Any, *, category_key: str, now_ts: int) -> Set[str]:
@@ -1199,6 +1665,7 @@ def _take_seeds_for_run(
     now_ts: int,
 ) -> Tuple[List[Dict[str, Any]], int]:
     _normalize_existing_seed_rows(conn, category_key=category_key)
+    active_cooldown_keys = _load_active_low_liquidity_seed_keys(conn, category_key=category_key, now_ts=now_ts)
     rows = conn.execute(
         """
         SELECT id, seed_query, seed_key, source_rank, source_title, created_at, expires_at, last_used_at, use_count, metadata_json
@@ -1216,12 +1683,17 @@ def _take_seeds_for_run(
 
     ordered_rows = sorted([dict(v) for v in rows], key=_sort_key)
     out: List[Dict[str, Any]] = []
+    skipped_cooldown_count = 0
     now_iso = utc_iso(now_ts)
     for row in ordered_rows:
         if len(out) >= max(1, int(take_count)):
             break
         expires_at = iso_to_epoch(str(row["expires_at"] or ""))
         if expires_at <= now_ts:
+            continue
+        seed_key_text = str(row.get("seed_key", "") or "").strip().upper()
+        if seed_key_text and seed_key_text in active_cooldown_keys:
+            skipped_cooldown_count += 1
             continue
         seed_query = str(row["seed_query"] or "").strip()
         metadata_raw = str(row.get("metadata_json", "") or "").strip()
@@ -1248,7 +1720,7 @@ def _take_seeds_for_run(
             {
                 "id": sid,
                 "seed_query": seed_query,
-                "seed_key": str(row["seed_key"] or "").strip(),
+                "seed_key": seed_key_text,
                 "source_rank": to_int(row["source_rank"], 0),
                 "source_title": str(row["source_title"] or "").strip(),
                 "seed_quality_score": to_int(metadata.get("seed_quality_score"), 0),
@@ -1256,7 +1728,7 @@ def _take_seeds_for_run(
                 "seed_collected_sold_90d_count": to_int(metadata.get("seed_collected_sold_90d_count"), -1),
             }
         )
-    return out, 0
+    return out, int(skipped_cooldown_count)
 
 
 def _preview_seeds_for_run(
@@ -1267,6 +1739,7 @@ def _preview_seeds_for_run(
     now_ts: int,
 ) -> Tuple[int, int]:
     _normalize_existing_seed_rows(conn, category_key=category_key)
+    active_cooldown_keys = _load_active_low_liquidity_seed_keys(conn, category_key=category_key, now_ts=now_ts)
     rows = conn.execute(
         """
         SELECT id, seed_query, seed_key, source_rank, created_at, expires_at, metadata_json, use_count
@@ -1284,14 +1757,19 @@ def _preview_seeds_for_run(
 
     ordered_rows = sorted([dict(v) for v in rows], key=_sort_key)
     selected_count = 0
+    skipped_cooldown_count = 0
     for row in ordered_rows:
         if selected_count >= max(1, int(take_count)):
             break
         expires_at = iso_to_epoch(str(row.get("expires_at", "") or ""))
         if expires_at <= now_ts:
             continue
+        seed_key_text = str(row.get("seed_key", "") or "").strip().upper()
+        if seed_key_text and seed_key_text in active_cooldown_keys:
+            skipped_cooldown_count += 1
+            continue
         selected_count += 1
-    return int(selected_count), 0
+    return int(selected_count), int(skipped_cooldown_count)
 
 
 def get_seed_pool_status(
@@ -1303,6 +1781,7 @@ def get_seed_pool_status(
     category_key, category_label, category_row = _resolve_category(category_query)
     if not category_key:
         raise ValueError("category query is required")
+    pr_category_filter = _resolve_ebay_pr_category_filter(category_key, category_row)
 
     now_ts = int(time.time())
     run_batch_size = 1
@@ -1317,12 +1796,13 @@ def get_seed_pool_status(
         cleaned = _cleanup_expired(conn, category_key=category_key, now_ts=now_ts)
         available = _count_available(conn, category_key=category_key, now_ts=now_ts)
         run_batch_size = max(1, int(available))
-        selected_count, skipped_low_quality_count = _preview_seeds_for_run(
+        selected_count, skipped_cooldown_count = _preview_seeds_for_run(
             conn,
             category_key=category_key,
             take_count=run_batch_size,
             now_ts=now_ts,
         )
+        cooldown_active_count = len(_load_active_low_liquidity_seed_keys(conn, category_key=category_key, now_ts=now_ts))
         refill_state = _load_refill_state(conn, category_key=category_key)
         page_window_entries = _load_page_window_entries(conn, category_key=category_key, query_key=query_key)
 
@@ -1341,7 +1821,9 @@ def get_seed_pool_status(
         # backward-compat keys (deprecated)
         "selected_seed_count": int(selected_count),
         "available_after_refill": int(available),
-        "skipped_low_quality_count": int(skipped_low_quality_count),
+        "skipped_low_quality_count": 0,
+        "skipped_cooldown_count": int(skipped_cooldown_count),
+        "cooldown_active_count": int(cooldown_active_count),
         "select_min_seed_score": 0,
             "cleaned_expired_count": int(cleaned),
             "normalized_seed_count": int(normalize_stats.get("normalized_count", 0)),
@@ -1405,12 +1887,12 @@ def reset_seed_pool_category_state(
     category_query: str,
     settings: Optional[Settings] = None,
     clear_pool: bool = False,
+    clear_history: bool = False,
 ) -> Dict[str, Any]:
-    """Reset refill cooldown/page-window state for a category.
+    """Reset category state.
 
-    This is intended for manual recovery when a category entered cooldown
-    (for example rank-limit wait) and the operator wants to restart scanning
-    from page 0 immediately.
+    clear_pool=True ならseed pool系を削除。
+    clear_history=True ならカテゴリseed由来の候補/否認履歴とrun journalも削除。
     """
     settings = settings or load_settings()
     category_key, category_label, _category_row = _resolve_category(category_query)
@@ -1422,6 +1904,7 @@ def reset_seed_pool_category_state(
         init_db(conn)
         cleaned_expired = _cleanup_expired(conn, category_key=category_key, now_ts=now_ts)
         available_before = _count_available(conn, category_key=category_key, now_ts=now_ts)
+        clear_pool_effective = bool(clear_pool or clear_history)
 
         refill_row = conn.execute(
             """
@@ -1443,6 +1926,24 @@ def reset_seed_pool_category_state(
         ).fetchone()
         cleared_page_windows = max(0, to_int(page_row["c"] if page_row else 0, 0))
 
+        seed_rows = conn.execute(
+            """
+            SELECT id, seed_key
+            FROM miner_seed_pool
+            WHERE category_key = ?
+            """,
+            (category_key,),
+        ).fetchall()
+        category_seed_ids: Set[int] = set()
+        category_seed_keys: Set[str] = set()
+        for row in seed_rows:
+            sid = max(0, to_int(row["id"], 0))
+            if sid > 0:
+                category_seed_ids.add(sid)
+            skey = str(row["seed_key"] or "").strip().upper()
+            if skey:
+                category_seed_keys.add(skey)
+
         conn.execute(
             """
             DELETE FROM miner_seed_refill_pages
@@ -1457,18 +1958,26 @@ def reset_seed_pool_category_state(
             """,
             (category_key,),
         )
+        cooldown_row = conn.execute(
+            """
+            SELECT COUNT(*) AS c
+            FROM miner_seed_liquidity_cooldowns
+            WHERE category_key = ?
+            """,
+            (category_key,),
+        ).fetchone()
+        cleared_liquidity_cooldowns = max(0, to_int(cooldown_row["c"] if cooldown_row else 0, 0))
+        conn.execute(
+            """
+            DELETE FROM miner_seed_liquidity_cooldowns
+            WHERE category_key = ?
+            """,
+            (category_key,),
+        )
 
         cleared_seed_rows = 0
-        if bool(clear_pool):
-            seed_row = conn.execute(
-                """
-                SELECT COUNT(*) AS c
-                FROM miner_seed_pool
-                WHERE category_key = ?
-                """,
-                (category_key,),
-            ).fetchone()
-            cleared_seed_rows = max(0, to_int(seed_row["c"] if seed_row else 0, 0))
+        if clear_pool_effective:
+            cleared_seed_rows = len(category_seed_ids)
             conn.execute(
                 """
                 DELETE FROM miner_seed_pool
@@ -1477,8 +1986,72 @@ def reset_seed_pool_category_state(
                 (category_key,),
             )
 
+        cleared_rejection_rows = 0
+        cleared_candidate_rows = 0
+        if bool(clear_history):
+            candidate_rows = conn.execute(
+                """
+                SELECT id, metadata_json
+                FROM miner_candidates
+                """
+            ).fetchall()
+            target_candidate_ids: List[int] = []
+            for row in candidate_rows:
+                cid = max(0, to_int(row["id"], 0))
+                if cid <= 0:
+                    continue
+                metadata_raw = str(row.get("metadata_json", "") if isinstance(row, dict) else row["metadata_json"] or "").strip()
+                metadata: Dict[str, Any] = {}
+                if metadata_raw:
+                    try:
+                        parsed = json.loads(metadata_raw)
+                        if isinstance(parsed, dict):
+                            metadata = parsed
+                    except Exception:
+                        metadata = {}
+                seed_pool_meta = metadata.get("seed_pool") if isinstance(metadata.get("seed_pool"), dict) else {}
+                row_category_key = _normalize_category_key(str(metadata.get("category_key", "") or ""))
+                row_query_key = _normalize_category_key(str(metadata.get("query", "") or ""))
+                seed_pool_category_key = _normalize_category_key(str(seed_pool_meta.get("category_key", "") or ""))
+                seed_pool_id = max(0, to_int(seed_pool_meta.get("id"), 0))
+                seed_pool_key = str(seed_pool_meta.get("seed_key", "") or "").strip().upper()
+                belongs = False
+                if seed_pool_category_key and seed_pool_category_key == category_key:
+                    belongs = True
+                elif row_category_key and row_category_key == category_key:
+                    belongs = True
+                elif row_query_key and row_query_key == category_key:
+                    belongs = True
+                elif seed_pool_id > 0 and seed_pool_id in category_seed_ids:
+                    belongs = True
+                elif seed_pool_key and seed_pool_key in category_seed_keys:
+                    belongs = True
+                if belongs:
+                    target_candidate_ids.append(cid)
+
+            if target_candidate_ids:
+                chunk_size = 500
+                for start in range(0, len(target_candidate_ids), chunk_size):
+                    chunk = target_candidate_ids[start : start + chunk_size]
+                    placeholders = ", ".join(["?"] * len(chunk))
+                    count_row = conn.execute(
+                        f"SELECT COUNT(*) AS c FROM miner_rejections WHERE candidate_id IN ({placeholders})",
+                        tuple(chunk),
+                    ).fetchone()
+                    cleared_rejection_rows += max(0, to_int(count_row["c"] if count_row else 0, 0))
+                    conn.execute(
+                        f"DELETE FROM miner_rejections WHERE candidate_id IN ({placeholders})",
+                        tuple(chunk),
+                    )
+                    conn.execute(
+                        f"DELETE FROM miner_candidates WHERE id IN ({placeholders})",
+                        tuple(chunk),
+                    )
+                cleared_candidate_rows = len(target_candidate_ids)
+
         conn.commit()
         available_after = _count_available(conn, category_key=category_key, now_ts=now_ts)
+    cleared_seed_journal_rows = _prune_seed_run_journal_by_category(category_key=category_key) if bool(clear_history) else 0
 
     return {
         "category_key": category_key,
@@ -1486,11 +2059,16 @@ def reset_seed_pool_category_state(
         "reset_at": utc_iso(now_ts),
         "had_refill_state": bool(had_refill_state),
         "cleared_page_windows": int(cleared_page_windows),
+        "cleared_liquidity_cooldowns": int(cleared_liquidity_cooldowns),
         "cleared_seed_rows": int(cleared_seed_rows),
+        "cleared_candidate_rows": int(cleared_candidate_rows),
+        "cleared_rejection_rows": int(cleared_rejection_rows),
+        "cleared_seed_journal_rows": int(cleared_seed_journal_rows),
         "cleaned_expired_count": int(cleaned_expired),
         "available_before": int(available_before),
         "available_after": int(available_after),
-        "clear_pool": bool(clear_pool),
+        "clear_pool": bool(clear_pool_effective),
+        "clear_history": bool(clear_history),
     }
 
 
@@ -1500,6 +2078,7 @@ def _refill_seed_pool(
     category_key: str,
     category_label: str,
     category_row: Dict[str, Any],
+    refill_timebox_override_sec: Optional[int] = None,
     progress_callback: Optional[Callable[[Dict[str, Any]], None]] = None,
 ) -> Dict[str, Any]:
     now_ts = int(time.time())
@@ -1507,7 +2086,11 @@ def _refill_seed_pool(
     refill_trigger_available_le = max(0, env_int("MINER_SEED_POOL_REFILL_THRESHOLD", 0))
     run_batch_size = max(1, env_int("MINER_SEED_POOL_RUN_BATCH_SIZE", 20))
     refill_timebox_sec = max(30, env_int("MINER_SEED_POOL_REFILL_TIMEBOX_SEC", 300))
+    if refill_timebox_override_sec is not None:
+        refill_timebox_sec = max(30, min(refill_timebox_sec, int(max(1, refill_timebox_override_sec))))
     max_timeout_pages_per_run = max(1, env_int("MINER_SEED_POOL_MAX_TIMEOUT_PAGES_PER_RUN", 2))
+    pr_category_filter = _resolve_ebay_pr_category_filter(category_key, category_row)
+    min_seed_sold_price_usd = _category_seed_min_sold_price_usd(category_key, category_row)
     _normalize_existing_seed_rows(conn, category_key=category_key)
     available = _count_available(conn, category_key=category_key, now_ts=now_ts)
     summary: Dict[str, Any] = {
@@ -1521,12 +2104,27 @@ def _refill_seed_pool(
         "reason": "threshold_not_reached",
         "daily_limit_reached": False,
         "cooldown_until": "",
+        "cooldown_active_count": 0,
+        "cooldown_blocked_count": 0,
         "query": "",
+        "timebox_sec": int(refill_timebox_sec),
+        "pr_category_id": int(pr_category_filter.get("category_id", 0) or 0),
+        "pr_category_slug": str(pr_category_filter.get("category_slug", "") or ""),
+        "pr_category_filter_enabled": bool(pr_category_filter.get("enabled", False)),
+        "min_seed_sold_price_usd": float(min_seed_sold_price_usd),
+        "min_price_filtered_count": 0,
     }
+    active_low_liquidity_cooldown_keys = _load_active_low_liquidity_seed_keys(
+        conn,
+        category_key=category_key,
+        now_ts=now_ts,
+    )
+    summary["cooldown_active_count"] = int(len(active_low_liquidity_cooldown_keys))
     if available > refill_trigger_available_le:
         return summary
 
     existing_keys = _load_active_seed_keys(conn, category_key=category_key, now_ts=now_ts)
+    existing_keys.update(active_low_liquidity_cooldown_keys)
     ttl_days = max(1, env_int("MINER_SEED_POOL_TTL_DAYS", 7))
     bootstrap_enabled = env_bool("MINER_SEED_POOL_BOOTSTRAP_ENABLED", False)
     if bootstrap_enabled:
@@ -1580,6 +2178,8 @@ def _refill_seed_pool(
     max_pages = max(1, min(40, env_int("MINER_SEED_POOL_MAX_PAGES", 40)))
     # 新規seed目標は100件（達成後も現在ページは完走する）
     target_count = max(20, env_int("MINER_SEED_POOL_TARGET_COUNT", 100))
+    min_pages_before_low_yield_stop = max(1, env_int("MINER_SEED_POOL_MIN_PAGES_BEFORE_LOW_YIELD_STOP", 2))
+    low_yield_consecutive_limit = max(2, env_int("MINER_SEED_POOL_LOW_YIELD_CONSECUTIVE_PAGES", 3))
     cooldown_days = max(1, env_int("MINER_SEED_POOL_COOLDOWN_DAYS", 7))
     freshness_days = max(1, env_int("MINER_SEED_POOL_PAGE_FRESH_DAYS", 7))
     freshness_sec = freshness_days * 86400
@@ -1600,6 +2200,7 @@ def _refill_seed_pool(
     seed_api_hits = 0
     seed_api_budget_skips = 0
     accessory_filtered_count = 0
+    min_price_filtered_count = 0
     rpa_timeout_pages = 0
 
     total_page_budget = max(1, len(big_words) * max_pages)
@@ -1614,6 +2215,7 @@ def _refill_seed_pool(
         word_skipped_pages = 0
         word_last_rank = 0
         word_stop_reason = "query_scanned"
+        zero_gain_pages = 0
 
         for page_index in range(max_pages):
             refill_elapsed = time.monotonic() - refill_started
@@ -1655,7 +2257,13 @@ def _refill_seed_pool(
                     next_fresh_available_ts = ready_ts
                 continue
 
-            result = _run_rpa_page(query=query, offset=offset, limit=page_size)
+            result = _run_rpa_page(
+                query=query,
+                offset=offset,
+                limit=page_size,
+                category_id=int(pr_category_filter.get("category_id", 0) or 0),
+                category_slug=str(pr_category_filter.get("category_slug", "") or ""),
+            )
             fetched_pages += 1
             word_fetched_pages += 1
             rows = result.get("rows", []) if isinstance(result.get("rows"), list) else []
@@ -1671,7 +2279,8 @@ def _refill_seed_pool(
                     continue
                 title_candidates = _extract_seed_queries_from_title(title, brand_hints)
                 seed_candidates = list(title_candidates)
-                extraction_mode = "title"
+                entry_source = str(entry.get("seed_entry_source", "") or "filtered").strip().lower()
+                extraction_mode = "title_raw_fallback" if entry_source in {"raw_fallback", "query_fallback"} else "title"
                 api_backfill_reason = ""
                 needs_api_backfill = (not seed_candidates) or (not any(_looks_specific_seed(v) for v in seed_candidates))
                 if needs_api_backfill:
@@ -1720,7 +2329,18 @@ def _refill_seed_pool(
                     seed_query = _normalize_seed_query(raw_seed_query)
                     if not seed_query:
                         continue
+                    sold_price_min_90d = to_float(entry.get("sold_price_min_90d"), -1.0)
+                    if (
+                        min_seed_sold_price_usd > 0
+                        and sold_price_min_90d > 0
+                        and sold_price_min_90d < min_seed_sold_price_usd
+                    ):
+                        min_price_filtered_count += 1
+                        continue
                     skey = _seed_key(seed_query)
+                    if skey in active_low_liquidity_cooldown_keys:
+                        summary["cooldown_blocked_count"] = int(summary.get("cooldown_blocked_count", 0)) + 1
+                        continue
                     if skey in existing_keys:
                         continue
                     existing_keys.add(skey)
@@ -1738,7 +2358,7 @@ def _refill_seed_pool(
                                 "category_label": category_label,
                                 "seed_collected_at": utc_iso(now_ts),
                                 "seed_collected_sold_90d_count": to_int(entry.get("sold_90d_count"), -1),
-                                "seed_collected_sold_price_min_usd": to_float(entry.get("sold_price_min_90d"), -1.0),
+                                "seed_collected_sold_price_min_usd": sold_price_min_90d,
                                 "seed_quality_score": 0,
                                 "seed_extraction_mode": extraction_mode,
                                 "seed_api_backfill_reason": api_backfill_reason,
@@ -1747,6 +2367,10 @@ def _refill_seed_pool(
                     )
 
             inserted = _insert_seed_rows(conn, category_key=category_key, rows=new_rows, ttl_days=ttl_days)
+            if max(0, int(inserted)) > 0:
+                zero_gain_pages = 0
+            else:
+                zero_gain_pages += 1
             _upsert_page_window_entry(
                 conn,
                 category_key=category_key,
@@ -1791,6 +2415,13 @@ def _refill_seed_pool(
             if len(entries) <= 0:
                 word_stop_reason = "empty_result_page"
                 break
+            if (
+                zero_gain_pages >= low_yield_consecutive_limit
+                and (page_index + 1) >= min_pages_before_low_yield_stop
+                and added_total < target_count
+            ):
+                word_stop_reason = "low_yield_stop"
+                break
 
         query_runs.append(
             {
@@ -1813,7 +2444,11 @@ def _refill_seed_pool(
     summary["available_after"] = available_after
     summary["last_rank_checked"] = last_rank
     summary["query_runs"] = query_runs
+    summary["low_yield_stop_query_count"] = int(
+        sum(1 for row in query_runs if str((row or {}).get("stop_reason", "") or "") == "low_yield_stop")
+    )
     summary["accessory_filtered_count"] = int(accessory_filtered_count)
+    summary["min_price_filtered_count"] = int(min_price_filtered_count)
     summary["rpa_timeout_pages"] = int(rpa_timeout_pages)
     summary["refill_elapsed_sec"] = round(max(0.0, float(time.monotonic() - refill_started)), 3)
     summary["seed_api_backfill"] = {
@@ -1920,13 +2555,23 @@ def _seed_title_match_score(
 
     seed_tokens = set(_query_tokens(seed_query))
     candidate_tokens = set(_query_tokens(candidate_title))
+    broad_seed = not _looks_specific_seed(seed_query)
     if not seed_tokens or not candidate_tokens:
+        if broad_seed and candidate_codes:
+            # 例: "PROSPEX" vs "セイコー プロスペックス SBDC101"。
+            # token化では一致ゼロでも、型番がある候補は次段で再判定できるため通す。
+            return 0.64, "token_overlap_relaxed_with_candidate_code"
         return 0.0, "token_missing"
     common = seed_tokens.intersection(candidate_tokens)
     if not common:
+        if broad_seed and candidate_codes:
+            return 0.64, "token_overlap_relaxed_with_candidate_code"
         return 0.0, "token_overlap_zero"
     jaccard = len(common) / max(1, len(seed_tokens.union(candidate_tokens)))
     score = min(0.86, 0.48 + (0.46 * jaccard))
+    if broad_seed:
+        # broad seedはtoken被りが薄くても、実運用での取りこぼしを減らすため最低スコアを設ける。
+        score = max(score, 0.64)
     return float(score), "token_overlap"
 
 
@@ -1945,11 +2590,26 @@ def _pick_jp_seed_query(
     return str(candidates[0]).strip()
 
 
+def _pick_liquidity_query(*, seed_query: str, jp_seed_query: str) -> str:
+    jp_query = re.sub(r"\s+", " ", str(jp_seed_query or "").strip())
+    if not jp_query:
+        jp_query = re.sub(r"\s+", " ", str(seed_query or "").strip())
+    digits = re.sub(r"\D+", "", jp_query)
+    is_digit_like = bool(digits and len(digits) == len(re.sub(r"\s+", "", jp_query)) and len(digits) >= 8)
+    if is_digit_like:
+        # GTIN/JANのみはヒットが弱いことがあるため、元seed側の型番を優先する。
+        for code in _extract_codes(seed_query):
+            token = str(code or "").strip()
+            if _looks_specific_seed(token):
+                return token
+    return jp_query
+
+
 def _liquidity_sold_sample(signal: Dict[str, Any]) -> Dict[str, Any]:
     metadata = signal.get("metadata") if isinstance(signal.get("metadata"), dict) else {}
     sample = metadata.get("sold_sample") if isinstance(metadata.get("sold_sample"), dict) else {}
     if not isinstance(sample, dict):
-        return {}
+        sample = {}
     item_url = str(sample.get("item_url", "") or "").strip()
     title = str(sample.get("title", "") or "").strip()
     image_url = str(sample.get("image_url", "") or "").strip()
@@ -1963,13 +2623,53 @@ def _liquidity_sold_sample(signal: Dict[str, Any]) -> Dict[str, Any]:
         out["image_url"] = image_url
     if sold_price > 0:
         out["sold_price_usd"] = float(sold_price)
+
+    # RPAの行抽出が崩れて sold_sample が空でも、strict sold URL と最低価格がある場合は
+    # 参照用sampleを補完する（C段階の根拠URL必須を満たすための最小フォールバック）。
+    if not out:
+        fallback_url = str(metadata.get("url", "") or "").strip()
+        fallback_price = to_float(
+            metadata.get("sold_price_min"),
+            to_float(signal.get("sold_price_min"), -1.0),
+        )
+        filter_state = metadata.get("filter_state") if isinstance(metadata.get("filter_state"), dict) else {}
+        lookback = str(filter_state.get("lookback_selected", "") or "").strip().lower()
+        tab_is_sold = False
+        if fallback_url:
+            try:
+                parsed = urllib.parse.urlparse(fallback_url)
+                params = urllib.parse.parse_qs(parsed.query or "")
+                tab_values = [str(v or "").strip().lower() for v in params.get("tabName", [])]
+                tab_is_sold = any(v == "sold" for v in tab_values)
+            except Exception:
+                tab_is_sold = False
+        if fallback_url and fallback_price > 0 and lookback == "last 90 days" and tab_is_sold:
+            out = {
+                "item_url": fallback_url,
+                "title": str(signal.get("query", "") or ""),
+                "sold_price_usd": float(fallback_price),
+                "reference_type": "search_url_fallback",
+            }
     return out
 
 
 def _liquidity_sold_min_usd(signal: Dict[str, Any]) -> float:
     metadata = signal.get("metadata") if isinstance(signal.get("metadata"), dict) else {}
-    sold_min = to_float(metadata.get("sold_price_min"), -1.0)
-    return sold_min if sold_min > 0 else -1.0
+    candidates = [
+        metadata.get("sold_price_min"),
+        metadata.get("sold_price_min_usd"),
+        signal.get("sold_price_min"),
+        signal.get("sold_price_min_usd"),
+        signal.get("sold_price_median"),
+    ]
+    sold_sample = _liquidity_sold_sample(signal)
+    if sold_sample:
+        candidates.append(sold_sample.get("sold_price_usd"))
+    for raw in candidates:
+        sold_min = to_float(raw, -1.0)
+        if sold_min > 0:
+            return sold_min
+    return -1.0
 
 
 def _is_rpa_daily_limit_signal(signal: Dict[str, Any]) -> bool:
@@ -1991,6 +2691,71 @@ def _is_rpa_daily_limit_signal(signal: Dict[str, Any]) -> bool:
             "requests allowed in one day",
         )
     )
+
+
+def _liquidity_refresh_queries_for_seed(seed_query: str, *, max_count: int) -> List[str]:
+    out: List[str] = []
+    seen: Set[str] = set()
+
+    def _push(raw: str) -> None:
+        text = re.sub(r"\s+", " ", str(raw or "").strip())
+        if not text:
+            return
+        key = text.lower()
+        if key in seen:
+            return
+        seen.add(key)
+        out.append(text)
+
+    for code in _extract_codes(seed_query):
+        _push(code)
+    _push(seed_query)
+    if len(out) > max_count:
+        return out[:max_count]
+    return out
+
+
+def _refresh_liquidity_rpa(
+    queries: Sequence[str],
+    *,
+    max_queries: int,
+    force: bool = False,
+    category_id: int = 0,
+    category_slug: str = "",
+) -> Dict[str, Any]:
+    normalized: List[str] = []
+    seen: Set[str] = set()
+    for raw in queries:
+        text = re.sub(r"\s+", " ", str(raw or "").strip())
+        if not text:
+            continue
+        key = text.lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        normalized.append(text)
+        if len(normalized) >= max(1, int(max_queries)):
+            break
+    if not normalized:
+        return {"enabled": False, "ran": False, "reason": "empty_queries", "queries": []}
+    # seedフローでは型番クエリを多めに渡しつつ、C段階仕様に合わせて
+    # new + fixed price + strict condition を強制して流動性判定の一貫性を保つ。
+    safe_category_id = max(0, int(category_id))
+    safe_category_slug = re.sub(r"[^a-z0-9_-]+", "", str(category_slug or "").strip().lower())
+    with _temporary_env(
+        {
+            "LIQUIDITY_RPA_FETCH_MAX_QUERIES": str(max(1, int(max_queries))),
+            "LIQUIDITY_RPA_PRIMARY_CONDITION": "new",
+            "LIQUIDITY_RPA_PRIMARY_STRICT_CONDITION": "1",
+            "LIQUIDITY_RPA_PRIMARY_FIXED_PRICE_ONLY": "1",
+            "LIQUIDITY_RPA_CATEGORY_ID": str(safe_category_id),
+            "LIQUIDITY_RPA_CATEGORY_SLUG": safe_category_slug,
+        }
+    ):
+        summary = _maybe_refresh_rpa_for_fetch(normalized, force=bool(force))
+    if not isinstance(summary, dict):
+        return {"enabled": True, "ran": False, "reason": "invalid_refresh_summary", "queries": list(normalized)}
+    return summary
 
 
 def _match_level_from_score(score: float) -> str:
@@ -2027,6 +2792,7 @@ def run_seeded_fetch(
     category_key, category_label, category_row = _resolve_category(category_query)
     if not category_key:
         raise ValueError("category query is required")
+    pr_category_filter = _resolve_ebay_pr_category_filter(category_key, category_row)
     started = time.monotonic()
     now_ts = int(time.time())
     run_batch_size = max(1, env_int("MINER_SEED_POOL_RUN_BATCH_SIZE", 20))
@@ -2073,6 +2839,15 @@ def run_seeded_fetch(
             }
         )
 
+    refill_timebox_override_sec: Optional[int] = None
+    if bool(timed_mode):
+        # 既定ではA段階timeboxの短縮は行わない（仕様書の補充timebox設定を優先）。
+        # 必要な場合のみ明示ENVで割合短縮する。
+        refill_ratio_raw = str((os.getenv("MINER_SEED_POOL_REFILL_TIMEBOX_RATIO", "") or "")).strip()
+        if refill_ratio_raw:
+            refill_ratio = max(0.2, min(1.0, to_float(refill_ratio_raw, 1.0)))
+            refill_timebox_override_sec = max(30, int(max(10, int(timebox_sec)) * refill_ratio))
+
     with connect(settings.db_path) as conn:
         init_db(conn)
         normalize_stats = _normalize_existing_seed_rows(conn, category_key=category_key)
@@ -2093,16 +2868,20 @@ def run_seeded_fetch(
             category_key=category_key,
             category_label=category_label,
             category_row=category_row,
+            refill_timebox_override_sec=refill_timebox_override_sec,
             progress_callback=progress_callback,
         )
         available_after = _count_available(conn, category_key=category_key, now_ts=int(time.time()))
         # 1探索は「古い順20件」を上限に実行する。
         run_batch_size = max(1, min(int(available_after), env_int("MINER_SEED_POOL_RUN_BATCH_SIZE", 20)))
-        selected_seeds, skipped_low_quality_count = _take_seeds_for_run(
+        selected_seeds, skipped_cooldown_count = _take_seeds_for_run(
             conn,
             category_key=category_key,
             take_count=run_batch_size,
             now_ts=int(time.time()),
+        )
+        cooldown_active_count = len(
+            _load_active_low_liquidity_seed_keys(conn, category_key=category_key, now_ts=int(time.time()))
         )
         seed_pool_summary = {
             "category_key": category_key,
@@ -2111,7 +2890,9 @@ def run_seeded_fetch(
             # backward-compat keys (deprecated)
             "selected_seed_count": len(selected_seeds),
             "available_after_refill": available_after,
-            "skipped_low_quality_count": int(skipped_low_quality_count),
+            "skipped_low_quality_count": 0,
+            "skipped_cooldown_count": int(skipped_cooldown_count),
+            "cooldown_active_count": int(cooldown_active_count),
             "select_min_seed_score": 0,
             "refill": refill_summary,
         }
@@ -2143,15 +2924,38 @@ def run_seeded_fetch(
         hints.append(f"Product Research応答タイムアウトが連続したため、補充を停止しました（{timeout_pages}ページ）。")
     if refill_reason == "partial_refill":
         hints.append(f"{category_label}の補充は目標100件に未達ですが、追加seedを確保して探索を継続します。")
+    low_yield_stop_query_count = max(0, to_int(seed_pool_summary["refill"].get("low_yield_stop_query_count"), 0))
+    if low_yield_stop_query_count > 0:
+        hints.append(f"seed補充で低収穫ページが連続したため、{low_yield_stop_query_count}個のbig wordを早期切替しました。")
     if bool(seed_pool_summary["refill"].get("daily_limit_reached")):
         rpa_daily_limit_reached = True
         hints.append("Product Researchの日次上限に到達したため、seed補充を停止しました。")
-    skipped_low_quality_count = max(0, to_int(seed_pool_summary.get("skipped_low_quality_count"), 0))
-    if skipped_low_quality_count > 0:
-        hints.append(f"低品質seedを {skipped_low_quality_count} 件スキップしました。")
+    skipped_cooldown_count = max(0, to_int(seed_pool_summary.get("skipped_cooldown_count"), 0))
+    if skipped_cooldown_count > 0:
+        hints.append(f"低流動性cooldown中のseedを {skipped_cooldown_count} 件スキップしました。")
+    cooldown_active_count = max(0, to_int(seed_pool_summary.get("cooldown_active_count"), 0))
+    if cooldown_active_count > 0:
+        hints.append(f"低流動性cooldownで待機中のseed: {cooldown_active_count}件")
+    refill_cooldown_blocked_count = max(
+        0,
+        to_int(seed_pool_summary.get("refill", {}).get("cooldown_blocked_count"), 0)
+        if isinstance(seed_pool_summary.get("refill"), dict)
+        else 0,
+    )
+    if refill_cooldown_blocked_count > 0:
+        hints.append(f"A段階でcooldown中seedを再補充せずに除外: {refill_cooldown_blocked_count}件")
     accessory_filtered_count = max(0, to_int(seed_pool_summary["refill"].get("accessory_filtered_count"), 0))
     if accessory_filtered_count > 0:
         hints.append(f"付属品タイトルを {accessory_filtered_count} 件除外しました。")
+    min_seed_price_usd = max(0.0, to_float(seed_pool_summary["refill"].get("min_seed_sold_price_usd"), 0.0))
+    min_price_filtered_count = max(0, to_int(seed_pool_summary["refill"].get("min_price_filtered_count"), 0))
+    if min_seed_price_usd > 0:
+        if min_price_filtered_count > 0:
+            hints.append(
+                f"A段階でカテゴリ最低価格(${min_seed_price_usd:.2f})未満を {min_price_filtered_count} 件除外しました。"
+            )
+        else:
+            hints.append(f"A段階のカテゴリ最低価格フィルタ: ${min_seed_price_usd:.2f} を適用しました。")
     api_backfill = seed_pool_summary["refill"].get("seed_api_backfill", {})
     if isinstance(api_backfill, dict):
         api_hits = max(0, to_int(api_backfill.get("hits"), 0))
@@ -2178,7 +2982,9 @@ def run_seeded_fetch(
                 "selected_seed_count": len(selected_seeds),
                 "pool_available": available_after,
                 "refill_reason": refill_reason,
-                "skipped_low_quality_count": skipped_low_quality_count,
+                "skipped_low_quality_count": 0,
+                "skipped_cooldown_count": skipped_cooldown_count,
+                "cooldown_active_count": cooldown_active_count,
                 "select_min_seed_score": int(seed_pool_summary.get("select_min_seed_score", 0)),
                 "stage1_pass_total": 0,
                 "stage2_runs": 0,
@@ -2268,10 +3074,36 @@ def run_seeded_fetch(
     packaging_usd = max(0.0, env_float("EST_PACKAGING_USD", 0.0))
     fixed_fee_usd = max(0.0, env_float("FIXED_FEE_USD", 0.0))
     runtime_pair_signatures: Set[str] = set()
+    liquidity_mode = (os.getenv("LIQUIDITY_PROVIDER_MODE", "none") or "none").strip().lower()
+    stage2_liquidity_refresh_enabled = bool(
+        liquidity_mode in {"rpa", "rpa_json"}
+        and env_bool("LIQUIDITY_RPA_AUTO_REFRESH", True)
+        and env_bool("LIQUIDITY_RPA_RUN_ON_FETCH", True)
+        and env_bool("MINER_STAGE2_LIQUIDITY_REFRESH_ON_MISS_ENABLED", True)
+    )
+    stage2_liquidity_prefetch_max_queries = max(1, env_int("MINER_STAGE2_LIQUIDITY_PREFETCH_MAX_QUERIES", 12))
+    stage2_liquidity_retry_budget_total = max(0, env_int("MINER_STAGE2_LIQUIDITY_REFRESH_ON_MISS_BUDGET", 12))
+    stage2_liquidity_retry_budget_used = 0
+    stage2_liquidity_retry_queries_seen: Set[str] = set()
+    stage2_liquidity_refresh_runs: List[Dict[str, Any]] = []
+    stage2_low_liquidity_cooldown_rows: List[Dict[str, Any]] = []
+    stage2_allow_missing_sold_sample = env_bool("MINER_STAGE2_ALLOW_MISSING_SOLD_SAMPLE", False)
 
     applied_filters = {
         "seed_pool_mode": "A/B/C_spec",
         "stage_a_refill_trigger_available_le": max(0, env_int("MINER_SEED_POOL_REFILL_THRESHOLD", 0)),
+        "stage_a_rpa_wait_seconds": max(
+            2, env_int("MINER_SEED_POOL_RPA_WAIT_SECONDS", env_int("LIQUIDITY_RPA_WAIT_SECONDS", 8))
+        ),
+        "stage_a_low_yield_consecutive_pages": max(2, env_int("MINER_SEED_POOL_LOW_YIELD_CONSECUTIVE_PAGES", 3)),
+        "stage_a_min_pages_before_low_yield_stop": max(
+            1, env_int("MINER_SEED_POOL_MIN_PAGES_BEFORE_LOW_YIELD_STOP", 2)
+        ),
+        "stage_a_min_seed_sold_price_usd": float(
+            max(0.0, to_float(seed_pool_summary.get("refill", {}).get("min_seed_sold_price_usd"), 0.0))
+        ),
+        "stage_a_pr_category_id": int(pr_category_filter.get("category_id", 0) or 0),
+        "stage_a_pr_category_slug": str(pr_category_filter.get("category_slug", "") or ""),
         "stage_b_limit_per_site": int(stage1_limit_per_site),
         "stage_b_pick_per_seed": int(stage1_take_per_seed),
         "stage_b_condition": "new",
@@ -2279,6 +3111,12 @@ def run_seeded_fetch(
         "stage_b_price_cap": "seed_collected_sold_price_min_usd",
         "stage_c_price_basis": "sold_price_min_90d",
         "stage_c_min_sold_90d": int(liquidity_min_sold_90d),
+        "stage_c_pr_category_id": int(pr_category_filter.get("category_id", 0) or 0),
+        "stage_c_pr_category_slug": str(pr_category_filter.get("category_slug", "") or ""),
+        "stage_c_liquidity_mode": liquidity_mode,
+        "stage_c_liquidity_refresh_on_miss_enabled": bool(stage2_liquidity_refresh_enabled),
+        "stage_c_liquidity_refresh_on_miss_budget": int(stage2_liquidity_retry_budget_total),
+        "stage_c_allow_missing_sold_sample": bool(stage2_allow_missing_sold_sample),
     }
 
     stage1_pass_total = 0
@@ -2288,10 +3126,50 @@ def run_seeded_fetch(
         len(selected_seeds),
         max(1, env_int("MINER_TIMED_FETCH_MIN_STAGE1_ATTEMPTS", 20)),
     )
+    if stage2_liquidity_refresh_enabled and selected_seeds:
+        prefetch_queries: List[str] = []
+        for seed in selected_seeds:
+            seed_query_text = str(seed.get("seed_query", "") or "")
+            prefetch_queries.extend(
+                _liquidity_refresh_queries_for_seed(
+                    seed_query_text,
+                    max_count=2,
+                )
+            )
+            if len(prefetch_queries) >= stage2_liquidity_prefetch_max_queries:
+                break
+        prefetch_summary = _refresh_liquidity_rpa(
+            prefetch_queries,
+            max_queries=stage2_liquidity_prefetch_max_queries,
+            force=False,
+            category_id=int(pr_category_filter.get("category_id", 0) or 0),
+            category_slug=str(pr_category_filter.get("category_slug", "") or ""),
+        )
+        stage2_liquidity_refresh_runs.append(
+            {
+                "phase": "prefetch",
+                "summary": prefetch_summary,
+            }
+        )
+        if _rpa_daily_limit_reached(prefetch_summary):
+            rpa_daily_limit_reached = True
+            stop_reason = "rpa_daily_limit_reached"
+            hints.append("C段階事前更新でProduct Research上限に到達しました。")
+            search_scope_done = False
+            selected_seeds = []
+
     for idx, seed in enumerate(selected_seeds, start=1):
         elapsed = time.monotonic() - started
         seed_query = str(seed.get("seed_query", "") or "")
+        seed_key_text = str(seed.get("seed_key", "") or "").strip().upper() or _seed_key(seed_query)
         seed_source_title = str(seed.get("source_title", "") or "")
+        stage1_query = _pick_jp_seed_query(
+            seed_query=seed_query,
+            source_title=seed_source_title,
+            brand_hints=brand_hints,
+        )
+        if not stage1_query:
+            stage1_query = seed_query
         baseline_usd = to_float(seed.get("seed_collected_sold_price_min_usd"), -1.0)
         seed_max_price_jpy = int(max(0.0, baseline_usd * fx_seed_rate)) if baseline_usd > 0 else 0
         if bool(timed_mode) and elapsed >= max(10, int(timebox_sec)) and idx > min_stage1_attempts_before_timebox:
@@ -2302,7 +3180,7 @@ def run_seeded_fetch(
             progress_callback(
                 {
                     "phase": "stage1_running",
-                    "message": f"一次判定 {idx}/{len(selected_seeds)}: {seed.get('seed_query', '')}",
+                    "message": f"一次判定 {idx}/{len(selected_seeds)}: {stage1_query}",
                     "progress_percent": min(88.0, 12.0 + (72.0 * (idx - 1) / max(1, len(selected_seeds)))),
                 "pass_index": idx,
                 "max_passes": len(selected_seeds),
@@ -2311,6 +3189,7 @@ def run_seeded_fetch(
                 "selected_seed_count": len(selected_seeds),
                 "pool_available": available_after,
                     "current_seed_query": seed_query,
+                    "current_stage1_query": stage1_query,
                     "current_seed_quality_score": to_int(seed.get("seed_quality_score"), 0),
                     "stage1_pass_total": int(stage1_pass_total),
                     "stage2_runs": int(stage2_runs),
@@ -2339,14 +3218,22 @@ def run_seeded_fetch(
         for site_key, fetcher in source_fetchers:
             with _temporary_env(stage_context_env):
                 try:
-                    items, fetch_info = fetcher(seed_query, stage1_limit_per_site, timeout, 1, require_in_stock)
+                    items, fetch_info = fetcher(stage1_query, stage1_limit_per_site, timeout, 1, require_in_stock)
                 except Exception as err:
                     _inc_skip(stage1_skip_counts, "skipped_fetch_error", 1)
-                    errors.append({"seed_query": seed_query, "site": site_key, "message": str(err)})
+                    errors.append(
+                        {
+                            "seed_query": seed_query,
+                            "stage1_query": stage1_query,
+                            "site": site_key,
+                            "message": str(err),
+                        }
+                    )
                     stage1_site_logs.append(
                         {
                             "site": site_key,
-                            "query": seed_query,
+                            "query": stage1_query,
+                            "seed_query": seed_query,
                             "ok": False,
                             "error": str(err),
                             "raw_count": 0,
@@ -2371,7 +3258,7 @@ def run_seeded_fetch(
                     _inc_skip(stage1_skip_counts, "skipped_invalid_price", 1)
                     continue
                 score, reason = _seed_title_match_score(
-                    seed_query=seed_query,
+                    seed_query=stage1_query,
                     seed_source_title=seed_source_title,
                     candidate_title=str(item.title or ""),
                 )
@@ -2414,7 +3301,8 @@ def run_seeded_fetch(
             stage1_site_logs.append(
                 {
                     "site": site_key,
-                    "query": seed_query,
+                    "query": stage1_query,
+                    "seed_query": seed_query,
                     "ok": True,
                     "raw_count": len(items),
                     "selected_count": selected_for_site,
@@ -2438,6 +3326,7 @@ def run_seeded_fetch(
                 {
                     "pass": idx,
                     "seed_query": seed_query,
+                    "stage1_query": stage1_query,
                     "stage1_candidate_count": 0,
                     "stage2_created_count": 0,
                     "stage1_seed_baseline_reject_count": int(stage1_baseline_reject),
@@ -2462,6 +3351,7 @@ def run_seeded_fetch(
                     "selected_seed_count": len(selected_seeds),
                     "pool_available": available_after,
                     "current_seed_query": seed_query,
+                    "current_stage1_query": stage1_query,
                     "current_seed_quality_score": to_int(seed.get("seed_quality_score"), 0),
                     "stage1_candidate_count": int(stage1_count),
                     "stage2_created_count": 0,
@@ -2483,14 +3373,19 @@ def run_seeded_fetch(
                 _inc_skip(stage2_skip_counts, "skipped_invalid_price", 1)
                 continue
             jp_seed_query = _pick_jp_seed_query(
-                seed_query=seed_query,
+                seed_query=stage1_query,
                 source_title=str(item.title or ""),
                 brand_hints=brand_hints,
             )
+            liquidity_query = _pick_liquidity_query(
+                seed_query=stage1_query,
+                jp_seed_query=jp_seed_query,
+            )
+            query_key = re.sub(r"\s+", " ", str(liquidity_query or "").strip()).lower()
             signal = get_liquidity_signal(
-                query=jp_seed_query,
+                query=liquidity_query,
                 source_title=str(item.title or ""),
-                market_title=jp_seed_query,
+                market_title=liquidity_query,
                 source_identifiers=item.identifiers if isinstance(item.identifiers, dict) else {},
                 market_identifiers={},
                 active_count_hint=-1,
@@ -2502,12 +3397,74 @@ def run_seeded_fetch(
                 stop_reason = "rpa_daily_limit_reached"
                 break
             sold_count_raw = to_int(signal.get("sold_90d_count"), -1)
+            if sold_count_raw < 0 and stage2_liquidity_refresh_enabled:
+                can_retry = (
+                    bool(query_key)
+                    and query_key not in stage2_liquidity_retry_queries_seen
+                    and stage2_liquidity_retry_budget_used < stage2_liquidity_retry_budget_total
+                )
+                if can_retry:
+                    stage2_liquidity_retry_queries_seen.add(query_key)
+                    stage2_liquidity_retry_budget_used += 1
+                    retry_queries = _liquidity_refresh_queries_for_seed(liquidity_query, max_count=2)
+                    retry_summary = _refresh_liquidity_rpa(
+                        retry_queries,
+                        max_queries=2,
+                        force=True,
+                        category_id=int(pr_category_filter.get("category_id", 0) or 0),
+                        category_slug=str(pr_category_filter.get("category_slug", "") or ""),
+                    )
+                    stage2_liquidity_refresh_runs.append(
+                        {
+                            "phase": "on_miss_retry",
+                            "query": liquidity_query,
+                            "summary": retry_summary,
+                        }
+                    )
+                    if _rpa_daily_limit_reached(retry_summary):
+                        rpa_daily_limit_reached = True
+                        stop_reason = "rpa_daily_limit_reached"
+                        break
+                    signal = get_liquidity_signal(
+                        query=liquidity_query,
+                        source_title=str(item.title or ""),
+                        market_title=liquidity_query,
+                        source_identifiers=item.identifiers if isinstance(item.identifiers, dict) else {},
+                        market_identifiers={},
+                        active_count_hint=-1,
+                        timeout=max(5, int(timeout)),
+                        settings=settings,
+                    )
+                    if _is_rpa_daily_limit_signal(signal):
+                        rpa_daily_limit_reached = True
+                        stop_reason = "rpa_daily_limit_reached"
+                        break
+                    sold_count_raw = to_int(signal.get("sold_90d_count"), -1)
             if sold_count_raw < 0:
                 _inc_skip(stage2_skip_counts, "skipped_liquidity_unavailable", 1)
+                unavailable_reason = str(signal.get("unavailable_reason", "") or "").strip() or "unknown"
+                stage2_low_match_reasons[unavailable_reason] = (
+                    int(stage2_low_match_reasons.get(unavailable_reason, 0)) + 1
+                )
                 continue
             sold_count_90d = max(0, sold_count_raw)
             if sold_count_90d < liquidity_min_sold_90d:
                 _inc_skip(stage2_skip_counts, "skipped_low_liquidity", 1)
+                if _seed_low_liquidity_cooldown_enabled():
+                    stage2_low_liquidity_cooldown_rows.append(
+                        {
+                            "seed_query": seed_query,
+                            "seed_key": seed_key_text,
+                            "sold_90d_count": sold_count_90d,
+                            "min_required": liquidity_min_sold_90d,
+                            "metadata": {
+                                "liquidity_query": liquidity_query,
+                                "stage1_match_reason": str(row.get("reason", "") or ""),
+                                "stage1_site": str(row.get("site", "") or ""),
+                                "source_title": str(item.title or ""),
+                            },
+                        }
+                    )
                 continue
             sold_min_usd = _liquidity_sold_min_usd(signal)
             if sold_min_usd <= 0:
@@ -2516,9 +3473,69 @@ def run_seeded_fetch(
             sold_sample = _liquidity_sold_sample(signal)
             sold_item_url = str(sold_sample.get("item_url", "") or "").strip()
             sold_sample_price = to_float(sold_sample.get("sold_price_usd"), -1.0)
+            used_missing_sold_sample_fallback = False
             if not sold_item_url or sold_sample_price <= 0:
-                _inc_skip(stage2_skip_counts, "skipped_missing_sold_sample", 1)
-                continue
+                if stage2_liquidity_refresh_enabled:
+                    can_retry_missing_sample = (
+                        bool(query_key)
+                        and query_key not in stage2_liquidity_retry_queries_seen
+                        and stage2_liquidity_retry_budget_used < stage2_liquidity_retry_budget_total
+                    )
+                    if can_retry_missing_sample:
+                        stage2_liquidity_retry_queries_seen.add(query_key)
+                        stage2_liquidity_retry_budget_used += 1
+                        retry_queries = _liquidity_refresh_queries_for_seed(liquidity_query, max_count=2)
+                        retry_summary = _refresh_liquidity_rpa(
+                            retry_queries,
+                            max_queries=2,
+                            force=True,
+                            category_id=int(pr_category_filter.get("category_id", 0) or 0),
+                            category_slug=str(pr_category_filter.get("category_slug", "") or ""),
+                        )
+                        stage2_liquidity_refresh_runs.append(
+                            {
+                                "phase": "on_missing_sample_retry",
+                                "query": liquidity_query,
+                                "summary": retry_summary,
+                            }
+                        )
+                        if _rpa_daily_limit_reached(retry_summary):
+                            rpa_daily_limit_reached = True
+                            stop_reason = "rpa_daily_limit_reached"
+                            break
+                        signal = get_liquidity_signal(
+                            query=liquidity_query,
+                            source_title=str(item.title or ""),
+                            market_title=liquidity_query,
+                            source_identifiers=item.identifiers if isinstance(item.identifiers, dict) else {},
+                            market_identifiers={},
+                            active_count_hint=-1,
+                            timeout=max(5, int(timeout)),
+                            settings=settings,
+                        )
+                        if _is_rpa_daily_limit_signal(signal):
+                            rpa_daily_limit_reached = True
+                            stop_reason = "rpa_daily_limit_reached"
+                            break
+                        sold_min_usd = _liquidity_sold_min_usd(signal)
+                        if sold_min_usd <= 0:
+                            _inc_skip(stage2_skip_counts, "skipped_missing_sold_min", 1)
+                            continue
+                        sold_sample = _liquidity_sold_sample(signal)
+                        sold_item_url = str(sold_sample.get("item_url", "") or "").strip()
+                        sold_sample_price = to_float(sold_sample.get("sold_price_usd"), -1.0)
+
+            if stop_reason == "rpa_daily_limit_reached":
+                break
+
+            if not sold_item_url or sold_sample_price <= 0:
+                if not bool(stage2_allow_missing_sold_sample):
+                    _inc_skip(stage2_skip_counts, "skipped_missing_sold_sample", 1)
+                    continue
+                used_missing_sold_sample_fallback = True
+                sold_sample_price = float(sold_min_usd)
+                if not str(sold_sample.get("title", "") or "").strip():
+                    sold_sample["title"] = str(liquidity_query or jp_seed_query or seed_query)
 
             source_price_jpy = max(0.0, to_float(item.price, 0.0))
             source_shipping_jpy = max(0.0, to_float(item.shipping, 0.0))
@@ -2563,7 +3580,7 @@ def run_seeded_fetch(
                     str(item.site or ""),
                     str(item.item_id or ""),
                     str(item.item_url or ""),
-                    sold_item_url,
+                    sold_item_url or str(liquidity_query or ""),
                 ]
             )
             if pair_signature in runtime_pair_signatures:
@@ -2574,6 +3591,8 @@ def run_seeded_fetch(
             score = to_float(row.get("score"), 0.0)
             market_title = str(sold_sample.get("title", "") or "").strip() or jp_seed_query
             market_item_id = _ebay_item_id_from_url(sold_item_url)
+            if not market_item_id and bool(used_missing_sold_sample_fallback):
+                market_item_id = _seed_key(str(liquidity_query or jp_seed_query or seed_query))
             candidate_payload = {
                 "source_site": str(item.site or row.get("site") or ""),
                 "market_site": str(market_site or "ebay"),
@@ -2606,8 +3625,9 @@ def run_seeded_fetch(
                     "ebay_sold_image_url": str(sold_sample.get("image_url", "") or ""),
                     "ebay_sold_title": market_title,
                     "ebay_sold_price_usd": float(sold_sample_price),
-                    "ebay_sold_sample_reference_ok": True,
-                    "liquidity_query": jp_seed_query,
+                    "ebay_sold_sample_reference_ok": not bool(used_missing_sold_sample_fallback),
+                    "ebay_sold_sample_fallback_used": bool(used_missing_sold_sample_fallback),
+                    "liquidity_query": liquidity_query,
                     "liquidity": signal,
                     "seed_pool": {
                         "id": to_int(seed.get("id"), 0),
@@ -2617,6 +3637,7 @@ def run_seeded_fetch(
                     },
                     "seed_jp": {
                         "query": jp_seed_query,
+                        "liquidity_query": liquidity_query,
                         "stage2_index": int(stage2_index),
                         "stage1_site": str(row.get("site", "") or ""),
                         "stage1_match_reason": str(row.get("reason", "") or ""),
@@ -2643,10 +3664,11 @@ def run_seeded_fetch(
                 break
 
         passes.append(
-            {
-                "pass": idx,
-                "seed_query": seed_query,
-                "stage1_candidate_count": stage1_count,
+                {
+                    "pass": idx,
+                    "seed_query": seed_query,
+                    "stage1_query": stage1_query,
+                    "stage1_candidate_count": stage1_count,
                 "stage2_created_count": stage2_created_count,
                 "stage1_seed_baseline_reject_count": int(stage1_baseline_reject),
                 "elapsed_sec": round(time.monotonic() - started, 3),
@@ -2695,6 +3717,21 @@ def run_seeded_fetch(
             }
         )
 
+    stage2_low_liquidity_cooldown_saved = 0
+    if stage2_low_liquidity_cooldown_rows and _seed_low_liquidity_cooldown_enabled():
+        try:
+            with connect(settings.db_path) as cooldown_conn:
+                init_db(cooldown_conn)
+                stage2_low_liquidity_cooldown_saved = _upsert_low_liquidity_cooldowns(
+                    cooldown_conn,
+                    category_key=category_key,
+                    rows=stage2_low_liquidity_cooldown_rows,
+                )
+        except Exception as err:
+            hints.append(f"低流動性cooldown保存でエラー: {type(err).__name__}")
+    if stage2_low_liquidity_cooldown_saved > 0:
+        hints.append(f"C段階で低流動性seedをcooldown登録: {stage2_low_liquidity_cooldown_saved}件")
+
     if len(created_ids) <= 0 and stage1_skip_counts:
         top_stage1 = sorted(stage1_skip_counts.items(), key=lambda kv: kv[1], reverse=True)[0]
         hints.append(f"B段階の主な除外理由: {top_stage1[0]} ({top_stage1[1]}件)")
@@ -2704,6 +3741,29 @@ def run_seeded_fetch(
     if len(created_ids) <= 0 and stage2_skip_counts:
         top_stage2 = sorted(stage2_skip_counts.items(), key=lambda kv: kv[1], reverse=True)[0]
         hints.append(f"C段階の主な除外理由: {top_stage2[0]} ({top_stage2[1]}件)")
+    if len(created_ids) <= 0 and stage2_low_match_reasons:
+        top_stage2_reason = sorted(stage2_low_match_reasons.items(), key=lambda kv: kv[1], reverse=True)[0]
+        hints.append(f"C段階の詳細理由: {top_stage2_reason[0]} ({top_stage2_reason[1]}件)")
+    if stage2_liquidity_refresh_runs:
+        miss_retry_runs = [
+            row
+            for row in stage2_liquidity_refresh_runs
+            if isinstance(row, dict) and str(row.get("phase", "") or "") == "on_miss_retry"
+        ]
+        sample_retry_runs = [
+            row
+            for row in stage2_liquidity_refresh_runs
+            if isinstance(row, dict) and str(row.get("phase", "") or "") == "on_missing_sample_retry"
+        ]
+        ran_count = sum(
+            1
+            for row in stage2_liquidity_refresh_runs
+            if isinstance((row.get("summary") if isinstance(row, dict) else {}), dict)
+            and bool((row.get("summary") if isinstance(row, dict) else {}).get("ran"))
+        )
+        hints.append(
+            f"C段階の流動性RPA更新: 実行{ran_count}回 / miss再試行{len(miss_retry_runs)}回 / sample再試行{len(sample_retry_runs)}回"
+        )
     if len(created_ids) <= 0 and stage1_seed_baseline_reject_total > 0:
         hints.append(f"B段階でseed基準価格を満たさず除外: {stage1_seed_baseline_reject_total}件")
     if stop_reason == "timebox_reached":
@@ -2735,6 +3795,13 @@ def run_seeded_fetch(
         "stage1_low_match_reason_counts": stage1_low_match_reasons,
         "stage2_low_match_reason_counts": stage2_low_match_reasons,
         "stage1_seed_baseline_reject_total": int(stage1_seed_baseline_reject_total),
+        "stage2_liquidity_refresh": {
+            "enabled": bool(stage2_liquidity_refresh_enabled),
+            "retry_budget_total": int(stage2_liquidity_retry_budget_total),
+            "retry_budget_used": int(stage2_liquidity_retry_budget_used),
+            "runs": stage2_liquidity_refresh_runs,
+        },
+        "stage2_low_liquidity_cooldown_saved": int(stage2_low_liquidity_cooldown_saved),
         "timed_fetch": {
             "enabled": bool(timed_mode),
             "min_target_candidates": max(1, int(min_target_candidates)),
@@ -2752,6 +3819,13 @@ def run_seeded_fetch(
             "stage1_low_match_reason_counts": stage1_low_match_reasons,
             "stage2_low_match_reason_counts": stage2_low_match_reasons,
             "stage1_seed_baseline_reject_total": int(stage1_seed_baseline_reject_total),
+            "stage2_liquidity_refresh": {
+                "enabled": bool(stage2_liquidity_refresh_enabled),
+                "retry_budget_total": int(stage2_liquidity_retry_budget_total),
+                "retry_budget_used": int(stage2_liquidity_retry_budget_used),
+                "runs": stage2_liquidity_refresh_runs,
+            },
+            "stage2_low_liquidity_cooldown_saved": int(stage2_low_liquidity_cooldown_saved),
             "passes": passes,
         },
     }
@@ -2774,6 +3848,7 @@ def run_seeded_fetch(
             "stage1_pass_total": int(stage1_pass_total),
             "stage2_runs": int(stage2_runs),
             "stage1_seed_baseline_reject_total": int(stage1_seed_baseline_reject_total),
+            "stage2_low_liquidity_cooldown_saved": int(stage2_low_liquidity_cooldown_saved),
         }
     )
     return payload

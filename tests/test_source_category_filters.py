@@ -101,6 +101,77 @@ class SourceCategoryFilterTests(unittest.TestCase):
         self.assertEqual(req.get("sort", [""])[0], "+price")
         self.assertTrue(bool((info.get("category_filter") or {}).get("applied")))
 
+    def test_resolve_yahoo_category_falls_back_to_item_hits(self) -> None:
+        root_payload = {
+            "ResultSet": {
+                "0": {
+                    "Result": {
+                        "Categories": {
+                            "Current": {"Id": "1", "Title": {"Short": "すべて"}},
+                            "Children": {
+                                "0": {"Id": "13457", "Title": {"Short": "ファッション"}},
+                                "1": {"Id": "2500", "Title": {"Short": "家電"}},
+                            },
+                        }
+                    }
+                },
+                "totalResultsReturned": "1",
+            }
+        }
+        probe_payload = {
+            "hits": [
+                {
+                    "genreCategory": {"id": 1650, "name": "腕時計パーツ", "depth": 4},
+                    "parentGenreCategories": [
+                        {"id": 13457, "name": "ファッション", "depth": 1},
+                        {"id": 2496, "name": "腕時計、アクセサリー", "depth": 2},
+                    ],
+                },
+                {
+                    "genreCategory": {"id": 2497, "name": "腕時計", "depth": 3},
+                    "parentGenreCategories": [
+                        {"id": 13457, "name": "ファッション", "depth": 1},
+                        {"id": 2496, "name": "腕時計、アクセサリー", "depth": 2},
+                    ],
+                },
+            ]
+        }
+
+        def fake_request(url: str, **_kwargs):
+            if "categorySearch" in url:
+                return 200, {}, root_payload
+            if "itemSearch" in url:
+                return 200, {}, probe_payload
+            raise AssertionError(f"unexpected url: {url}")
+
+        watch_row = {
+            "category_key": "watch",
+            "display_name_ja": "腕時計",
+            "aliases": ["watch", "腕時計"],
+        }
+        with patch.dict(os.environ, {"YAHOO_APP_ID": "app-test"}, clear=False), patch.object(
+            live_miner_fetch,
+            "_active_category_context",
+            return_value=("watch", watch_row),
+        ), patch.object(
+            live_miner_fetch,
+            "_load_category_site_filter_cache",
+            return_value={},
+        ), patch.object(
+            live_miner_fetch,
+            "_save_category_site_filter_cache",
+            return_value=None,
+        ), patch.object(
+            live_miner_fetch,
+            "_request_with_retry",
+            side_effect=fake_request,
+        ):
+            resolved = live_miner_fetch._resolve_category_filter_for_site("yahoo", "watch")
+
+        self.assertTrue(bool(resolved.get("applied")))
+        self.assertEqual(str(resolved.get("source", "")), "auto_item_hits")
+        self.assertEqual(str(resolved.get("genre_category_id", "")), "2497")
+
 
 if __name__ == "__main__":
     unittest.main()
