@@ -87,6 +87,60 @@ class MinerSeedPoolTests(unittest.TestCase):
         )
         self.assertEqual(picked, "GW-M5610U-1JF")
 
+    def test_resolve_stage1_source_pricing_rakuten_multi_sku_resolved(self) -> None:
+        item = miner_seed_pool.MarketItem(
+            site="rakuten",
+            item_id="rk-1",
+            title="CASIO G-SHOCK DW-5600RL-1JF GW-M5610U-1JF",
+            item_url="https://example.com/rk/1",
+            image_url="https://example.com/rk.jpg",
+            price=12000.0,
+            shipping=500.0,
+            currency="JPY",
+            condition="new",
+            identifiers={},
+            raw={},
+        )
+        with patch.object(
+            miner_seed_pool,
+            "_resolve_rakuten_variant_price_jpy",
+            return_value=(19360.0, {"ok": True, "reason": "resolved"}),
+        ):
+            resolved = miner_seed_pool._resolve_stage1_source_pricing(
+                item=item,
+                seed_query="GW-M5610U-1JF",
+                seed_source_title="CASIO G-SHOCK GW-M5610U-1JF",
+                timeout=10,
+                strict_multi_sku=True,
+            )
+        self.assertTrue(bool(resolved.get("ok")))
+        self.assertEqual(str(resolved.get("price_basis_type")), "rakuten_variant_model_price")
+        self.assertAlmostEqual(float(resolved.get("price_jpy", 0.0)), 19360.0)
+
+    def test_resolve_stage1_source_pricing_multi_sku_unresolved_strict(self) -> None:
+        item = miner_seed_pool.MarketItem(
+            site="yahoo_shopping",
+            item_id="yh-1",
+            title="SEIKO SBDC101 SPB143",
+            item_url="https://example.com/yh/1",
+            image_url="",
+            price=59000.0,
+            shipping=0.0,
+            currency="JPY",
+            condition="new",
+            identifiers={},
+            raw={},
+        )
+        resolved = miner_seed_pool._resolve_stage1_source_pricing(
+            item=item,
+            seed_query="SBDC101",
+            seed_source_title="SEIKO Prospex SBDC101",
+            timeout=10,
+            strict_multi_sku=True,
+        )
+        self.assertFalse(bool(resolved.get("ok")))
+        self.assertEqual(str(resolved.get("skip_reason")), "multi_sku_site_not_supported")
+
     def test_run_seeded_fetch_runs_stage_b_and_stage_c_pipeline(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             db_path = Path(tmp) / "seed_pool_test.db"
@@ -183,10 +237,125 @@ class MinerSeedPoolTests(unittest.TestCase):
 
             self.assertGreaterEqual(int(payload.get("created_count", 0)), 1)
             self.assertTrue(bool(payload.get("seed_pool")))
+            self.assertGreaterEqual(int((payload.get("stage_b", {}) or {}).get("rows_count", 0)), 1)
             self.assertEqual(str(payload.get("query")), "watch")
             timed = payload.get("timed_fetch", {}) if isinstance(payload, dict) else {}
             self.assertGreaterEqual(int(timed.get("stage1_pass_total", 0)), 1)
             self.assertGreaterEqual(int(timed.get("stage2_runs", 0)), 1)
+
+    def test_stage_b_respects_stage1_api_call_budget(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            db_path = Path(tmp) / "seed_pool_stage_b_budget.db"
+            settings = _dummy_settings(db_path)
+            fake_page_row = {
+                "query": "watch",
+                "metadata": {
+                    "filtered_result_rows": [
+                        {"title": "CASIO GW-M5610U-1JF watch", "rank": 1},
+                    ]
+                },
+            }
+
+            site_calls = {"rakuten": 0, "yahoo": 0}
+
+            def _fake_rakuten(query: str, limit: int, timeout: int, page: int = 1, require_in_stock: bool = True):
+                site_calls["rakuten"] += 1
+                item = miner_seed_pool.MarketItem(
+                    site="rakuten",
+                    item_id=f"rk-{query}-{page}",
+                    title=f"{query} 新品 本体",
+                    item_url=f"https://example.com/rk/{query}/{page}",
+                    image_url="https://example.com/rk.jpg",
+                    price=10000.0,
+                    shipping=0.0,
+                    currency="JPY",
+                    condition="new",
+                    identifiers={},
+                    raw={},
+                )
+                return [item], {"status": 200, "category_filter": {"applied": True}, "cache_hit": False}
+
+            def _fake_yahoo(query: str, limit: int, timeout: int, page: int = 1, require_in_stock: bool = True):
+                site_calls["yahoo"] += 1
+                item = miner_seed_pool.MarketItem(
+                    site="yahoo",
+                    item_id=f"yh-{query}-{page}",
+                    title=f"{query} 新品 本体",
+                    item_url=f"https://example.com/yh/{query}/{page}",
+                    image_url="https://example.com/yh.jpg",
+                    price=12000.0,
+                    shipping=0.0,
+                    currency="JPY",
+                    condition="new",
+                    identifiers={},
+                    raw={},
+                )
+                return [item], {"status": 200, "category_filter": {"applied": True}, "cache_hit": False}
+
+            def _fake_liquidity(**kwargs):
+                return {
+                    "sold_90d_count": 10,
+                    "metadata": {
+                        "sold_price_min": 180.0,
+                        "sold_sample": {
+                            "item_url": "https://www.ebay.com/itm/123456789012",
+                            "title": "eBay sold title",
+                            "image_url": "https://example.com/sold.jpg",
+                            "sold_price": 180.0,
+                        },
+                    },
+                    "source": "rpa_json",
+                    "unavailable_reason": "",
+                }
+
+            def _fake_create(payload, settings=None):
+                return {"id": 1, "source_title": payload.get("source_title", "")}
+
+            env = {
+                "DB_BACKEND": "sqlite",
+                "MINER_SEED_POOL_MAX_PAGES": "1",
+                "MINER_SEED_POOL_TARGET_COUNT": "2",
+                "MINER_SEED_POOL_SOFT_TARGET_RATIO": "0.8",
+                "MINER_SEED_POOL_REFILL_THRESHOLD": "20",
+                "MINER_SEED_POOL_RUN_BATCH_SIZE": "1",
+                "MINER_SEED_POOL_PAGE_SIZE": "50",
+                "MINER_STAGE1_API_MAX_CALLS_PER_RUN": "1",
+            }
+            with patch.dict("os.environ", env, clear=False):
+                with patch.object(
+                    miner_seed_pool, "_run_rpa_page", return_value={"ok": True, "rows": [fake_page_row], "reason": "ok"}
+                ), patch.object(miner_seed_pool, "_search_rakuten", side_effect=_fake_rakuten), patch.object(
+                    miner_seed_pool, "_search_yahoo", side_effect=_fake_yahoo
+                ), patch.object(
+                    miner_seed_pool, "get_liquidity_signal", side_effect=_fake_liquidity
+                ), patch.object(
+                    miner_seed_pool, "create_miner_candidate", side_effect=_fake_create
+                ):
+                    payload = miner_seed_pool.run_seeded_fetch(
+                        category_query="watch",
+                        source_sites=["rakuten", "yahoo"],
+                        market_site="ebay",
+                        limit_per_site=20,
+                        max_candidates=20,
+                        min_match_score=0.72,
+                        min_profit_usd=0.01,
+                        min_margin_rate=0.03,
+                        require_in_stock=True,
+                        timeout=10,
+                        timed_mode=True,
+                        min_target_candidates=1,
+                        timebox_sec=60,
+                        max_passes=2,
+                        continue_after_target=False,
+                        settings=settings,
+                    )
+
+            stage_b = payload.get("stage_b", {}) if isinstance(payload, dict) else {}
+            stage1_skip_counts = payload.get("stage1_skip_counts", {}) if isinstance(payload, dict) else {}
+            self.assertEqual(int(stage_b.get("api_calls", 0)), 1)
+            self.assertEqual(site_calls["rakuten"], 1)
+            self.assertEqual(site_calls["yahoo"], 0)
+            self.assertGreaterEqual(int(stage1_skip_counts.get("skipped_stage1_api_budget", 0)), 1)
 
     def test_taken_seed_is_reusable_and_pool_does_not_shrink(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -619,6 +788,65 @@ class MinerSeedPoolTests(unittest.TestCase):
             unlock = first_run.get("page_unlock", {}) if isinstance(first_run.get("page_unlock"), dict) else {}
             self.assertEqual(int(unlock.get("fetch_quota_pages", -1)), 2)
             self.assertEqual(str(unlock.get("hours_source", "")), "category_row_query")
+
+    def test_refill_with_page_unlock_wait_falls_back_to_other_categories(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            db_path = Path(tmp) / "seed_pool_page_unlock_fallback.db"
+            settings = _dummy_settings(db_path)
+            called_keys = []
+
+            def _fake_refill(
+                conn,
+                *,
+                category_key: str,
+                category_label: str,
+                category_row,
+                stage_a_big_word_limit: int = 0,
+                stage_a_minimize_transitions: bool = False,
+                refill_timebox_override_sec=None,
+                progress_callback=None,
+            ):
+                called_keys.append(category_key)
+                if category_key == "watch":
+                    return {"reason": "page_unlock_wait", "added_count": 0, "daily_limit_reached": False}
+                if category_key == "sneakers":
+                    return {"reason": "partial_refill", "added_count": 40, "daily_limit_reached": False}
+                if category_key == "streetwear":
+                    return {"reason": "partial_refill", "added_count": 70, "daily_limit_reached": False}
+                return {"reason": "partial_refill", "added_count": 0, "daily_limit_reached": False}
+
+            with patch.dict(
+                "os.environ",
+                {
+                    "DB_BACKEND": "sqlite",
+                    "MINER_SEED_POOL_TARGET_COUNT": "100",
+                    "MINER_STAGEA_FALLBACK_ON_PAGE_UNLOCK_WAIT": "1",
+                    "MINER_STAGEA_FALLBACK_MAX_CATEGORIES": "3",
+                },
+                clear=False,
+            ), patch.object(miner_seed_pool, "_refill_seed_pool", side_effect=_fake_refill), patch.object(
+                miner_seed_pool,
+                "_phase_a_fallback_categories",
+                return_value=[
+                    ("sneakers", "スニーカー", {"category_key": "sneakers"}),
+                    ("streetwear", "ストリートウェア", {"category_key": "streetwear"}),
+                ],
+            ):
+                with connect(settings.db_path) as conn:
+                    init_db(conn)
+                    summary = miner_seed_pool._refill_seed_pool_with_page_unlock_fallback(
+                        conn,
+                        category_key="watch",
+                        category_label="腕時計",
+                        category_row={"category_key": "watch"},
+                    )
+
+            self.assertEqual(called_keys, ["watch", "sneakers", "streetwear"])
+            self.assertEqual(str(summary.get("reason", "")), "target_reached_with_fallback")
+            self.assertTrue(bool(summary.get("phase_a_completed_with_fallback")))
+            self.assertEqual(int(summary.get("fallback_total_added_count", 0)), 110)
+            fallback_runs = summary.get("fallback_refill_runs", []) if isinstance(summary, dict) else []
+            self.assertEqual(len(fallback_runs), 2)
 
     def test_refill_minimize_transitions_uses_large_single_page(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

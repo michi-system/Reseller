@@ -16,7 +16,13 @@
   "stage_a_defaults": {
     "query_page_unlock_enabled": true,
     "query_page_unlock_hours_default": 24,
-    "query_page_unlock_min_pages": 1
+    "query_page_unlock_min_pages": 1,
+    "fallback_on_page_unlock_wait": true,
+    "fallback_max_categories": 8
+  },
+  "stage_b_defaults": {
+    "api_max_calls_per_run": 8,
+    "multi_sku_strict": true
   },
   "env_requirements": {
     "ITEM_CONDITION": "new",

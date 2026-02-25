@@ -49,6 +49,8 @@ Phase A は「毎回全ページ」を掘るのではなく、big word ごとに
 - `MINER_STAGEA_QUERY_PAGE_UNLOCK_HOURS_DEFAULT=24`
 - `MINER_STAGEA_QUERY_PAGE_UNLOCK_MIN_PAGES=1`
 - `MINER_STAGEA_QUERY_PAGE_UNLOCK_INITIAL_PAGES`（未設定時は `max_pages`）
+- `MINER_STAGEA_FALLBACK_ON_PAGE_UNLOCK_WAIT=1`（`page_unlock_wait` 時に他カテゴリを回す）
+- `MINER_STAGEA_FALLBACK_MAX_CATEGORIES=8`（1回のフォールバック上限カテゴリ数）
 
 ### big word ごとの上書き
 - `MINER_STAGEA_QUERY_PAGE_UNLOCK_HOURS_JSON` に JSON で指定
@@ -73,6 +75,12 @@ Phase A は「毎回全ページ」を掘るのではなく、big word ごとに
 - `page_unlock_wait`: ページ解放待ち（経過時間不足）
 - `daily_limit_reached`: RPA/PRの日次上限
 - `rpa_timeout_guard`: タイムアウト多発で安全停止
+- `target_reached_with_fallback`: 主カテゴリが `page_unlock_wait` だったため他カテゴリを順次補充し、合計新規seedが目標件数に到達
+
+### `page_unlock_wait` のときの動作
+- 主カテゴリが `page_unlock_wait` になった場合、設定が有効なら他カテゴリへ順に移る。
+- 各カテゴリで追加された `added_count` を合算し、合計が目標（既定100）に達したらA段階を終了する。
+- 日次上限に到達した場合はその時点で停止する。
 
 ## 6. 腕時計カテゴリでの成功条件
 Phase A 完了判定は、`docs/MINER_SPEC.md` の受け入れ条件に従います。

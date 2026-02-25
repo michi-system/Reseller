@@ -40,10 +40,19 @@
     - `MINER_STAGEA_QUERY_PAGE_UNLOCK_MIN_PAGES=1`
     - `MINER_STAGEA_QUERY_PAGE_UNLOCK_INITIAL_PAGES`（履歴未作成時の初期ページ数）
     - `MINER_STAGEA_QUERY_PAGE_UNLOCK_HOURS_JSON`（ビッグワード別 `hours/page` 上書き）
+  - `page_unlock_wait` 時のカテゴリフォールバック:
+    - `MINER_STAGEA_FALLBACK_ON_PAGE_UNLOCK_WAIT=1`
+    - `MINER_STAGEA_FALLBACK_MAX_CATEGORIES=8`
+    - 主カテゴリが待機中の場合、他カテゴリを順次補充して合計新規seedが目標件数に達したらA段階を終了
 
 ### B段階（日本側一次取得）
 - 目的: 古いseedから20件を順に消化し、日本側最安本体候補を取得
 - 実行: 新品・価格昇順・seed上限価格付きでYahoo/Rakuten検索
+- 既定ガード:
+  - `MINER_STAGE1_API_MAX_CALLS_PER_RUN`（1実行あたりの日本側API呼び出し上限）
+  - `MINER_STAGE1_MULTI_SKU_STRICT=true`（複数型番ページで対象型番価格を解決できない候補を除外）
+- 出力:
+  - B段階の取得結果は `stage_b.rows` として保持し、`seed A` を消費せずに `seed B` 情報としてC段階へ引き継ぐ
 - 補足: ヒットなしでも理由ログを必ず残す
 
 ### C段階（最終再判定）
