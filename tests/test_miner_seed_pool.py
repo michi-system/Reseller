@@ -1,3 +1,5 @@
+import os
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
@@ -50,6 +52,33 @@ class MinerSeedPoolTests(unittest.TestCase):
         )
         keys = [miner_seed_pool._seed_key(v) for v in seeds]
         self.assertTrue(any("4549980658031" in key for key in keys))
+
+    def test_extract_seed_queries_drops_generic_tokens_when_specific_exists(self) -> None:
+        seeds = miner_seed_pool._extract_seed_queries_from_title(
+            "SEIKO 5 Sports SBSC009 Limited Item",
+            ["SEIKO"],
+        )
+        keys = [miner_seed_pool._seed_key(v) for v in seeds]
+        self.assertTrue(any("SBSC009" in key for key in keys))
+        self.assertFalse(any(key == "SEIKO" for key in keys))
+        self.assertFalse(any(key == "ITEM" for key in keys))
+
+    def test_fallback_seed_phrases_avoids_broad_series_token(self) -> None:
+        seeds = miner_seed_pool._extract_seed_queries_from_title(
+            "Citizen Promaster Diver Watch",
+            ["Citizen"],
+        )
+        keys = [miner_seed_pool._seed_key(v) for v in seeds]
+        self.assertFalse(any(key == "CITIZENPROMASTER" for key in keys))
+        self.assertFalse(any(key == "CITIZEN" for key in keys))
+
+    def test_fallback_seed_phrases_keeps_non_broad_series_phrase(self) -> None:
+        seeds = miner_seed_pool._extract_seed_queries_from_title(
+            "Citizen Attesa Titanium Watch",
+            ["Citizen"],
+        )
+        keys = [miner_seed_pool._seed_key(v) for v in seeds]
+        self.assertTrue(any(key == "CITIZENATTESA" for key in keys))
 
     def test_pick_liquidity_query_prefers_model_when_jp_seed_is_gtin_only(self) -> None:
         picked = miner_seed_pool._pick_liquidity_query(
@@ -271,7 +300,7 @@ class MinerSeedPoolTests(unittest.TestCase):
             }
             called_offsets = []
 
-            def _fake_run_rpa_page(*, query: str, offset: int, limit: int):
+            def _fake_run_rpa_page(*, query: str, offset: int, limit: int, **kwargs):
                 called_offsets.append(offset)
                 return {"ok": True, "rows": [fake_row], "reason": "ok", "daily_limit_reached": False}
 
@@ -320,6 +349,321 @@ class MinerSeedPoolTests(unittest.TestCase):
             self.assertEqual(called_offsets[0], 50)
             self.assertEqual(int(summary.get("skipped_fresh_pages", 0)), 1)
             self.assertGreaterEqual(int(summary.get("added_count", 0)), 1)
+
+    def test_refill_respects_stage_a_big_word_limit(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            db_path = Path(tmp) / "seed_pool_big_word_limit.db"
+            settings = _dummy_settings(db_path)
+            called_queries = []
+
+            def _fake_run_rpa_page(*, query: str, offset: int, limit: int, **kwargs):
+                called_queries.append(query)
+                return {
+                    "ok": True,
+                    "rows": [{"query": query, "metadata": {"filtered_result_rows": []}}],
+                    "reason": "ok",
+                    "daily_limit_reached": False,
+                }
+
+            with patch.dict(
+                "os.environ",
+                {
+                    "DB_BACKEND": "sqlite",
+                    "MINER_SEED_POOL_REFILL_THRESHOLD": "60",
+                    "MINER_SEED_POOL_PAGE_SIZE": "50",
+                    "MINER_SEED_POOL_MAX_PAGES": "1",
+                    "MINER_SEED_POOL_TARGET_COUNT": "100",
+                    "MINER_SEED_POOL_REFILL_TIMEBOX_SEC": "300",
+                },
+                clear=False,
+            ), patch.object(
+                miner_seed_pool, "_category_big_words", return_value=["watch", "casio", "seiko"]
+            ), patch.object(
+                miner_seed_pool, "_run_rpa_page", side_effect=_fake_run_rpa_page
+            ):
+                with connect(settings.db_path) as conn:
+                    init_db(conn)
+                    summary = miner_seed_pool._refill_seed_pool(
+                        conn,
+                        category_key="watch",
+                        category_label="腕時計",
+                        category_row={},
+                        stage_a_big_word_limit=2,
+                    )
+
+            self.assertEqual(called_queries, ["watch", "casio"])
+            self.assertEqual(list(summary.get("queries", [])), ["watch", "casio"])
+            self.assertEqual(int(summary.get("big_word_limit", 0)), 2)
+            self.assertEqual(int(summary.get("big_word_count", 0)), 2)
+            self.assertEqual(int(summary.get("big_word_total_count", 0)), 3)
+            self.assertEqual(int(summary.get("target_count_base", 0)), 100)
+            self.assertEqual(int(summary.get("target_count", 0)), 67)
+            self.assertEqual(int(summary.get("timebox_base_sec", 0)), 300)
+            self.assertEqual(int(summary.get("timebox_sec", 0)), 200)
+
+    def test_refill_limits_pages_by_query_elapsed_hours(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            db_path = Path(tmp) / "seed_pool_page_unlock_elapsed.db"
+            settings = _dummy_settings(db_path)
+            now_ts = 1_700_000_000
+            called_offsets = []
+
+            def _fake_run_rpa_page(*, query: str, offset: int, limit: int, **kwargs):
+                called_offsets.append(offset)
+                return {
+                    "ok": True,
+                    "rows": [
+                        {
+                            "query": query,
+                            "sold_90d_count": 200,
+                            "sold_price_min": 120.0,
+                            "metadata": {
+                                "filtered_result_rows": [
+                                    {"title": f"CASIO GW-M5610U-{offset}JF watch", "rank": 1},
+                                ]
+                            },
+                        }
+                    ],
+                    "reason": "ok",
+                    "daily_limit_reached": False,
+                }
+
+            with patch.dict(
+                "os.environ",
+                {
+                    "DB_BACKEND": "sqlite",
+                    "MINER_SEED_POOL_REFILL_THRESHOLD": "60",
+                    "MINER_SEED_POOL_PAGE_SIZE": "50",
+                    "MINER_SEED_POOL_MAX_PAGES": "5",
+                    "MINER_SEED_POOL_TARGET_COUNT": "100",
+                    "MINER_SEED_POOL_PAGE_FRESH_DAYS": "0",
+                    "MINER_STAGEA_QUERY_PAGE_UNLOCK_ENABLED": "1",
+                    "MINER_STAGEA_QUERY_PAGE_UNLOCK_HOURS_DEFAULT": "24",
+                    "MINER_STAGEA_QUERY_PAGE_UNLOCK_MIN_PAGES": "1",
+                },
+                clear=False,
+            ), patch.object(miner_seed_pool.time, "time", return_value=float(now_ts)), patch.object(
+                miner_seed_pool, "_run_rpa_page", side_effect=_fake_run_rpa_page
+            ):
+                with connect(settings.db_path) as conn:
+                    init_db(conn)
+                    conn.execute(
+                        """
+                        INSERT INTO miner_seed_refill_pages (
+                            category_key, query_key, page_offset, page_size, fetched_at, result_count, new_seed_count, updated_at
+                        )
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        (
+                            "watch",
+                            "watch",
+                            0,
+                            50,
+                            miner_seed_pool.utc_iso(now_ts - (72 * 3600)),
+                            50,
+                            10,
+                            miner_seed_pool.utc_iso(now_ts - (72 * 3600)),
+                        ),
+                    )
+                    summary = miner_seed_pool._refill_seed_pool(
+                        conn,
+                        category_key="watch",
+                        category_label="腕時計",
+                        category_row={},
+                    )
+
+            self.assertEqual(called_offsets, [0, 50, 100])
+            query_runs = summary.get("query_runs", []) if isinstance(summary, dict) else []
+            self.assertTrue(isinstance(query_runs, list) and query_runs)
+            first_run = query_runs[0] if isinstance(query_runs[0], dict) else {}
+            unlock = first_run.get("page_unlock", {}) if isinstance(first_run.get("page_unlock"), dict) else {}
+            self.assertEqual(int(unlock.get("fetch_quota_pages", -1)), 3)
+            self.assertEqual(str(first_run.get("stop_reason", "")), "page_unlock_quota_reached")
+
+    def test_refill_page_unlock_wait_when_elapsed_is_too_short(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            db_path = Path(tmp) / "seed_pool_page_unlock_wait.db"
+            settings = _dummy_settings(db_path)
+            now_ts = 1_700_000_000
+
+            with patch.dict(
+                "os.environ",
+                {
+                    "DB_BACKEND": "sqlite",
+                    "MINER_SEED_POOL_REFILL_THRESHOLD": "60",
+                    "MINER_SEED_POOL_PAGE_SIZE": "50",
+                    "MINER_SEED_POOL_MAX_PAGES": "3",
+                    "MINER_SEED_POOL_TARGET_COUNT": "100",
+                    "MINER_SEED_POOL_PAGE_FRESH_DAYS": "0",
+                    "MINER_STAGEA_QUERY_PAGE_UNLOCK_ENABLED": "1",
+                    "MINER_STAGEA_QUERY_PAGE_UNLOCK_HOURS_DEFAULT": "24",
+                    "MINER_STAGEA_QUERY_PAGE_UNLOCK_MIN_PAGES": "0",
+                },
+                clear=False,
+            ), patch.object(miner_seed_pool.time, "time", return_value=float(now_ts)), patch.object(
+                miner_seed_pool,
+                "_run_rpa_page",
+                side_effect=AssertionError("page unlock wait ではRPA実行されない想定"),
+            ):
+                with connect(settings.db_path) as conn:
+                    init_db(conn)
+                    conn.execute(
+                        """
+                        INSERT INTO miner_seed_refill_pages (
+                            category_key, query_key, page_offset, page_size, fetched_at, result_count, new_seed_count, updated_at
+                        )
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        (
+                            "watch",
+                            "watch",
+                            0,
+                            50,
+                            miner_seed_pool.utc_iso(now_ts - 3600),
+                            50,
+                            1,
+                            miner_seed_pool.utc_iso(now_ts - 3600),
+                        ),
+                    )
+                    summary = miner_seed_pool._refill_seed_pool(
+                        conn,
+                        category_key="watch",
+                        category_label="腕時計",
+                        category_row={},
+                    )
+
+            self.assertEqual(str(summary.get("reason", "")), "page_unlock_wait")
+            self.assertTrue(str(summary.get("cooldown_until", "")).strip())
+
+    def test_refill_uses_category_row_page_unlock_hours_override(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            db_path = Path(tmp) / "seed_pool_page_unlock_category_override.db"
+            settings = _dummy_settings(db_path)
+            now_ts = 1_700_000_000
+            called_offsets = []
+
+            def _fake_run_rpa_page(*, query: str, offset: int, limit: int, **kwargs):
+                called_offsets.append(offset)
+                return {
+                    "ok": True,
+                    "rows": [
+                        {
+                            "query": query,
+                            "sold_90d_count": 100,
+                            "sold_price_min": 120.0,
+                            "metadata": {
+                                "filtered_result_rows": [
+                                    {"title": f"CASIO GW-M5610U-{offset}JF watch", "rank": 1},
+                                ]
+                            },
+                        }
+                    ],
+                    "reason": "ok",
+                    "daily_limit_reached": False,
+                }
+
+            category_row = {
+                "phase_a_big_words": ["G-SHOCK"],
+                "phase_a_page_unlock_hours": {"G-SHOCK": 8},
+            }
+
+            with patch.dict(
+                "os.environ",
+                {
+                    "DB_BACKEND": "sqlite",
+                    "MINER_SEED_POOL_REFILL_THRESHOLD": "60",
+                    "MINER_SEED_POOL_PAGE_SIZE": "50",
+                    "MINER_SEED_POOL_MAX_PAGES": "5",
+                    "MINER_SEED_POOL_TARGET_COUNT": "100",
+                    "MINER_SEED_POOL_PAGE_FRESH_DAYS": "0",
+                    "MINER_STAGEA_QUERY_PAGE_UNLOCK_ENABLED": "1",
+                    "MINER_STAGEA_QUERY_PAGE_UNLOCK_HOURS_DEFAULT": "24",
+                    "MINER_STAGEA_QUERY_PAGE_UNLOCK_MIN_PAGES": "1",
+                },
+                clear=False,
+            ), patch.object(miner_seed_pool.time, "time", return_value=float(now_ts)), patch.object(
+                miner_seed_pool, "_run_rpa_page", side_effect=_fake_run_rpa_page
+            ):
+                with connect(settings.db_path) as conn:
+                    init_db(conn)
+                    conn.execute(
+                        """
+                        INSERT INTO miner_seed_refill_pages (
+                            category_key, query_key, page_offset, page_size, fetched_at, result_count, new_seed_count, updated_at
+                        )
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        (
+                            "watch",
+                            "g-shock",
+                            0,
+                            50,
+                            miner_seed_pool.utc_iso(now_ts - (16 * 3600)),
+                            50,
+                            5,
+                            miner_seed_pool.utc_iso(now_ts - (16 * 3600)),
+                        ),
+                    )
+                    summary = miner_seed_pool._refill_seed_pool(
+                        conn,
+                        category_key="watch",
+                        category_label="腕時計",
+                        category_row=category_row,
+                        stage_a_big_word_limit=1,
+                    )
+
+            self.assertEqual(called_offsets, [0, 50])
+            query_runs = summary.get("query_runs", []) if isinstance(summary, dict) else []
+            self.assertTrue(isinstance(query_runs, list) and query_runs)
+            first_run = query_runs[0] if isinstance(query_runs[0], dict) else {}
+            unlock = first_run.get("page_unlock", {}) if isinstance(first_run.get("page_unlock"), dict) else {}
+            self.assertEqual(int(unlock.get("fetch_quota_pages", -1)), 2)
+            self.assertEqual(str(unlock.get("hours_source", "")), "category_row_query")
+
+    def test_refill_minimize_transitions_uses_large_single_page(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            db_path = Path(tmp) / "seed_pool_minimize_transitions.db"
+            settings = _dummy_settings(db_path)
+            called_pages = []
+
+            def _fake_run_rpa_page(*, query: str, offset: int, limit: int, **kwargs):
+                called_pages.append({"query": query, "offset": offset, "limit": limit})
+                return {
+                    "ok": True,
+                    "rows": [{"query": query, "metadata": {"filtered_result_rows": []}}],
+                    "reason": "ok",
+                    "daily_limit_reached": False,
+                }
+
+            with patch.dict(
+                "os.environ",
+                {
+                    "DB_BACKEND": "sqlite",
+                    "MINER_SEED_POOL_REFILL_THRESHOLD": "60",
+                    "MINER_SEED_POOL_PAGE_SIZE": "50",
+                    "MINER_SEED_POOL_MAX_PAGES": "4",
+                    "MINER_STAGEA_TRANSITION_PAGE_SIZE": "200",
+                    "MINER_STAGEA_TRANSITION_MAX_PAGES_PER_QUERY": "1",
+                },
+                clear=False,
+            ), patch.object(miner_seed_pool, "_category_big_words", return_value=["watch"]), patch.object(
+                miner_seed_pool, "_run_rpa_page", side_effect=_fake_run_rpa_page
+            ):
+                with connect(settings.db_path) as conn:
+                    init_db(conn)
+                    summary = miner_seed_pool._refill_seed_pool(
+                        conn,
+                        category_key="watch",
+                        category_label="腕時計",
+                        category_row={},
+                        stage_a_minimize_transitions=True,
+                    )
+
+            self.assertEqual(len(called_pages), 1)
+            self.assertEqual(called_pages[0], {"query": "watch", "offset": 0, "limit": 200})
+            self.assertTrue(bool(summary.get("minimize_transitions")))
+            self.assertEqual(int(summary.get("transition_page_size", 0)), 200)
+            self.assertEqual(int(summary.get("transition_max_pages_per_query", 0)), 1)
 
     def test_take_seeds_for_run_prefers_oldest_created(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -1078,6 +1422,111 @@ class MinerSeedPoolTests(unittest.TestCase):
         self.assertEqual(str(summary.get("reason")), "rpa_timeout_guard")
         self.assertGreaterEqual(int(summary.get("rpa_timeout_pages", 0)), 1)
 
+    def test_refill_records_diagnostics_and_tuning_on_rpa_failure(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            db_path = Path(tmp) / "seed_pool_diag_rpa_failure.db"
+            settings = _dummy_settings(db_path)
+            with patch.dict(
+                "os.environ",
+                {
+                    "DB_BACKEND": "sqlite",
+                    "MINER_SEED_POOL_REFILL_THRESHOLD": "60",
+                    "MINER_SEED_POOL_PAGE_SIZE": "50",
+                    "MINER_SEED_POOL_MAX_PAGES": "1",
+                    "MINER_SEED_POOL_TARGET_COUNT": "100",
+                },
+                clear=False,
+            ), patch.object(
+                miner_seed_pool,
+                "_category_big_words",
+                return_value=["watch"],
+            ), patch.object(
+                miner_seed_pool,
+                "_run_rpa_page",
+                return_value={
+                    "ok": False,
+                    "rows": [],
+                    "reason": "rpa_failed",
+                    "returncode": 1,
+                    "daily_limit_reached": False,
+                    "stdout_tail": ["rpa error"],
+                    "stderr_tail": ["stack"],
+                },
+            ):
+                with connect(settings.db_path) as conn:
+                    init_db(conn)
+                    summary = miner_seed_pool._refill_seed_pool(
+                        conn,
+                        category_key="watch",
+                        category_label="腕時計",
+                        category_row={},
+                    )
+
+        diagnostics = summary.get("diagnostics", {}) if isinstance(summary, dict) else {}
+        tuning = summary.get("tuning_recommendations", []) if isinstance(summary, dict) else []
+        self.assertEqual(int(diagnostics.get("rpa_failed_pages", 0)), 1)
+        self.assertEqual(int((diagnostics.get("page_reason_counts") or {}).get("rpa_failed", 0)), 1)
+        self.assertGreaterEqual(len(diagnostics.get("failure_samples", [])), 1)
+        self.assertTrue(any(str(row.get("code", "")) == "stabilize_rpa_fetch" for row in tuning if isinstance(row, dict)))
+
+    def test_refill_fresh_window_skip_has_tuning_recommendation(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            db_path = Path(tmp) / "seed_pool_diag_fresh_skip.db"
+            settings = _dummy_settings(db_path)
+            now_ts = 1_700_000_000
+            with patch.dict(
+                "os.environ",
+                {
+                    "DB_BACKEND": "sqlite",
+                    "MINER_SEED_POOL_REFILL_THRESHOLD": "60",
+                    "MINER_SEED_POOL_PAGE_SIZE": "50",
+                    "MINER_SEED_POOL_MAX_PAGES": "1",
+                    "MINER_SEED_POOL_TARGET_COUNT": "100",
+                    "MINER_SEED_POOL_PAGE_FRESH_DAYS": "7",
+                },
+                clear=False,
+            ), patch.object(
+                miner_seed_pool.time, "time", return_value=float(now_ts)
+            ), patch.object(
+                miner_seed_pool,
+                "_category_big_words",
+                return_value=["watch"],
+            ), patch.object(
+                miner_seed_pool,
+                "_run_rpa_page",
+                side_effect=AssertionError("fresh skip ではRPA実行されない想定"),
+            ):
+                with connect(settings.db_path) as conn:
+                    init_db(conn)
+                    conn.execute(
+                        """
+                        INSERT INTO miner_seed_refill_pages (
+                            category_key, query_key, page_offset, page_size, fetched_at, result_count, new_seed_count, updated_at
+                        )
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        (
+                            "watch",
+                            "watch",
+                            0,
+                            50,
+                            miner_seed_pool.utc_iso(now_ts - 3600),
+                            40,
+                            0,
+                            miner_seed_pool.utc_iso(now_ts - 3600),
+                        ),
+                    )
+                    summary = miner_seed_pool._refill_seed_pool(
+                        conn,
+                        category_key="watch",
+                        category_label="腕時計",
+                        category_row={},
+                    )
+
+        tuning = summary.get("tuning_recommendations", []) if isinstance(summary, dict) else []
+        self.assertEqual(str(summary.get("reason", "")), "fresh_window_skip")
+        self.assertTrue(any(str(row.get("code", "")) == "reduce_page_fresh_window" for row in tuning if isinstance(row, dict)))
+
     def test_timebox_respects_min_stage1_attempts(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             db_path = Path(tmp) / "seed_pool_min_attempts.db"
@@ -1144,6 +1593,101 @@ class MinerSeedPoolTests(unittest.TestCase):
         timed = payload.get("timed_fetch", {}) if isinstance(payload, dict) else {}
         self.assertEqual(str(timed.get("stop_reason", "")), "timebox_reached")
         self.assertGreaterEqual(int(timed.get("passes_run", 0)), 2)
+
+    def test_run_rpa_page_enforces_phase_a_filter_requirements_by_default(self) -> None:
+        captured: dict = {}
+
+        def _fake_subprocess_run(*args, **kwargs):
+            captured["cmd"] = list(args[0]) if args else []
+            captured["env"] = dict(kwargs.get("env", {}))
+            return subprocess.CompletedProcess(args[0], 0, stdout="", stderr="")
+
+        with patch.dict("os.environ", {"DB_BACKEND": "sqlite"}, clear=False):
+            os.environ.pop("LIQUIDITY_RPA_REQUIRE_LOCK_SELECTED_FILTERS", None)
+            os.environ.pop("LIQUIDITY_RPA_REQUIRE_SOLD_SORT", None)
+            os.environ.pop("LIQUIDITY_RPA_REQUIRE_MIN_PRICE_FILTER", None)
+            os.environ.pop("LIQUIDITY_RPA_ENABLE_LOCK_SELECTED_FILTERS", None)
+            os.environ.pop("LIQUIDITY_RPA_ENABLE_MIN_PRICE_FILTER_UI", None)
+            os.environ.pop("LIQUIDITY_RPA_PRIMARY_SOLD_SORT", None)
+            with patch.object(miner_seed_pool.subprocess, "run", side_effect=_fake_subprocess_run):
+                result = miner_seed_pool._run_rpa_page(
+                    query="G-SHOCK",
+                    offset=0,
+                    limit=50,
+                    category_id=31387,
+                    category_slug="wristwatches",
+                    min_price_usd=100.0,
+                )
+
+        self.assertTrue(bool(result.get("ok")))
+        self.assertIn("--min-price-usd", captured.get("cmd", []))
+        self.assertIn("--sold-sort", captured.get("cmd", []))
+        sold_sort_index = captured.get("cmd", []).index("--sold-sort")
+        self.assertEqual(str(captured.get("cmd", [])[sold_sort_index + 1]), "recently_sold")
+        self.assertEqual(str(captured.get("env", {}).get("LIQUIDITY_RPA_REQUIRE_LOCK_SELECTED_FILTERS")), "1")
+        self.assertEqual(str(captured.get("env", {}).get("LIQUIDITY_RPA_REQUIRE_SOLD_SORT")), "1")
+        self.assertEqual(str(captured.get("env", {}).get("LIQUIDITY_RPA_ENABLE_LOCK_SELECTED_FILTERS")), "1")
+        self.assertEqual(str(captured.get("env", {}).get("LIQUIDITY_RPA_REQUIRE_MIN_PRICE_FILTER")), "1")
+        self.assertEqual(str(captured.get("env", {}).get("LIQUIDITY_RPA_ENABLE_MIN_PRICE_FILTER_UI")), "1")
+        search_params = result.get("rpa_search_params", {}) if isinstance(result, dict) else {}
+        self.assertTrue(bool(search_params.get("require_lock_selected_filters")))
+        self.assertTrue(bool(search_params.get("require_sold_sort")))
+        self.assertTrue(bool(search_params.get("require_min_price_filter")))
+        self.assertEqual(str(search_params.get("sold_sort", "")), "recently_sold")
+        self.assertAlmostEqual(float(search_params.get("min_price_usd", 0.0)), 100.0)
+
+    def test_run_rpa_page_passes_temporary_screenshot_template(self) -> None:
+        captured: dict = {}
+
+        def _fake_subprocess_run(*args, **kwargs):
+            captured["cmd"] = list(args[0]) if args else []
+            return subprocess.CompletedProcess(args[0], 0, stdout="", stderr="")
+
+        with patch.dict(
+            "os.environ",
+            {
+                "DB_BACKEND": "sqlite",
+                "MINER_SEED_POOL_RPA_SCREENSHOT_TEMPLATE": "/tmp/phasea_{query}_{offset}_{ts}.png",
+            },
+            clear=False,
+        ):
+            with patch.object(miner_seed_pool.subprocess, "run", side_effect=_fake_subprocess_run):
+                result = miner_seed_pool._run_rpa_page(
+                    query="G-SHOCK",
+                    offset=150,
+                    limit=50,
+                    category_id=31387,
+                    category_slug="wristwatches",
+                    min_price_usd=100.0,
+                )
+
+        cmd = captured.get("cmd", [])
+        self.assertIn("--screenshot-after-filters", cmd)
+        idx = cmd.index("--screenshot-after-filters")
+        self.assertIn("_150_", str(cmd[idx + 1]))
+        search_params = result.get("rpa_search_params", {}) if isinstance(result, dict) else {}
+        self.assertIn("_150_", str(search_params.get("screenshot_after_filters", "")))
+
+    def test_collect_row_entries_includes_sold_price(self) -> None:
+        row = {
+            "sold_90d_count": 44,
+            "sold_price_min": 100.0,
+            "metadata": {
+                "raw_row_count": 1,
+                "filtered_result_rows": [
+                    {
+                        "title": "CASIO G-SHOCK GA2100-1A",
+                        "item_id": "v1|123456789012|0",
+                        "item_url": "https://www.ebay.com/itm/123456789012",
+                        "sold_price": 179.86,
+                        "rank": 1,
+                    }
+                ],
+            },
+        }
+        entries = miner_seed_pool._collect_row_entries(row)
+        self.assertEqual(len(entries), 1)
+        self.assertAlmostEqual(float(entries[0].get("sold_price", 0.0)), 179.86)
 
 
 if __name__ == "__main__":

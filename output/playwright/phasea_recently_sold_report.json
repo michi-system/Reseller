@@ -1,0 +1,578 @@
+{
+  "category_key": "watch",
+  "category_label": "腕時計",
+  "query": "G-SHOCK",
+  "sold_sort_target": "recently_sold",
+  "min_price_usd": 100.0,
+  "runs": [
+    {
+      "offset": 0,
+      "ok": true,
+      "reason": "ok",
+      "elapsed_sec": 15.1003,
+      "rpa_search_params": {
+        "query": "G-SHOCK",
+        "offset": 0,
+        "limit": 50,
+        "wait_seconds": 8,
+        "lookback_days": 90,
+        "condition": "new",
+        "sold_sort": "recently_sold",
+        "strict_condition": true,
+        "fixed_price_only": true,
+        "category_id": 31387,
+        "category_slug": "wristwatches",
+        "min_price_usd": 100.0,
+        "screenshot_after_filters": "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/output/playwright/phasea_recently_sold_{query}_{index}_0_{ts}.png",
+        "require_lock_selected_filters": true,
+        "require_sold_sort": true,
+        "require_min_price_filter": true
+      },
+      "url": "https://www.ebay.com/sh/research?marketplace=EBAY-US&keywords=G-SHOCK&categoryId=31387&conditionId=1000&format=FIXED_PRICE&minPrice=100&offset=0&limit=50&sorting=-datelastsold&tabName=SOLD&tz=Asia%2FTokyo",
+      "filters_screenshot_path": "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/output/playwright/phasea_recently_sold_G-SHOCK_1_0_20260225T184341.png",
+      "filter_state": {
+        "sort_target": "recently_sold",
+        "sort_selected": true,
+        "sort_option_label": "Feb 25, 2026",
+        "sort_selection_source": "date_last_sold_click_1",
+        "sort_order_state": {
+          "row_dates": [
+            "Feb 25, 2026",
+            "Feb 25, 2026",
+            "Feb 25, 2026",
+            "Feb 25, 2026",
+            "Feb 25, 2026",
+            "Feb 25, 2026",
+            "Feb 25, 2026",
+            "Feb 25, 2026",
+            "Feb 24, 2026",
+            "Feb 24, 2026",
+            "Feb 24, 2026",
+            "Feb 24, 2026"
+          ],
+          "window_start": "",
+          "window_end": "",
+          "first_date": "Feb 25, 2026",
+          "last_date": "Feb 24, 2026",
+          "is_desc": true,
+          "is_asc": false,
+          "is_newest_first": true
+        },
+        "offset_after_sort": {
+          "target": null,
+          "before": null,
+          "after": null,
+          "confirmed": null
+        },
+        "sold_tab_selected": true,
+        "lookback_selected": "Last 90 days",
+        "condition_selected": [
+          "New(url_prefill)"
+        ],
+        "format_fixed_price_selected": true,
+        "min_price_selected": true,
+        "lock_selected_filters": "enabled",
+        "lock_selected_filters_after_sort": "",
+        "strict_blocked": false,
+        "strict_reason": ""
+      },
+      "entry_count": 43,
+      "entry_count_used": 43,
+      "positive_price_count": 43,
+      "titles_with_seed": 43,
+      "titles_without_seed": 0,
+      "title_seed_rate": 1.0,
+      "unique_seed_count": 84,
+      "sample_rows": [
+        {
+          "rank": 1,
+          "title": "G-SHOCK DW5600 Watch Men Manga Theme Comic Special Edition Best Sale Hot Rare",
+          "sold_price": 179.86,
+          "item_id": "v1|187951379241|0",
+          "seeds": [
+            "DW5600"
+          ]
+        },
+        {
+          "rank": 2,
+          "title": "Casio G-SHOCK BLUETOOTH Multi Fluorescent Accent Series GA-B2100MF-1A Mens Watch",
+          "sold_price": 160.55,
+          "item_id": "v1|277704566158|0",
+          "seeds": [
+            "CASIO GA-B2100MF-1A",
+            "GA-B2100MF-1A"
+          ]
+        },
+        {
+          "rank": 3,
+          "title": "CASIO G-SHOCK DW-5600KHG24-1JR KATSUSHIKA Hokusai Mount Fuji From Japan New",
+          "sold_price": 200.0,
+          "item_id": "v1|226559373815|0",
+          "seeds": [
+            "CASIO DW-5600KHG24-1JR",
+            "DW-5600KHG24-1JR"
+          ]
+        },
+        {
+          "rank": 4,
+          "title": "CASIO G-SHOCK DW-5600KHK25-1 The Great Wave off Kanagawa Katsushika Hokusai New",
+          "sold_price": 292.49,
+          "item_id": "v1|287151698320|0",
+          "seeds": [
+            "CASIO DW-5600KHK25-1",
+            "DW-5600KHK25-1"
+          ]
+        },
+        {
+          "rank": 5,
+          "title": "2026 Casio G-SHOCK DW-5600KHFM25-1JR Hokusai Bridge Design Art New in Box",
+          "sold_price": 166.93,
+          "item_id": "v1|366105581387|0",
+          "seeds": [
+            "CASIO DW-5600KHFM25-1JR",
+            "DW-5600KHFM25-1JR"
+          ]
+        },
+        {
+          "rank": 6,
+          "title": "Dragon Quest VII G-SHOCK DW-5600 Square Limited Edition Watch Slime Enix Rare",
+          "sold_price": 255.0,
+          "item_id": "v1|397640954909|0",
+          "seeds": [
+            "DW-5600"
+          ]
+        },
+        {
+          "rank": 7,
+          "title": "Casio G-SHOCK GA-2300-8A Analog Digital Men's Watch Limited Gray GA23008A",
+          "sold_price": 137.55,
+          "item_id": "v1|406480783204|0",
+          "seeds": [
+            "CASIO GA-2300-8A",
+            "GA-2300-8A"
+          ]
+        },
+        {
+          "rank": 8,
+          "title": "*BRAND NEW* Casio G-Shock Steel Analog-Digi Black Dial Men's Watch GM2100BB-1A",
+          "sold_price": 225.0,
+          "item_id": "v1|277735543872|0",
+          "seeds": [
+            "CASIO GM2100BB-1A",
+            "GM2100BB-1A"
+          ]
+        },
+        {
+          "rank": 9,
+          "title": "Casio G-Shock Barbie Pink Analog-Digital Special Edition Watch GMAS110BE-4A",
+          "sold_price": 402.0,
+          "item_id": "v1|168116707399|0",
+          "seeds": [
+            "CASIO GMAS110BE-4A",
+            "GMAS110BE-4A"
+          ]
+        },
+        {
+          "rank": 10,
+          "title": "Casio G-Shock GW9400-3 Atomic Watch Rangeman Military Triple Sensor Tactical",
+          "sold_price": 219.0,
+          "item_id": "v1|374485851468|0",
+          "seeds": [
+            "CASIO GW9400-3",
+            "GW9400-3"
+          ]
+        },
+        {
+          "rank": 11,
+          "title": "Casio G-Shock Nano Digital Red Bio-Based Quartz DWN-5600-4 Unisex Watch",
+          "sold_price": 123.07,
+          "item_id": "v1|277668515524|0",
+          "seeds": [
+            "CASIO DWN-5600-4",
+            "DWN-5600-4"
+          ]
+        },
+        {
+          "rank": 12,
+          "title": "Presale Casio G-SHOCK GW-BX5600-1A1JF Tough Watch Japan New Model 2025 November",
+          "sold_price": 285.0,
+          "item_id": "v1|406449707812|0",
+          "seeds": [
+            "CASIO GW-BX5600-1A1JF",
+            "GW-BX5600-1A1JF"
+          ]
+        },
+        {
+          "rank": 13,
+          "title": "NEW Casio G-Shock G-LIDE Digital Black Metal Bluetooth Surf Mens Watch GBX100S-1",
+          "sold_price": 175.0,
+          "item_id": "v1|236225091892|0",
+          "seeds": [
+            "CASIO GBX100S-1",
+            "GBX100S-1"
+          ]
+        },
+        {
+          "rank": 15,
+          "title": "CASIO G-SHOCK GM-2100SS-1A Street Spirit Graf Limited Series CasiOak Watch",
+          "sold_price": 269.0,
+          "item_id": "v1|226371112456|0",
+          "seeds": [
+            "CASIO GM-2100SS-1A",
+            "GM-2100SS-1A"
+          ]
+        },
+        {
+          "rank": 17,
+          "title": "Casio G-Shock GA-1000-1A Men's Digital Display Fashion Resin Watch, Black",
+          "sold_price": 139.94,
+          "item_id": "v1|176863560969|0",
+          "seeds": [
+            "CASIO GA-1000-1A",
+            "GA-1000-1A"
+          ]
+        },
+        {
+          "rank": 18,
+          "title": "Casio G-SHOCK GW-M5610U-1CJF Men's Watch Solar Radio Digital Black Japan New",
+          "sold_price": 150.92,
+          "item_id": "v1|405666186261|0",
+          "seeds": [
+            "CASIO GW-M5610U-1CJF",
+            "GW-M5610U-1CJF"
+          ]
+        },
+        {
+          "rank": 19,
+          "title": "G-SHOCK Casioak Gold Metal Wristwatch Multicolor Dial Quartz Custom",
+          "sold_price": 175.0,
+          "item_id": "v1|358249382923|0",
+          "seeds": [
+            "G-SHOCK CASIOAK"
+          ]
+        },
+        {
+          "rank": 20,
+          "title": "CASIO G-SHOCK DW-5600THS-1JR Throwback 1990s Limited Digital Men's Watch",
+          "sold_price": 123.5,
+          "item_id": "v1|226841739653|0",
+          "seeds": [
+            "CASIO DW-5600THS-1JR",
+            "DW-5600THS-1JR"
+          ]
+        },
+        {
+          "rank": 22,
+          "title": "G-Shock G-Squad Bluetooth Sports Workouts Training GPS Navy Blue Watch GBD-200-2",
+          "sold_price": 134.5,
+          "item_id": "v1|226841739322|0",
+          "seeds": [
+            "GBD-200-2"
+          ]
+        },
+        {
+          "rank": 23,
+          "title": "CASIO G-SHOCK GW-BX5600 2WAY MIP GW-BX5600-1JF Bluetooth 2025 New w/Box",
+          "sold_price": 266.88,
+          "item_id": "v1|397232505166|0",
+          "seeds": [
+            "CASIO GW-BX5600",
+            "GW-BX5600",
+            "CASIO GW-BX5600-1JF",
+            "GW-BX5600-1JF"
+          ]
+        }
+      ],
+      "all_rows_path": "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/output/playwright/phasea_titles_offset0.json"
+    },
+    {
+      "offset": 50,
+      "ok": true,
+      "reason": "ok",
+      "elapsed_sec": 29.8692,
+      "rpa_search_params": {
+        "query": "G-SHOCK",
+        "offset": 50,
+        "limit": 50,
+        "wait_seconds": 8,
+        "lookback_days": 90,
+        "condition": "new",
+        "sold_sort": "recently_sold",
+        "strict_condition": true,
+        "fixed_price_only": true,
+        "category_id": 31387,
+        "category_slug": "wristwatches",
+        "min_price_usd": 100.0,
+        "screenshot_after_filters": "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/output/playwright/phasea_recently_sold_{query}_{index}_50_{ts}.png",
+        "require_lock_selected_filters": true,
+        "require_sold_sort": true,
+        "require_min_price_filter": true
+      },
+      "url": "https://www.ebay.com/sh/research?marketplace=EBAY-US&keywords=G-SHOCK&categoryId=31387&conditionId=1000&format=FIXED_PRICE&minPrice=100&offset=50&limit=50&sorting=-datelastsold&tabName=SOLD&tz=Asia%2FTokyo",
+      "filters_screenshot_path": "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/output/playwright/phasea_recently_sold_G-SHOCK_1_50_20260225T184411.png",
+      "filter_state": {
+        "sort_target": "recently_sold",
+        "sort_selected": true,
+        "sort_option_label": "Feb 25, 2026",
+        "sort_selection_source": "date_last_sold_click_1",
+        "sort_order_state": {
+          "row_dates": [
+            "Feb 25, 2026",
+            "Feb 25, 2026",
+            "Feb 25, 2026",
+            "Feb 25, 2026",
+            "Feb 25, 2026",
+            "Feb 25, 2026",
+            "Feb 25, 2026",
+            "Feb 25, 2026",
+            "Feb 24, 2026",
+            "Feb 24, 2026",
+            "Feb 24, 2026",
+            "Feb 24, 2026"
+          ],
+          "window_start": "",
+          "window_end": "",
+          "first_date": "Feb 25, 2026",
+          "last_date": "Feb 24, 2026",
+          "is_desc": true,
+          "is_asc": false,
+          "is_newest_first": true
+        },
+        "offset_after_sort": {
+          "target": 50,
+          "before": 0,
+          "after": 50,
+          "confirmed": true
+        },
+        "sold_tab_selected": true,
+        "lookback_selected": "Last 90 days",
+        "condition_selected": [
+          "New(url_prefill)"
+        ],
+        "format_fixed_price_selected": true,
+        "min_price_selected": true,
+        "lock_selected_filters": "enabled",
+        "lock_selected_filters_after_sort": "enabled",
+        "strict_blocked": false,
+        "strict_reason": ""
+      },
+      "entry_count": 40,
+      "entry_count_used": 40,
+      "positive_price_count": 40,
+      "titles_with_seed": 39,
+      "titles_without_seed": 1,
+      "title_seed_rate": 0.975,
+      "unique_seed_count": 71,
+      "sample_rows": [
+        {
+          "rank": 2,
+          "title": "Casio G-Shock GA-V01 Series Analog Digital Black Resin Watch GAV01-1A",
+          "sold_price": 154.99,
+          "item_id": "v1|127641392339|0",
+          "seeds": [
+            "CASIO GA-V01",
+            "GA-V01",
+            "CASIO GAV01-1A",
+            "GAV01-1A"
+          ]
+        },
+        {
+          "rank": 3,
+          "title": "MOISSANITE Real 925 Silver Iced BEZEL Kit To Ice Out Casio G Shock GA-2100 Watch",
+          "sold_price": 391.35,
+          "item_id": "v1|145412539753|0",
+          "seeds": [
+            "CASIO GA-2100",
+            "GA-2100"
+          ]
+        },
+        {
+          "rank": 4,
+          "title": "CASIO G-SHOCK Nano DWN-5600-1JR Ring Watch Black 5600 SERIES Unisex Japan NEW",
+          "sold_price": 237.0,
+          "item_id": "v1|358172554637|0",
+          "seeds": [
+            "CASIO DWN-5600-1JR",
+            "DWN-5600-1JR"
+          ]
+        },
+        {
+          "rank": 6,
+          "title": "Casio G-SHOCK Nano DW5600-4 Finger-Watch (20mm) Digital Dial Red Brand New",
+          "sold_price": 166.24,
+          "item_id": "v1|267581776010|0",
+          "seeds": [
+            "CASIO DW5600-4",
+            "DW5600-4"
+          ]
+        },
+        {
+          "rank": 7,
+          "title": "Casio G-Shock Nano Ring DWN5600-9 Yellow NWT",
+          "sold_price": 166.24,
+          "item_id": "v1|267581771881|0",
+          "seeds": [
+            "CASIO DWN5600-9",
+            "DWN5600-9"
+          ]
+        },
+        {
+          "rank": 8,
+          "title": "G-Shock Casio GX-56 Series Digital Multi-Color Black Resin Watch GX-56MF-1",
+          "sold_price": 139.99,
+          "item_id": "v1|286824229609|0",
+          "seeds": [
+            "CASIO GX-56MF-1",
+            "GX-56MF-1"
+          ]
+        },
+        {
+          "rank": 9,
+          "title": "CASIO G-SHOCK G-5600SFJ-9JR Black Digital Solar Men's Watch New in Box",
+          "sold_price": 139.8,
+          "item_id": "v1|316922363210|0",
+          "seeds": [
+            "CASIO G-5600SFJ-9JR",
+            "G-5600SFJ-9JR"
+          ]
+        },
+        {
+          "rank": 10,
+          "title": "DWN5600-1 Casio G-Shock Nano Ring Watch Black 5600 Series Unisex USA SHIPPING",
+          "sold_price": 180.0,
+          "item_id": "v1|306663003286|0",
+          "seeds": [
+            "CASIO DWN5600-1",
+            "DWN5600-1"
+          ]
+        },
+        {
+          "rank": 11,
+          "title": "Casio G-Shock Nano Digital Yellow Bio-Based Quartz DWN-5600-9 Unisex Watch",
+          "sold_price": 131.53,
+          "item_id": "v1|287094490736|0",
+          "seeds": [
+            "CASIO DWN-5600-9",
+            "DWN-5600-9"
+          ]
+        },
+        {
+          "rank": 12,
+          "title": "New Casio G-Shock Digital 5000 Series Black Watch DW5000R-1A",
+          "sold_price": 189.95,
+          "item_id": "v1|137038849942|0",
+          "seeds": [
+            "CASIO DW5000R-1A",
+            "DW5000R-1A"
+          ]
+        },
+        {
+          "rank": 13,
+          "title": "Casio G-SHOCK GW-2310-1JF Solar Radio Controlled Atomic Chrono Digital Men Watch",
+          "sold_price": 122.86,
+          "item_id": "v1|296466548163|0",
+          "seeds": [
+            "CASIO GW-2310-1JF",
+            "GW-2310-1JF"
+          ]
+        },
+        {
+          "rank": 14,
+          "title": "Rare Brand New Casio G-SHOCK DW-6600-1V Watch Digital Black Limited (Model 1199)",
+          "sold_price": 466.0,
+          "item_id": "v1|324802731068|0",
+          "seeds": [
+            "CASIO DW-6600-1V",
+            "DW-6600-1V"
+          ]
+        },
+        {
+          "rank": 16,
+          "title": "Casio G-Shock RAINBOW VAPORIZED Carbon Core Guard GA2100SRS-7A Mens Sports Watch",
+          "sold_price": 139.99,
+          "item_id": "v1|358240428327|0",
+          "seeds": [
+            "CASIO GA2100SRS-7A",
+            "GA2100SRS-7A"
+          ]
+        },
+        {
+          "rank": 17,
+          "title": "Casio GW7900-1, G-Shock Chronograph Watch, Solar Atomic, 5 Alarms, Tide Graph",
+          "sold_price": 120.0,
+          "item_id": "v1|127274349333|0",
+          "seeds": [
+            "CASIO GW7900-1",
+            "GW7900-1"
+          ]
+        },
+        {
+          "rank": 18,
+          "title": "Rare Sealed Y2K Blister Pack CASIO G-SHOCK Watch Digital Black Water Resistant",
+          "sold_price": 119.08,
+          "item_id": "v1|117015171334|0",
+          "seeds": [
+            "RARE SEALED"
+          ]
+        },
+        {
+          "rank": 20,
+          "title": "Authentic Casio G-Shock DW6900 Custom Medley CZ Iced Out Watch Silver",
+          "sold_price": 260.0,
+          "item_id": "v1|326821199075|0",
+          "seeds": [
+            "CASIO DW6900",
+            "DW6900"
+          ]
+        },
+        {
+          "rank": 21,
+          "title": "Supreme The North Face G-SHOCK Watch Yellow Black White 2022 FW Collaboration JP",
+          "sold_price": 329.97,
+          "item_id": "v1|276539145638|0",
+          "seeds": [
+            "SUPREME THE"
+          ]
+        },
+        {
+          "rank": 22,
+          "title": "Casio G-SHOCK GW-BX5600-1JF Tough Watch NEW Japan Authentic Bluetooth",
+          "sold_price": 295.99,
+          "item_id": "v1|336435458970|0",
+          "seeds": [
+            "CASIO GW-BX5600-1JF",
+            "GW-BX5600-1JF"
+          ]
+        },
+        {
+          "rank": 23,
+          "title": "CASIO G-SHOCK MTG-B4000D-1AJF Bluetooth Radio Solar Analog Men's Watch",
+          "sold_price": 997.75,
+          "item_id": "v1|257306708250|0",
+          "seeds": [
+            "CASIO MTG-B4000D-1AJF",
+            "MTG-B4000D-1AJF"
+          ]
+        },
+        {
+          "rank": 24,
+          "title": "CASIO G-SHOCK MUDMASTER GWG-B1000-1A4JF Wrist Watch Red Model MASTER OF G",
+          "sold_price": 739.8,
+          "item_id": "v1|365312011612|0",
+          "seeds": [
+            "CASIO GWG-B1000-1A4JF",
+            "GWG-B1000-1A4JF"
+          ]
+        }
+      ],
+      "all_rows_path": "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/output/playwright/phasea_titles_offset50.json"
+    }
+  ],
+  "page_overlap": {
+    "offset0_ids": 43,
+    "offset50_ids": 40,
+    "overlap_ids": 0,
+    "jaccard": 0.0
+  },
+  "elapsed_sec_avg": 22.4847
+}

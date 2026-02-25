@@ -1,0 +1,1507 @@
+- generic [active] [ref=e1]:
+  - img
+  - img
+  - img
+  - img
+  - img
+  - generic [ref=e3]:
+    - banner [ref=e7]:
+      - link "メインコンテンツにスキップ" [ref=e9] [cursor=pointer]:
+        - /url: "#mainContent"
+      - navigation [ref=e10]:
+        - generic [ref=e11]:
+          - generic [ref=e13]:
+            - text: こんにちは！
+            - link "ログイン" [ref=e14] [cursor=pointer]:
+              - /url: https://signin.ebay.com/ws/eBayISAPI.dll?SignIn&sgfl=gh&ru=https%3A%2F%2Fwww.ebay.com%2Fitm%2F157535581443%3Fnordt%3Dtrue%26orig_cvip%3Dtrue%26rt%3Dnc
+            - generic [ref=e15]:
+              - text: または
+              - link "登録" [ref=e16] [cursor=pointer]:
+                - /url: https://signup.ebay.com/pa/crte?ru=https%3A%2F%2Fwww.ebay.com%2Fitm%2F157535581443%3Fnordt%3Dtrue%26orig_cvip%3Dtrue%26rt%3Dnc
+          - link "今日のお買い得品" [ref=e18] [cursor=pointer]:
+            - /url: https://www.ebay.com/globaldeals
+          - link "ヘルプ＆お問い合わせ" [ref=e20] [cursor=pointer]:
+            - /url: https://www.ebay.com/help/home
+        - generic [ref=e21]:
+          - button "言語を選択してください。現在： 日本語" [ref=e23] [cursor=pointer]:
+            - generic [ref=e24]:
+              - img
+              - generic [ref=e25]: 言語を選択してください。現在：
+              - generic [ref=e26]: 日本語
+          - button "お届け先" [ref=e28] [cursor=pointer]:
+            - generic [ref=e29]: お届け先
+          - link "出品" [ref=e31] [cursor=pointer]:
+            - /url: https://www.ebay.com/sl/sell
+          - generic [ref=e32]:
+            - link "ウォッチリスト" [ref=e33] [cursor=pointer]:
+              - /url: https://www.ebay.com/mye/myebay/watchlist
+              - generic [ref=e34]: ウォッチリスト
+              - img
+            - button "ウォッチリストを展開" [ref=e35]
+          - generic [ref=e36]:
+            - link "マイeBay" [ref=e37] [cursor=pointer]:
+              - /url: https://www.ebay.com/mys/home?source=GBH
+              - generic [ref=e38]: マイeBay
+              - img
+            - button "マイeBayを展開" [ref=e39]
+          - button "通知" [ref=e42] [cursor=pointer]:
+            - img
+            - generic [ref=e43]: 通知
+          - generic [ref=e45]:
+            - link "カートに0点の商品があります" [ref=e46] [cursor=pointer]:
+              - /url: https://cart.ebay.com
+              - generic "カートに0点の商品があります" [ref=e47]:
+                - img
+            - button "カードを展開" [ref=e48]
+      - generic [ref=e49]:
+        - generic [ref=e50]:
+          - link "eBayホーム" [ref=e51] [cursor=pointer]:
+            - /url: https://www.ebay.com
+            - img "eBayホーム" [ref=e52]
+          - button "カテゴリを選んで買い物" [ref=e60] [cursor=pointer]:
+            - generic [ref=e61]: カテゴリを選んで買い物
+            - img
+        - generic [ref=e62]:
+          - status [ref=e63]
+          - generic [ref=e65]:
+            - generic [ref=e66]:
+              - combobox "何をお探しですか" [ref=e67]
+              - img
+            - combobox "検索するカテゴリを選択" [ref=e68]:
+              - option "すべてのカテゴリ" [selected]
+              - option "アンティーク"
+              - option "アート"
+              - option "ベビー"
+              - option "本"
+              - option "ビジネス＆産業"
+              - option "カメラ＆写真"
+              - option "携帯電話＆アクセサリ"
+              - option "服・シューズ・アクセサリ"
+              - option "コイン＆紙幣"
+              - option "コレクション"
+              - option "パソコン/タブレット＆ネットワーク"
+              - option "家電"
+              - option "クラフト"
+              - option "人形＆ベア"
+              - option "DVD＆映画"
+              - option "eBayモーター"
+              - option "エンターテインメント記念品"
+              - option "ギフトカード＆クーポン"
+              - option "ヘルス＆ビューティ"
+              - option "ホーム＆ガーデン"
+              - option "ジュエリー＆腕時計"
+              - option "音楽"
+              - option "楽器＆音響機器"
+              - option "ペット用品"
+              - option "食器＆グラス"
+              - option "不動産"
+              - option "専門サービス"
+              - option "スポーツ用品"
+              - option "スポーツ記念品・カード・ファンショップ"
+              - option "切手"
+              - option "チケット＆体験"
+              - option "おもちゃ＆ホビー"
+              - option "旅行"
+              - option "ビデオゲーム＆本体"
+              - option "その他すべて"
+          - generic [ref=e69]:
+            - button "検索" [ref=e70] [cursor=pointer]:
+              - generic [ref=e71]: 検索
+            - link "条件を指定" [ref=e72] [cursor=pointer]:
+              - /url: https://www.ebay.com/sch/ebayadvsearch
+    - main [ref=e73]:
+      - generic [ref=e74]:
+        - generic [ref=e75]:
+          - generic [ref=e87]:
+            - heading "この商品を見た人はこちらも見ています" [level=2] [ref=e94]
+            - group [ref=e96]:
+              - list [ref=e99]:
+                - listitem [ref=e100]:
+                  - generic [ref=e102]:
+                    - generic [ref=e108]:
+                      - heading "Citizen Promaster Aqualand Eco-Drive dive watch, 20th Anniversar (JV0030-01E" [level=3] [ref=e109]
+                      - generic [ref=e111]: 46,761 円
+                      - generic [ref=e113]: + ￥1,559 配達
+                      - generic [ref=e115]: スポンサー
+                    - link "Citizen Promaster Aqualand Eco-Drive dive watch, 20th Anniversar (JV0030-01E" [ref=e116] [cursor=pointer]:
+                      - /url: https://www.ebay.com/itm/358232279004?_trkparms=itmf%3D1%26aid%3D1110006%26rkt%3D5%26mech%3D1%26algv%3DDefaultOrganicWebV9BertRefreshRankerWithCassiniEmbRecall%26pmt%3D1%26amclksrc%3DITM%26sd%3D157535581443%26sid%3DAQALAAAAEPRCQQO5nsYB7%2FPMVJhx9TQ%3D%26itm%3D358232279004%26noa%3D0%26plcampt%3D0%3A16951416018%26algo%3DHOMESPLICE.SIM%26brand%3DCitizen%26asc%3D20200818143230%26ao%3D1%26rk%3D10%26pid%3D101224%26b%3D1%26mehot%3Dnone%26lsid%3D0%26meid%3D960b564ee0fa4868902185ddf506d2ff%26pg%3D2332490&_trksid=p2332490.c101224.m-1&itmprp=cksum%3A358232279004960b564ee0fa4868902185ddf506d2ff%7Cenc%3AAQALAAAA4HU%252FGPBKMoWrH2cpzpvK9FDC5c4FxwFIV%252Bq0okjrJ6w9cB%252BqWqTCByXEsJeNzj%252BLPZ6Y%252Bcb%252BSNENjzLG3DpJu0lAd5CXX6tVcyOqhvA2mM298ZQ5%252F0em5JUhvrrPYnJw4%252BCGjZEgW6K9PSN7EvHZrD4Pxp0BbQaG4JTiI%252FaCg9vsS9uBH2HGgXcMubTvklun9pVOUmmyukrTAd%252F5yscsElrQQ9mFyuE9sd3AVs6PioYzPZE0U2V4pcS0elBOr7vPDWsRqiU425F0Rbruvu3tRFscEouRNrGIp%252Fr%252BLC7JezxE%7Campid%3APL_CLK%7Cclp%3A2332490&itmmeta=01KJ9SDVFTAXE1ZCDC5GDG0XZY
+                - listitem [ref=e117]:
+                  - generic [ref=e119]:
+                    - generic [ref=e125]:
+                      - heading "Citizen BN2038-01L Eco-Drive Promaster Aqualand Blue Dial Strap Watch MSRP $795" [level=3] [ref=e126]
+                      - generic [ref=e128]: 76,369 円
+                      - generic [ref=e130]:
+                        - generic [ref=e131]: 以前の価格
+                        - text: ￥123,917
+                      - generic [ref=e133]: + ￥7,672 配達
+                    - link "Citizen BN2038-01L Eco-Drive Promaster Aqualand Blue Dial Strap Watch MSRP $795" [ref=e134] [cursor=pointer]:
+                      - /url: https://www.ebay.com/itm/257333926784?_trkparms=itmf%3D1%26aid%3D1110006%26rkt%3D5%26algo%3DHOMESPLICE.SIM%26mech%3D1%26algv%3DDefaultOrganicWebV9BertRefreshRankerWithCassiniEmbRecall%26pmt%3D0%26amclksrc%3DITM%26sd%3D157535581443%26sid%3DAQALAAAAEKDS0MV96DLencIuFwefrhc%3D%26itm%3D257333926784%26noa%3D1%26brand%3DCitizen%26asc%3D20200818143230%26ao%3D1%26rk%3D1%26pid%3D101224%26b%3D1%26mehot%3Dnone%26lsid%3D0%26meid%3D960b564ee0fa4868902185ddf506d2ff%26pg%3D2332490&_trksid=p2332490.c101224.m-1
+                - listitem [ref=e135]:
+                  - generic [ref=e137]:
+                    - generic [ref=e143]:
+                      - heading "Citizen Promaster Aqualand Divers Chronograph Watch 1998" [level=3] [ref=e144]
+                      - generic [ref=e146]: 66,245 円
+                      - generic [ref=e148]: + ￥9,093 配達
+                    - link "Citizen Promaster Aqualand Divers Chronograph Watch 1998" [ref=e149] [cursor=pointer]:
+                      - /url: https://www.ebay.com/itm/287152578508?_trkparms=itmf%3D1%26aid%3D1110006%26rkt%3D5%26algo%3DHOMESPLICE.SIM%26mech%3D1%26algv%3DDefaultOrganicWebV9BertRefreshRankerWithCassiniEmbRecall%26pmt%3D0%26amclksrc%3DITM%26sd%3D157535581443%26sid%3DAQALAAAAELSQA9O3STdqzr%2BUMUE2urk%3D%26itm%3D287152578508%26noa%3D1%26brand%3DCitizen%26asc%3D20200818143230%26ao%3D1%26rk%3D2%26pid%3D101224%26b%3D1%26mehot%3Dnone%26lsid%3D0%26meid%3D960b564ee0fa4868902185ddf506d2ff%26pg%3D2332490&_trksid=p2332490.c101224.m-1
+                - listitem [ref=e150]:
+                  - generic [ref=e152]:
+                    - generic [ref=e158]:
+                      - heading "Citizen C023 Promaster Aqualand 200M Diver's watch Depth Sensor - C021 C023" [level=3] [ref=e159]
+                      - generic [ref=e161]: 77,935 円
+                      - generic [ref=e163]: + ￥5,306 配達
+                    - link "Citizen C023 Promaster Aqualand 200M Diver's watch Depth Sensor - C021 C023" [ref=e164] [cursor=pointer]:
+                      - /url: https://www.ebay.com/itm/277709383022?_trkparms=itmf%3D1%26aid%3D1110006%26rkt%3D5%26algo%3DHOMESPLICE.SIM%26mech%3D1%26algv%3DDefaultOrganicWebV9BertRefreshRankerWithCassiniEmbRecall%26pmt%3D0%26amclksrc%3DITM%26sd%3D157535581443%26sid%3DAQALAAAAEKKsGvraHB0Z47FQvIxXW24%3D%26itm%3D277709383022%26noa%3D1%26brand%3DCitizen%26asc%3D20200818143230%26ao%3D1%26rk%3D3%26pid%3D101224%26b%3D1%26mehot%3Dnone%26lsid%3D0%26meid%3D960b564ee0fa4868902185ddf506d2ff%26pg%3D2332490&_trksid=p2332490.c101224.m-1
+          - generic [ref=e167]:
+            - generic [ref=e168]:
+              - generic [ref=e170]:
+                - generic [ref=e172]:
+                  - generic [ref=e174]:
+                    - button "画像1/3" [ref=e175] [cursor=pointer]:
+                      - img "画像1/3" [ref=e176]
+                    - button "画像2/3" [ref=e177] [cursor=pointer]:
+                      - img "画像2/3" [ref=e178]
+                    - button "画像3/3" [ref=e179] [cursor=pointer]:
+                      - img "画像3/3" [ref=e180]
+                  - generic [ref=e181]:
+                    - heading "画像1/3" [level=2] [ref=e182]
+                    - button "前の画像 - 商品のサムネイル画像" [ref=e184] [cursor=pointer]:
+                      - img
+                    - region "画像ギャラリーダイアログが開きます。 Citizen Promaster Aqualand クォーツ アナログ - デジタル ブラックダイヤル メンズ 腕時計 - 画像1/3" [ref=e185]:
+                      - group "1 of 3" [ref=e186]:
+                        - img "Citizen Promaster Aqualand クォーツ アナログ - デジタル ブラックダイヤル メンズ 腕時計 - 画像1/3" [ref=e187]
+                      - group "2 of 3" [ref=e188]:
+                        - img "Citizen Promaster Aqualand クォーツ アナログ - デジタル ブラックダイヤル メンズ 腕時計 - 画像2/3" [ref=e189]
+                      - group "3 of 3" [ref=e190]:
+                        - img "Citizen Promaster Aqualand クォーツ アナログ - デジタル ブラックダイヤル メンズ 腕時計 - 画像3/3" [ref=e191]
+                    - generic [ref=e192]:
+                      - button "画像ギャラリーが開きます" [ref=e193] [cursor=pointer]:
+                        - img
+                      - button "ウォッチリストに追加 - ウォッチャー153人" [ref=e195] [cursor=pointer]:
+                        - generic [ref=e196]: "153"
+                        - img
+                    - button "次の画像 - 商品のサムネイル画像" [ref=e198] [cursor=pointer]:
+                      - img
+                - button "シェア" [ref=e204] [cursor=pointer]:
+                  - img
+                  - generic [ref=e205]: シェア
+              - generic [ref=e216]:
+                - generic [ref=e219]:
+                  - generic [ref=e221]:
+                    - heading "類似商品" [level=2] [ref=e223]
+                    - generic [ref=e226]:
+                      - generic [ref=e227]: 6247f146-08ad-4c46-b2e0-db47a3dcb2c9
+                      - generic [ref=e228]: ス
+                      - generic [ref=e229]: 48f7d641-0db0-42df-8f1c-3af7988d443f
+                      - generic [ref=e230]: ec168a2a-2846-41a0-9cc0-ef5d3190bff5
+                      - generic [ref=e231]: ポ
+                      - generic [ref=e232]: 3aaf0c10-889c-43d6-904e-1104ce0bee5a
+                      - generic [ref=e234]: 8ecd2fe0-1040-468e-b2c9-50897ce6205c
+                      - generic [ref=e235]: e5671974-f0ca-4de6-81da-3953fe6d4634
+                      - generic [ref=e236]: b3279781-d36c-467c-9acf-8285f341d372
+                      - generic [ref=e237]: ン
+                      - generic [ref=e238]: 009bd3b4-e41e-4953-814e-14d51061cc9a
+                      - generic [ref=e240]: 6123cb3e-012c-4fa1-915c-7e5e98339abe
+                      - generic [ref=e241]: 4ae1343e-fcbf-4b77-96bb-94e29ee6d172
+                      - generic [ref=e242]: 927af9e6-b040-4829-ae82-60e643f32632
+                      - generic [ref=e243]: サ
+                      - generic [ref=e244]: d1850213-5d45-43a7-b285-b18ef86ea7b5
+                      - generic [ref=e245]: ー
+                      - generic [ref=e246]: 432a268a-2524-434c-9076-f7f1c6fad82f
+                      - generic [ref=e248]: f586995f-920e-44a5-ad67-3fc53708f030
+                      - generic [ref=e249]: deb6c58b-a661-427a-996d-cbd59f3de665
+                      - generic [ref=e250]: f630734e-addf-4243-891f-1fe5eff7ca4b
+                      - generic [ref=e251]: c1ac3e25-f30d-45df-a288-09cbdcd8f369
+                      - generic [ref=e252]: 55bdc751-d627-438a-a212-8026ded0c44a
+                      - generic [ref=e253]: c12782c0-e51a-426b-b844-e54b0d3afd39
+                      - generic [ref=e254]: ce06c7ab-3416-44ff-9c3c-d14d9e9dc637
+                      - generic [ref=e255]: 0e5c8f66-95cb-452d-8039-0f9e13d86f8d
+                      - generic [ref=e256]: c213fc4f-bb52-4d81-ad3f-49eb5e07fe0d
+                      - generic [ref=e257]: 1505478b-88ce-4be6-b07a-873c6866a442
+                      - generic [ref=e259]: e7c8be29-73ec-4dc7-b363-25c52a0d4e17
+                      - generic [ref=e260]: ea08e96c-32cd-4be5-8eab-0634361aca96
+                      - generic [ref=e261]: 5228b77e-8ebe-491d-a0e8-818e3023f9bc
+                      - generic [ref=e262]: a035f4e3-f56f-4670-936b-93cd707a2a1c
+                      - generic [ref=e264]: e381474a-022d-413f-aefd-79e1f95b9b9d
+                  - link "すべて見る" [ref=e267] [cursor=pointer]:
+                    - /url: https://www.ebay.com/recs?component=recs-below-hero&algos=HOMESPLICE.SIM.SimVIDwebV4WithCtxRankerV1UnifiedFeatures&placement_title=i18n.Tag_SIs&placement_subTitle=i18n.ModuleSubTitle_Sponsored&sourceModuleId=101875&item_id=157535581443
+                    - generic [ref=e268]: すべて見る
+                - generic [ref=e269]:
+                  - generic [ref=e271]:
+                    - generic [ref=e277]:
+                      - heading "SEIKO Rubber Strap for SKX007 Divers Watch 22mm Z22 Black w/tool and spring bars" [level=3] [ref=e278]
+                      - generic [ref=e279]:
+                        - generic [ref=e281]: New
+                        - generic [ref=e282]: 1,948 円
+                      - generic [ref=e284]: + ￥2,315 配達
+                      - generic [ref=e286]: 101販売済み
+                    - link "SEIKO Rubber Strap for SKX007 Divers Watch 22mm Z22 Black w/tool and spring bars" [ref=e287] [cursor=pointer]:
+                      - /url: https://www.ebay.com/itm/157577305632?_trkparms=itmf%3D1%26aid%3D1110006%26rkt%3D4%26mech%3D1%26algv%3DSimVIDwebV4WithCtxRankerV1UnifiedFeatures%26pmt%3D1%26amclksrc%3DITM%26sd%3D157535581443%26sid%3DAQALAAAAEL%2BBgoiocPXkeYoGttYXq6g%3D%26itm%3D157577305632%26noa%3D0%26plcampt%3D0%3A14049802019%26algo%3DHOMESPLICE.SIM%26brand%3DSeiko%26asc%3D20231107084023%26ao%3D1%26rk%3D1%26pid%3D101875%26b%3D1%26mehot%3Dnone%26lsid%3D0%26meid%3D41f6d476ebfa4a45a5d6cca2e1c22f51%26pg%3D2332490&_trksid=p2332490.c101875.m1851&itmprp=cksum%3A15757730563241f6d476ebfa4a45a5d6cca2e1c22f51%7Cenc%3AAQALAAABEKLoGo41gKHtqPfIa5lF%252FWjQjdzIQ73rtGosP%252BBGmcPis1364XGSU%252Fh7VHaFLoC%252BlgsIiB29T1zk2wEBlmIQfKaFKn7MIB6gfRFics68VvbaQP2j9tWICkyERr2mJ%252FL1igrhAnOgPt73CurtkY%252BsPXkTuQ%252FCefK2kQlDeAZxf37RmgNVqd8JcfjXQq8kRxVUEKWGdt2lvVYW4Wzwr68u1LTj4lCp7kyN3zMLyku2%252FjoQA5cWDoqkr9PW5p8InThM4El637iJhfV%252BHrj5%252BjwtPAEHp0ZqO%252F3mVnrwScp2GnZNGZ6Xx29M%252FMRxX7HPSV9wiZRFpS30D7XNtaFgVnI0yyclT1Ihrze4igw4jlayC6Eq%7Campid%3APL_CLK%7Cclp%3A2332490&itmmeta=01KJ9SDVFTP5WWW0MM4HG1WC2S
+                    - button "追加 SEIKO Rubber Strap for SKX007 Divers Watch 22mm Z22 Black w/tool and spring bars ：ウォッチリストに" [ref=e290] [cursor=pointer]:
+                      - img
+                  - generic [ref=e292]:
+                    - generic [ref=e298]:
+                      - heading "Citizen Promaster Land Eco-Drive Explorer Watch Unused New From Japan" [level=3] [ref=e299]
+                      - generic [ref=e300]:
+                        - generic [ref=e302]: 中古品
+                        - generic [ref=e303]: 105,638 円
+                      - generic [ref=e305]: 無料配達
+                      - generic [ref=e307]: 出品者99.4%ポジティブ
+                    - link "Citizen Promaster Land Eco-Drive Explorer Watch Unused New From Japan" [ref=e308] [cursor=pointer]:
+                      - /url: https://www.ebay.com/itm/117027341119?_trkparms=itmf%3D1%26aid%3D1110006%26rkt%3D4%26mech%3D1%26algv%3DSimVIDwebV4WithCtxRankerV1UnifiedFeatures%26pmt%3D1%26amclksrc%3DITM%26sd%3D157535581443%26sid%3DAQALAAAAEKdioxBK1s2vqiU2W1ftlik%3D%26itm%3D117027341119%26noa%3D0%26plcampt%3D0%3A159346621011%26algo%3DHOMESPLICE.SIM%26brand%3DCitizen%26asc%3D20231107084023%26ao%3D1%26rk%3D2%26pid%3D101875%26b%3D1%26mehot%3Dnone%26lsid%3D0%26meid%3D41f6d476ebfa4a45a5d6cca2e1c22f51%26pg%3D2332490&_trksid=p2332490.c101875.m1851&itmprp=cksum%3A11702734111941f6d476ebfa4a45a5d6cca2e1c22f51%7Cenc%3AAQALAAABEKLoGo41gKHtqPfIa5lF%252FWjQjdzIQ73rtGosP%252BBGmcPis1364XGSU%252Fh7VHaFLoC%252BlsEKOUV500U%252Fb7%252B3WLLFM1%252BKaezmJfxrwJyB11QbwjvCGc5IsoEIp13H%252BLfDoasIu%252BHtZKkdy%252FjUa0JMhqLSgbm2W%252B5GABqSntub5jQ7jS8hAJJJPeSpf3Q9aPJMC%252BlLzdDCqaaz8bZcbnz7xohLrwJ%252Bx3mvknKK5GME9SF1IYZ7Wyb3i3irneNtH605qZEmodp7mC0Ffc86LnAWVb5brv%252BV7TJsEPYDm7czPJ1w5VrPWOavPQIpCnwfLOsvwjKRdP6wAikLHaQgeHC16DTUzZAqSgQd%252Ful8VKDw5CBA1wrZ%7Campid%3APL_CLK%7Cclp%3A2332490&itmmeta=01KJ9SDVGN470Q86F1CE2JG0CC
+                    - button "追加 Citizen Promaster Land Eco-Drive Explorer Watch Unused New From Japan ：ウォッチリストに" [ref=e311] [cursor=pointer]:
+                      - img
+                  - generic [ref=e313]:
+                    - generic [ref=e319]:
+                      - heading "W770-S106176 CITIZEN ECO DRIVE PROXIMITY BLACK DIAL WATCH FOR MEN RTN-62-EC-22" [level=3] [ref=e320]
+                      - generic [ref=e321]:
+                        - generic [ref=e323]: 再生品
+                        - generic [ref=e324]: 46,605 円
+                      - generic [ref=e326]: + ￥4,456 配達
+                      - generic [ref=e328]: 9人がウォッチ中
+                    - link "W770-S106176 CITIZEN ECO DRIVE PROXIMITY BLACK DIAL WATCH FOR MEN RTN-62-EC-22" [ref=e329] [cursor=pointer]:
+                      - /url: https://www.ebay.com/itm/326972110608?_trkparms=itmf%3D1%26aid%3D1110006%26rkt%3D4%26mech%3D1%26algv%3DSimVIDwebV4WithCtxRankerV1UnifiedFeatures%26pmt%3D1%26amclksrc%3DITM%26sd%3D157535581443%26sid%3DAQALAAAAEPbrXP7gCT%2FqjWOKG9HK%2FUc%3D%26itm%3D326972110608%26noa%3D1%26plcampt%3D0%3A154900508019%2C5%3AAG7543733419%26algo%3DHOMESPLICE.SIM%26brand%3DCitizen%26asc%3D20231107084023%26ao%3D1%26rk%3D3%26pid%3D101875%26b%3D1%26mehot%3Dnone%26lsid%3D0%26meid%3D41f6d476ebfa4a45a5d6cca2e1c22f51%26pg%3D2332490&_trksid=p2332490.c101875.m1851&itmprp=cksum%3A32697211060841f6d476ebfa4a45a5d6cca2e1c22f51%7Cenc%3AAQALAAAA8KLoGo41gKHtqPfIa5lF%252FWjQjdzIQ73rtGosP%252BBGmcPis1364XGSU%252Fh7VHaFLoC%252Bli6%252FYtEQwQGvwndVTG5bA97omHLCToPp6yoJMoFHjQusvMuiFhH7K%252FkveC1xHzWZuUz22EL4qqiVPZ%252FZ0Wb779ZarOr3nQjANClkvedjKexqOgsqrOUWTG2%252FwMgcDkgjZdTxLubyeidmCLMvc%252BheGknA5Hh%252FD0YzDxhsQApJHe0HzLsSfwz0vef%252FqWBOyyokZBnpySPF0yQnV2N1lZbi%252Bf3CvV5Y2mC1Ij%252FyeUkHLdk61lfLwxBXEEA%252BW0Nv%252BFnVRQ%253D%253D%7Campid%3APLP_CLK%7Cclp%3A2332490&itmmeta=01KJ9SDVGQ8E86SVDH78MBJJRC
+                    - button "追加 W770-S106176 CITIZEN ECO DRIVE PROXIMITY BLACK DIAL WATCH FOR MEN RTN-62-EC-22 ：ウォッチリストに" [ref=e332] [cursor=pointer]:
+                      - img
+                  - generic [ref=e334]:
+                    - generic [ref=e340]:
+                      - generic [ref=e341]: 残り1点
+                      - heading "Citizen Men's Promaster Dive Orange Dial Watch - BN0169-03X NEW" [level=3] [ref=e342]
+                      - generic [ref=e343]:
+                        - generic [ref=e345]: New
+                        - generic [ref=e346]: 35,694 円
+                      - generic [ref=e348]:
+                        - generic [ref=e349]: 以前の価格
+                        - text: ￥66,245 46%オフ
+                      - generic [ref=e351]: + ￥3,311 配達
+                      - generic [ref=e352]:
+                        - generic [ref=e353]:
+                          - img
+                        - generic [ref=e354]: 最高評価プラス
+                      - generic [ref=e357]: 25販売済み
+                    - link "Citizen Men's Promaster Dive Orange Dial Watch - BN0169-03X NEW" [ref=e358] [cursor=pointer]:
+                      - /url: https://www.ebay.com/itm/397238230933?_trkparms=itmf%3D1%26aid%3D1110006%26rkt%3D4%26mech%3D1%26algv%3DSimVIDwebV4WithCtxRankerV1UnifiedFeatures%26pmt%3D1%26amclksrc%3DITM%26sd%3D157535581443%26sid%3DAQALAAAAEL2dJ23H4dSbHQ8gNdNpBR0%3D%26itm%3D397238230933%26noa%3D0%26plcampt%3D0%3A98577058016%26algo%3DHOMESPLICE.SIM%26brand%3DCitizen%26asc%3D20231107084023%26ao%3D1%26rk%3D4%26pid%3D101875%26b%3D1%26mehot%3Dnone%26lsid%3D0%26meid%3D41f6d476ebfa4a45a5d6cca2e1c22f51%26pg%3D2332490&_trksid=p2332490.c101875.m1851&itmprp=cksum%3A39723823093341f6d476ebfa4a45a5d6cca2e1c22f51%7Cenc%3AAQALAAABEKLoGo41gKHtqPfIa5lF%252FWjQjdzIQ73rtGosP%252BBGmcPis1364XGSU%252Fh7VHaFLoC%252Bli%252BTusgm%252BChU6DTNthifDupmlI879drupjXxu6k0tBHkksZYkEyXlvbyWXfQ2ImzlJm%252FDaZzN4qkQqzPVz7%252FHu9Pa96b0enHhRPq22Gh5RzTNq8uy9KYoC3eV3y1Wu3mtBJswNjqxzFtmGtw8NVM3CRyqX3kX6s2AtrTAUwehq2Pgu53n1TMYGgpvoooAFmZPSzGIH4IQ6VQja7k%252BLD0lDqLA%252FWDtr8AHFs%252B%252FMtddY0Ds2zF5vZTQTG9tdGkKqz6Z2fgV8h0IeB%252BpfZMJaJCjMpTYY1tFAHTsE5exKDNTZKt%7Campid%3APL_CLK%7Cclp%3A2332490&itmmeta=01KJ9SDVGT7X4NAM7629NES748
+                    - button "追加 Citizen Men's Promaster Dive Orange Dial Watch - BN0169-03X NEW ：ウォッチリストに" [ref=e361] [cursor=pointer]:
+                      - img
+            - generic [ref=e364]:
+              - generic [ref=e365]:
+                - heading "Citizen Promaster Aqualand クォーツ アナログ - デジタル ブラックダイヤル メンズ 腕時計-" [level=1] [ref=e366]
+                - button "元のタイトルを表示" [ref=e372] [cursor=pointer]
+              - generic [ref=e374] [cursor=pointer]:
+                - generic [ref=e376]:
+                  - link [ref=e378]:
+                    - /url: https://www.ebay.com/str/leperfect?_trksid=p4429486.m3561.l161210
+                    - img [ref=e380]
+                  - generic [ref=e381]:
+                    - generic [ref=e382]:
+                      - link "leperfect" [ref=e383]:
+                        - /url: https://www.ebay.com/str/leperfect?_trksid=p4429486.m3561.l161211
+                      - generic [ref=e385]: （192833）
+                    - generic [ref=e386]:
+                      - button "ポジティブ99.6%" [ref=e388]
+                      - link "出品者のその他の商品" [ref=e390]:
+                        - /url: https://www.ebay.com/str/leperfect?_trksid=p4429486.m3561.l170197
+                        - generic [ref=e391]: 出品者のその他の商品
+                        - generic [ref=e392]: 出品者のその他の商品
+                      - button "出品者に連絡" [ref=e394]
+                - button "この出品者についてもっと見る" [ref=e396]:
+                  - img
+              - generic [ref=e399]:
+                - generic [ref=e400]: US $422.94
+                - generic [ref=e401]:
+                  - generic [ref=e402]: 約
+                  - generic [ref=e403]: 65,924 円
+                - generic [ref=e404]:
+                  - generic [ref=e405]: 定価 US $560.00 （24%オフ）
+                  - button "この価格の意味" [ref=e410]:
+                    - img
+                  - button "価格の詳細" [ref=e411] [cursor=pointer]:
+                    - generic [ref=e412]: 価格の詳細
+              - generic [ref=e413]:
+                - generic [ref=e414]: 状態：
+                - generic [ref=e416]:
+                  - generic [ref=e417]:
+                    - generic [ref=e418]: New with box and papers
+                    - generic [ref=e419]: New with box and papers
+                  - button "商品の状態に関する詳細" [ref=e420] [cursor=pointer]:
+                    - generic [ref=e421]:
+                      - img "商品の状態に関する詳細"
+              - generic [ref=e423]:
+                - generic [ref=e424]: 数量：
+                - generic [ref=e425]:
+                  - textbox "数量：" [ref=e427]: "1"
+                  - generic [ref=e428]: 在庫3点 14点販売済み
+              - list [ref=e430]:
+                - listitem [ref=e431]:
+                  - button "今すぐ買う" [ref=e433] [cursor=pointer]:
+                    - generic [ref=e434]: 今すぐ買う
+                - listitem [ref=e435]:
+                  - button "カートに追加" [ref=e437] [cursor=pointer]:
+                    - generic [ref=e438]: カートに追加
+                - listitem [ref=e439]:
+                  - link "ウォッチリストに追加" [ref=e446] [cursor=pointer]:
+                    - /url: https://signin.ebay.com/ws/eBayISAPI.dll?SignIn&ru=https%3A%2F%2Fwww.ebay.com%2Fitm%2F157535581443
+                    - generic [ref=e447]:
+                      - img
+                      - text: ウォッチリストに追加
+              - generic [ref=e450]:
+                - generic [ref=e451]:
+                  - generic [ref=e452]:
+                    - img
+                  - generic [ref=e454]: この商品は人気があります。 153人がこの商品をウォッチ中です。
+                - generic [ref=e455]:
+                  - generic [ref=e456]:
+                    - img
+                  - generic [ref=e458]: この商品は人気です。 すでに14点が売れました。
+              - generic [ref=e463]:
+                - generic [ref=e467]:
+                  - generic [ref=e470]: 送料：
+                  - generic [ref=e472]:
+                    - generic [ref=e473]:
+                      - text: US $31.76 （およそJPY 4,950） eBay International Shipping
+                      - button "詳細" [ref=e479]:
+                        - img
+                      - text: .
+                      - button "詳細を見る 配送" [ref=e480] [cursor=pointer]:
+                        - generic [ref=e481]:
+                          - text: 詳細を見る
+                          - generic [ref=e482]: 配送
+                    - generic [ref=e483]: "発送元 : Brooklyn, NY, 米国"
+                - generic [ref=e491]:
+                  - text: 同梱発送でお得に
+                  - button "同梱発送の詳細。レイヤーを開きます。" [ref=e497]:
+                    - img
+                - generic [ref=e501]:
+                  - generic [ref=e504]: 輸入手数料：
+                  - generic [ref=e507]:
+                    - text: Import fees may apply on delivery
+                    - button "詳細" [ref=e513]:
+                      - img
+                - generic [ref=e517]:
+                  - generic [ref=e520]: 配達：
+                  - generic [ref=e522]:
+                    - generic [ref=e523]:
+                      - text: 3月13日 (金)～3月24日 (火)のお届け予定 お届け先 151-0071
+                      - button "情報 - 配達予定日 - レイヤーに表示されます" [ref=e529]:
+                        - img
+                    - generic [ref=e530]:
+                      - text: 出品者が
+                      - link "決済済みの支払い" [ref=e531] [cursor=pointer]:
+                        - /url: https://www.ebay.com/pages/help/buy/contextual/domestic-handling-time.html
+                      - text: を受け取ってから1日以内に発送されます。
+              - generic [ref=e538]:
+                - generic [ref=e541]: 返品：
+                - generic [ref=e544]:
+                  - text: 30日以内返品可. 購入者が返送料を負担します。eBayの配送ラベルを使用する場合は、返金額から差し引かれます.
+                  - button "詳細を見る - 返品に関する詳細" [ref=e545] [cursor=pointer]:
+                    - generic [ref=e546]:
+                      - text: 詳細を見る
+                      - generic [ref=e547]: "- 返品に関する詳細"
+              - generic [ref=e554]:
+                - generic [ref=e557]: 支払い：
+                - generic [ref=e560]:
+                  - img "PayPal" [ref=e561]
+                  - img "Google Pay" [ref=e563]
+                  - img "Visa" [ref=e565]
+                  - img "Master Card" [ref=e567]
+                  - img "Discover" [ref=e569]
+                  - img "Diners Club" [ref=e572]
+              - generic [ref=e576]:
+                - heading "安心してお買い物" [level=2] [ref=e579]
+                - generic [ref=e580]:
+                  - generic [ref=e582]:
+                    - img
+                  - generic [ref=e583]:
+                    - generic [ref=e584]: 最高評価プラス
+                    - generic [ref=e585]:
+                      - text: 信頼できる出品者、迅速な発送、返品も簡単
+                      - link "詳細 - 最高評価プラス - 新しいウィンドウまたはタブに表示されます" [ref=e586] [cursor=pointer]:
+                        - /url: https://www.ebay.com/help/buying/resolving-issues-sellers/seller-ratings?id=4023#TopRatedPlus
+                        - generic [ref=e587]:
+                          - text: 詳細
+                          - generic [ref=e588]: "- 最高評価プラス - 新しいウィンドウまたはタブに表示されます"
+                - generic [ref=e589]:
+                  - generic [ref=e591]:
+                    - img
+                  - generic [ref=e592]:
+                    - generic [ref=e593]: eBayの返金保証
+                    - generic [ref=e594]:
+                      - text: 注文した商品が届かない場合はお金が戻ってきます。
+                      - link "詳細 eBayの返金保証 新しいウィンドウまたはタブに表示されます" [ref=e595] [cursor=pointer]:
+                        - /url: https://www.ebay.com/ebay-money-back-guarantee/
+                        - generic [ref=e596]:
+                          - text: 詳細
+                          - generic [ref=e597]: eBayの返金保証 新しいウィンドウまたはタブに表示されます
+          - generic [ref=e598]:
+            - generic [ref=e603]:
+              - tablist [ref=e604]:
+                - tab "この商品について" [selected] [ref=e605] [cursor=pointer]:
+                  - generic [ref=e606]: この商品について
+              - tabpanel "この商品について" [ref=e608]:
+                - generic [ref=e611]:
+                  - generic [ref=e614]:
+                    - generic [ref=e618]: この出品に関する責任はすべて出品者にあります。
+                    - generic [ref=e622]: eBay商品番号：157535581443
+                    - generic [ref=e626]:
+                      - text: 前回の更新： 2026年2月20日 16時20分36秒 PST
+                      - link "すべての改訂を表示 すべての改訂を表示" [ref=e627] [cursor=pointer]:
+                        - /url: https://www.ebay.com/rvh/157535581443?rt=nc&_trksid=p4429486.m148105.l48144
+                        - generic [ref=e628]:
+                          - text: すべての改訂を表示
+                          - generic [ref=e629]: すべての改訂を表示
+                  - generic [ref=e632]:
+                    - heading "商品の詳細" [level=2] [ref=e635]:
+                      - generic [ref=e636]: 商品の詳細
+                    - generic [ref=e638]:
+                      - generic [ref=e639]:
+                        - generic [ref=e641]:
+                          - term [ref=e642]:
+                            - generic [ref=e644]: 状態
+                          - definition [ref=e645]:
+                            - generic [ref=e648]:
+                              - generic [ref=e649]: "New with box and papers: This item is brand new and has never been worn. It still has the original ..."
+                              - button "続きを読む 状態について" [ref=e651]:
+                                - generic [ref=e652]:
+                                  - text: 続きを読む
+                                  - generic [ref=e653]: 状態について
+                        - generic [ref=e655]:
+                          - term [ref=e656]:
+                            - generic [ref=e658]: Customized
+                          - definition [ref=e659]:
+                            - generic [ref=e661]: "No"
+                      - generic [ref=e662]:
+                        - generic [ref=e664]:
+                          - term [ref=e665]:
+                            - generic [ref=e667]: With Original Box/Packaging
+                          - definition [ref=e668]:
+                            - generic [ref=e670]: "Yes"
+                        - generic [ref=e672]:
+                          - term [ref=e673]:
+                            - generic [ref=e675]: With Papers
+                          - definition [ref=e676]:
+                            - generic [ref=e678]: "Yes"
+                      - generic [ref=e679]:
+                        - generic [ref=e681]:
+                          - term [ref=e682]:
+                            - generic [ref=e684]: Country of Origin
+                          - definition [ref=e685]:
+                            - generic [ref=e687]: Japan
+                        - generic [ref=e689]:
+                          - term [ref=e690]:
+                            - generic [ref=e692]: Manufacturer Warranty
+                          - definition [ref=e693]:
+                            - generic [ref=e695]: 5 years
+                      - generic [ref=e696]:
+                        - generic [ref=e698]:
+                          - term [ref=e699]:
+                            - generic [ref=e701]: Handedness
+                          - definition [ref=e702]:
+                            - generic [ref=e704]: Left
+                        - generic [ref=e706]:
+                          - term [ref=e707]:
+                            - generic [ref=e709]: Theme
+                          - definition [ref=e710]:
+                            - generic [ref=e712]: Designer
+                      - generic [ref=e713]:
+                        - generic [ref=e715]:
+                          - term [ref=e716]:
+                            - generic [ref=e718]: Vintage
+                          - definition [ref=e719]:
+                            - generic [ref=e721]: "No"
+                        - generic [ref=e723]:
+                          - term [ref=e724]:
+                            - generic [ref=e726]: Bezel
+                          - definition [ref=e727]:
+                            - generic [ref=e729]: Uni-directional Rotating
+                      - generic [ref=e730]:
+                        - generic [ref=e732]:
+                          - term [ref=e733]:
+                            - generic [ref=e735]: Case Diameter
+                          - definition [ref=e736]:
+                            - generic [ref=e738]: 44 mm
+                        - generic [ref=e740]:
+                          - term [ref=e741]:
+                            - generic [ref=e743]: clasp
+                          - definition [ref=e744]:
+                            - generic [ref=e746]: Buckle
+                      - generic [ref=e747]:
+                        - generic [ref=e749]:
+                          - term [ref=e750]:
+                            - generic [ref=e752]: Color
+                          - definition [ref=e753]:
+                            - generic [ref=e755]: Black
+                        - generic [ref=e757]:
+                          - term [ref=e758]:
+                            - generic [ref=e760]: Gender
+                          - definition [ref=e761]:
+                            - generic [ref=e763]: Men's
+                      - generic [ref=e764]:
+                        - generic [ref=e766]:
+                          - term [ref=e767]:
+                            - generic [ref=e769]: Series
+                          - definition [ref=e770]:
+                            - generic [ref=e772]: Promaster Aqualand
+                        - generic [ref=e774]:
+                          - term [ref=e775]:
+                            - generic [ref=e777]: Size
+                          - definition [ref=e778]:
+                            - generic [ref=e780]: Check description
+                      - generic [ref=e781]:
+                        - generic [ref=e783]:
+                          - term [ref=e784]:
+                            - generic [ref=e786]: UPC
+                          - definition [ref=e787]:
+                            - generic [ref=e789]: "4003702111704"
+                        - generic [ref=e791]:
+                          - term [ref=e792]:
+                            - generic [ref=e794]: Bezel Color
+                          - definition [ref=e795]:
+                            - generic [ref=e797]: Black
+                      - generic [ref=e798]:
+                        - generic [ref=e800]:
+                          - term [ref=e801]:
+                            - generic [ref=e803]: Closure
+                          - definition [ref=e804]:
+                            - generic [ref=e806]: Buckle
+                        - generic [ref=e808]:
+                          - term [ref=e809]:
+                            - generic [ref=e811]: Indices
+                          - definition [ref=e812]:
+                            - generic [ref=e814]: Baton Indexes
+                      - generic [ref=e815]:
+                        - generic [ref=e817]:
+                          - term [ref=e818]:
+                            - generic [ref=e820]: Case Thickness
+                          - definition [ref=e821]:
+                            - generic [ref=e823]: 14 mm
+                        - generic [ref=e825]:
+                          - term [ref=e826]:
+                            - generic [ref=e828]: Band/Strap
+                          - definition [ref=e829]:
+                            - generic [ref=e831]: Two-Piece Strap
+                      - generic [ref=e832]:
+                        - generic [ref=e834]:
+                          - term [ref=e835]:
+                            - generic [ref=e837]: Case Color
+                          - definition [ref=e838]:
+                            - generic [ref=e840]: Silver
+                        - generic [ref=e842]:
+                          - term [ref=e843]:
+                            - generic [ref=e845]: Department
+                          - definition [ref=e846]:
+                            - generic [ref=e848]: Men
+                      - generic [ref=e849]:
+                        - generic [ref=e851]:
+                          - term [ref=e852]:
+                            - generic [ref=e854]: Caseback
+                          - definition [ref=e855]:
+                            - generic [ref=e857]: Screwback
+                        - generic [ref=e859]:
+                          - term [ref=e860]:
+                            - generic [ref=e862]: Lug Width
+                          - definition [ref=e863]:
+                            - generic [ref=e865]: 14 mm
+                      - generic [ref=e866]:
+                        - generic [ref=e868]:
+                          - term [ref=e869]:
+                            - generic [ref=e871]: Bezel Type
+                          - definition [ref=e872]:
+                            - generic [ref=e874]: Unidirectional Rotating
+                        - generic [ref=e876]:
+                          - term [ref=e877]:
+                            - generic [ref=e879]: Watch Shape
+                          - definition [ref=e880]:
+                            - generic [ref=e882]: Round
+                      - generic [ref=e883]:
+                        - generic [ref=e885]:
+                          - term [ref=e886]:
+                            - generic [ref=e888]: Style
+                          - definition [ref=e889]:
+                            - generic [ref=e891]: Classic, Diver, Casual
+                        - generic [ref=e893]:
+                          - term [ref=e894]:
+                            - generic [ref=e896]: Case Size
+                          - definition [ref=e897]:
+                            - generic [ref=e899]: 44 mm
+                      - generic [ref=e900]:
+                        - generic [ref=e902]:
+                          - term [ref=e903]:
+                            - generic [ref=e905]: Features
+                          - definition [ref=e906]:
+                            - generic [ref=e908]: Rotating Bezel, Water-Resistant, Chronograph, Alarm, Date Indicator, 12-Hour Dial, Luminous Hands, Luminous Indexes, Central Second
+                        - generic [ref=e910]:
+                          - term [ref=e911]:
+                            - generic [ref=e913]: Case Material
+                          - definition [ref=e914]:
+                            - generic [ref=e916]: Stainless Steel
+                      - generic [ref=e917]:
+                        - generic [ref=e919]:
+                          - term [ref=e920]:
+                            - generic [ref=e922]: Movement
+                          - definition [ref=e923]:
+                            - generic [ref=e925]: Quartz
+                        - generic [ref=e927]:
+                          - term [ref=e928]:
+                            - generic [ref=e930]: Water Resistance
+                          - definition [ref=e931]:
+                            - generic [ref=e933]: 200 m (20 ATM)
+                      - generic [ref=e934]:
+                        - generic [ref=e936]:
+                          - term [ref=e937]:
+                            - generic [ref=e939]: Reference Number
+                          - definition [ref=e940]:
+                            - generic [ref=e942]: JP2000-08E
+                        - generic [ref=e944]:
+                          - term [ref=e945]:
+                            - generic [ref=e947]: Brand
+                          - definition [ref=e948]:
+                            - generic [ref=e950]: Citizen
+                      - generic [ref=e951]:
+                        - generic [ref=e953]:
+                          - term [ref=e954]:
+                            - generic [ref=e956]: Type
+                          - definition [ref=e957]:
+                            - generic [ref=e959]: Wristwatch
+                        - generic [ref=e961]:
+                          - term [ref=e962]:
+                            - generic [ref=e964]: Band Color
+                          - definition [ref=e965]:
+                            - generic [ref=e967]: Black
+                      - generic [ref=e968]:
+                        - generic [ref=e970]:
+                          - term [ref=e971]:
+                            - generic [ref=e973]: Band Material
+                          - definition [ref=e974]:
+                            - generic [ref=e976]: Rubber
+                        - generic [ref=e978]:
+                          - term [ref=e979]:
+                            - generic [ref=e981]: Dial Color
+                          - definition [ref=e982]:
+                            - generic [ref=e984]: Black
+                      - generic [ref=e985]:
+                        - generic [ref=e987]:
+                          - term [ref=e988]:
+                            - generic [ref=e990]: Band Width
+                          - definition [ref=e991]:
+                            - generic [ref=e993]: 24 mm
+                        - generic [ref=e995]:
+                          - term [ref=e996]:
+                            - generic [ref=e998]: Model
+                          - definition [ref=e999]:
+                            - generic [ref=e1001]: Citizen Promaster Aqualand
+                      - generic [ref=e1002]:
+                        - generic [ref=e1004]:
+                          - term [ref=e1005]:
+                            - generic [ref=e1007]: Case Finish
+                          - definition [ref=e1008]:
+                            - generic [ref=e1010]: Brushed
+                        - generic [ref=e1012]:
+                          - term [ref=e1013]:
+                            - generic [ref=e1015]: Display
+                          - definition [ref=e1016]:
+                            - generic [ref=e1018]: Analog & Digital
+                  - generic [ref=e1019]:
+                    - generic [ref=e1020]: カテゴリ
+                    - navigation "トピックパス" [ref=e1023]:
+                      - heading "トピックパス" [level=2] [ref=e1024]
+                      - list [ref=e1025]:
+                        - listitem [ref=e1026]:
+                          - link "ジュエリー・時計" [ref=e1027] [cursor=pointer]:
+                            - /url: https://www.ebay.com/b/Jewelry-Watches/281/bn_1865273
+                          - img
+                        - listitem [ref=e1028]:
+                          - button "トピックパス menu" [ref=e1030]:
+                            - generic [ref=e1031]:
+                              - img
+                          - img
+                        - listitem [ref=e1032]:
+                          - link "腕時計" [ref=e1033] [cursor=pointer]:
+                            - /url: https://www.ebay.com/b/Watches/260325/bn_7117208191
+                          - img
+                        - listitem [ref=e1034]:
+                          - link "腕時計" [ref=e1035] [cursor=pointer]:
+                            - /url: https://www.ebay.com/b/Wristwatches/31387/bn_2408451
+                          - img
+                        - listitem [ref=e1036]:
+                          - link "もっと表示 Citizen Promaster Aqualand Men's Black Watch - JP..." [ref=e1037] [cursor=pointer]:
+                            - /url: https://www.ebay.com/p/11051140842
+                  - generic [ref=e1040]:
+                    - heading "この商品について" [level=2] [ref=e1043]:
+                      - generic [ref=e1044]: この商品について
+                    - generic [ref=e1045]:
+                      - heading "Product Identifiers" [level=2] [ref=e1048]:
+                        - generic [ref=e1049]: Product Identifiers
+                      - generic [ref=e1050]:
+                        - generic [ref=e1051]:
+                          - generic [ref=e1053]:
+                            - generic [ref=e1056]: Brand
+                            - generic [ref=e1059]: Citizen
+                          - generic [ref=e1061]:
+                            - generic [ref=e1064]: Reference Number
+                            - generic [ref=e1067]: JP2000-08E
+                        - generic [ref=e1068]:
+                          - generic [ref=e1070]:
+                            - generic [ref=e1073]: UPC
+                            - generic [ref=e1076]: "4974375419599"
+                          - generic [ref=e1078]:
+                            - generic [ref=e1081]: Model
+                            - generic [ref=e1084]: Citizen Promaster Aqualand
+                        - generic [ref=e1087]:
+                          - generic [ref=e1090]: eBay Product ID (ePID)
+                          - generic [ref=e1093]: "11051140842"
+                    - generic [ref=e1095]:
+                      - heading "Product Key Features" [level=2] [ref=e1098]:
+                        - generic [ref=e1099]: Product Key Features
+                      - generic [ref=e1100]:
+                        - generic [ref=e1101]:
+                          - generic [ref=e1103]:
+                            - generic [ref=e1106]: Style
+                            - generic [ref=e1109]: Classic, Diver, Casual
+                          - generic [ref=e1111]:
+                            - generic [ref=e1114]: Case Finish
+                            - generic [ref=e1117]: Brushed
+                        - generic [ref=e1118]:
+                          - generic [ref=e1120]:
+                            - generic [ref=e1123]: Band Width
+                            - generic [ref=e1126]: 24 mm
+                          - generic [ref=e1128]:
+                            - generic [ref=e1131]: Lug Width
+                            - generic [ref=e1134]: 14 mm
+                        - generic [ref=e1135]:
+                          - generic [ref=e1137]:
+                            - generic [ref=e1140]: Case Color
+                            - generic [ref=e1143]: Silver
+                          - generic [ref=e1145]:
+                            - generic [ref=e1148]: Bezel Color
+                            - generic [ref=e1151]: Black
+                        - generic [ref=e1152]:
+                          - generic [ref=e1154]:
+                            - generic [ref=e1157]: Closure
+                            - generic [ref=e1160]: Buckle
+                          - generic [ref=e1162]:
+                            - generic [ref=e1165]: Display
+                            - generic [ref=e1168]: Analog & Digital
+                        - generic [ref=e1169]:
+                          - generic [ref=e1171]:
+                            - generic [ref=e1174]: Type
+                            - generic [ref=e1177]: Wristwatch
+                          - generic [ref=e1179]:
+                            - generic [ref=e1182]: Case Thickness
+                            - generic [ref=e1185]: 14 mm
+                        - generic [ref=e1186]:
+                          - generic [ref=e1188]:
+                            - generic [ref=e1191]: Bezel Type
+                            - generic [ref=e1194]: Unidirectional Rotating
+                          - generic [ref=e1196]:
+                            - generic [ref=e1199]: Band/Strap
+                            - generic [ref=e1202]: Two-Piece Strap
+                        - generic [ref=e1203]:
+                          - generic [ref=e1205]:
+                            - generic [ref=e1208]: Band Material
+                            - generic [ref=e1211]: Rubber
+                          - generic [ref=e1213]:
+                            - generic [ref=e1216]: Indices
+                            - generic [ref=e1219]: Baton Indexes
+                        - generic [ref=e1220]:
+                          - generic [ref=e1222]:
+                            - generic [ref=e1225]: Department
+                            - generic [ref=e1228]: Men
+                          - generic [ref=e1230]:
+                            - generic [ref=e1233]: Case Size
+                            - generic [ref=e1236]: 44 mm
+                        - generic [ref=e1237]:
+                          - generic [ref=e1239]:
+                            - generic [ref=e1242]: Case Material
+                            - generic [ref=e1245]: Stainless Steel
+                          - generic [ref=e1247]:
+                            - generic [ref=e1250]: Watch Shape
+                            - generic [ref=e1253]: Round
+                        - generic [ref=e1254]:
+                          - generic [ref=e1256]:
+                            - generic [ref=e1259]: Dial Color
+                            - generic [ref=e1262]: Black
+                          - generic [ref=e1264]:
+                            - generic [ref=e1267]: Caseback
+                            - generic [ref=e1270]: Screwback
+                        - generic [ref=e1271]:
+                          - generic [ref=e1273]:
+                            - generic [ref=e1276]: Movement
+                            - generic [ref=e1279]: Quartz
+                          - generic [ref=e1281]:
+                            - generic [ref=e1284]: Water Resistance
+                            - generic [ref=e1287]: 200 m (20 ATM)
+                        - generic [ref=e1288]:
+                          - generic [ref=e1290]:
+                            - generic [ref=e1293]: Band Color
+                            - generic [ref=e1296]: Black
+                          - generic [ref=e1298]:
+                            - generic [ref=e1301]: Features
+                            - generic [ref=e1304]: Rotating Bezel, Water-Resistant, Chronograph, Alarm, Date Indicator, 12-Hour Dial, Luminous Hands, Luminous Indexes, Central Second
+                    - generic [ref=e1305]:
+                      - heading "Additional Product Features" [level=2] [ref=e1308]:
+                        - generic [ref=e1309]: Additional Product Features
+                      - generic [ref=e1311]:
+                        - generic [ref=e1313]:
+                          - generic [ref=e1316]: Hour Hands Colour
+                          - generic [ref=e1319]: Silver
+                        - generic [ref=e1321]:
+                          - generic [ref=e1324]: Hour Marker Colour
+                          - generic [ref=e1327]: Silver
+                  - generic [ref=e1328]:
+                    - heading "出品者の商品説明" [level=2] [ref=e1331]
+                    - iframe [ref=e1332]:
+                      
+            - generic [ref=e1335]:
+              - generic [ref=e1336]:
+                - generic [ref=e1337]:
+                  - heading "この出品者について" [level=2] [ref=e1338]:
+                    - generic [ref=e1340]: この出品者について
+                  - generic [ref=e1341]:
+                    - link [ref=e1343] [cursor=pointer]:
+                      - /url: https://www.ebay.com/str/leperfect?_trksid=p4429486.m145687.l149266
+                      - img [ref=e1345]
+                    - generic [ref=e1346]:
+                      - heading "leperfect" [level=2] [ref=e1347]:
+                        - link "leperfect" [ref=e1348] [cursor=pointer]:
+                          - /url: https://www.ebay.com/str/leperfect?_trksid=p4429486.m145687.l149267
+                      - heading "ポジティブなフィードバック99.6%•80.12万点を販売済み" [level=4] [ref=e1349]
+                  - generic [ref=e1354]:
+                    - generic [ref=e1355]:
+                      - img
+                    - generic [ref=e1356]: eBay登録日：6 2011
+                  - generic [ref=e1358]:
+                    - generic [ref=e1359]: We started Leperfect on eBay in 2012, but our relationship with eBay really began way back in 2001. We initially used eBay to sell off excess inventory from the wholesale side of our business. ...
+                    - group [ref=e1361]:
+                      - generic "もっと表示" [ref=e1362]:
+                        - generic [ref=e1363]: もっと表示
+                        - generic [ref=e1364]:
+                          - img
+                  - generic [ref=e1365]:
+                    - link "ストアを訪問" [ref=e1366] [cursor=pointer]:
+                      - /url: https://www.ebay.com/str/leperfect?_trksid=p4429486.m145687.l149086
+                      - generic [ref=e1367]: ストアを訪問
+                    - button "連絡する - opens in a new dialog" [ref=e1368] [cursor=pointer]:
+                      - generic [ref=e1369]:
+                        - text: 連絡する
+                        - generic [ref=e1370]: "- opens in a new dialog"
+                    - button "出品者の保存 - この出品者leperfectを保存します" [ref=e1372] [cursor=pointer]:
+                      - generic [ref=e1373]:
+                        - img
+                      - generic [ref=e1374]: 出品者を保存
+                - generic [ref=e1376]:
+                  - heading "出品者の項目別評価" [level=3] [ref=e1377]
+                  - generic [ref=e1378]:
+                    - generic [ref=e1379]: 過去12ヶ月の平均
+                    - generic [ref=e1380]:
+                      - generic [ref=e1381]:
+                        - generic [ref=e1382]: 説明の正確さ
+                        - progressbar [ref=e1383]
+                        - generic [ref=e1384]: "4.9"
+                      - generic [ref=e1385]:
+                        - generic [ref=e1386]: 送料の妥当性
+                        - progressbar [ref=e1387]
+                        - generic [ref=e1388]: "5.0"
+                      - generic [ref=e1389]:
+                        - generic [ref=e1390]: 発送の速さ
+                        - progressbar [ref=e1391]
+                        - generic [ref=e1392]: "5.0"
+                      - generic [ref=e1393]:
+                        - generic [ref=e1394]: コミュニケーション
+                        - progressbar [ref=e1395]
+                        - generic [ref=e1396]: "5.0"
+                - generic [ref=e1397]:
+                  - generic [ref=e1398]:
+                    - heading "このストアの人気カテゴリ" [level=3] [ref=e1399]
+                    - link "すべて表示 カテゴリ" [ref=e1401] [cursor=pointer]:
+                      - /url: https://www.ebay.com/sch/i.html?_dkr=1&iconV2Request=true&_blrs=recall_filtering&_ssn=leperfect&store_cat=0&store_name=leperfect&_oac=1
+                      - generic [ref=e1402]:
+                        - text: すべて表示
+                        - generic [ref=e1403]: カテゴリ
+                  - generic [ref=e1404]:
+                    - link "Watches" [ref=e1406] [cursor=pointer]:
+                      - /url: https://www.ebay.com/str/leperfect/Watches/_i.html?store_cat=3996381919
+                    - link "Sunglasses" [ref=e1408] [cursor=pointer]:
+                      - /url: https://www.ebay.com/str/leperfect/Sunglasses/_i.html?store_cat=592980619
+                    - link "Eyeglass Frames" [ref=e1410] [cursor=pointer]:
+                      - /url: https://www.ebay.com/str/leperfect/Eyeglass-Frames/_i.html?store_cat=4230474819
+                    - link "Handbags & Wallets" [ref=e1412] [cursor=pointer]:
+                      - /url: https://www.ebay.com/str/leperfect/Handbags-Wallets/_i.html?store_cat=521557419
+                    - link "Beauty & Fragrances" [ref=e1414] [cursor=pointer]:
+                      - /url: https://www.ebay.com/str/leperfect/Beauty-Fragrances/_i.html?store_cat=4215174619
+                    - link "Pens" [ref=e1416] [cursor=pointer]:
+                      - /url: https://www.ebay.com/str/leperfect/Pens/_i.html?store_cat=582860519
+                    - link "Apparel" [ref=e1418] [cursor=pointer]:
+                      - /url: https://www.ebay.com/str/leperfect/Apparel/_i.html?store_cat=4215109219
+                    - link "Jewelry" [ref=e1420] [cursor=pointer]:
+                      - /url: https://www.ebay.com/str/leperfect/Jewelry/_i.html?store_cat=4215096319
+                    - link "Accessories" [ref=e1422] [cursor=pointer]:
+                      - /url: https://www.ebay.com/str/leperfect/Accessories/_i.html?store_cat=962572519
+              - generic [ref=e1425]:
+                - heading "出品者のフィードバック （217,090）" [level=2] [ref=e1426]
+                - generic [ref=e1427]:
+                  - tablist [ref=e1428]:
+                    - tab "この商品（10）" [selected] [ref=e1429]:
+                      - generic [ref=e1430]: この商品（10）
+                    - tab "すべての商品（217,090）" [ref=e1431]:
+                      - generic [ref=e1432]: すべての商品（217,090）
+                  - tabpanel "この商品（10）" [ref=e1434]:
+                    - generic [ref=e1436]:
+                      - generic [ref=e1437]:
+                        - button "フィルター： すべての評価" [ref=e1440] [cursor=pointer]:
+                          - generic [ref=e1441]:
+                            - generic [ref=e1442]: フィルター：
+                            - generic [ref=e1443]: すべての評価
+                            - img
+                        - list [ref=e1444]:
+                          - listitem [ref=e1445]:
+                            - link "価値" [ref=e1446] [cursor=pointer]:
+                              - /url: https://www.ebay.com/fdbk/mweb_profile?fdbkType=FeedbackReceivedAsSeller&item_id=157535581443&username=leperfect&filter=feedback_page%3ARECEIVED_AS_SELLER%2Cfilter_topic_item%3Aprice&q=157535581443&sort=RELEVANCEV2
+                              - generic:
+                                - generic: 価値
+                          - listitem [ref=e1447]:
+                            - link "追加" [ref=e1448] [cursor=pointer]:
+                              - /url: https://www.ebay.com/fdbk/mweb_profile?fdbkType=FeedbackReceivedAsSeller&item_id=157535581443&username=leperfect&filter=feedback_page%3ARECEIVED_AS_SELLER%2Cfilter_topic_item%3Aextras&q=157535581443&sort=RELEVANCEV2
+                              - generic:
+                                - generic: 追加
+                          - listitem [ref=e1449]:
+                            - link "品質" [ref=e1450] [cursor=pointer]:
+                              - /url: https://www.ebay.com/fdbk/mweb_profile?fdbkType=FeedbackReceivedAsSeller&item_id=157535581443&username=leperfect&filter=feedback_page%3ARECEIVED_AS_SELLER%2Cfilter_topic_item%3Aquality&q=157535581443&sort=RELEVANCEV2
+                              - generic:
+                                - generic: 品質
+                          - listitem [ref=e1451]:
+                            - link "状態" [ref=e1452] [cursor=pointer]:
+                              - /url: https://www.ebay.com/fdbk/mweb_profile?fdbkType=FeedbackReceivedAsSeller&item_id=157535581443&username=leperfect&filter=feedback_page%3ARECEIVED_AS_SELLER%2Cfilter_topic_item%3Acondition&q=157535581443&sort=RELEVANCEV2
+                              - generic:
+                                - generic: 状態
+                      - list [ref=e1453]:
+                        - listitem [ref=e1454]:
+                          - generic [ref=e1455]:
+                            - generic [ref=e1457]:
+                              - generic [ref=e1458]:
+                                - img "ポジティブなフィードバック"
+                              - generic [ref=e1459]:
+                                - text: o***u (83)
+                                - generic [ref=e1460]: "- 購入者が投稿したフィードバックです。"
+                              - generic [ref=e1463]: 過去6ヶ月
+                              - generic [ref=e1464]: 認証購入者
+                            - generic [ref=e1466]: It arrived without the instruction manual, without an international warranty card, without an invoice...nothing!!! Just the box and the watch....is it really original??
+                        - listitem [ref=e1467]:
+                          - generic [ref=e1468]:
+                            - generic [ref=e1470]:
+                              - generic [ref=e1471]:
+                                - img "ポジティブなフィードバック"
+                              - generic [ref=e1472]:
+                                - text: r***p (109)
+                                - generic [ref=e1473]: "- 購入者が投稿したフィードバックです。"
+                              - generic [ref=e1476]: 過去6ヶ月
+                              - generic [ref=e1477]: 認証購入者
+                            - generic [ref=e1479]: Brand new and received in perfect condition. Great timepiece for the money. This is the 4th I’ve purchased over 40 years.
+                        - listitem [ref=e1480]:
+                          - generic [ref=e1481]:
+                            - generic [ref=e1483]:
+                              - generic [ref=e1484]:
+                                - img "ポジティブなフィードバック"
+                              - generic [ref=e1485]:
+                                - text: j***0 (233)
+                                - generic [ref=e1486]: "- 購入者が投稿したフィードバックです。"
+                              - generic [ref=e1489]: 過去6ヶ月
+                              - generic [ref=e1490]: 認証購入者
+                            - generic [ref=e1492]: Great price! Fast shipping! As described. Thanks!
+                        - listitem [ref=e1493]:
+                          - generic [ref=e1494]:
+                            - generic [ref=e1496]:
+                              - generic [ref=e1497]:
+                                - img "ポジティブなフィードバック"
+                              - generic [ref=e1498]:
+                                - text: i***0 (26)
+                                - generic [ref=e1499]: "- 購入者が投稿したフィードバックです。"
+                              - generic [ref=e1502]: 過去1ヶ月
+                              - generic [ref=e1503]: 認証購入者
+                            - generic [ref=e1505]: Fast shipper, item arrived as advertised, box and papers were included as well.
+                        - listitem [ref=e1506]:
+                          - generic [ref=e1507]:
+                            - generic [ref=e1509]:
+                              - generic [ref=e1510]:
+                                - img "ポジティブなフィードバック"
+                              - generic [ref=e1511]:
+                                - text: eBay automated feedback
+                                - generic [ref=e1512]: "- 購入者が投稿したフィードバックです。"
+                              - generic [ref=e1515]: 過去1ヶ月
+                            - generic [ref=e1517]: Order delivered on time with no issues
+                        - listitem [ref=e1518]:
+                          - generic [ref=e1519]:
+                            - generic [ref=e1521]:
+                              - generic [ref=e1522]:
+                                - img "ポジティブなフィードバック"
+                              - generic [ref=e1523]:
+                                - text: eBay automated feedback
+                                - generic [ref=e1524]: "- 購入者が投稿したフィードバックです。"
+                              - generic [ref=e1527]: 過去1ヶ月
+                            - generic [ref=e1529]: Order delivered on time with no issues
+                        - listitem [ref=e1530]:
+                          - generic [ref=e1531]:
+                            - generic [ref=e1533]:
+                              - generic [ref=e1534]:
+                                - img "ポジティブなフィードバック"
+                              - generic [ref=e1535]:
+                                - text: eBay automated feedback
+                                - generic [ref=e1536]: "- 購入者が投稿したフィードバックです。"
+                              - generic [ref=e1539]: 過去1ヶ月
+                            - generic [ref=e1541]: Order delivered on time with no issues
+                        - listitem [ref=e1542]:
+                          - generic [ref=e1543]:
+                            - generic [ref=e1545]:
+                              - generic [ref=e1546]:
+                                - img "ポジティブなフィードバック"
+                              - generic [ref=e1547]:
+                                - text: eBay automated feedback
+                                - generic [ref=e1548]: "- 購入者が投稿したフィードバックです。"
+                              - generic [ref=e1551]: 過去1ヶ月
+                            - generic [ref=e1553]: Order delivered on time with no issues
+                      - link "See all feedback.新しいタブに表示されます" [ref=e1554] [cursor=pointer]:
+                        - /url: https://www.ebay.com/fdbk/mweb_profile?fdbkType=FeedbackReceivedAsSeller&item_id=157535581443&username=leperfect&filter=feedback_page%3ARECEIVED_AS_SELLER&q=157535581443&sort=RELEVANCEV2
+                        - text: フィードバックをすべて見る
+            - generic [ref=e1556]:
+              - generic [ref=e1557]:
+                - generic [ref=e1559]:
+                  - heading "製品の評価とレビュー" [level=2] [ref=e1562]
+                  - link "詳細" [ref=e1564] [cursor=pointer]:
+                    - /url: https://www.ebay.com/help/selling/listings/product-reviews?id=5186
+                - generic [ref=e1565]:
+                  - generic [ref=e1566]:
+                    - generic [ref=e1567]: "5.0"
+                    - img "5つ星中5.0つ星（製品評価数：8）" [ref=e1570]:
+                      - img
+                      - img
+                      - img
+                      - img
+                      - img
+                    - generic [ref=e1571]: 製品の評価8件
+                  - list [ref=e1573]:
+                    - listitem [ref=e1574]:
+                      - generic [ref=e1575]:
+                        - generic [ref=e1576]:
+                          - img
+                          - paragraph [ref=e1577]: "5"
+                        - generic [ref=e1581]: 8人のユーザーがこれを5つ星中5つ星と評価しています
+                        - generic [ref=e1582]: "8"
+                    - listitem [ref=e1583]:
+                      - generic [ref=e1584]:
+                        - generic [ref=e1585]:
+                          - img
+                          - paragraph [ref=e1586]: "4"
+                        - generic [ref=e1589]: 0人のユーザーがこれを5つ星中4つ星と評価しています
+                        - generic [ref=e1590]: "0"
+                    - listitem [ref=e1591]:
+                      - generic [ref=e1592]:
+                        - generic [ref=e1593]:
+                          - img
+                          - paragraph [ref=e1594]: "3"
+                        - generic [ref=e1597]: 0人のユーザーがこれを5つ星中3つ星と評価しています
+                        - generic [ref=e1598]: "0"
+                    - listitem [ref=e1599]:
+                      - generic [ref=e1600]:
+                        - generic [ref=e1601]:
+                          - img
+                          - paragraph [ref=e1602]: "2"
+                        - generic [ref=e1605]: 0人のユーザーがこれを5つ星中2つ星と評価しています
+                        - generic [ref=e1606]: "0"
+                    - listitem [ref=e1607]:
+                      - generic [ref=e1608]:
+                        - generic [ref=e1609]:
+                          - img
+                          - paragraph [ref=e1610]: "1"
+                        - generic [ref=e1613]: 0人のユーザーがこれを5つ星中1つ星と評価しています
+                        - generic [ref=e1614]: "0"
+                  - generic [ref=e1615]:
+                    - generic "レビュアーの100%がこの製品をGood valueと思っています" [ref=e1616]:
+                      - generic [ref=e1617]: 100%
+                      - paragraph [ref=e1622]: Good value
+                    - generic "レビュアーの100%がこの製品をComfortableと思っています" [ref=e1623]:
+                      - generic [ref=e1624]: 100%
+                      - paragraph [ref=e1629]: Comfortable
+                    - generic "レビュアーの100%がこの製品をStylishと思っています" [ref=e1630]:
+                      - generic [ref=e1631]: 100%
+                      - paragraph [ref=e1636]: Stylish
+                - generic [ref=e1637]:
+                  - generic [ref=e1638]:
+                    - heading "最も関連性の高いレビュー" [level=3] [ref=e1639]
+                    - link "7件のレビューをすべて見る" [ref=e1641] [cursor=pointer]:
+                      - /url: https://www.ebay.com/urw/Citizen+Promaster+Aqualand+Men%27s+Black+Watch+-+JP2000-08E/product-reviews/11051140842?_itm=157535581443
+                  - list [ref=e1642]:
+                    - listitem [ref=e1643]:
+                      - generic [ref=e1644]:
+                        - img "レビュアーの%がこの製品をと思っています" [ref=e1647]:
+                          - img
+                          - img
+                          - img
+                          - img
+                          - img
+                        - generic [ref=e1648]:
+                          - text: 著者：
+                          - link "motojl" [ref=e1649] [cursor=pointer]:
+                            - /url: https://www.ebay.com/usr/motojl
+                            - generic [ref=e1650]: motojl
+                        - generic [ref=e1651]: Dec 31, 2022
+                      - generic [ref=e1652]:
+                        - heading "Fun watch." [level=4] [ref=e1653]
+                        - generic [ref=e1656]: Great watch. Kinda quirky but fun to wear. Easy to read. Analog and digital gives you the best of both worlds.
+                        - paragraph [ref=e1657]:
+                          - generic [ref=e1658]: 認証購入者：はい
+                          - generic [ref=e1659]: 状態： 新品
+                          - generic [ref=e1660]: 出品者：jewels-watchescompany
+                    - listitem [ref=e1661]:
+                      - generic [ref=e1662]:
+                        - img "レビュアーの%がこの製品をと思っています" [ref=e1665]:
+                          - img
+                          - img
+                          - img
+                          - img
+                          - img
+                        - generic [ref=e1666]:
+                          - text: 著者：
+                          - link "techo_6316" [ref=e1667] [cursor=pointer]:
+                            - /url: https://www.ebay.com/usr/techo_6316
+                            - generic [ref=e1668]: techo_6316
+                        - generic [ref=e1669]: Oct 25, 2021
+                      - generic [ref=e1670]:
+                        - heading "Replacing a stolen one, finally!" [level=4] [ref=e1671]
+                        - generic [ref=e1674]: Had one back in the 1990s that got stolen at work. Always wanted another one. The only difference is this one has a silver sensor and my old one was brass. Still love it!
+                        - paragraph [ref=e1675]:
+                          - generic [ref=e1676]: 認証購入者：はい
+                          - generic [ref=e1677]: 状態： 新品
+                          - generic [ref=e1678]: 出品者：jewels-watchescompany
+                    - listitem [ref=e1679]:
+                      - generic [ref=e1680]:
+                        - img "レビュアーの%がこの製品をと思っています" [ref=e1683]:
+                          - img
+                          - img
+                          - img
+                          - img
+                          - img
+                        - generic [ref=e1684]:
+                          - text: 著者：
+                          - link "gregma_8448" [ref=e1685] [cursor=pointer]:
+                            - /url: https://www.ebay.com/usr/gregma_8448
+                            - generic [ref=e1686]: gregma_8448
+                        - generic [ref=e1687]: Mar 07, 2022
+                      - generic [ref=e1688]:
+                        - heading "Get one now before they become collectors items." [level=4] [ref=e1689]
+                        - generic [ref=e1692]: Timeless classic dive watch in a refined re-release.
+                        - paragraph [ref=e1693]:
+                          - generic [ref=e1694]: 認証購入者：はい
+                          - generic [ref=e1695]: 状態： 新品
+                          - generic [ref=e1696]: 出品者：jewels-watchescompany
+                    - listitem [ref=e1697]:
+                      - generic [ref=e1698]:
+                        - img "レビュアーの%がこの製品をと思っています" [ref=e1701]:
+                          - img
+                          - img
+                          - img
+                          - img
+                          - img
+                        - generic [ref=e1702]:
+                          - text: 著者：
+                          - link "floridapine-top50" [ref=e1703] [cursor=pointer]:
+                            - /url: https://www.ebay.com/usr/floridapine-top50
+                            - generic [ref=e1704]: floridapine-top50
+                        - generic [ref=e1705]: Oct 06, 2021
+                      - generic [ref=e1706]:
+                        - heading "Great watch, nice looking." [level=4] [ref=e1707]
+                        - generic [ref=e1710]: I bought this same watch model in the early 1990's, it had gold trim on it. I think this one is even better looking.
+                        - paragraph [ref=e1711]:
+                          - generic [ref=e1712]: 認証購入者：はい
+                          - generic [ref=e1713]: 状態： 新品
+                          - generic [ref=e1714]: 出品者：jewels-watchescompany
+                    - listitem [ref=e1715]:
+                      - generic [ref=e1716]:
+                        - img "レビュアーの%がこの製品をと思っています" [ref=e1719]:
+                          - img
+                          - img
+                          - img
+                          - img
+                          - img
+                        - generic [ref=e1720]:
+                          - text: 著者：
+                          - link "1vicstictok" [ref=e1721] [cursor=pointer]:
+                            - /url: https://www.ebay.com/usr/1vicstictok
+                            - generic [ref=e1722]: 1vicstictok
+                        - generic [ref=e1723]: Sep 20, 2021
+                      - generic [ref=e1724]:
+                        - heading "Citizen Black Analogue-Digital Men Watch Promaster Aqualand JP2000-08E" [level=4] [ref=e1725]
+                        - generic [ref=e1728]: Nice dive watch. Works well.
+                        - paragraph [ref=e1729]:
+                          - generic [ref=e1730]: 認証購入者：はい
+                          - generic [ref=e1731]: 状態： 新品
+                          - generic [ref=e1732]: 出品者：jewels-watchescompany
+              - navigation "クイックリンク" [ref=e1733]:
+                - link "前のページに戻る" [ref=e1734] [cursor=pointer]:
+                  - /url: https://www.ebay.com/splashui/challenge?ap=1&appName=orch&ru=https%3A%2F%2Fwww.ebay.com%2Fitm%2F187945082742%3Fnordt%3Dtrue%26orig_cvip%3Dtrue%26rt%3Dnc&iid=0bc99c9f-dcec-4d4b-b8e5-f77155ac8171&iim=FMTE5LjN&iia=SQEwNi42vf&iiz=TqNMS42MQ**UTj
+                - text: "|詳細を見る："
+                - link "\"Citizen Promaster Aqualand Men's Black Watch - JP2000-...\"" [ref=e1735] [cursor=pointer]:
+                  - /url: https://www.ebay.com/p/11051140842
+                - button "ページのトップに戻る" [ref=e1736] [cursor=pointer]
+              - generic [ref=e1738]:
+                - heading "もっと見てみる：" [level=2] [ref=e1741]
+                - list [ref=e1743]:
+                  - listitem [ref=e1744]:
+                    - link "Citizen Promaster Aqualand Wristwatches," [ref=e1745] [cursor=pointer]:
+                      - /url: https://www.ebay.com/b/Citizen-Promaster-Aqualand-Wristwatches/31387/bn_7116716231
+                  - listitem [ref=e1746]:
+                    - link "Citizen Promaster Aqualand Men Diver Wristwatches," [ref=e1747] [cursor=pointer]:
+                      - /url: https://www.ebay.com/b/Citizen-Promaster-Aqualand-Men-Diver-Wristwatches/31387/bn_108271985
+                  - listitem [ref=e1748]:
+                    - link "Citizen Aqualand Diver Wristwatches," [ref=e1749] [cursor=pointer]:
+                      - /url: https://www.ebay.com/b/Citizen-Aqualand-Diver-Wristwatches/31387/bn_108279106
+                  - listitem [ref=e1750]:
+                    - link "Citizen Aqualand Wristwatches for Men," [ref=e1751] [cursor=pointer]:
+                      - /url: https://www.ebay.com/b/Citizen-Aqualand-Wristwatches-for-Men/31387/bn_108275785
+                  - listitem [ref=e1752]:
+                    - link "Citizen Promaster Watches," [ref=e1753] [cursor=pointer]:
+                      - /url: https://www.ebay.com/b/Citizen-Promaster-Watches/31387/bn_80626455
+                  - listitem [ref=e1754]:
+                    - link "Citizen Promaster Diver Watches," [ref=e1755] [cursor=pointer]:
+                      - /url: https://www.ebay.com/b/Citizen-Promaster-Diver-Watches/31387/bn_80628119
+                  - listitem [ref=e1756]:
+                    - link "Citizen Promaster Sport Wristwatches," [ref=e1757] [cursor=pointer]:
+                      - /url: https://www.ebay.com/b/Citizen-Promaster-Sport-Wristwatches/31387/bn_80621464
+                  - listitem [ref=e1758]:
+                    - link "Citizen Promaster Wristwatches for Men," [ref=e1759] [cursor=pointer]:
+                      - /url: https://www.ebay.com/b/Citizen-Promaster-Wristwatches-for-Men/31387/bn_80624528
+                  - listitem [ref=e1760]:
+                    - link "Citizen Promaster Titanium Case Wristwatches," [ref=e1761] [cursor=pointer]:
+                      - /url: https://www.ebay.com/b/Citizen-Promaster-Titanium-Case-Wristwatches/31387/bn_80622602
+                  - listitem [ref=e1762]:
+                    - link "Citizen Promaster Analog & Digital Wristwatches" [ref=e1763] [cursor=pointer]:
+                      - /url: https://www.ebay.com/b/Citizen-Promaster-Analog-Digital-Wristwatches/31387/bn_80614943
+              - generic [ref=e1765]:
+                - heading "Shop Luxury Watches" [level=2] [ref=e1766]
+                - generic [ref=e1767]:
+                  - generic [ref=e1768]:
+                    - heading "Best Sellers" [level=3] [ref=e1769]
+                    - list [ref=e1770]:
+                      - listitem [ref=e1771]:
+                        - link "Rolex Datejust 41 126334" [ref=e1772] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/Rolex-Datejust-41-126334/31387/bn_7121882296
+                          - generic [ref=e1773]: Rolex Datejust 41 126334
+                      - listitem [ref=e1774]:
+                        - link "Rolex Datejust 41 126300" [ref=e1775] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/Rolex-Datejust-41-126300/31387/bn_7121885450
+                          - generic [ref=e1776]: Rolex Datejust 41 126300
+                      - listitem [ref=e1777]:
+                        - link "Rolex GMT Master II 126710" [ref=e1778] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/Rolex-GMT-Master-II-126710/31387/bn_7121885443
+                          - generic [ref=e1779]: Rolex GMT Master II 126710
+                      - listitem [ref=e1780]:
+                        - link "Rolex Submariner Date 126610" [ref=e1781] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/Rolex-Submariner-Date-126610/31387/bn_7121885397
+                          - generic [ref=e1782]: Rolex Submariner Date 126610
+                      - listitem [ref=e1783]:
+                        - link "Rolex Sky Dweller 336934" [ref=e1784] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/Rolex-Sky-Dweller-336934/31387/bn_7121878710
+                          - generic [ref=e1785]: Rolex Sky Dweller 336934
+                  - generic [ref=e1786]:
+                    - heading "Rolex" [level=3] [ref=e1787]
+                    - list [ref=e1788]:
+                      - listitem [ref=e1789]:
+                        - link "GMT-Master II" [ref=e1790] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/Rolex-GMT-Master-II-Watches/31387/bn_56798189
+                          - generic [ref=e1791]: GMT-Master II
+                      - listitem [ref=e1792]:
+                        - link "Submariner" [ref=e1793] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/Rolex-Submariner-Watches/31387/bn_3001215
+                          - generic [ref=e1794]: Submariner
+                      - listitem [ref=e1795]:
+                        - link "Cosmograph Daytona" [ref=e1796] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/Rolex-Cosmograph-Daytona-Watches/31387/bn_2961223
+                          - generic [ref=e1797]: Cosmograph Daytona
+                      - listitem [ref=e1798]:
+                        - link "Datejust" [ref=e1799] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/Rolex-Datejust-Watches/31387/bn_56798181
+                          - generic [ref=e1800]: Datejust
+                      - listitem [ref=e1801]:
+                        - link "Oyster Perpetual" [ref=e1802] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/Rolex-Oyster-Perpetual-Watches/31387/bn_2977327
+                          - generic [ref=e1803]: Oyster Perpetual
+                  - generic [ref=e1804]:
+                    - heading "Popular Collections" [level=3] [ref=e1805]
+                    - list [ref=e1806]:
+                      - listitem [ref=e1807]:
+                        - link "Omega Seamaster" [ref=e1808] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/OMEGA-Seamaster-Watches/31387/bn_57333733
+                          - generic [ref=e1809]: Omega Seamaster
+                      - listitem [ref=e1810]:
+                        - link "Omega Speedmaster" [ref=e1811] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/OMEGA-Speedmaster-Watches/31387/bn_57333734
+                          - generic [ref=e1812]: Omega Speedmaster
+                      - listitem [ref=e1813]:
+                        - link "Breitlling Chronomat" [ref=e1814] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/Breitling-Chronomat-Watches/31387/bn_80630159
+                          - generic [ref=e1815]: Breitlling Chronomat
+                      - listitem [ref=e1816]:
+                        - link "Cartier Ballon Bleu" [ref=e1817] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/Cartier-Ballon-Bleu-Watches/31387/bn_7112594448
+                          - generic [ref=e1818]: Cartier Ballon Bleu
+                      - listitem [ref=e1819]:
+                        - link "Tag Heuer Formula 1" [ref=e1820] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/TAG-Heuer-Formula-1-Watches/31387/bn_7113638299
+                          - generic [ref=e1821]: Tag Heuer Formula 1
+                  - generic [ref=e1822]:
+                    - heading "Top Brands" [level=3] [ref=e1823]
+                    - list [ref=e1824]:
+                      - listitem [ref=e1825]:
+                        - link "Omega" [ref=e1826] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/OMEGA-Watches/31387/bn_3000908
+                          - generic [ref=e1827]: Omega
+                      - listitem [ref=e1828]:
+                        - link "Breitling" [ref=e1829] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/Breitling-Watches/31387/bn_3003445
+                          - generic [ref=e1830]: Breitling
+                      - listitem [ref=e1831]:
+                        - link "Cartier" [ref=e1832] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/Cartier-Watches/31387/bn_2967163
+                          - generic [ref=e1833]: Cartier
+                      - listitem [ref=e1834]:
+                        - link "Tag Heuer" [ref=e1835] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/TAG-Heuer-Watches/31387/bn_2999599
+                          - generic [ref=e1836]: Tag Heuer
+                      - listitem [ref=e1837]:
+                        - link "Patek Philippe" [ref=e1838] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/Patek-Philippe-Watches/31387/bn_2975769
+                          - generic [ref=e1839]: Patek Philippe
+                  - generic [ref=e1840]:
+                    - heading "Iconic Brands" [level=3] [ref=e1841]
+                    - list [ref=e1842]:
+                      - listitem [ref=e1843]:
+                        - link "Grand Seiko" [ref=e1844] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/Grand-Seiko-Watches/31387/bn_7119185158
+                          - generic [ref=e1845]: Grand Seiko
+                      - listitem [ref=e1846]:
+                        - link "Audemars Piguet" [ref=e1847] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/Audemars-Piguet-Watches/31387/bn_3007141
+                          - generic [ref=e1848]: Audemars Piguet
+                      - listitem [ref=e1849]:
+                        - link "Tudor" [ref=e1850] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/TUDOR-Wristwatches/31387/bn_3002663
+                          - generic [ref=e1851]: Tudor
+                      - listitem [ref=e1852]:
+                        - link "Richard Mille" [ref=e1853] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/Richard-Mille-Wristwatches/31387/bn_2971070
+                          - generic [ref=e1854]: Richard Mille
+                      - listitem [ref=e1855]:
+                        - link "IWC" [ref=e1856] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/IWC-Watches/31387/bn_3003753
+                          - generic [ref=e1857]: IWC
+              - generic [ref=e1859]:
+                - heading "Related searches" [level=2] [ref=e1860]
+                - list [ref=e1861]:
+                  - listitem [ref=e1862]:
+                    - link "Citizen Promaster Aqualand" [ref=e1863] [cursor=pointer]:
+                      - /url: https://www.ebay.com/shop/citizen-promaster-aqualand?_nkw=citizen+promaster+aqualand
+                      - generic [ref=e1864]: Citizen Promaster Aqualand
+                  - listitem [ref=e1865]:
+                    - link "Citizen Promaster Hyper Aqualand" [ref=e1866] [cursor=pointer]:
+                      - /url: https://www.ebay.com/shop/citizen-promaster-hyper-aqualand?_nkw=citizen+promaster+hyper+aqualand
+                      - generic [ref=e1867]: Citizen Promaster Hyper Aqualand
+                  - listitem [ref=e1868]:
+                    - link "Citizen Aqualand" [ref=e1869] [cursor=pointer]:
+                      - /url: https://www.ebay.com/shop/citizen-aqualand?_nkw=citizen+aqualand
+                      - generic [ref=e1870]: Citizen Aqualand
+                  - listitem [ref=e1871]:
+                    - link "Citizen Promaster Aqualand Vintage" [ref=e1872] [cursor=pointer]:
+                      - /url: https://www.ebay.com/shop/citizen-promaster-aqualand-vintage?_nkw=citizen+promaster+aqualand+vintage
+                      - generic [ref=e1873]: Citizen Promaster Aqualand Vintage
+                  - listitem [ref=e1874]:
+                    - link "Aqualand Promaster" [ref=e1875] [cursor=pointer]:
+                      - /url: https://www.ebay.com/shop/aqualand-promaster?_nkw=aqualand+promaster
+                      - generic [ref=e1876]: Aqualand Promaster
+                  - listitem [ref=e1877]:
+                    - link "Citizen Promaster Land" [ref=e1878] [cursor=pointer]:
+                      - /url: https://www.ebay.com/shop/citizen-promaster-land?_nkw=citizen+promaster+land
+                      - generic [ref=e1879]: Citizen Promaster Land
+                  - listitem [ref=e1880]:
+                    - link "Aqualand Citizen Eco Drive" [ref=e1881] [cursor=pointer]:
+                      - /url: https://www.ebay.com/shop/aqualand-citizen-eco-drive?_nkw=aqualand+citizen+eco+drive
+                      - generic [ref=e1882]: Aqualand Citizen Eco Drive
+                  - listitem [ref=e1883]:
+                    - link "Citizen Aqualand Dive Watches" [ref=e1884] [cursor=pointer]:
+                      - /url: https://www.ebay.com/shop/citizen-aqualand-dive-watches?_nkw=citizen+aqualand+dive+watches
+                      - generic [ref=e1885]: Citizen Aqualand Dive Watches
+                  - listitem [ref=e1886]:
+                    - link "Citizen Hyper Aqualand" [ref=e1887] [cursor=pointer]:
+                      - /url: https://www.ebay.com/shop/citizen-hyper-aqualand?_nkw=citizen+hyper+aqualand
+                      - generic [ref=e1888]: Citizen Hyper Aqualand
+                  - listitem [ref=e1889]:
+                    - link "Citizen Aqualand Duplex" [ref=e1890] [cursor=pointer]:
+                      - /url: https://www.ebay.com/shop/citizen-aqualand-duplex?_nkw=citizen+aqualand+duplex
+                      - generic [ref=e1891]: Citizen Aqualand Duplex
+                  - listitem [ref=e1892]:
+                    - link "Citizen Aqualand C023" [ref=e1893] [cursor=pointer]:
+                      - /url: https://www.ebay.com/shop/citizen-aqualand-c023?_nkw=citizen+aqualand+c023
+                      - generic [ref=e1894]: Citizen Aqualand C023
+                  - listitem [ref=e1895]:
+                    - link "Aqualand Citizen Jp2000" [ref=e1896] [cursor=pointer]:
+                      - /url: https://www.ebay.com/shop/aqualand-citizen-jp2000?_nkw=aqualand+citizen+jp2000
+                      - generic [ref=e1897]: Aqualand Citizen Jp2000
+                  - listitem [ref=e1898]:
+                    - link "Citizen Aqualand Titanium" [ref=e1899] [cursor=pointer]:
+                      - /url: https://www.ebay.com/shop/citizen-aqualand-titanium?_nkw=citizen+aqualand+titanium
+                      - generic [ref=e1900]: Citizen Aqualand Titanium
+                  - listitem [ref=e1901]:
+                    - link "Citizen Promaster" [ref=e1902] [cursor=pointer]:
+                      - /url: https://www.ebay.com/shop/citizen-promaster?_nkw=citizen+promaster
+                      - generic [ref=e1903]: Citizen Promaster
+                  - listitem [ref=e1904]:
+                    - link "Vintage Citizen Aqualand" [ref=e1905] [cursor=pointer]:
+                      - /url: https://www.ebay.com/shop/vintage-citizen-aqualand?_nkw=vintage+citizen+aqualand
+                      - generic [ref=e1906]: Vintage Citizen Aqualand
+        - img [ref=e1910]
+  - contentinfo [ref=e1916]:
+    - list [ref=e1917]:
+      - listitem [ref=e1918]:
+        - link "eBayについて" [ref=e1919] [cursor=pointer]:
+          - /url: https://www.ebayinc.com/company
+      - listitem [ref=e1920]:
+        - link "お知らせ" [ref=e1921] [cursor=pointer]:
+          - /url: https://community.ebay.com/t5/Announcements/bg-p/Announcements
+      - listitem [ref=e1922]:
+        - link "コミュニティ" [ref=e1923] [cursor=pointer]:
+          - /url: https://community.ebay.com
+      - listitem [ref=e1924]:
+        - link "セキュリティセンター" [ref=e1925] [cursor=pointer]:
+          - /url: https://pages.ebay.com/securitycenter/index.html
+      - listitem [ref=e1926]:
+        - link "出品者向け情報センター" [ref=e1927] [cursor=pointer]:
+          - /url: https://pages.ebay.com/seller-center/index.html
+      - listitem [ref=e1928]:
+        - link "ポリシー" [ref=e1929] [cursor=pointer]:
+          - /url: https://www.ebay.com/help/policies/default/ebays-rules-policies?id=4205
+      - listitem [ref=e1930]:
+        - link "アフィリエイト" [ref=e1931] [cursor=pointer]:
+          - /url: https://partnernetwork.ebay.com
+      - listitem [ref=e1932]:
+        - link "ヘルプ＆お問い合わせ" [ref=e1933] [cursor=pointer]:
+          - /url: https://www.ebay.com/help/home
+      - listitem [ref=e1934]:
+        - link "サイトマップ" [ref=e1935] [cursor=pointer]:
+          - /url: https://pages.ebay.com/sitemap.html
+    - generic [ref=e1936]:
+      - text: Copyright © 1995-2026 eBay Inc. All Rights Reserved.
+      - link "利用規約" [ref=e1937] [cursor=pointer]:
+        - /url: https://www.ebay.com/help/policies/member-behaviour-policies/user-agreement?id=4259
+      - text: ","
+      - link "プライバシー" [ref=e1938] [cursor=pointer]:
+        - /url: https://www.ebay.com/help/policies/member-behaviour-policies/user-privacy-notice-privacy-policy?id=4260
+      - text: ","
+      - link "ペイメントサービス利用規約" [ref=e1939] [cursor=pointer]:
+        - /url: https://pages.ebay.com/jp/ja-jp/payment/2.0/terms.html
+      - text: ","
+      - link "Cookie" [ref=e1940] [cursor=pointer]:
+        - /url: https://www.ebay.com/help/policies/member-behaviour-policies/ebay-cookie-notice?id=4267
+      - text: と
+      - link "AdChoice" [ref=e1941] [cursor=pointer]:
+        - /url: https://www.ebay.com/adchoice
+        - text: AdChoice
+        - img
+  - img
+  - img [ref=e1943]

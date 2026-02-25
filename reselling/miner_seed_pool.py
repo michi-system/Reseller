@@ -74,6 +74,18 @@ _SEED_STOPWORDS: Set[str] = {
     "SALE",
     "MODEL",
     "SERIES",
+    "SPECIAL",
+    "LIMITED",
+    "LTD",
+    "EDITION",
+    "ANNIVERSARY",
+}
+
+_SEED_FALLBACK_BROAD_SERIES_KEYS: Set[str] = {
+    "GSHOCK",
+    "PROSPEX",
+    "PROMASTER",
+    "SPORTS",
 }
 
 _SEED_LEADING_CONDITION_WORDS: Set[str] = {
@@ -146,7 +158,7 @@ _TARGET_LABELS: Dict[str, str] = {
 }
 
 _CATEGORY_SEED_MIN_SOLD_PRICE_USD_DEFAULTS: Dict[str, float] = {
-    "watch": 8.0,
+    "watch": 100.0,
     "sneakers": 20.0,
     "streetwear": 15.0,
     "trading_cards": 10.0,
@@ -167,6 +179,7 @@ _EBAY_PR_CATEGORY_DEFAULTS: Dict[str, Dict[str, Any]] = {
 
 _SEED_RUN_JOURNAL_PATH = ROOT_DIR / "data" / "miner_seed_run_journal.jsonl"
 _SEED_API_USAGE_PATH = ROOT_DIR / "data" / "miner_seed_api_usage.json"
+_SEED_REFILL_TRACE_DIR = ROOT_DIR / "docs" / "cycle_diagnostics"
 _LOW_LIQUIDITY_COOLDOWN_ENABLED_ENV = "MINER_SEED_LOW_LIQUIDITY_COOLDOWN_ENABLED"
 _LOW_LIQUIDITY_COOLDOWN_DAYS_ZERO_ENV = "MINER_SEED_LOW_LIQUIDITY_COOLDOWN_DAYS_ZERO"
 _LOW_LIQUIDITY_COOLDOWN_DAYS_LOW_ENV = "MINER_SEED_LOW_LIQUIDITY_COOLDOWN_DAYS_LOW"
@@ -470,23 +483,33 @@ def _resolve_ebay_pr_category_filter(category_key: str, category_row: Dict[str, 
 
 def _category_big_words(category_key: str, category_row: Dict[str, Any]) -> List[str]:
     """
-    Build ordered "big word" used in seed補充A.
-    Priority: category knowledge queries -> aliases -> category key fallback.
+    Load ordered "big word" used in seed補充A.
+    This function does not perform web search; it only reads locally prepared
+    category knowledge.
+    Priority:
+      1) phase_a_big_words
+      2) seed_series
+      3) aliases
+      4) category key fallback
     """
     candidates: List[str] = []
     if isinstance(category_row, dict) and category_row:
-        try:
-            knowledge_queries, _meta = _build_category_seed_queries(category_row=category_row, site="ebay")
-            candidates.extend([str(v or "").strip() for v in knowledge_queries])
-        except Exception:
-            pass
-        aliases = category_row.get("aliases", [])
-        if isinstance(aliases, list):
-            for raw in aliases:
+        phase_a_values = category_row.get("phase_a_big_words", [])
+        if isinstance(phase_a_values, list) and phase_a_values:
+            for raw in phase_a_values:
                 text = str(raw or "").strip()
                 if text:
                     candidates.append(text)
-    if category_key:
+        else:
+            for key in ("seed_series", "aliases"):
+                values = category_row.get(key, [])
+                if not isinstance(values, list):
+                    continue
+                for raw in values:
+                    text = str(raw or "").strip()
+                    if text:
+                        candidates.append(text)
+    if category_key and not candidates:
         candidates.append(category_key.replace("_", " "))
     if not candidates:
         candidates.append("watch")
@@ -554,9 +577,18 @@ def _fallback_seed_phrases(title: str) -> List[str]:
             break
     out: List[str] = []
     if len(cleaned) >= 2:
-        out.append(f"{cleaned[0]} {cleaned[1]}")
+        second = str(cleaned[1] or "").strip().upper()
+        second_key = re.sub(r"[^A-Z0-9]+", "", second)
+        if (
+            second
+            and second not in _SEED_STOPWORDS
+            and second_key not in _SEED_FALLBACK_BROAD_SERIES_KEYS
+        ):
+            out.append(f"{cleaned[0]} {cleaned[1]}")
     if cleaned:
-        out.append(cleaned[0])
+        first = str(cleaned[0] or "").strip().upper()
+        if len(cleaned) == 1 or any(ch.isdigit() for ch in first):
+            out.append(cleaned[0])
     return out
 
 
@@ -609,6 +641,11 @@ def _extract_seed_queries_from_title(title: str, brand_hints: Sequence[str]) -> 
         text = str(code or "").strip().upper()
         if len(text) < 4:
             continue
+        if text in _SEED_STOPWORDS:
+            continue
+        # 型番seedは桁情報を含むものを優先する（語だけの汎用語を抑制）。
+        if not any(ch.isdigit() for ch in text):
+            continue
         if brand:
             out.append(f"{brand} {text}")
         out.append(text)
@@ -625,6 +662,16 @@ def _extract_seed_queries_from_title(title: str, brand_hints: Sequence[str]) -> 
             continue
         seen.add(key)
         dedup.append(text)
+    # 具体的な型番seedがある場合は、広すぎるseedを落として精度を上げる。
+    has_specific = any(_looks_specific_seed(v) for v in dedup)
+    if has_specific:
+        narrowed = [
+            v
+            for v in dedup
+            if _looks_specific_seed(v) or bool(_extract_gtin_candidates(v))
+        ]
+        if narrowed:
+            dedup = narrowed
     return dedup
 
 
@@ -816,6 +863,15 @@ def _api_seed_candidates_from_payload(
             continue
         seen.add(key)
         dedup.append(text)
+    has_specific = any(_looks_specific_seed(v) for v in dedup)
+    if has_specific:
+        narrowed = [
+            v
+            for v in dedup
+            if _looks_specific_seed(v) or bool(_extract_gtin_candidates(v))
+        ]
+        if narrowed:
+            dedup = narrowed
     return dedup
 
 
@@ -944,6 +1000,30 @@ def _append_seed_run_journal(row: Dict[str, Any]) -> None:
         pass
 
 
+def _seed_refill_trace_path() -> Optional[Path]:
+    if not env_bool("MINER_SEED_POOL_TRACE_ENABLED", False):
+        return None
+    raw = str((os.getenv("MINER_SEED_POOL_TRACE_PATH", "") or "")).strip()
+    if raw:
+        path = Path(raw).expanduser()
+        if not path.is_absolute():
+            path = (ROOT_DIR / path).resolve()
+        return path
+    return _SEED_REFILL_TRACE_DIR / f"seed_refill_trace_{time.strftime('%Y%m%dT%H%M%SZ', time.gmtime())}.jsonl"
+
+
+def _append_seed_refill_trace(path: Optional[Path], row: Dict[str, Any]) -> None:
+    if path is None or not isinstance(row, dict):
+        return
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("a", encoding="utf-8") as f:
+            f.write(json.dumps(row, ensure_ascii=False))
+            f.write("\n")
+    except Exception:
+        pass
+
+
 def _prune_seed_run_journal_by_category(*, category_key: str) -> int:
     if not _SEED_RUN_JOURNAL_PATH.exists():
         return 0
@@ -982,7 +1062,10 @@ def _run_rpa_page(
     limit: int,
     category_id: int = 0,
     category_slug: str = "",
+    min_price_usd: float = 0.0,
 ) -> Dict[str, Any]:
+    started_perf = time.perf_counter()
+    started_at = utc_iso()
     script_path = ROOT_DIR / "scripts" / "rpa_market_research.py"
     if not script_path.exists():
         return {"ok": False, "reason": "rpa_script_missing", "rows": [], "returncode": -1}
@@ -1000,6 +1083,11 @@ def _run_rpa_page(
     if not Path(python_exec).exists():
         python_exec = os.getenv("PYTHON", "") or "python3"
     wait_seconds = max(2, env_int("MINER_SEED_POOL_RPA_WAIT_SECONDS", env_int("LIQUIDITY_RPA_WAIT_SECONDS", 8)))
+    lookback_days = max(7, env_int("LIQUIDITY_RPA_LOOKBACK_DAYS", 90))
+    condition_mode = str((os.getenv("LIQUIDITY_RPA_PRIMARY_CONDITION", "new") or "new").strip() or "new")
+    sold_sort_mode = str((os.getenv("LIQUIDITY_RPA_PRIMARY_SOLD_SORT", "recently_sold") or "recently_sold").strip() or "recently_sold")
+    strict_condition = env_bool("LIQUIDITY_RPA_PRIMARY_STRICT_CONDITION", True)
+    fixed_price_only = env_bool("LIQUIDITY_RPA_PRIMARY_FIXED_PRICE_ONLY", True)
     force_headless = env_bool("LIQUIDITY_RPA_FORCE_HEADLESS", True)
     profile_dir_raw = str((os.getenv("LIQUIDITY_RPA_PROFILE_DIR", "") or "").strip())
     profile_dir_path = Path(profile_dir_raw).expanduser() if profile_dir_raw else (ROOT_DIR / "data" / "rpa" / "ebay_profile")
@@ -1036,9 +1124,11 @@ def _run_rpa_page(
         "--wait-seconds",
         str(wait_seconds),
         "--lookback-days",
-        str(max(7, env_int("LIQUIDITY_RPA_LOOKBACK_DAYS", 90))),
+        str(lookback_days),
         "--condition",
-        str((os.getenv("LIQUIDITY_RPA_PRIMARY_CONDITION", "new") or "new").strip() or "new"),
+        condition_mode,
+        "--sold-sort",
+        sold_sort_mode,
         "--pass-label",
         "seed_pool_refill",
         "--result-offset",
@@ -1046,15 +1136,29 @@ def _run_rpa_page(
         "--result-limit",
         str(max(10, min(200, int(limit)))),
     ]
+    screenshot_template_raw = str(
+        (
+            os.getenv("MINER_SEED_POOL_RPA_SCREENSHOT_TEMPLATE", "")
+            or os.getenv("LIQUIDITY_RPA_SCREENSHOT_AFTER_FILTERS", "")
+            or ""
+        ).strip()
+    )
+    screenshot_template = ""
+    if screenshot_template_raw:
+        screenshot_template = screenshot_template_raw.replace("{offset}", str(max(0, int(offset))))
+        cmd.extend(["--screenshot-after-filters", screenshot_template])
     safe_category_id = max(0, int(category_id))
     safe_category_slug = re.sub(r"[^a-z0-9_-]+", "", str(category_slug or "").strip().lower())
     if safe_category_id > 0:
         cmd.extend(["--category-id", str(safe_category_id)])
     if safe_category_slug:
         cmd.extend(["--category-slug", safe_category_slug])
-    if env_bool("LIQUIDITY_RPA_PRIMARY_STRICT_CONDITION", True):
+    safe_min_price = max(0.0, to_float(min_price_usd, 0.0))
+    if safe_min_price > 0:
+        cmd.extend(["--min-price-usd", str(round(safe_min_price, 2))])
+    if strict_condition:
         cmd.append("--strict-condition")
-    if env_bool("LIQUIDITY_RPA_PRIMARY_FIXED_PRICE_ONLY", True):
+    if fixed_price_only:
         cmd.append("--fixed-price-only")
     if force_headless:
         cmd.append("--headless")
@@ -1115,6 +1219,23 @@ def _run_rpa_page(
             ),
         )
     )
+    # Phase A（seed補充）は条件の取り違えコストが高いので、条件確認をデフォルトで厳格化する。
+    child_env["LIQUIDITY_RPA_ENABLE_LOCK_SELECTED_FILTERS"] = str(
+        max(0, min(1, env_int("LIQUIDITY_RPA_ENABLE_LOCK_SELECTED_FILTERS", 1)))
+    )
+    child_env["LIQUIDITY_RPA_REQUIRE_LOCK_SELECTED_FILTERS"] = str(
+        max(0, min(1, env_int("LIQUIDITY_RPA_REQUIRE_LOCK_SELECTED_FILTERS", 1)))
+    )
+    child_env["LIQUIDITY_RPA_REQUIRE_SOLD_SORT"] = str(
+        max(0, min(1, env_int("LIQUIDITY_RPA_REQUIRE_SOLD_SORT", 1)))
+    )
+    if safe_min_price > 0:
+        child_env["LIQUIDITY_RPA_ENABLE_MIN_PRICE_FILTER_UI"] = str(
+            max(0, min(1, env_int("LIQUIDITY_RPA_ENABLE_MIN_PRICE_FILTER_UI", 1)))
+        )
+        child_env["LIQUIDITY_RPA_REQUIRE_MIN_PRICE_FILTER"] = str(
+            max(0, min(1, env_int("LIQUIDITY_RPA_REQUIRE_MIN_PRICE_FILTER", 1)))
+        )
     try:
         proc = subprocess.run(
             cmd,
@@ -1158,6 +1279,7 @@ def _run_rpa_page(
             output_path.unlink(missing_ok=True)
         except Exception:
             pass
+    elapsed_sec = round(max(0.0, time.perf_counter() - started_perf), 4)
     daily_limit = bool(return_code == 75 or "requests allowed in one day" in stdout.lower() or "requests allowed in one day" in stderr.lower())
     return {
         "ok": return_code == 0,
@@ -1169,6 +1291,30 @@ def _run_rpa_page(
         "category_slug": safe_category_slug,
         "pause_for_login_sec": int(pause_for_login_sec),
         "timeout_sec": int(timeout_sec),
+        "started_at": started_at,
+        "elapsed_sec": float(elapsed_sec),
+        "rpa_search_params": {
+            "query": str(query),
+            "offset": max(0, int(offset)),
+            "limit": max(10, min(200, int(limit))),
+            "wait_seconds": int(wait_seconds),
+            "lookback_days": int(lookback_days),
+            "condition": condition_mode,
+            "sold_sort": sold_sort_mode,
+            "strict_condition": bool(strict_condition),
+            "fixed_price_only": bool(fixed_price_only),
+            "category_id": int(safe_category_id),
+            "category_slug": str(safe_category_slug),
+            "min_price_usd": float(round(safe_min_price, 2)),
+            "screenshot_after_filters": str(screenshot_template or ""),
+            "require_lock_selected_filters": bool(
+                to_int(child_env.get("LIQUIDITY_RPA_REQUIRE_LOCK_SELECTED_FILTERS", "0"), 0)
+            ),
+            "require_sold_sort": bool(to_int(child_env.get("LIQUIDITY_RPA_REQUIRE_SOLD_SORT", "0"), 0)),
+            "require_min_price_filter": bool(
+                to_int(child_env.get("LIQUIDITY_RPA_REQUIRE_MIN_PRICE_FILTER", "0"), 0)
+            ),
+        },
         "stdout_tail": stdout.splitlines()[-8:],
         "stderr_tail": stderr.splitlines()[-8:],
     }
@@ -1200,8 +1346,10 @@ def _collect_row_entries(row: Dict[str, Any]) -> List[Dict[str, Any]]:
         out.append(
             {
                 "title": title,
+                "item_id": str(raw.get("item_id", "") or "").strip(),
                 "item_url": str(raw.get("item_url", "") or "").strip(),
                 "image_url": str(raw.get("image_url", "") or "").strip(),
+                "sold_price": round(max(0.0, to_float(raw.get("sold_price"), 0.0)), 4),
                 "rank": max(1, to_int(raw.get("rank"), idx)),
                 "sold_90d_count": sold_90d_count,
                 "sold_price_min_90d": sold_price_min,
@@ -1217,8 +1365,10 @@ def _collect_row_entries(row: Dict[str, Any]) -> List[Dict[str, Any]]:
     return [
         {
             "title": title,
+            "item_id": str(sold_sample.get("item_id", "") or "").strip(),
             "item_url": str(sold_sample.get("item_url", "") or "").strip(),
             "image_url": str(sold_sample.get("image_url", "") or "").strip(),
+            "sold_price": round(max(0.0, to_float(sold_sample.get("sold_price"), 0.0)), 4),
             "rank": 1,
             "sold_90d_count": sold_90d_count,
             "sold_price_min_90d": sold_price_min,
@@ -1537,6 +1687,114 @@ def _upsert_refill_state(
 
 def _query_window_key(query: str) -> str:
     return re.sub(r"\s+", " ", str(query or "").strip()).lower()
+
+
+def _load_query_page_unlock_hours_overrides(raw: str) -> Dict[str, float]:
+    text = str(raw or "").strip()
+    if not text:
+        return {}
+    try:
+        parsed = json.loads(text)
+    except Exception:
+        return {}
+    if not isinstance(parsed, dict):
+        return {}
+    out: Dict[str, float] = {}
+    for raw_key, raw_value in parsed.items():
+        key = _query_window_key(str(raw_key or ""))
+        if not key:
+            continue
+        hours = max(0.0, to_float(raw_value, 0.0))
+        if hours <= 0:
+            continue
+        out[key] = float(hours)
+    return out
+
+
+def _load_query_page_unlock_hours_from_category_row(category_row: Dict[str, Any]) -> Dict[str, float]:
+    if not isinstance(category_row, dict):
+        return {}
+    raw = category_row.get("phase_a_page_unlock_hours", {})
+    if not isinstance(raw, dict):
+        return {}
+    out: Dict[str, float] = {}
+    for raw_key, raw_value in raw.items():
+        key = _query_window_key(str(raw_key or ""))
+        if not key:
+            continue
+        hours = max(0.0, to_float(raw_value, 0.0))
+        if hours <= 0:
+            continue
+        out[key] = float(hours)
+    return out
+
+
+def _resolve_query_page_unlock_hours(
+    *,
+    category_key: str,
+    query_key: str,
+    default_hours: float,
+    category_overrides: Dict[str, float],
+    overrides: Dict[str, float],
+) -> Tuple[float, str]:
+    category = _normalize_category_key(category_key)
+    key_pair = f"{category}:{query_key}" if category and query_key else ""
+    if key_pair and key_pair in overrides:
+        return max(0.25, float(overrides[key_pair])), "override_category_query"
+    if query_key in overrides:
+        return max(0.25, float(overrides[query_key])), "override_query"
+    if key_pair and key_pair in category_overrides:
+        return max(0.25, float(category_overrides[key_pair])), "category_row_category_query"
+    if query_key in category_overrides:
+        return max(0.25, float(category_overrides[query_key])), "category_row_query"
+    env_suffix = re.sub(r"[^A-Z0-9_]+", "_", query_key.upper())
+    if env_suffix:
+        env_hours = max(0.0, to_float(os.getenv(f"MINER_STAGEA_QUERY_PAGE_UNLOCK_HOURS_{env_suffix}", ""), 0.0))
+        if env_hours > 0:
+            return max(0.25, float(env_hours)), "override_query_env"
+    return max(0.25, float(default_hours)), "default"
+
+
+def _compute_query_unlocked_pages(
+    *,
+    now_ts: int,
+    latest_fetched_ts: int,
+    max_pages: int,
+    hours_per_page: float,
+    min_pages: int,
+    initial_pages: int,
+) -> Tuple[int, int]:
+    safe_max_pages = max(1, int(max_pages))
+    if latest_fetched_ts <= 0:
+        return max(1, min(safe_max_pages, int(initial_pages))), 0
+    elapsed_sec = max(0, int(now_ts) - int(latest_fetched_ts))
+    seconds_per_page = max(1, int(round(max(0.25, float(hours_per_page)) * 3600)))
+    unlocked_pages = int(elapsed_sec // seconds_per_page)
+    unlocked_pages = max(max(0, int(min_pages)), unlocked_pages)
+    unlocked_pages = min(safe_max_pages, unlocked_pages)
+    return int(unlocked_pages), int(elapsed_sec)
+
+
+def _compute_next_query_page_unlock_ts(
+    *,
+    latest_fetched_ts: int,
+    unlocked_pages: int,
+    max_pages: int,
+    hours_per_page: float,
+    now_ts: int,
+) -> int:
+    if latest_fetched_ts <= 0:
+        return 0
+    safe_max_pages = max(1, int(max_pages))
+    safe_unlocked_pages = max(0, int(unlocked_pages))
+    if safe_unlocked_pages >= safe_max_pages:
+        return 0
+    next_threshold_pages = safe_unlocked_pages + 1
+    seconds_per_page = max(1, int(round(max(0.25, float(hours_per_page)) * 3600)))
+    next_ts = int(latest_fetched_ts) + (next_threshold_pages * seconds_per_page)
+    if next_ts <= int(now_ts):
+        return 0
+    return int(next_ts)
 
 
 def _load_page_window_entries(
@@ -2072,12 +2330,172 @@ def reset_seed_pool_category_state(
     }
 
 
+def _build_stage_a_tuning_recommendations(refill_summary: Dict[str, Any]) -> List[Dict[str, Any]]:
+    if not isinstance(refill_summary, dict):
+        return []
+    reason = str(refill_summary.get("reason", "") or "").strip().lower()
+    added_count = max(0, to_int(refill_summary.get("added_count"), 0))
+    fetched_pages = max(0, to_int(refill_summary.get("fetched_pages"), 0))
+    skipped_fresh_pages = max(0, to_int(refill_summary.get("skipped_fresh_pages"), 0))
+    minimize_transitions = bool(refill_summary.get("minimize_transitions"))
+    big_word_limit = max(0, to_int(refill_summary.get("big_word_limit"), 0))
+    big_word_count = max(0, to_int(refill_summary.get("big_word_count"), 0))
+    big_word_total_count = max(0, to_int(refill_summary.get("big_word_total_count"), 0))
+    timebox_base_sec = max(0, to_int(refill_summary.get("timebox_base_sec"), 0))
+    timebox_sec = max(0, to_int(refill_summary.get("timebox_sec"), 0))
+    diagnostics = refill_summary.get("diagnostics", {}) if isinstance(refill_summary.get("diagnostics"), dict) else {}
+    rpa_failed_pages = max(0, to_int(diagnostics.get("rpa_failed_pages"), 0))
+    empty_result_pages = max(0, to_int(diagnostics.get("empty_result_pages"), 0))
+    non_empty_result_pages = max(0, to_int(diagnostics.get("non_empty_result_pages"), 0))
+    strict_filter_blocked_pages = max(0, to_int(diagnostics.get("strict_filter_blocked_pages"), 0))
+    sold_tab_unconfirmed_pages = max(0, to_int(diagnostics.get("sold_tab_unconfirmed_pages"), 0))
+    lookback_unconfirmed_pages = max(0, to_int(diagnostics.get("lookback_unconfirmed_pages"), 0))
+    recommendations: List[Dict[str, Any]] = []
+
+    def _append(
+        *,
+        code: str,
+        message: str,
+        priority: str,
+        env_overrides: Optional[Dict[str, Any]] = None,
+        fetch_payload_overrides: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        row: Dict[str, Any] = {
+            "code": str(code or "").strip(),
+            "message": str(message or "").strip(),
+            "priority": str(priority or "").strip() or "medium",
+        }
+        if isinstance(env_overrides, dict) and env_overrides:
+            row["env_overrides"] = dict(env_overrides)
+        if isinstance(fetch_payload_overrides, dict) and fetch_payload_overrides:
+            row["fetch_payload_overrides"] = dict(fetch_payload_overrides)
+        recommendations.append(row)
+
+    if rpa_failed_pages > 0:
+        _append(
+            code="stabilize_rpa_fetch",
+            message=(
+                f"A段階でProduct Research取得失敗が {rpa_failed_pages} ページ発生。"
+                "先にRPA待機/タイムアウトを緩めて取得安定性を確認してください。"
+            ),
+            priority="high",
+            env_overrides={
+                "MINER_SEED_POOL_RPA_FETCH_TIMEOUT_SECONDS": max(
+                    95,
+                    min(240, env_int("MINER_SEED_POOL_RPA_FETCH_TIMEOUT_SECONDS", 95) + 25),
+                ),
+                "MINER_SEED_POOL_RPA_WAIT_SECONDS": max(
+                    8,
+                    min(20, env_int("MINER_SEED_POOL_RPA_WAIT_SECONDS", 8) + 2),
+                ),
+            },
+        )
+
+    if strict_filter_blocked_pages > 0 or sold_tab_unconfirmed_pages > 0 or lookback_unconfirmed_pages > 0:
+        _append(
+            code="verify_pr_filter_lock",
+            message=(
+                "A段階で90日売却フィルタ確認に失敗したページがあります。"
+                "ログイン状態とフィルタロック動作を確認し、traceを有効化して再実行してください。"
+            ),
+            priority="high",
+            env_overrides={
+                "MINER_SEED_POOL_TRACE_ENABLED": 1,
+                "LIQUIDITY_RPA_ENABLE_LOCK_SELECTED_FILTERS": 1,
+            },
+        )
+
+    if reason == "refill_timebox_reached":
+        suggested_timebox = max(
+            300,
+            min(1800, int(round(max(300, timebox_base_sec, timebox_sec) * 1.5))),
+        )
+        _append(
+            code="increase_refill_timebox",
+            message=(
+                "A段階がtimeboxで停止しています。"
+                f"補充timeboxを {suggested_timebox}s まで引き上げて連続空振りを防いでください。"
+            ),
+            priority="medium",
+            env_overrides={"MINER_SEED_POOL_REFILL_TIMEBOX_SEC": suggested_timebox},
+        )
+
+    if reason == "empty_result_page" and added_count <= 0 and fetched_pages > 0:
+        if minimize_transitions:
+            _append(
+                code="disable_transition_minimize",
+                message=(
+                    "A段階が空振りのため、まず遷移最小化を無効にして通常ページ走査へ戻すことを推奨します。"
+                ),
+                priority="high",
+                fetch_payload_overrides={"stage_a_minimize_transitions": False},
+            )
+        else:
+            _append(
+                code="widen_refill_scan",
+                message=(
+                    "A段階が空振りのため、補充ページ走査幅を拡げて再探索することを推奨します。"
+                ),
+                priority="medium",
+                env_overrides={
+                    "MINER_SEED_POOL_MAX_PAGES": max(4, min(40, env_int("MINER_SEED_POOL_MAX_PAGES", 40))),
+                    "MINER_SEED_POOL_LOW_YIELD_CONSECUTIVE_PAGES": max(
+                        3,
+                        min(8, env_int("MINER_SEED_POOL_LOW_YIELD_CONSECUTIVE_PAGES", 3) + 1),
+                    ),
+                },
+            )
+
+    if reason == "fresh_window_skip" or (skipped_fresh_pages > 0 and fetched_pages <= 0):
+        _append(
+            code="reduce_page_fresh_window",
+            message=(
+                "A段階がfresh windowで再取得を回避しています。短期検証ではfresh日数を縮めるか履歴クリアを推奨します。"
+            ),
+            priority="medium",
+            env_overrides={
+                "MINER_SEED_POOL_PAGE_FRESH_DAYS": max(
+                    1,
+                    min(7, env_int("MINER_SEED_POOL_PAGE_FRESH_DAYS", 7) // 2),
+                ),
+            },
+        )
+
+    if big_word_limit > 0 and big_word_total_count > big_word_count:
+        _append(
+            code="expand_big_word_coverage",
+            message=(
+                f"A段階はbig wordを {big_word_count}/{big_word_total_count} に制限中です。"
+                "腕時計の初期安定化では 0（全件）を推奨します。"
+            ),
+            priority="medium",
+            fetch_payload_overrides={"stage_a_big_word_limit": 0},
+        )
+
+    if added_count <= 0 and empty_result_pages > 0 and non_empty_result_pages <= 0:
+        _append(
+            code="temporary_bootstrap_seed",
+            message=(
+                "A段階で有効seedが増えていません。暫定でカテゴリ知識bootstrapを有効化し、B段階の消化を維持してください。"
+            ),
+            priority="low",
+            env_overrides={
+                "MINER_SEED_POOL_BOOTSTRAP_ENABLED": 1,
+                "MINER_SEED_POOL_BOOTSTRAP_TARGET": max(20, env_int("MINER_SEED_POOL_BOOTSTRAP_TARGET", 60)),
+            },
+        )
+
+    return recommendations
+
+
 def _refill_seed_pool(
     conn: Any,
     *,
     category_key: str,
     category_label: str,
     category_row: Dict[str, Any],
+    stage_a_big_word_limit: int = 0,
+    stage_a_minimize_transitions: bool = False,
     refill_timebox_override_sec: Optional[int] = None,
     progress_callback: Optional[Callable[[Dict[str, Any]], None]] = None,
 ) -> Dict[str, Any]:
@@ -2088,7 +2506,15 @@ def _refill_seed_pool(
     refill_timebox_sec = max(30, env_int("MINER_SEED_POOL_REFILL_TIMEBOX_SEC", 300))
     if refill_timebox_override_sec is not None:
         refill_timebox_sec = max(30, min(refill_timebox_sec, int(max(1, refill_timebox_override_sec))))
+    refill_timebox_base_sec = int(refill_timebox_sec)
     max_timeout_pages_per_run = max(1, env_int("MINER_SEED_POOL_MAX_TIMEOUT_PAGES_PER_RUN", 2))
+    query_page_unlock_enabled = env_bool("MINER_STAGEA_QUERY_PAGE_UNLOCK_ENABLED", True)
+    query_page_unlock_default_hours = max(0.25, env_float("MINER_STAGEA_QUERY_PAGE_UNLOCK_HOURS_DEFAULT", 24.0))
+    query_page_unlock_min_pages = max(0, env_int("MINER_STAGEA_QUERY_PAGE_UNLOCK_MIN_PAGES", 1))
+    query_page_unlock_category_overrides = _load_query_page_unlock_hours_from_category_row(category_row)
+    query_page_unlock_overrides = _load_query_page_unlock_hours_overrides(
+        os.getenv("MINER_STAGEA_QUERY_PAGE_UNLOCK_HOURS_JSON", "")
+    )
     pr_category_filter = _resolve_ebay_pr_category_filter(category_key, category_row)
     min_seed_sold_price_usd = _category_seed_min_sold_price_usd(category_key, category_row)
     _normalize_existing_seed_rows(conn, category_key=category_key)
@@ -2107,13 +2533,65 @@ def _refill_seed_pool(
         "cooldown_active_count": 0,
         "cooldown_blocked_count": 0,
         "query": "",
+        "queries": [],
+        "big_word_limit": max(0, int(stage_a_big_word_limit)),
+        "big_word_count": 0,
+        "big_word_total_count": 0,
+        "big_word_scale_ratio": 1.0,
+        "target_count": 0,
+        "target_count_base": 0,
         "timebox_sec": int(refill_timebox_sec),
+        "timebox_base_sec": int(refill_timebox_base_sec),
+        "trace_path": "",
+        "trace_session": "",
+        "minimize_transitions": bool(stage_a_minimize_transitions),
+        "transition_page_size": 0,
+        "transition_max_pages_per_query": 0,
+        "query_page_unlock_enabled": bool(query_page_unlock_enabled),
+        "query_page_unlock_default_hours": round(float(query_page_unlock_default_hours), 4),
+        "query_page_unlock_min_pages": int(query_page_unlock_min_pages),
+        "query_page_unlock_category_overrides_count": int(len(query_page_unlock_category_overrides)),
+        "query_page_unlock_overrides_count": int(len(query_page_unlock_overrides)),
         "pr_category_id": int(pr_category_filter.get("category_id", 0) or 0),
         "pr_category_slug": str(pr_category_filter.get("category_slug", "") or ""),
         "pr_category_filter_enabled": bool(pr_category_filter.get("enabled", False)),
         "min_seed_sold_price_usd": float(min_seed_sold_price_usd),
         "min_price_filtered_count": 0,
     }
+    trace_path = _seed_refill_trace_path()
+    trace_session = f"seed-refill-{int(time.time() * 1000)}"
+    trace_seq = 0
+    if trace_path is not None:
+        summary["trace_path"] = str(trace_path)
+        summary["trace_session"] = trace_session
+
+    def _trace(event: str, **payload: Any) -> None:
+        nonlocal trace_seq
+        if trace_path is None:
+            return
+        trace_seq += 1
+        row: Dict[str, Any] = {
+            "ts": utc_iso(),
+            "event": str(event or "").strip() or "unknown",
+            "seq": int(trace_seq),
+            "trace_session": trace_session,
+            "category_key": category_key,
+            "category_label": category_label,
+        }
+        row.update(payload)
+        _append_seed_refill_trace(trace_path, row)
+
+    _trace(
+        "refill_start",
+        refill_trigger_available_le=int(refill_trigger_available_le),
+        available_before=int(available),
+        timebox_sec=int(refill_timebox_sec),
+        page_size=int(max(10, min(100, env_int("MINER_SEED_POOL_PAGE_SIZE", 50)))),
+        max_pages=int(max(1, min(40, env_int("MINER_SEED_POOL_MAX_PAGES", 40)))),
+        target_count_base=int(max(20, env_int("MINER_SEED_POOL_TARGET_COUNT", 100))),
+        stage_a_big_word_limit=max(0, int(stage_a_big_word_limit)),
+        pr_category_filter=dict(pr_category_filter),
+    )
     active_low_liquidity_cooldown_keys = _load_active_low_liquidity_seed_keys(
         conn,
         category_key=category_key,
@@ -2121,10 +2599,18 @@ def _refill_seed_pool(
     )
     summary["cooldown_active_count"] = int(len(active_low_liquidity_cooldown_keys))
     if available > refill_trigger_available_le:
+        _trace(
+            "refill_skipped_threshold",
+            available_before=int(available),
+            threshold=int(refill_trigger_available_le),
+            cooldown_active_count=int(len(active_low_liquidity_cooldown_keys)),
+        )
         return summary
 
-    existing_keys = _load_active_seed_keys(conn, category_key=category_key, now_ts=now_ts)
+    active_pool_seed_keys = _load_active_seed_keys(conn, category_key=category_key, now_ts=now_ts)
+    existing_keys = set(active_pool_seed_keys)
     existing_keys.update(active_low_liquidity_cooldown_keys)
+    run_added_seed_keys: Set[str] = set()
     ttl_days = max(1, env_int("MINER_SEED_POOL_TTL_DAYS", 7))
     bootstrap_enabled = env_bool("MINER_SEED_POOL_BOOTSTRAP_ENABLED", False)
     if bootstrap_enabled:
@@ -2145,6 +2631,12 @@ def _refill_seed_pool(
         available = _count_available(conn, category_key=category_key, now_ts=now_ts)
         summary["available_after"] = available
         if available > refill_trigger_available_le:
+            _trace(
+                "refill_bootstrap_only",
+                bootstrap_added_count=int(summary["bootstrap_added_count"]),
+                available_after=int(available),
+                threshold=int(refill_trigger_available_le),
+            )
             _upsert_refill_state(
                 conn,
                 category_key=category_key,
@@ -2161,6 +2653,11 @@ def _refill_seed_pool(
     if cooldown_ts > now_ts:
         summary["reason"] = "category_cooldown"
         summary["cooldown_until"] = cooldown_until
+        _trace(
+            "refill_skipped_category_cooldown",
+            cooldown_until=str(cooldown_until),
+            cooldown_active_count=int(len(active_low_liquidity_cooldown_keys)),
+        )
         _upsert_refill_state(
             conn,
             category_key=category_key,
@@ -2176,17 +2673,63 @@ def _refill_seed_pool(
     page_size = max(10, min(100, env_int("MINER_SEED_POOL_PAGE_SIZE", 50)))
     # 1ページ50件 x 最大40ページ = 調査上限2000件
     max_pages = max(1, min(40, env_int("MINER_SEED_POOL_MAX_PAGES", 40)))
+    query_page_unlock_initial_pages = max(
+        1,
+        min(
+            max_pages,
+            env_int("MINER_STAGEA_QUERY_PAGE_UNLOCK_INITIAL_PAGES", max_pages),
+        ),
+    )
+    summary["query_page_unlock_initial_pages"] = int(query_page_unlock_initial_pages)
+    if bool(stage_a_minimize_transitions):
+        transition_page_size = max(50, min(200, env_int("MINER_STAGEA_TRANSITION_PAGE_SIZE", 200)))
+        transition_max_pages_per_query = max(1, min(5, env_int("MINER_STAGEA_TRANSITION_MAX_PAGES_PER_QUERY", 1)))
+        page_size = max(page_size, transition_page_size)
+        max_pages = min(max_pages, transition_max_pages_per_query)
+        summary["transition_page_size"] = int(transition_page_size)
+        summary["transition_max_pages_per_query"] = int(transition_max_pages_per_query)
     # 新規seed目標は100件（達成後も現在ページは完走する）
-    target_count = max(20, env_int("MINER_SEED_POOL_TARGET_COUNT", 100))
+    target_count_base = max(20, env_int("MINER_SEED_POOL_TARGET_COUNT", 100))
+    target_count = int(target_count_base)
     min_pages_before_low_yield_stop = max(1, env_int("MINER_SEED_POOL_MIN_PAGES_BEFORE_LOW_YIELD_STOP", 2))
     low_yield_consecutive_limit = max(2, env_int("MINER_SEED_POOL_LOW_YIELD_CONSECUTIVE_PAGES", 3))
     cooldown_days = max(1, env_int("MINER_SEED_POOL_COOLDOWN_DAYS", 7))
-    freshness_days = max(1, env_int("MINER_SEED_POOL_PAGE_FRESH_DAYS", 7))
+    freshness_days = max(0, env_int("MINER_SEED_POOL_PAGE_FRESH_DAYS", 7))
     freshness_sec = freshness_days * 86400
     brand_hints = _brand_hints(category_row)
-    big_words = _category_big_words(category_key, category_row)
+    all_big_words = _category_big_words(category_key, category_row)
+    big_words = list(all_big_words)
+    if int(stage_a_big_word_limit) > 0:
+        big_words = big_words[: max(1, int(stage_a_big_word_limit))]
+    selected_count = max(0, len(big_words))
+    total_count = max(0, len(all_big_words))
+    scale_ratio = 1.0
+    if total_count > 0 and selected_count > 0:
+        scale_ratio = max(0.05, min(1.0, float(selected_count) / float(total_count)))
+    if total_count > 0 and selected_count < total_count:
+        target_count = max(20, int(round(float(target_count_base) * scale_ratio)))
+        refill_timebox_sec = max(30, int(round(float(refill_timebox_base_sec) * scale_ratio)))
     summary["query"] = big_words[0] if big_words else category_key
     summary["queries"] = list(big_words)
+    summary["big_word_count"] = int(selected_count)
+    summary["big_word_total_count"] = int(total_count)
+    summary["big_word_scale_ratio"] = round(float(scale_ratio), 4)
+    summary["target_count"] = int(target_count)
+    summary["target_count_base"] = int(target_count_base)
+    summary["timebox_sec"] = int(refill_timebox_sec)
+    _trace(
+        "refill_plan",
+        queries=list(big_words),
+        big_word_total_count=int(total_count),
+        big_word_selected_count=int(selected_count),
+        big_word_scale_ratio=float(scale_ratio),
+        target_count_base=int(target_count_base),
+        target_count=int(target_count),
+        timebox_base_sec=int(refill_timebox_base_sec),
+        timebox_sec=int(refill_timebox_sec),
+        page_size=int(page_size),
+        max_pages=int(max_pages),
+    )
 
     added_total = 0
     last_rank = 0
@@ -2202,6 +2745,19 @@ def _refill_seed_pool(
     accessory_filtered_count = 0
     min_price_filtered_count = 0
     rpa_timeout_pages = 0
+    rpa_failed_pages = 0
+    daily_limit_pages = 0
+    empty_result_pages = 0
+    non_empty_result_pages = 0
+    strict_filter_blocked_pages = 0
+    sold_tab_unconfirmed_pages = 0
+    lookback_unconfirmed_pages = 0
+    page_unlock_limited_queries = 0
+    page_unlock_blocked_pages = 0
+    page_unlock_next_ts = 0
+    page_reason_counts: Dict[str, int] = {}
+    failure_samples: List[Dict[str, Any]] = []
+    diagnostic_max_failure_pages = max(1, min(12, env_int("MINER_SEED_POOL_DIAGNOSTIC_MAX_FAILURE_PAGES", 4)))
 
     total_page_budget = max(1, len(big_words) * max_pages)
     for query_index, query in enumerate(big_words, start=1):
@@ -2210,6 +2766,44 @@ def _refill_seed_pool(
             break
         query_key = _query_window_key(query)
         page_window_entries = _load_page_window_entries(conn, category_key=category_key, query_key=query_key)
+        latest_fetched_ts = 0
+        if page_window_entries:
+            latest_fetched_ts = max(
+                max(0, to_int(meta.get("fetched_ts"), 0))
+                for meta in page_window_entries.values()
+                if isinstance(meta, dict)
+            )
+        unlock_hours, unlock_hours_source = _resolve_query_page_unlock_hours(
+            category_key=category_key,
+            query_key=query_key,
+            default_hours=query_page_unlock_default_hours,
+            category_overrides=query_page_unlock_category_overrides,
+            overrides=query_page_unlock_overrides,
+        )
+        unlocked_pages, query_elapsed_sec = _compute_query_unlocked_pages(
+            now_ts=now_ts,
+            latest_fetched_ts=latest_fetched_ts,
+            max_pages=max_pages,
+            hours_per_page=unlock_hours,
+            min_pages=query_page_unlock_min_pages,
+            initial_pages=query_page_unlock_initial_pages,
+        )
+        if not bool(query_page_unlock_enabled):
+            unlocked_pages = int(max_pages)
+        if unlocked_pages < max_pages:
+            page_unlock_limited_queries += 1
+        query_fetch_quota = max(0, int(unlocked_pages))
+        query_fetch_quota_remaining = int(query_fetch_quota)
+        query_unlock_blocked_pages = 0
+        query_next_unlock_ts = _compute_next_query_page_unlock_ts(
+            latest_fetched_ts=latest_fetched_ts,
+            unlocked_pages=unlocked_pages,
+            max_pages=max_pages,
+            hours_per_page=unlock_hours,
+            now_ts=now_ts,
+        )
+        if query_next_unlock_ts > 0 and (page_unlock_next_ts <= 0 or query_next_unlock_ts < page_unlock_next_ts):
+            page_unlock_next_ts = query_next_unlock_ts
         word_added_before = added_total
         word_fetched_pages = 0
         word_skipped_pages = 0
@@ -2226,6 +2820,11 @@ def _refill_seed_pool(
             if added_total >= target_count:
                 summary["reason"] = "target_reached"
                 word_stop_reason = "target_reached"
+                break
+            if bool(query_page_unlock_enabled) and query_fetch_quota_remaining <= 0:
+                query_unlock_blocked_pages = max(0, max_pages - page_index)
+                page_unlock_blocked_pages += query_unlock_blocked_pages
+                word_stop_reason = "page_unlock_quota_reached"
                 break
             offset = page_index * page_size
             if callable(progress_callback):
@@ -2255,6 +2854,16 @@ def _refill_seed_pool(
                 ready_ts = fetched_at + freshness_sec
                 if ready_ts > now_ts and (next_fresh_available_ts <= 0 or ready_ts < next_fresh_available_ts):
                     next_fresh_available_ts = ready_ts
+                _trace(
+                    "page_skipped_fresh",
+                    query=str(query),
+                    query_index=int(query_index),
+                    page=int(page_index + 1),
+                    offset=int(offset),
+                    fetched_at=str(utc_iso(fetched_at)),
+                    freshness_days=int(freshness_days),
+                    ready_at=str(utc_iso(ready_ts)) if ready_ts > 0 else "",
+                )
                 continue
 
             result = _run_rpa_page(
@@ -2263,19 +2872,93 @@ def _refill_seed_pool(
                 limit=page_size,
                 category_id=int(pr_category_filter.get("category_id", 0) or 0),
                 category_slug=str(pr_category_filter.get("category_slug", "") or ""),
+                min_price_usd=float(min_seed_sold_price_usd),
             )
+            if bool(query_page_unlock_enabled) and query_fetch_quota_remaining > 0:
+                query_fetch_quota_remaining -= 1
             fetched_pages += 1
             word_fetched_pages += 1
             rows = result.get("rows", []) if isinstance(result.get("rows"), list) else []
             row = rows[0] if rows and isinstance(rows[0], dict) else {}
+            row_meta = row.get("metadata") if isinstance(row.get("metadata"), dict) else {}
             entries = _collect_row_entries(row) if row else []
+            page_reason = str(result.get("reason", "") or "").strip().lower() or "unknown"
+            page_reason_counts[page_reason] = int(page_reason_counts.get(page_reason, 0)) + 1
+            if page_reason == "rpa_failed":
+                rpa_failed_pages += 1
+            if bool(result.get("daily_limit_reached")):
+                daily_limit_pages += 1
+            if len(entries) <= 0:
+                empty_result_pages += 1
+            else:
+                non_empty_result_pages += 1
+            filter_state = row_meta.get("filter_state") if isinstance(row_meta.get("filter_state"), dict) else {}
+            sold_tab_selected = bool(filter_state.get("sold_tab_selected")) if isinstance(filter_state, dict) else False
+            lookback_selected = str(filter_state.get("lookback_selected", "") or "").strip().lower()
+            strict_blocked = bool(filter_state.get("strict_blocked")) if isinstance(filter_state, dict) else False
+            if strict_blocked:
+                strict_filter_blocked_pages += 1
+            if isinstance(filter_state, dict):
+                if not sold_tab_selected:
+                    sold_tab_unconfirmed_pages += 1
+                if lookback_selected and ("90" not in lookback_selected):
+                    lookback_unconfirmed_pages += 1
+            failure_detected = page_reason != "ok" or len(entries) <= 0 or strict_blocked
+            if failure_detected and len(failure_samples) < diagnostic_max_failure_pages:
+                failure_samples.append(
+                    {
+                        "query": str(query),
+                        "page": int(page_index + 1),
+                        "offset": int(offset),
+                        "reason": page_reason,
+                        "returncode": int(to_int(result.get("returncode"), 0)),
+                        "daily_limit_reached": bool(result.get("daily_limit_reached")),
+                        "raw_result_count": int(max(0, to_int(row_meta.get("raw_row_count"), 0))),
+                        "filtered_result_count": int(max(0, to_int(row_meta.get("filtered_row_count"), len(entries)))),
+                        "sold_tab_selected": bool(sold_tab_selected),
+                        "lookback_selected": lookback_selected,
+                        "strict_blocked": bool(strict_blocked),
+                        "strict_filter_reason": str(filter_state.get("strict_reason", "") or "")
+                        if isinstance(filter_state, dict)
+                        else "",
+                        "stdout_tail": list(result.get("stdout_tail", []))[-3:]
+                        if isinstance(result.get("stdout_tail"), list)
+                        else [],
+                        "stderr_tail": list(result.get("stderr_tail", []))[-3:]
+                        if isinstance(result.get("stderr_tail"), list)
+                        else [],
+                    }
+                )
             new_rows: List[Dict[str, Any]] = []
+            title_traces: List[Dict[str, Any]] = []
+            page_duplicate_pool_count = 0
+            page_duplicate_run_count = 0
+            page_cooldown_blocked_count = 0
+            page_min_price_filtered_count = 0
+            page_accessory_filtered_count = 0
+            page_empty_seed_count = 0
+            page_generated_seed_count = 0
             for idx, entry in enumerate(entries, start=1):
                 title = str(entry.get("title", "") or "").strip()
                 if not title:
                     continue
+                title_trace: Dict[str, Any] = {
+                    "rank": max(1, to_int(entry.get("rank"), idx)),
+                    "title": title,
+                    "entry_source": str(entry.get("seed_entry_source", "") or "filtered").strip().lower() or "filtered",
+                    "item_url": str(entry.get("item_url", "") or "").strip(),
+                    "sold_90d_count": to_int(entry.get("sold_90d_count"), -1),
+                    "sold_price_min_90d": to_float(entry.get("sold_price_min_90d"), -1.0),
+                    "title_seed_candidates": [],
+                    "final_seed_candidates": [],
+                    "decisions": [],
+                    "status": "processing",
+                }
                 if _is_accessory_title(title):
                     accessory_filtered_count += 1
+                    page_accessory_filtered_count += 1
+                    title_trace["status"] = "accessory_filtered"
+                    title_traces.append(title_trace)
                     continue
                 title_candidates = _extract_seed_queries_from_title(title, brand_hints)
                 seed_candidates = list(title_candidates)
@@ -2283,6 +2966,7 @@ def _refill_seed_pool(
                 extraction_mode = "title_raw_fallback" if entry_source in {"raw_fallback", "query_fallback"} else "title"
                 api_backfill_reason = ""
                 needs_api_backfill = (not seed_candidates) or (not any(_looks_specific_seed(v) for v in seed_candidates))
+                title_trace["title_seed_candidates"] = list(title_candidates)
                 if needs_api_backfill:
                     seed_api_attempts += 1
                     item_url = str(entry.get("item_url", "") or "").strip()
@@ -2320,14 +3004,27 @@ def _refill_seed_pool(
                     else:
                         api_backfill_reason = "missing_item_url"
                 if not seed_candidates:
+                    page_empty_seed_count += 1
+                    title_trace["status"] = "no_seed_extracted"
+                    title_trace["seed_api_backfill_reason"] = api_backfill_reason
+                    title_traces.append(title_trace)
                     continue
+                page_generated_seed_count += int(len(seed_candidates))
+                title_trace["final_seed_candidates"] = list(seed_candidates)
                 rank = max(1, to_int(entry.get("rank"), idx))
                 global_rank = offset + rank
                 word_last_rank = max(word_last_rank, global_rank)
                 last_rank = max(last_rank, global_rank)
+                accepted_count = 0
                 for raw_seed_query in seed_candidates:
                     seed_query = _normalize_seed_query(raw_seed_query)
+                    decision: Dict[str, Any] = {
+                        "raw_seed_query": str(raw_seed_query or ""),
+                        "normalized_seed_query": seed_query,
+                    }
                     if not seed_query:
+                        decision["outcome"] = "invalid_normalized"
+                        title_trace["decisions"].append(decision)
                         continue
                     sold_price_min_90d = to_float(entry.get("sold_price_min_90d"), -1.0)
                     if (
@@ -2336,14 +3033,36 @@ def _refill_seed_pool(
                         and sold_price_min_90d < min_seed_sold_price_usd
                     ):
                         min_price_filtered_count += 1
+                        page_min_price_filtered_count += 1
+                        decision["outcome"] = "filtered_min_price"
+                        decision["seed_key"] = _seed_key(seed_query)
+                        title_trace["decisions"].append(decision)
                         continue
                     skey = _seed_key(seed_query)
+                    decision["seed_key"] = skey
                     if skey in active_low_liquidity_cooldown_keys:
                         summary["cooldown_blocked_count"] = int(summary.get("cooldown_blocked_count", 0)) + 1
+                        page_cooldown_blocked_count += 1
+                        decision["outcome"] = "blocked_cooldown"
+                        title_trace["decisions"].append(decision)
                         continue
                     if skey in existing_keys:
+                        if skey in run_added_seed_keys:
+                            page_duplicate_run_count += 1
+                            decision["outcome"] = "duplicate_run"
+                        elif skey in active_pool_seed_keys:
+                            page_duplicate_pool_count += 1
+                            decision["outcome"] = "duplicate_pool"
+                        else:
+                            page_duplicate_pool_count += 1
+                            decision["outcome"] = "duplicate_existing"
+                        title_trace["decisions"].append(decision)
                         continue
                     existing_keys.add(skey)
+                    run_added_seed_keys.add(skey)
+                    accepted_count += 1
+                    decision["outcome"] = "accepted_new_seed"
+                    title_trace["decisions"].append(decision)
                     new_rows.append(
                         {
                             "seed_query": seed_query,
@@ -2365,6 +3084,11 @@ def _refill_seed_pool(
                             },
                         }
                     )
+                title_trace["seed_extraction_mode"] = extraction_mode
+                title_trace["seed_api_backfill_reason"] = api_backfill_reason
+                title_trace["accepted_seed_count"] = int(accepted_count)
+                title_trace["status"] = "accepted" if accepted_count > 0 else "all_filtered_or_duplicate"
+                title_traces.append(title_trace)
 
             inserted = _insert_seed_rows(conn, category_key=category_key, rows=new_rows, ttl_days=ttl_days)
             if max(0, int(inserted)) > 0:
@@ -2396,6 +3120,56 @@ def _refill_seed_pool(
                     "daily_limit_reached": bool(result.get("daily_limit_reached")),
                     "reason": str(result.get("reason", "") or ""),
                 }
+            )
+            _trace(
+                "page_processed",
+                query=str(query),
+                query_index=int(query_index),
+                page=int(page_index + 1),
+                offset=int(offset),
+                limit=int(page_size),
+                rpa_result={
+                    "ok": bool(result.get("ok")),
+                    "reason": str(result.get("reason", "") or ""),
+                    "returncode": to_int(result.get("returncode"), 0),
+                    "daily_limit_reached": bool(result.get("daily_limit_reached")),
+                    "elapsed_sec": round(to_float(result.get("elapsed_sec"), 0.0), 4),
+                    "timeout_sec": max(0, to_int(result.get("timeout_sec"), 0)),
+                    "pause_for_login_sec": max(0, to_int(result.get("pause_for_login_sec"), 0)),
+                    "search_params": dict(result.get("rpa_search_params", {}))
+                    if isinstance(result.get("rpa_search_params"), dict)
+                    else {},
+                    "stdout_tail": list(result.get("stdout_tail", []))
+                    if isinstance(result.get("stdout_tail"), list)
+                    else [],
+                    "stderr_tail": list(result.get("stderr_tail", []))
+                    if isinstance(result.get("stderr_tail"), list)
+                    else [],
+                },
+                pr_row_metadata={
+                    "timings": dict(row_meta.get("timings", {})) if isinstance(row_meta.get("timings"), dict) else {},
+                    "filter_state": dict(row_meta.get("filter_state", {}))
+                    if isinstance(row_meta.get("filter_state"), dict)
+                    else {},
+                    "raw_row_count": max(0, to_int(row_meta.get("raw_row_count"), 0)),
+                    "filtered_row_count": max(0, to_int(row_meta.get("filtered_row_count"), 0)),
+                    "sold_90d_count": to_int(row.get("sold_90d_count"), -1),
+                    "sold_price_min": to_float(row.get("sold_price_min"), -1.0),
+                    "sold_price_median": to_float(row.get("sold_price_median"), -1.0),
+                },
+                page_stats={
+                    "entries_count": int(len(entries)),
+                    "titles_processed": int(len(title_traces)),
+                    "generated_seed_candidates": int(page_generated_seed_count),
+                    "inserted_seed_count": int(max(0, int(inserted))),
+                    "duplicate_pool_count": int(page_duplicate_pool_count),
+                    "duplicate_run_count": int(page_duplicate_run_count),
+                    "cooldown_blocked_count": int(page_cooldown_blocked_count),
+                    "min_price_filtered_count": int(page_min_price_filtered_count),
+                    "accessory_filtered_count": int(page_accessory_filtered_count),
+                    "no_seed_extracted_count": int(page_empty_seed_count),
+                },
+                titles=title_traces,
             )
             try:
                 conn.commit()
@@ -2431,7 +3205,28 @@ def _refill_seed_pool(
                 "skipped_fresh_pages": word_skipped_pages,
                 "last_rank_checked": word_last_rank,
                 "stop_reason": word_stop_reason,
+                "page_unlock": {
+                    "enabled": bool(query_page_unlock_enabled),
+                    "hours_per_page": round(float(unlock_hours), 4),
+                    "hours_source": str(unlock_hours_source),
+                    "elapsed_sec": int(query_elapsed_sec),
+                    "latest_fetched_at": str(utc_iso(latest_fetched_ts)) if latest_fetched_ts > 0 else "",
+                    "fetch_quota_pages": int(query_fetch_quota),
+                    "remaining_quota_pages": int(max(0, query_fetch_quota_remaining)),
+                    "blocked_pages": int(query_unlock_blocked_pages),
+                    "next_unlock_at": str(utc_iso(query_next_unlock_ts)) if query_next_unlock_ts > 0 else "",
+                },
             }
+        )
+        _trace(
+            "query_completed",
+            query=str(query),
+            query_index=int(query_index),
+            added_count=max(0, int(added_total - word_added_before)),
+            fetched_pages=int(word_fetched_pages),
+            skipped_fresh_pages=int(word_skipped_pages),
+            last_rank_checked=int(word_last_rank),
+            stop_reason=str(word_stop_reason or ""),
         )
         if bool(summary.get("daily_limit_reached")):
             break
@@ -2449,7 +3244,23 @@ def _refill_seed_pool(
     )
     summary["accessory_filtered_count"] = int(accessory_filtered_count)
     summary["min_price_filtered_count"] = int(min_price_filtered_count)
+    summary["fetched_pages"] = int(fetched_pages)
     summary["rpa_timeout_pages"] = int(rpa_timeout_pages)
+    summary["diagnostics"] = {
+        "rpa_failed_pages": int(rpa_failed_pages),
+        "rpa_timeout_pages": int(rpa_timeout_pages),
+        "daily_limit_pages": int(daily_limit_pages),
+        "empty_result_pages": int(empty_result_pages),
+        "non_empty_result_pages": int(non_empty_result_pages),
+        "strict_filter_blocked_pages": int(strict_filter_blocked_pages),
+        "sold_tab_unconfirmed_pages": int(sold_tab_unconfirmed_pages),
+        "lookback_unconfirmed_pages": int(lookback_unconfirmed_pages),
+        "page_unlock_enabled": bool(query_page_unlock_enabled),
+        "page_unlock_limited_queries": int(page_unlock_limited_queries),
+        "page_unlock_blocked_pages": int(page_unlock_blocked_pages),
+        "page_reason_counts": dict(sorted(page_reason_counts.items(), key=lambda kv: kv[0])),
+        "failure_samples": list(failure_samples),
+    }
     summary["refill_elapsed_sec"] = round(max(0.0, float(time.monotonic() - refill_started)), 3)
     summary["seed_api_backfill"] = {
         "attempts": int(seed_api_attempts),
@@ -2474,6 +3285,15 @@ def _refill_seed_pool(
         if next_fresh_available_ts > now_ts:
             cooldown_text = utc_iso(next_fresh_available_ts)
             summary["cooldown_until"] = cooldown_text
+    elif (
+        bool(query_page_unlock_enabled)
+        and fetched_pages <= 0
+        and page_unlock_limited_queries > 0
+        and page_unlock_next_ts > now_ts
+    ):
+        summary["reason"] = "page_unlock_wait"
+        cooldown_text = utc_iso(page_unlock_next_ts)
+        summary["cooldown_until"] = cooldown_text
     elif fetched_pages >= max(1, len(big_words)) * max_pages and added_total < target_count:
         summary["reason"] = "rank_limit_cooldown"
         cooldown_text = utc_iso(now_ts + cooldown_days * 86400)
@@ -2490,6 +3310,7 @@ def _refill_seed_pool(
         summary["cooldown_until"] = cooldown_text
         summary["reason"] = "empty_result_cooldown"
     summary["rank_ceiling"] = int(rank_ceiling)
+    summary["tuning_recommendations"] = _build_stage_a_tuning_recommendations(summary)
 
     refill_note = f"{category_label}: +{added_total} seeds"
     if summary["bootstrap_added_count"] > 0:
@@ -2502,6 +3323,23 @@ def _refill_seed_pool(
         last_rank_checked=max(0, int(summary.get("last_rank_checked", 0))),
         cooldown_until=cooldown_text,
     )
+    _trace(
+        "refill_completed",
+        reason=str(summary.get("reason", "") or ""),
+        added_count=max(0, to_int(summary.get("added_count"), 0)),
+        available_before=max(0, to_int(summary.get("available_before"), 0)),
+        available_after=max(0, to_int(summary.get("available_after"), 0)),
+        fetched_pages=int(fetched_pages),
+        skipped_fresh_pages=max(0, to_int(summary.get("skipped_fresh_pages"), 0)),
+        low_yield_stop_query_count=max(0, to_int(summary.get("low_yield_stop_query_count"), 0)),
+        rpa_timeout_pages=max(0, to_int(summary.get("rpa_timeout_pages"), 0)),
+        daily_limit_reached=bool(summary.get("daily_limit_reached")),
+        refill_elapsed_sec=round(to_float(summary.get("refill_elapsed_sec"), 0.0), 4),
+        trace_path=str(trace_path) if trace_path is not None else "",
+    )
+    if trace_path is not None:
+        summary["trace_path"] = str(trace_path)
+        summary["trace_session"] = trace_session
     return summary
 
 
@@ -2785,6 +3623,8 @@ def run_seeded_fetch(
     timebox_sec: int,
     max_passes: int,
     continue_after_target: bool,
+    stage_a_big_word_limit: int = 0,
+    stage_a_minimize_transitions: bool = False,
     progress_callback: Optional[Callable[[Dict[str, Any]], None]] = None,
     settings: Optional[Settings] = None,
 ) -> Dict[str, Any]:
@@ -2868,6 +3708,8 @@ def run_seeded_fetch(
             category_key=category_key,
             category_label=category_label,
             category_row=category_row,
+            stage_a_big_word_limit=max(0, int(stage_a_big_word_limit)),
+            stage_a_minimize_transitions=bool(stage_a_minimize_transitions),
             refill_timebox_override_sec=refill_timebox_override_sec,
             progress_callback=progress_callback,
         )
@@ -2965,6 +3807,18 @@ def run_seeded_fetch(
             hints.append(f"seed API補完: 試行 {api_attempts} 件 / 補完成功 {api_hits} 件")
         if api_budget_skips > 0:
             hints.append(f"seed API補完は予算上限で {api_budget_skips} 件スキップしました。")
+    tuning_recommendations = (
+        seed_pool_summary["refill"].get("tuning_recommendations", [])
+        if isinstance(seed_pool_summary.get("refill"), dict)
+        else []
+    )
+    if isinstance(tuning_recommendations, list):
+        for row in tuning_recommendations[:3]:
+            if not isinstance(row, dict):
+                continue
+            msg = str(row.get("message", "") or "").strip()
+            if msg:
+                hints.append(f"A段階チューニング提案: {msg}")
     if refill_reason == "empty_result_page":
         hints.append("seed補充は0件でしたが、既存seedを使って探索を継続します。")
 
@@ -3104,6 +3958,19 @@ def run_seeded_fetch(
         ),
         "stage_a_pr_category_id": int(pr_category_filter.get("category_id", 0) or 0),
         "stage_a_pr_category_slug": str(pr_category_filter.get("category_slug", "") or ""),
+        "stage_a_big_word_limit": max(0, to_int(seed_pool_summary.get("refill", {}).get("big_word_limit"), 0)),
+        "stage_a_big_word_count": max(0, to_int(seed_pool_summary.get("refill", {}).get("big_word_count"), 0)),
+        "stage_a_target_count_base": max(0, to_int(seed_pool_summary.get("refill", {}).get("target_count_base"), 0)),
+        "stage_a_target_count": max(0, to_int(seed_pool_summary.get("refill", {}).get("target_count"), 0)),
+        "stage_a_timebox_base_sec": max(0, to_int(seed_pool_summary.get("refill", {}).get("timebox_base_sec"), 0)),
+        "stage_a_timebox_sec": max(0, to_int(seed_pool_summary.get("refill", {}).get("timebox_sec"), 0)),
+        "stage_a_minimize_transitions": bool(seed_pool_summary.get("refill", {}).get("minimize_transitions")),
+        "stage_a_transition_page_size": max(
+            0, to_int(seed_pool_summary.get("refill", {}).get("transition_page_size"), 0)
+        ),
+        "stage_a_transition_max_pages_per_query": max(
+            0, to_int(seed_pool_summary.get("refill", {}).get("transition_max_pages_per_query"), 0)
+        ),
         "stage_b_limit_per_site": int(stage1_limit_per_site),
         "stage_b_pick_per_seed": int(stage1_take_per_seed),
         "stage_b_condition": "new",

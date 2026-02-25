@@ -1,0 +1,1450 @@
+- generic [active] [ref=e1]:
+  - img
+  - img
+  - generic [ref=e3]:
+    - banner [ref=e7]:
+      - link "メインコンテンツにスキップ" [ref=e9] [cursor=pointer]:
+        - /url: "#mainContent"
+      - navigation [ref=e10]:
+        - generic [ref=e11]:
+          - generic [ref=e13]:
+            - text: こんにちは！
+            - link "ログイン" [ref=e14] [cursor=pointer]:
+              - /url: https://signin.ebay.com/ws/eBayISAPI.dll?SignIn&sgfl=gh&ru=https%3A%2F%2Fwww.ebay.com%2Fitm%2F187945082742%3Fnordt%3Dtrue%26orig_cvip%3Dtrue%26rt%3Dnc
+            - generic [ref=e15]:
+              - text: または
+              - link "登録" [ref=e16] [cursor=pointer]:
+                - /url: https://signup.ebay.com/pa/crte?ru=https%3A%2F%2Fwww.ebay.com%2Fitm%2F187945082742%3Fnordt%3Dtrue%26orig_cvip%3Dtrue%26rt%3Dnc
+          - link "今日のお買い得品" [ref=e18] [cursor=pointer]:
+            - /url: https://www.ebay.com/globaldeals
+          - link "ヘルプ＆お問い合わせ" [ref=e20] [cursor=pointer]:
+            - /url: https://www.ebay.com/help/home
+        - generic [ref=e21]:
+          - button "言語を選択してください。現在： 日本語" [ref=e23] [cursor=pointer]:
+            - generic [ref=e24]:
+              - img
+              - generic [ref=e25]: 言語を選択してください。現在：
+              - generic [ref=e26]: 日本語
+          - button "お届け先" [ref=e28] [cursor=pointer]:
+            - generic [ref=e29]: お届け先
+          - link "出品" [ref=e31] [cursor=pointer]:
+            - /url: https://www.ebay.com/sl/sell
+          - generic [ref=e32]:
+            - link "ウォッチリスト" [ref=e33] [cursor=pointer]:
+              - /url: https://www.ebay.com/mye/myebay/watchlist
+              - generic [ref=e34]: ウォッチリスト
+              - img
+            - button "ウォッチリストを展開" [ref=e35]
+          - generic [ref=e36]:
+            - link "マイeBay" [ref=e37] [cursor=pointer]:
+              - /url: https://www.ebay.com/mys/home?source=GBH
+              - generic [ref=e38]: マイeBay
+              - img
+            - button "マイeBayを展開" [ref=e39]
+          - button "通知" [ref=e42] [cursor=pointer]:
+            - img
+            - generic [ref=e43]: 通知
+          - generic [ref=e45]:
+            - link "カートに0点の商品があります" [ref=e46] [cursor=pointer]:
+              - /url: https://cart.ebay.com
+              - generic "カートに0点の商品があります" [ref=e47]:
+                - img
+            - button "カードを展開" [ref=e48]
+      - generic [ref=e49]:
+        - generic [ref=e50]:
+          - link "eBayホーム" [ref=e51] [cursor=pointer]:
+            - /url: https://www.ebay.com
+            - img "eBayホーム" [ref=e52]
+          - button "カテゴリを選んで買い物" [ref=e60] [cursor=pointer]:
+            - generic [ref=e61]: カテゴリを選んで買い物
+            - img
+        - generic [ref=e62]:
+          - status [ref=e63]
+          - generic [ref=e65]:
+            - generic [ref=e66]:
+              - combobox "何をお探しですか" [ref=e67]
+              - img
+            - combobox "検索するカテゴリを選択" [ref=e68]:
+              - option "すべてのカテゴリ" [selected]
+              - option "アンティーク"
+              - option "アート"
+              - option "ベビー"
+              - option "本"
+              - option "ビジネス＆産業"
+              - option "カメラ＆写真"
+              - option "携帯電話＆アクセサリ"
+              - option "服・シューズ・アクセサリ"
+              - option "コイン＆紙幣"
+              - option "コレクション"
+              - option "パソコン/タブレット＆ネットワーク"
+              - option "家電"
+              - option "クラフト"
+              - option "人形＆ベア"
+              - option "DVD＆映画"
+              - option "eBayモーター"
+              - option "エンターテインメント記念品"
+              - option "ギフトカード＆クーポン"
+              - option "ヘルス＆ビューティ"
+              - option "ホーム＆ガーデン"
+              - option "ジュエリー＆腕時計"
+              - option "音楽"
+              - option "楽器＆音響機器"
+              - option "ペット用品"
+              - option "食器＆グラス"
+              - option "不動産"
+              - option "専門サービス"
+              - option "スポーツ用品"
+              - option "スポーツ記念品・カード・ファンショップ"
+              - option "切手"
+              - option "チケット＆体験"
+              - option "おもちゃ＆ホビー"
+              - option "旅行"
+              - option "ビデオゲーム＆本体"
+              - option "その他すべて"
+          - generic [ref=e69]:
+            - button "検索" [ref=e70] [cursor=pointer]:
+              - generic [ref=e71]: 検索
+            - link "条件を指定" [ref=e72] [cursor=pointer]:
+              - /url: https://www.ebay.com/sch/ebayadvsearch
+    - main [ref=e73]:
+      - generic [ref=e74]:
+        - generic [ref=e75]:
+          - generic [ref=e79]:
+            - generic [ref=e82]:
+              - generic [ref=e84]:
+                - generic [ref=e86]:
+                  - button "画像1/3" [ref=e87] [cursor=pointer]:
+                    - img "画像1/3" [ref=e88]
+                  - button "画像2/3" [ref=e89] [cursor=pointer]:
+                    - img "画像2/3" [ref=e90]
+                  - button "画像3/3" [ref=e91] [cursor=pointer]:
+                    - img "画像3/3" [ref=e92]
+                - generic [ref=e93]:
+                  - heading "画像1/3" [level=2] [ref=e94]
+                  - button "前の画像 - 商品のサムネイル画像" [ref=e96] [cursor=pointer]:
+                    - img
+                  - region "画像ギャラリーダイアログが開きます。 Casio G-SHOCK Master Of G Land クロノグラフ GMT クォーツ デジタル ブラック ダイヤル メンズ - 画像1/3" [ref=e97]:
+                    - group "1 of 3" [ref=e98]:
+                      - img "Casio G-SHOCK Master Of G Land クロノグラフ GMT クォーツ デジタル ブラック ダイヤル メンズ - 画像1/3" [ref=e99]
+                    - group "2 of 3" [ref=e100]:
+                      - img "Casio G-SHOCK Master Of G Land クロノグラフ GMT クォーツ デジタル ブラック ダイヤル メンズ - 画像2/3" [ref=e101]
+                    - group "3 of 3" [ref=e102]:
+                      - img "Casio G-SHOCK Master Of G Land クロノグラフ GMT クォーツ デジタル ブラック ダイヤル メンズ - 画像3/3" [ref=e103]
+                  - generic [ref=e104]:
+                    - button "画像ギャラリーが開きます" [ref=e105] [cursor=pointer]:
+                      - img
+                    - button "ウォッチリストに追加 - ウォッチャー17人" [ref=e107] [cursor=pointer]:
+                      - generic [ref=e108]: "17"
+                      - img
+                  - button "次の画像 - 商品のサムネイル画像" [ref=e110] [cursor=pointer]:
+                    - img
+              - button "シェア" [ref=e116] [cursor=pointer]:
+                - img
+                - generic [ref=e117]: シェア
+            - generic [ref=e120]:
+              - generic [ref=e121]:
+                - heading "Casio G-SHOCK Master Of G Land クロノグラフ GMT クォーツ デジタル ブラック ダイヤル メンズ-" [level=1] [ref=e122]
+                - button "元のタイトルを表示" [ref=e128] [cursor=pointer]
+              - generic [ref=e130] [cursor=pointer]:
+                - generic [ref=e132]:
+                  - link [ref=e134]:
+                    - /url: https://www.ebay.com/str/jomashop?_trksid=p4429486.m3561.l161210
+                    - img [ref=e136]
+                  - generic [ref=e137]:
+                    - generic [ref=e138]:
+                      - link "Jomashop" [ref=e139]:
+                        - /url: https://www.ebay.com/str/jomashop?_trksid=p4429486.m3561.l161211
+                      - generic [ref=e141]: （194372）
+                    - generic [ref=e142]:
+                      - button "ポジティブ99.2%" [ref=e144]
+                      - link "出品者のその他の商品" [ref=e146]:
+                        - /url: https://www.ebay.com/str/jomashop?_trksid=p4429486.m3561.l170197
+                        - generic [ref=e147]: 出品者のその他の商品
+                        - generic [ref=e148]: 出品者のその他の商品
+                      - button "出品者に連絡" [ref=e150]
+                - button "この出品者についてもっと見る" [ref=e152]:
+                  - img
+              - generic [ref=e155]:
+                - generic [ref=e156]: US $231.75
+                - generic [ref=e157]:
+                  - generic [ref=e158]: 約
+                  - generic [ref=e159]: 36,123 円
+                - generic [ref=e160]:
+                  - generic [ref=e161]: 定価 US $365.00 （37%オフ）
+                  - button "この価格の意味" [ref=e166]:
+                    - img
+                  - button "価格の詳細" [ref=e167] [cursor=pointer]:
+                    - generic [ref=e168]: 価格の詳細
+              - generic [ref=e169]:
+                - generic [ref=e170]: 状態：
+                - generic [ref=e172]:
+                  - generic [ref=e173]:
+                    - generic [ref=e174]: New with box and papers
+                    - generic [ref=e175]: New with box and papers
+                  - button "商品の状態に関する詳細" [ref=e176] [cursor=pointer]:
+                    - generic [ref=e177]:
+                      - img "商品の状態に関する詳細"
+              - generic [ref=e179]:
+                - generic [ref=e180]: 数量：
+                - generic [ref=e181]:
+                  - textbox "数量：" [ref=e183]: "1"
+                  - generic [ref=e184]: 在庫3点 8点販売済み
+              - list [ref=e186]:
+                - listitem [ref=e187]:
+                  - button "今すぐ買う" [ref=e189] [cursor=pointer]:
+                    - generic [ref=e190]: 今すぐ買う
+                - listitem [ref=e191]:
+                  - button "カートに追加" [ref=e193] [cursor=pointer]:
+                    - generic [ref=e194]: カートに追加
+                - listitem [ref=e195]:
+                  - link "ウォッチリストに追加" [ref=e202] [cursor=pointer]:
+                    - /url: https://signin.ebay.com/ws/eBayISAPI.dll?SignIn&ru=https%3A%2F%2Fwww.ebay.com%2Fitm%2F187945082742
+                    - generic [ref=e203]:
+                      - img
+                      - text: ウォッチリストに追加
+              - generic [ref=e206]:
+                - generic [ref=e207]:
+                  - generic [ref=e208]:
+                    - img
+                  - generic [ref=e210]: この商品は人気があります。 17人がこの商品をウォッチ中です。
+                - generic [ref=e211]:
+                  - generic [ref=e212]:
+                    - img
+                  - generic [ref=e214]: 安心してお買い物。 返品可。
+              - generic [ref=e219]:
+                - generic [ref=e223]:
+                  - generic [ref=e226]: 送料：
+                  - generic [ref=e228]:
+                    - generic [ref=e229]:
+                      - text: US $26.12 （およそJPY 4,071） eBay International Shipping
+                      - button "詳細" [ref=e235]:
+                        - img
+                      - text: .
+                      - button "詳細を見る 配送" [ref=e236] [cursor=pointer]:
+                        - generic [ref=e237]:
+                          - text: 詳細を見る
+                          - generic [ref=e238]: 配送
+                    - generic [ref=e239]: "発送元 : Brooklyn, NY, 米国"
+                - generic [ref=e247]:
+                  - text: 同梱発送でお得に
+                  - button "同梱発送の詳細。レイヤーを開きます。" [ref=e253]:
+                    - img
+                - generic [ref=e257]:
+                  - generic [ref=e260]: 輸入手数料：
+                  - generic [ref=e263]:
+                    - text: Import fees may apply on delivery
+                    - button "詳細" [ref=e269]:
+                      - img
+                - generic [ref=e273]:
+                  - generic [ref=e276]: 配達：
+                  - generic [ref=e279]:
+                    - text: 3月12日 (木)～3月23日 (月)のお届け予定 お届け先 151-0071
+                    - button "情報 - 配達予定日 - レイヤーに表示されます" [ref=e285]:
+                      - img
+              - generic [ref=e292]:
+                - generic [ref=e295]: 返品：
+                - generic [ref=e298]:
+                  - text: 30日以内返品可. 購入者が返送料を負担します。eBayの配送ラベルを使用する場合は、返金額から差し引かれます.
+                  - button "詳細を見る - 返品に関する詳細" [ref=e299] [cursor=pointer]:
+                    - generic [ref=e300]:
+                      - text: 詳細を見る
+                      - generic [ref=e301]: "- 返品に関する詳細"
+              - generic [ref=e308]:
+                - generic [ref=e311]: 支払い：
+                - generic [ref=e314]:
+                  - img "PayPal" [ref=e315]
+                  - img "Google Pay" [ref=e317]
+                  - img "Visa" [ref=e319]
+                  - img "Master Card" [ref=e321]
+                  - img "Discover" [ref=e323]
+                  - img "Diners Club" [ref=e326]
+              - generic [ref=e330]:
+                - heading "安心してお買い物" [level=2] [ref=e333]
+                - generic [ref=e334]:
+                  - generic [ref=e336]:
+                    - img
+                  - generic [ref=e337]:
+                    - generic [ref=e338]: 最高評価プラス
+                    - generic [ref=e339]:
+                      - text: 信頼できる出品者、迅速な発送、返品も簡単
+                      - link "詳細 - 最高評価プラス - 新しいウィンドウまたはタブに表示されます" [ref=e340] [cursor=pointer]:
+                        - /url: https://www.ebay.com/help/buying/resolving-issues-sellers/seller-ratings?id=4023#TopRatedPlus
+                        - generic [ref=e341]:
+                          - text: 詳細
+                          - generic [ref=e342]: "- 最高評価プラス - 新しいウィンドウまたはタブに表示されます"
+                - generic [ref=e343]:
+                  - generic [ref=e345]:
+                    - img
+                  - generic [ref=e346]:
+                    - generic [ref=e347]: eBayの返金保証
+                    - generic [ref=e348]:
+                      - text: 注文した商品が届かない場合はお金が戻ってきます。
+                      - link "詳細 eBayの返金保証 新しいウィンドウまたはタブに表示されます" [ref=e349] [cursor=pointer]:
+                        - /url: https://www.ebay.com/ebay-money-back-guarantee/
+                        - generic [ref=e350]:
+                          - text: 詳細
+                          - generic [ref=e351]: eBayの返金保証 新しいウィンドウまたはタブに表示されます
+          - generic [ref=e352]:
+            - generic [ref=e357]:
+              - tablist [ref=e358]:
+                - tab "この商品について" [selected] [ref=e359] [cursor=pointer]:
+                  - generic [ref=e360]: この商品について
+              - tabpanel "この商品について" [ref=e362]:
+                - generic [ref=e365]:
+                  - generic [ref=e368]:
+                    - generic [ref=e372]: この出品に関する責任はすべて出品者にあります。
+                    - generic [ref=e376]: eBay商品番号：187945082742
+                    - generic [ref=e380]:
+                      - text: 前回の更新： 2026年2月24日 13時32分46秒 PST
+                      - link "すべての改訂を表示 すべての改訂を表示" [ref=e381] [cursor=pointer]:
+                        - /url: https://www.ebay.com/rvh/187945082742?rt=nc&_trksid=p4429486.m148105.l48144
+                        - generic [ref=e382]:
+                          - text: すべての改訂を表示
+                          - generic [ref=e383]: すべての改訂を表示
+                  - generic [ref=e386]:
+                    - heading "商品の詳細" [level=2] [ref=e389]:
+                      - generic [ref=e390]: 商品の詳細
+                    - generic [ref=e392]:
+                      - generic [ref=e393]:
+                        - generic [ref=e395]:
+                          - term [ref=e396]:
+                            - generic [ref=e398]: 状態
+                          - definition [ref=e399]:
+                            - generic [ref=e402]:
+                              - generic [ref=e403]: "New with box and papers: This item is brand new and has never been worn. It still has the original ..."
+                              - button "続きを読む 状態について" [ref=e405]:
+                                - generic [ref=e406]:
+                                  - text: 続きを読む
+                                  - generic [ref=e407]: 状態について
+                        - generic [ref=e409]:
+                          - term [ref=e410]:
+                            - generic [ref=e412]: Customized
+                          - definition [ref=e413]:
+                            - generic [ref=e415]: "No"
+                      - generic [ref=e416]:
+                        - generic [ref=e418]:
+                          - term [ref=e419]:
+                            - generic [ref=e421]: Year Manufactured
+                          - definition [ref=e422]:
+                            - generic [ref=e424]: 2010-Now
+                        - generic [ref=e426]:
+                          - term [ref=e427]:
+                            - generic [ref=e429]: With Original Box/Packaging
+                          - definition [ref=e430]:
+                            - generic [ref=e432]: "Yes"
+                      - generic [ref=e433]:
+                        - generic [ref=e435]:
+                          - term [ref=e436]:
+                            - generic [ref=e438]: Country of Origin
+                          - definition [ref=e439]:
+                            - generic [ref=e441]: Japan
+                        - generic [ref=e443]:
+                          - term [ref=e444]:
+                            - generic [ref=e446]: Band Width
+                          - definition [ref=e447]:
+                            - generic [ref=e449]: 22 mm
+                      - generic [ref=e450]:
+                        - generic [ref=e452]:
+                          - term [ref=e453]:
+                            - generic [ref=e455]: Case Thickness
+                          - definition [ref=e456]:
+                            - generic [ref=e458]: 18.2 mm
+                        - generic [ref=e460]:
+                          - term [ref=e461]:
+                            - generic [ref=e463]: Handedness
+                          - definition [ref=e464]:
+                            - generic [ref=e466]: Left
+                      - generic [ref=e467]:
+                        - generic [ref=e469]:
+                          - term [ref=e470]:
+                            - generic [ref=e472]: Seller Warranty
+                          - definition [ref=e473]:
+                            - generic [ref=e475]: "Yes"
+                        - generic [ref=e477]:
+                          - term [ref=e478]:
+                            - generic [ref=e480]: Vintage
+                          - definition [ref=e481]:
+                            - generic [ref=e483]: "No"
+                      - generic [ref=e484]:
+                        - generic [ref=e486]:
+                          - term [ref=e487]:
+                            - generic [ref=e489]: Bezel Color
+                          - definition [ref=e490]:
+                            - generic [ref=e492]: Black
+                        - generic [ref=e494]:
+                          - term [ref=e495]:
+                            - generic [ref=e497]: Bezel Type
+                          - definition [ref=e498]:
+                            - generic [ref=e500]: Fixed
+                      - generic [ref=e501]:
+                        - generic [ref=e503]:
+                          - term [ref=e504]:
+                            - generic [ref=e506]: Bezel
+                          - definition [ref=e507]:
+                            - generic [ref=e509]: Fixed
+                        - generic [ref=e511]:
+                          - term [ref=e512]:
+                            - generic [ref=e514]: Case Diameter
+                          - definition [ref=e515]:
+                            - generic [ref=e517]: 52.5 x 53.5 mm
+                      - generic [ref=e518]:
+                        - generic [ref=e520]:
+                          - term [ref=e521]:
+                            - generic [ref=e523]: clasp
+                          - definition [ref=e524]:
+                            - generic [ref=e526]: Tang
+                        - generic [ref=e528]:
+                          - term [ref=e529]:
+                            - generic [ref=e531]: Gender
+                          - definition [ref=e532]:
+                            - generic [ref=e534]: Men's
+                      - generic [ref=e535]:
+                        - generic [ref=e537]:
+                          - term [ref=e538]:
+                            - generic [ref=e540]: Series
+                          - definition [ref=e541]:
+                            - generic [ref=e543]: G-Shock Master Of G Land
+                        - generic [ref=e545]:
+                          - term [ref=e546]:
+                            - generic [ref=e548]: UPC
+                          - definition [ref=e549]:
+                            - generic [ref=e551]: "0889232252193"
+                      - generic [ref=e552]:
+                        - generic [ref=e554]:
+                          - term [ref=e555]:
+                            - generic [ref=e557]: Water Resistance
+                          - definition [ref=e558]:
+                            - generic [ref=e560]: 200 m (20 ATM)
+                        - generic [ref=e562]:
+                          - term [ref=e563]:
+                            - generic [ref=e565]: Movement
+                          - definition [ref=e566]:
+                            - generic [ref=e568]: Quartz
+                      - generic [ref=e569]:
+                        - generic [ref=e571]:
+                          - term [ref=e572]:
+                            - generic [ref=e574]: Band/Strap
+                          - definition [ref=e575]:
+                            - generic [ref=e577]: Two-Piece Strap
+                        - generic [ref=e579]:
+                          - term [ref=e580]:
+                            - generic [ref=e582]: Reference Number
+                          - definition [ref=e583]:
+                            - generic [ref=e585]: GW94001B
+                      - generic [ref=e586]:
+                        - generic [ref=e588]:
+                          - term [ref=e589]:
+                            - generic [ref=e591]: Brand
+                          - definition [ref=e592]:
+                            - generic [ref=e594]: G-SHOCK
+                        - generic [ref=e596]:
+                          - term [ref=e597]:
+                            - generic [ref=e599]: Case Color
+                          - definition [ref=e600]:
+                            - generic [ref=e602]: Black
+                      - generic [ref=e603]:
+                        - generic [ref=e605]:
+                          - term [ref=e606]:
+                            - generic [ref=e608]: Caseback
+                          - definition [ref=e609]:
+                            - generic [ref=e611]: Stainless Steel
+                        - generic [ref=e613]:
+                          - term [ref=e614]:
+                            - generic [ref=e616]: Department
+                          - definition [ref=e617]:
+                            - generic [ref=e619]: Men
+                      - generic [ref=e620]:
+                        - generic [ref=e622]:
+                          - term [ref=e623]:
+                            - generic [ref=e625]: Type
+                          - definition [ref=e626]:
+                            - generic [ref=e628]: Wristwatch
+                        - generic [ref=e630]:
+                          - term [ref=e631]:
+                            - generic [ref=e633]: Band Color
+                          - definition [ref=e634]:
+                            - generic [ref=e636]: Black
+                      - generic [ref=e637]:
+                        - generic [ref=e639]:
+                          - term [ref=e640]:
+                            - generic [ref=e642]: Band Material
+                          - definition [ref=e643]:
+                            - generic [ref=e645]: Resin
+                        - generic [ref=e647]:
+                          - term [ref=e648]:
+                            - generic [ref=e650]: Lug Width
+                          - definition [ref=e651]:
+                            - generic [ref=e653]: 31 mm
+                      - generic [ref=e654]:
+                        - generic [ref=e656]:
+                          - term [ref=e657]:
+                            - generic [ref=e659]: Dial Color
+                          - definition [ref=e660]:
+                            - generic [ref=e662]: Black
+                        - generic [ref=e664]:
+                          - term [ref=e665]:
+                            - generic [ref=e667]: Watch Shape
+                          - definition [ref=e668]:
+                            - generic [ref=e670]: Round
+                      - generic [ref=e671]:
+                        - generic [ref=e673]:
+                          - term [ref=e674]:
+                            - generic [ref=e676]: Model
+                          - definition [ref=e677]:
+                            - generic [ref=e679]: G-SHOCK RANGEMAN
+                        - generic [ref=e681]:
+                          - term [ref=e682]:
+                            - generic [ref=e684]: Style
+                          - definition [ref=e685]:
+                            - generic [ref=e687]: Sport, Casual
+                      - generic [ref=e688]:
+                        - generic [ref=e690]:
+                          - term [ref=e691]:
+                            - generic [ref=e693]: Case Size
+                          - definition [ref=e694]:
+                            - generic [ref=e696]: 53 mm
+                        - generic [ref=e698]:
+                          - term [ref=e699]:
+                            - generic [ref=e701]: Features
+                          - definition [ref=e702]:
+                            - generic [ref=e704]: Water-Resistant, Shock-Resistant, Atomic/Radio Controlled, Day/Date
+                      - generic [ref=e705]:
+                        - generic [ref=e707]:
+                          - term [ref=e708]:
+                            - generic [ref=e710]: Case Material
+                          - definition [ref=e711]:
+                            - generic [ref=e713]: Resin
+                        - generic [ref=e715]:
+                          - term [ref=e716]:
+                            - generic [ref=e718]: Display
+                          - definition [ref=e719]:
+                            - generic [ref=e721]: Analog, Digital
+                  - generic [ref=e722]:
+                    - generic [ref=e723]: カテゴリ
+                    - navigation "トピックパス" [ref=e726]:
+                      - heading "トピックパス" [level=2] [ref=e727]
+                      - list [ref=e728]:
+                        - listitem [ref=e729]:
+                          - link "ジュエリー・時計" [ref=e730] [cursor=pointer]:
+                            - /url: https://www.ebay.com/b/Jewelry-Watches/281/bn_1865273
+                          - img
+                        - listitem [ref=e731]:
+                          - button "トピックパス menu" [ref=e733]:
+                            - generic [ref=e734]:
+                              - img
+                          - img
+                        - listitem [ref=e735]:
+                          - link "腕時計" [ref=e736] [cursor=pointer]:
+                            - /url: https://www.ebay.com/b/Watches/260325/bn_7117208191
+                          - img
+                        - listitem [ref=e737]:
+                          - link "腕時計" [ref=e738] [cursor=pointer]:
+                            - /url: https://www.ebay.com/b/Wristwatches/31387/bn_2408451
+                          - img
+                        - listitem [ref=e739]:
+                          - link "もっと表示 Casio G-Shock Master of G Rangeman 53mm Black Res..." [ref=e740] [cursor=pointer]:
+                            - /url: https://www.ebay.com/p/7035947895
+                  - generic [ref=e743]:
+                    - heading "この商品について" [level=2] [ref=e746]:
+                      - generic [ref=e747]: この商品について
+                    - generic [ref=e748]:
+                      - heading "Product Identifiers" [level=2] [ref=e751]:
+                        - generic [ref=e752]: Product Identifiers
+                      - generic [ref=e753]:
+                        - generic [ref=e754]:
+                          - generic [ref=e756]:
+                            - generic [ref=e759]: Brand
+                            - generic [ref=e762]: G-SHOCK
+                          - generic [ref=e764]:
+                            - generic [ref=e767]: Reference Number
+                            - generic [ref=e770]: GW94001B
+                        - generic [ref=e771]:
+                          - generic [ref=e773]:
+                            - generic [ref=e776]: UPC
+                            - generic [ref=e779]: "0889232252193"
+                          - generic [ref=e781]:
+                            - generic [ref=e784]: Model
+                            - generic [ref=e787]: G-SHOCK RANGEMAN
+                        - generic [ref=e790]:
+                          - generic [ref=e793]: eBay Product ID (ePID)
+                          - generic [ref=e796]: "7035947895"
+                    - generic [ref=e798]:
+                      - heading "Product Key Features" [level=2] [ref=e801]:
+                        - generic [ref=e802]: Product Key Features
+                      - generic [ref=e803]:
+                        - generic [ref=e804]:
+                          - generic [ref=e806]:
+                            - generic [ref=e809]: Caseback
+                            - generic [ref=e812]: Stainless Steel
+                          - generic [ref=e814]:
+                            - generic [ref=e817]: Department
+                            - generic [ref=e820]: Men
+                        - generic [ref=e821]:
+                          - generic [ref=e823]:
+                            - generic [ref=e826]: Lug Width
+                            - generic [ref=e829]: 31 mm
+                          - generic [ref=e831]:
+                            - generic [ref=e834]: Case Size
+                            - generic [ref=e837]: 53 mm
+                        - generic [ref=e838]:
+                          - generic [ref=e840]:
+                            - generic [ref=e843]: Case Material
+                            - generic [ref=e846]: Resin
+                          - generic [ref=e848]:
+                            - generic [ref=e851]: Water Resistance
+                            - generic [ref=e854]: 200 m (20 ATM)
+                        - generic [ref=e855]:
+                          - generic [ref=e857]:
+                            - generic [ref=e860]: Band Color
+                            - generic [ref=e863]: Black
+                          - generic [ref=e865]:
+                            - generic [ref=e868]: Dial Color
+                            - generic [ref=e871]: Black
+                        - generic [ref=e872]:
+                          - generic [ref=e874]:
+                            - generic [ref=e877]: Band/Strap
+                            - generic [ref=e880]: Two-Piece Strap
+                          - generic [ref=e882]:
+                            - generic [ref=e885]: Case Color
+                            - generic [ref=e888]: Black
+                        - generic [ref=e889]:
+                          - generic [ref=e891]:
+                            - generic [ref=e894]: Watch Shape
+                            - generic [ref=e897]: Round
+                          - generic [ref=e899]:
+                            - generic [ref=e902]: Style
+                            - generic [ref=e905]: Sport, Casual
+                        - generic [ref=e906]:
+                          - generic [ref=e908]:
+                            - generic [ref=e911]: Features
+                            - generic [ref=e914]: Water-Resistant, Shock-Resistant, Atomic/Radio Controlled, Day/Date
+                          - generic [ref=e916]:
+                            - generic [ref=e919]: Movement
+                            - generic [ref=e922]: Quartz
+                        - generic [ref=e923]:
+                          - generic [ref=e925]:
+                            - generic [ref=e928]: Type
+                            - generic [ref=e931]: Wristwatch
+                          - generic [ref=e933]:
+                            - generic [ref=e936]: Band Material
+                            - generic [ref=e939]: Resin
+                        - generic [ref=e942]:
+                          - generic [ref=e945]: Display
+                          - generic [ref=e948]: Analog, Digital
+                    - generic [ref=e950]:
+                      - heading "Additional Product Features" [level=2] [ref=e953]:
+                        - generic [ref=e954]: Additional Product Features
+                      - generic [ref=e958]:
+                        - generic [ref=e961]: Vintage
+                        - generic [ref=e964]: "No"
+                  - generic [ref=e966]:
+                    - heading "出品者の商品説明" [level=2] [ref=e969]
+                    - iframe [ref=e970]:
+                      - generic [ref=f2e2]:
+                        - generic [ref=f2e3]:
+                          - complementary [ref=f2e4]
+                          - banner [ref=f2e5]:
+                            - link "Jomashop on eBay" [ref=f2e6] [cursor=pointer]:
+                              - /url: https://stores.ebay.com/jomashop
+                              - img "Jomashop on eBay" [ref=f2e7]
+                          - complementary [ref=f2e8]
+                          - generic [ref=f2e9]:
+                            - link "Mens Watches" [ref=f2e11] [cursor=pointer]:
+                              - /url: https://stores.ebay.com/jomashop/?_nkw=Mens
+                            - link "Ladies Watches" [ref=f2e13] [cursor=pointer]:
+                              - /url: https://stores.ebay.com/jomashop/?_nkw=(ladies,womens)
+                            - link "Watch Boxes" [ref=f2e15] [cursor=pointer]:
+                              - /url: https://stores.ebay.com/jomashop/?_nkw=(box,travel case, winder)
+                            - link "Smart Watches" [ref=f2e17] [cursor=pointer]:
+                              - /url: https://www.ebaystores.com/jomashop/?_nkw=pre+owned
+                            - link "Pre-owned Watches" [ref=f2e19] [cursor=pointer]:
+                              - /url: https://www.ebaystores.com/jomashop/?_nkw=pre+owned
+                          - article [ref=f2e20]
+                          - main [ref=f2e21]:
+                            - heading "Casio G-Shock Master Of G Land Chronograph GMT Quartz Digital Black Dial Men's" [level=3] [ref=f2e22]
+                            - generic [ref=f2e23]: "#Z-XLKX2"
+                            - generic [ref=f2e24]:
+                              - heading "Description" [level=4] [ref=f2e25]
+                              - paragraph [ref=f2e26]: Black dial. Black resin case with a black resin band. Quartz movement. 200 meters / 660 feet water resistance. Fixed bezel. Scratch Resistant Mineral crystal. Solid caseback. Tang clasp. Case size 52.5 x 53.5 mm x 18.2 mm. Band 22 mm x long. Casio GW9400-1B G-Shock Master Of G Land Watch.
+                              - generic [ref=f2e27]:
+                                - paragraph [ref=f2e28]: G-Shock Master Of G Land
+                                - paragraph [ref=f2e29]: "Series:"
+                              - generic [ref=f2e30]:
+                                - paragraph [ref=f2e31]: GW9400-1B
+                                - paragraph [ref=f2e32]: "Model:"
+                              - generic [ref=f2e33]:
+                                - paragraph [ref=f2e34]: Watches
+                                - paragraph [ref=f2e35]: "Subclass:"
+                              - generic [ref=f2e36]:
+                                - paragraph [ref=f2e37]: Quartz
+                                - paragraph [ref=f2e38]: "Movement:"
+                              - generic [ref=f2e39]:
+                                - paragraph [ref=f2e40]: 52.5 x 53.5 mm
+                                - paragraph [ref=f2e41]: "Case Size:"
+                              - generic [ref=f2e42]:
+                                - paragraph [ref=f2e43]: Resin
+                                - paragraph [ref=f2e44]: "Case Material:"
+                              - generic [ref=f2e45]:
+                                - paragraph [ref=f2e46]: Black
+                                - paragraph [ref=f2e47]: "Case Color:"
+                              - generic [ref=f2e48]:
+                                - paragraph [ref=f2e49]: Round
+                                - paragraph [ref=f2e50]: "Case Shape:"
+                              - generic [ref=f2e51]:
+                                - paragraph [ref=f2e52]: 18.2 mm
+                                - paragraph [ref=f2e53]: "Case Thickness:"
+                              - generic [ref=f2e54]:
+                                - paragraph [ref=f2e55]: Black
+                                - paragraph [ref=f2e56]: "Dial Color:"
+                              - generic [ref=f2e57]:
+                                - paragraph [ref=f2e58]: Fixed
+                                - paragraph [ref=f2e59]: "Bezel:"
+                              - generic [ref=f2e60]:
+                                - paragraph [ref=f2e61]: Resin
+                                - paragraph [ref=f2e62]: "Band Material:"
+                              - generic [ref=f2e63]:
+                                - paragraph [ref=f2e64]: Black
+                                - paragraph [ref=f2e65]: "Band Color:"
+                              - generic [ref=f2e66]:
+                                - paragraph [ref=f2e67]: Tang
+                                - paragraph [ref=f2e68]: "Band Clasp:"
+                              - generic [ref=f2e69]:
+                                - paragraph [ref=f2e70]: Perpetual Calendar, Atomic Timekeeping, Radio Controlled, Chronograph, World Time, Alarm, Month, Date, Day, GMT, Second Time Zone, Hour, Minute, Second, Power Reserve Indicator, Sunrise and Sunset Times, Thermometer, Altitude Indicator, Barometer, Compass, Memory, Solar-powered, Shock Resistant
+                                - paragraph [ref=f2e71]: "Features:"
+                              - generic [ref=f2e72]:
+                                - paragraph [ref=f2e73]: 200 meters / 660 feet
+                                - paragraph [ref=f2e74]: "Water Resistance:"
+                          - contentinfo [ref=f2e75]:
+                            - heading "About Us" [level=3] [ref=f2e76]
+                            - generic [ref=f2e77]:
+                              - paragraph [ref=f2e78]: Jomashop has been in the retail and wholesale trade of luxury goods, such as watches, fine writing instruments, handbags, fashion accessories, crystal and gift items since 1987. We pride ourselves on our ability to deliver the best prices, most varied selection and finest service for well over 25 years. Our goal has and always will be to earn the trust and satisfaction of our customers. We understand that this means providing the perfect combination of competitive pricing, an honest and reliable corps of customer service specialists that are always ready to assist, and a state of the art, New York City based fulfillment center capable of delivering products to every corner of the world.
+                              - paragraph [ref=f2e79]: Our success over the years can be attributed to our loyal commitment to our customers. Whether you’re shopping with us for the first time or are a valued repeat customer, we’re here to make your shopping experience as easy, reliable and especially fun as possible. But equally as important to us is that you are comfortable and confident in shopping with us. You can always reach out to our professional customer service department online or, for a more personal experience, by telephone.
+                            - heading "Shipping Information" [level=3] [ref=f2e80]
+                            - generic [ref=f2e81]:
+                              - heading "Domestic Shipping" [level=4] [ref=f2e82]
+                              - paragraph [ref=f2e83]: Economy Shipping is free for all orders within continental United States. Please make sure that your shipping address is correct when placing the order. Higher-end orders will require a signature, so please specify an address or work address that you can be available to receive the package and sign for it; furthermore, if a PO Box is used as the shipping address, we reserve the right to ask for a physical address.
+                              - paragraph [ref=f2e84]: We will refund and not reship items that are unsigned for, missed delivery, or are returned to us because of an insufficient address.
+                              - heading "Economy Domestic Shipping" [level=4] [ref=f2e85]
+                              - paragraph [ref=f2e86]: Orders generally ship within 2 business days from when payment has cleared. Your tracking number will be emailed to you once shipped. Orders that ship free will go at economy speed which is usually 3-5 Business Days, but can sometimes take longer (NOT guaranteed to be delivered by a certain date), if you want guaranteed options please pay for expedited shipping.
+                              - heading "Expedited Domestic Shipping" [level=4] [ref=f2e87]
+                              - paragraph [ref=f2e88]: "Orders generally ship within 1 business day from when payment has cleared. Your tracking number will be emailed to you once shipped. Orders are guaranteed by business days (Saturday & Sunday are not the business days). Shipping generally closes at 3PM EST. Please note: UPS does not deliver to PO Boxes, so please give us a home or work address when shipping expedited."
+                              - heading "International Shipping" [level=4] [ref=f2e89]
+                              - paragraph [ref=f2e90]: eBay Jomashop does NOT assess duties for an international orders, furthermore International orders are subject to applicable customs, and import duties and taxes, which are the sole responsibility of you the customer. Please contact your local customs office for details.
+                              - heading "Marking items as a Gift" [level=4] [ref=f2e91]
+                              - paragraph [ref=f2e92]: Under federal law we cannot not mark an item for a lower price or as a '"gift." International Orders over $500.00 may ship via UPS and are subject to UPS Delivery Fees, in addition to all applicable duties and taxes. We do ship APO/FPO addresses but a limit of $2000, and all packages will ship via USPS. To calculate the shipping rate for your order, please refer to the shipping tab.
+                            - heading "International Customers" [level=3] [ref=f2e93]
+                            - generic [ref=f2e94]:
+                              - heading "International Shipping Duties / Tax" [level=4] [ref=f2e95]
+                              - paragraph [ref=f2e96]: eBay Jomashop does NOT assess duties for an international orders, furthermore International orders are subject to applicable customs, and import duties and taxes, which are the sole responsibility of you the customer. Please contact your local customs office for details.
+                              - heading "Marking items as a Gift" [level=4] [ref=f2e97]
+                              - paragraph [ref=f2e98]: Under federal law we cannot not mark an item for a lower price or as a '"gift." International Orders over $500.00 may ship via UPS and are subject to UPS Delivery Fees, in addition to all applicable duties and taxes.
+                            - heading "Returns Information" [level=3] [ref=f2e99]
+                            - generic [ref=f2e100]:
+                              - heading "30-Day Return Policy" [level=4] [ref=f2e101]
+                              - paragraph [ref=f2e102]: If you are not satisfied with your purchase, you may return eligible items for an exchange or refund within 30 days, buyer pays return shipping.
+                              - paragraph [ref=f2e103]: "Items must be in new condition, meaning unworn with the security tab (if applicable) intact. Conditions which will void your ability to return merchandise includes: Scratching, Breaking, Wearing items, Opening the inside of watch, Removing links, Removing the security tab on high-end items, or lastly, if the auction explicitly says in the description that the item cannot be returned."
+                              - heading "Return Instructions" [level=4] [ref=f2e104]
+                              - paragraph [ref=f2e105]: Before returning any item, you must message us to get a RMA# (Return Number). We will send you an email with this number, a form to fill out, and a return address to send the item to. Please write this number on at least three sides of the return box to ensure that the package clears security. Keep your purchase, accessories, security tags if provided, and all packing materials in new condition to avoid refusal of the returned merchandise. Items received "Not as Described"
+                              - paragraph [ref=f2e106]: Please notify us within 5 Business Days of purchase if there is a significant discrepancy with an order. Please inspect all packages when they are received.
+                        - link [ref=f2e108] [cursor=pointer]:
+                          - /url: https://pages.ebay.com/seller-center/listing/listing-advanced-sellers/third-party-listing-tools.html#third-party-listing-tools
+                          - img [ref=f2e109]
+            - generic [ref=e973]:
+              - generic [ref=e974]:
+                - generic [ref=e975]:
+                  - heading "この出品者について" [level=2] [ref=e976]:
+                    - generic [ref=e978]: この出品者について
+                  - generic [ref=e979]:
+                    - link [ref=e981] [cursor=pointer]:
+                      - /url: https://www.ebay.com/str/jomashop?_trksid=p4429486.m145687.l149266
+                      - img [ref=e983]
+                    - generic [ref=e984]:
+                      - heading "Jomashop" [level=2] [ref=e985]:
+                        - link "Jomashop" [ref=e986] [cursor=pointer]:
+                          - /url: https://www.ebay.com/str/jomashop?_trksid=p4429486.m145687.l149267
+                      - heading "ポジティブなフィードバック99.2%•76.01万点を販売済み" [level=4] [ref=e987]
+                  - generic [ref=e992]:
+                    - generic [ref=e993]:
+                      - img
+                    - generic [ref=e994]: eBay登録日：9 2001
+                  - generic [ref=e996]:
+                    - generic [ref=e997]: "Buy Jomashop Buy Authentic Watches eBay : Deep discounts on Watches, Luxury Watches, Movado Watches, Tag Heuer Watches, Tissot Watches, Swatch Watches, Casio Watches, Men's watches, Ladies watches, ..."
+                    - group [ref=e999]:
+                      - generic "もっと表示" [ref=e1000]:
+                        - generic [ref=e1001]: もっと表示
+                        - generic [ref=e1002]:
+                          - img
+                  - generic [ref=e1003]:
+                    - link "ストアを訪問" [ref=e1004] [cursor=pointer]:
+                      - /url: https://www.ebay.com/str/jomashop?_trksid=p4429486.m145687.l149086
+                      - generic [ref=e1005]: ストアを訪問
+                    - button "連絡する - opens in a new dialog" [ref=e1006] [cursor=pointer]:
+                      - generic [ref=e1007]:
+                        - text: 連絡する
+                        - generic [ref=e1008]: "- opens in a new dialog"
+                    - button "出品者の保存 - この出品者jomashopを保存します" [ref=e1010] [cursor=pointer]:
+                      - generic [ref=e1011]:
+                        - img
+                      - generic [ref=e1012]: 出品者を保存
+                - generic [ref=e1014]:
+                  - heading "出品者の項目別評価" [level=3] [ref=e1015]
+                  - generic [ref=e1016]:
+                    - generic [ref=e1017]: 過去12ヶ月の平均
+                    - generic [ref=e1018]:
+                      - generic [ref=e1019]:
+                        - generic [ref=e1020]: 説明の正確さ
+                        - progressbar [ref=e1021]
+                        - generic [ref=e1022]: "4.9"
+                      - generic [ref=e1023]:
+                        - generic [ref=e1024]: 送料の妥当性
+                        - progressbar [ref=e1025]
+                        - generic [ref=e1026]: "5.0"
+                      - generic [ref=e1027]:
+                        - generic [ref=e1028]: 発送の速さ
+                        - progressbar [ref=e1029]
+                        - generic [ref=e1030]: "4.9"
+                      - generic [ref=e1031]:
+                        - generic [ref=e1032]: コミュニケーション
+                        - progressbar [ref=e1033]
+                        - generic [ref=e1034]: "5.0"
+                - generic [ref=e1035]:
+                  - generic [ref=e1036]:
+                    - heading "このストアの人気カテゴリ" [level=3] [ref=e1037]
+                    - link "すべて表示 カテゴリ" [ref=e1039] [cursor=pointer]:
+                      - /url: https://www.ebay.com/sch/i.html?_dkr=1&iconV2Request=true&_blrs=recall_filtering&_ssn=jomashop&store_cat=0&store_name=jomashop&_oac=1
+                      - generic [ref=e1040]:
+                        - text: すべて表示
+                        - generic [ref=e1041]: カテゴリ
+                  - generic [ref=e1042]:
+                    - link "Akribos XXIV" [ref=e1044] [cursor=pointer]:
+                      - /url: https://www.ebay.com/str/jomashop/Akribos-XXIV/_i.html?store_cat=5361961012
+                    - link "Alpina Watches" [ref=e1046] [cursor=pointer]:
+                      - /url: https://www.ebay.com/str/jomashop/Alpina-Watches/_i.html?store_cat=11131206012
+                    - link "Armand Nicolet Watches" [ref=e1048] [cursor=pointer]:
+                      - /url: https://www.ebay.com/str/jomashop/Armand-Nicolet-Watches/_i.html?store_cat=40821573012
+                    - link "Armani Exchange Watches" [ref=e1050] [cursor=pointer]:
+                      - /url: https://www.ebay.com/str/jomashop/Armani-Exchange-Watches/_i.html?store_cat=11131197012
+                    - link "Audemars Piguet Watches" [ref=e1052] [cursor=pointer]:
+                      - /url: https://www.ebay.com/str/jomashop/Audemars-Piguet-Watches/_i.html?store_cat=1839460012
+                    - link "August Steiner Watches" [ref=e1054] [cursor=pointer]:
+                      - /url: https://www.ebay.com/str/jomashop/August-Steiner-Watches/_i.html?store_cat=40821584012
+                    - link "Ball Watches" [ref=e1056] [cursor=pointer]:
+                      - /url: https://www.ebay.com/str/jomashop/Ball-Watches/_i.html?store_cat=1839463012
+                    - link "Baume Et Mercier Watches" [ref=e1058] [cursor=pointer]:
+                      - /url: https://www.ebay.com/str/jomashop/Baume-Et-Mercier-Watches/_i.html?store_cat=7
+                    - link "Bell and Ross Watches" [ref=e1060] [cursor=pointer]:
+                      - /url: https://www.ebay.com/str/jomashop/Bell-and-Ross-Watches/_i.html?store_cat=2674409012
+              - generic [ref=e1063]:
+                - heading "出品者のフィードバック （212,843）" [level=2] [ref=e1064]
+                - generic [ref=e1065]:
+                  - tablist [ref=e1066]:
+                    - tab "この商品（3）" [ref=e1067]:
+                      - generic [ref=e1068]: この商品（3）
+                    - tab "すべての商品（212,843）" [selected] [ref=e1069]:
+                      - generic [ref=e1070]: すべての商品（212,843）
+                  - tabpanel "すべての商品（212,843）" [ref=e1072]:
+                    - generic [ref=e1074]:
+                      - generic [ref=e1075]:
+                        - button "フィルター： すべての評価" [ref=e1078] [cursor=pointer]:
+                          - generic [ref=e1079]:
+                            - generic [ref=e1080]: フィルター：
+                            - generic [ref=e1081]: すべての評価
+                            - img
+                        - list [ref=e1082]:
+                          - listitem [ref=e1083]:
+                            - link "配送" [ref=e1084] [cursor=pointer]:
+                              - /url: https://www.ebay.com/fdbk/mweb_profile?fdbkType=FeedbackReceivedAsSeller&item_id=187945082742&username=jomashop&filter=feedback_page%3ARECEIVED_AS_SELLER%2Cfilter_topic%3Ashipping&sort=RELEVANCEV2#tab1
+                              - generic:
+                                - generic: 配送
+                          - listitem [ref=e1085]:
+                            - link "出品者に対する満足度" [ref=e1086] [cursor=pointer]:
+                              - /url: https://www.ebay.com/fdbk/mweb_profile?fdbkType=FeedbackReceivedAsSeller&item_id=187945082742&username=jomashop&filter=feedback_page%3ARECEIVED_AS_SELLER%2Cfilter_topic%3Aseller-satisfaction&sort=RELEVANCEV2#tab1
+                              - generic:
+                                - generic: 出品者に対する満足度
+                          - listitem [ref=e1087]:
+                            - link "説明" [ref=e1088] [cursor=pointer]:
+                              - /url: https://www.ebay.com/fdbk/mweb_profile?fdbkType=FeedbackReceivedAsSeller&item_id=187945082742&username=jomashop&filter=feedback_page%3ARECEIVED_AS_SELLER%2Cfilter_topic%3Adescription&sort=RELEVANCEV2#tab1
+                              - generic:
+                                - generic: 説明
+                          - listitem [ref=e1089]:
+                            - link "顧客ロイヤリティ" [ref=e1090] [cursor=pointer]:
+                              - /url: https://www.ebay.com/fdbk/mweb_profile?fdbkType=FeedbackReceivedAsSeller&item_id=187945082742&username=jomashop&filter=feedback_page%3ARECEIVED_AS_SELLER%2Cfilter_topic%3Acustomer-loyalty&sort=RELEVANCEV2#tab1
+                              - generic:
+                                - generic: 顧客ロイヤリティ
+                          - listitem [ref=e1091]:
+                            - link "サービス" [ref=e1092] [cursor=pointer]:
+                              - /url: https://www.ebay.com/fdbk/mweb_profile?fdbkType=FeedbackReceivedAsSeller&item_id=187945082742&username=jomashop&filter=feedback_page%3ARECEIVED_AS_SELLER%2Cfilter_topic%3Aservice&sort=RELEVANCEV2#tab1
+                              - generic:
+                                - generic: サービス
+                          - listitem [ref=e1093]:
+                            - link "梱包" [ref=e1094] [cursor=pointer]:
+                              - /url: https://www.ebay.com/fdbk/mweb_profile?fdbkType=FeedbackReceivedAsSeller&item_id=187945082742&username=jomashop&filter=feedback_page%3ARECEIVED_AS_SELLER%2Cfilter_topic%3Apackaging&sort=RELEVANCEV2#tab1
+                              - generic:
+                                - generic: 梱包
+                          - listitem [ref=e1095]:
+                            - link "返金" [ref=e1096] [cursor=pointer]:
+                              - /url: https://www.ebay.com/fdbk/mweb_profile?fdbkType=FeedbackReceivedAsSeller&item_id=187945082742&username=jomashop&filter=feedback_page%3ARECEIVED_AS_SELLER%2Cfilter_topic%3Arefund&sort=RELEVANCEV2#tab1
+                              - generic:
+                                - generic: 返金
+                      - list [ref=e1097]:
+                        - listitem [ref=e1098]:
+                          - generic [ref=e1099]:
+                            - generic [ref=e1101]:
+                              - generic [ref=e1102]:
+                                - img "ポジティブなフィードバック"
+                              - generic [ref=e1103]:
+                                - text: l***i (1)
+                                - generic [ref=e1104]: "- 購入者が投稿したフィードバックです。"
+                              - generic [ref=e1107]: 過去6ヶ月
+                              - generic [ref=e1108]: 認証購入者
+                            - generic [ref=e1110]: Muy satisfecho con mi compra, excelente artículo a un muy buen precio, tal como se describe, llegó en su caja de la marca; La caja de empaque con algunos golpes pero nada grave, el envío por parte del vendedor fue rápido, sin embargo se retraso en aduanas, aún así, estuvo dentro del tiempo estimado de entrega, 1 mes a México, las actualizaciones de envío se tardan, entiendo no es tema del vendedor, sin duda volvería a comprar
+                            - link "Tissot Carson Powermatic 80 Automatic Silver Dial Men's Watch T122.407.11.033.00（388580653844）" [ref=e1112] [cursor=pointer]:
+                              - /url: https://www.ebay.com/itm/388580653844
+                              - generic [ref=e1113]: Tissot Carson Powermatic 80 Automatic Silver Dial Men's Watch T122.407.11.033.00（388580653844）
+                        - listitem [ref=e1114]:
+                          - generic [ref=e1115]:
+                            - generic [ref=e1117]:
+                              - generic [ref=e1118]:
+                                - img "ポジティブなフィードバック"
+                              - generic [ref=e1119]:
+                                - text: n***e (59)
+                                - generic [ref=e1120]: "- 購入者が投稿したフィードバックです。"
+                              - generic [ref=e1123]: 過去6ヶ月
+                              - generic [ref=e1124]: 認証購入者
+                            - generic [ref=e1125]:
+                              - generic [ref=e1126]: 4th recent Invicta I Force purchase from this Seller! Extremely please fast ship, mint condition exact as pictured. Invicta box package sturdy -- nice You will NOT find a lower price I've researched -seller communication also a plus. Thankyou Jomashop 👍
+                              - button "本人確認済みの購入者による商品写真" [ref=e1127] [cursor=pointer]:
+                                - img "本人確認済みの購入者による商品写真" [ref=e1128]
+                                - generic [ref=e1129]:
+                                  - img
+                            - link "Invicta Specialty Military Multi-Function Men's Watch 12171（157458082365）" [ref=e1131] [cursor=pointer]:
+                              - /url: https://www.ebay.com/itm/157458082365
+                              - generic [ref=e1132]: Invicta Specialty Military Multi-Function Men's Watch 12171（157458082365）
+                        - listitem [ref=e1133]:
+                          - generic [ref=e1134]:
+                            - generic [ref=e1136]:
+                              - generic [ref=e1137]:
+                                - img "ポジティブなフィードバック"
+                              - generic [ref=e1138]:
+                                - text: g***p (54)
+                                - generic [ref=e1139]: "- 購入者が投稿したフィードバックです。"
+                              - generic [ref=e1142]: 過去6ヶ月
+                              - generic [ref=e1143]: 認証購入者
+                            - generic [ref=e1144]:
+                              - generic [ref=e1145]: The best price I found on this item was from this seller, and when I received it, it was exactly as described with no scratches or blemishes. I had purchased from this seller on a previous occasion with good results, so I was expecting all to go well with this purchase, and I was not disappointed. Arrived in a reasonable amount of time and packaged very well so there would be no chance of damage during shipping. This is a 5 star seller who I will buy from again.
+                              - button "本人確認済みの購入者による商品写真" [ref=e1146] [cursor=pointer]:
+                                - img "本人確認済みの購入者による商品写真" [ref=e1147]
+                            - generic [ref=e1148]: Invicta Ocean Ghost III Men's Watch 7033（157274745339）
+                        - listitem [ref=e1149]:
+                          - generic [ref=e1150]:
+                            - generic [ref=e1152]:
+                              - generic [ref=e1153]:
+                                - img "ポジティブなフィードバック"
+                              - generic [ref=e1154]:
+                                - text: c***n (148)
+                                - generic [ref=e1155]: "- 購入者が投稿したフィードバックです。"
+                              - generic [ref=e1158]: 過去6ヶ月
+                              - generic [ref=e1159]: 認証購入者
+                            - generic [ref=e1161]: Exceptional experience from start to finish! The watch arrived in flawless condition and looks absolutely stunning in person. The gold finish is vibrant, the dial is clean and detailed, and the overall craftsmanship truly stands out. The item matched the description perfectly and exceeded my expectations in appearance and quality. Shipping was quick, packaging was secure, and the seller communicated promptly. Highly reliable seller — AAA+++.
+                            - generic [ref=e1162]: Invicta Coalition Forces Chronograph GMT Quartz Gold Dial Men's Watch 49093（187655925221）
+                        - listitem [ref=e1163]:
+                          - generic [ref=e1164]:
+                            - generic [ref=e1166]:
+                              - generic [ref=e1167]:
+                                - img "ポジティブなフィードバック"
+                              - generic [ref=e1168]:
+                                - text: s***k (4)
+                                - generic [ref=e1169]: "- 購入者が投稿したフィードバックです。"
+                              - generic [ref=e1172]: 過去6ヶ月
+                              - generic [ref=e1173]: 認証購入者
+                            - generic [ref=e1175]: The watch is really high quality. Condition was new as advertised in the listing. It also came with the protective watch box as described in the listing. Secure and well padded shipping box. Quick shipping time. Great value for a new watch. My boyfriend really likes it how it looks. Would buy from seller again.
+                            - link "Bulova Surveyor Automatic Men's Watch 96A310（187203180268）" [ref=e1177] [cursor=pointer]:
+                              - /url: https://www.ebay.com/itm/187203180268
+                              - generic [ref=e1178]: Bulova Surveyor Automatic Men's Watch 96A310（187203180268）
+                        - listitem [ref=e1179]:
+                          - generic [ref=e1180]:
+                            - generic [ref=e1182]:
+                              - generic [ref=e1183]:
+                                - img "ポジティブなフィードバック"
+                              - generic [ref=e1184]:
+                                - text: t***e (132)
+                                - generic [ref=e1185]: "- 購入者が投稿したフィードバックです。"
+                              - generic [ref=e1188]: 過去6ヶ月
+                              - generic [ref=e1189]: 認証購入者
+                            - generic [ref=e1191]: Jomashop went above and beyond on my expectations on this one. It came with full box and papers even though the listing said it would not. A tremendous value they gave me for free. Also, it arrived faster than its original ship time. All around very happy with this purchase.
+                            - generic [ref=e1192]: Versace Hellenyium Brown Dial Two-tone Men's Watch V11040015（187530283906）
+                        - listitem [ref=e1193]:
+                          - generic [ref=e1194]:
+                            - generic [ref=e1196]:
+                              - generic [ref=e1197]:
+                                - img "ポジティブなフィードバック"
+                              - generic [ref=e1198]:
+                                - text: p***a (79)
+                                - generic [ref=e1199]: "- 購入者が投稿したフィードバックです。"
+                              - generic [ref=e1202]: 過去1ヶ月
+                              - generic [ref=e1203]: 認証購入者
+                            - generic [ref=e1205]: The watch is very nice, and a good value. It is brand new, as described. It came in its original box, with all its tags and protective film. It is my third Invicta, and I have nothing negative to say about them so far. I just gotta mention that Jomashop is an awesome seller. I will keep on purchasing from them!
+                            - link "Invicta Pro Diver Blue Dial Men's Watch 8937（389427093236）" [ref=e1207] [cursor=pointer]:
+                              - /url: https://www.ebay.com/itm/389427093236
+                              - generic [ref=e1208]: Invicta Pro Diver Blue Dial Men's Watch 8937（389427093236）
+                        - listitem [ref=e1209]:
+                          - generic [ref=e1210]:
+                            - generic [ref=e1212]:
+                              - generic [ref=e1213]:
+                                - img "ポジティブなフィードバック"
+                              - generic [ref=e1214]:
+                                - text: i***l (487)
+                                - generic [ref=e1215]: "- 購入者が投稿したフィードバックです。"
+                              - generic [ref=e1218]: 過去1ヶ月
+                              - generic [ref=e1219]: 認証購入者
+                            - generic [ref=e1220]:
+                              - generic [ref=e1221]: Fantastic seller, good communication, fast shipping. Watch was well packaged and exactly as described. Very happy with my purchase and the result. Would definitely consider purchasing from this seller again. Definitely got my value for money here. Very happy with this transaction. Thank you again.
+                              - button "本人確認済みの購入者による商品写真" [ref=e1222] [cursor=pointer]:
+                                - img "本人確認済みの購入者による商品写真" [ref=e1223]
+                            - link "Bulova Lunar Pilot Chronograph Quartz Red Dial Men's Watch 96K115（388958336106）" [ref=e1225] [cursor=pointer]:
+                              - /url: https://www.ebay.com/itm/388958336106
+                              - generic [ref=e1226]: Bulova Lunar Pilot Chronograph Quartz Red Dial Men's Watch 96K115（388958336106）
+                      - link "See all feedback.新しいタブに表示されます" [ref=e1227] [cursor=pointer]:
+                        - /url: https://www.ebay.com/fdbk/mweb_profile?fdbkType=FeedbackReceivedAsSeller&item_id=187945082742&username=jomashop&filter=feedback_page%3ARECEIVED_AS_SELLER&sort=RELEVANCEV2#tab1
+                        - text: フィードバックをすべて見る
+            - generic [ref=e1229]:
+              - generic [ref=e1230]:
+                - generic [ref=e1232]:
+                  - heading "製品の評価とレビュー" [level=2] [ref=e1235]
+                  - link "詳細" [ref=e1237] [cursor=pointer]:
+                    - /url: https://www.ebay.com/help/selling/listings/product-reviews?id=5186
+                - generic [ref=e1238]:
+                  - generic [ref=e1239]:
+                    - generic [ref=e1240]: "4.9"
+                    - img "5つ星中4.9つ星（製品評価数：15）" [ref=e1243]:
+                      - img
+                      - img
+                      - img
+                      - img
+                      - img
+                    - generic [ref=e1244]: 製品の評価15件
+                  - list [ref=e1246]:
+                    - listitem [ref=e1247]:
+                      - generic [ref=e1248]:
+                        - generic [ref=e1249]:
+                          - img
+                          - paragraph [ref=e1250]: "5"
+                        - generic [ref=e1254]: 14人のユーザーがこれを5つ星中5つ星と評価しています
+                        - generic [ref=e1255]: "14"
+                    - listitem [ref=e1256]:
+                      - generic [ref=e1257]:
+                        - generic [ref=e1258]:
+                          - img
+                          - paragraph [ref=e1259]: "4"
+                        - generic [ref=e1263]: 1人のユーザーがこれを5つ星中4つ星と評価しています
+                        - generic [ref=e1264]: "1"
+                    - listitem [ref=e1265]:
+                      - generic [ref=e1266]:
+                        - generic [ref=e1267]:
+                          - img
+                          - paragraph [ref=e1268]: "3"
+                        - generic [ref=e1271]: 0人のユーザーがこれを5つ星中3つ星と評価しています
+                        - generic [ref=e1272]: "0"
+                    - listitem [ref=e1273]:
+                      - generic [ref=e1274]:
+                        - generic [ref=e1275]:
+                          - img
+                          - paragraph [ref=e1276]: "2"
+                        - generic [ref=e1279]: 0人のユーザーがこれを5つ星中2つ星と評価しています
+                        - generic [ref=e1280]: "0"
+                    - listitem [ref=e1281]:
+                      - generic [ref=e1282]:
+                        - generic [ref=e1283]:
+                          - img
+                          - paragraph [ref=e1284]: "1"
+                        - generic [ref=e1287]: 0人のユーザーがこれを5つ星中1つ星と評価しています
+                        - generic [ref=e1288]: "0"
+                  - generic [ref=e1289]:
+                    - generic "レビュアーの100%がこの製品をGood valueと思っています" [ref=e1290]:
+                      - generic [ref=e1291]: 100%
+                      - paragraph [ref=e1296]: Good value
+                    - generic "レビュアーの100%がこの製品をComfortableと思っています" [ref=e1297]:
+                      - generic [ref=e1298]: 100%
+                      - paragraph [ref=e1303]: Comfortable
+                    - generic "レビュアーの100%がこの製品をStylishと思っています" [ref=e1304]:
+                      - generic [ref=e1305]: 100%
+                      - paragraph [ref=e1310]: Stylish
+                - generic [ref=e1311]:
+                  - generic [ref=e1312]:
+                    - heading "最も関連性の高いレビュー" [level=3] [ref=e1313]
+                    - link "13件のレビューをすべて見る" [ref=e1315] [cursor=pointer]:
+                      - /url: https://www.ebay.com/urw/Casio+G-Shock+Master+of+G+Rangeman+53mm+Black+Resin+Case+with+Black+Resin+Band+Men%27s+Wristwatch/product-reviews/7035947895?_itm=187945082742
+                  - list [ref=e1316]:
+                    - listitem [ref=e1317]:
+                      - generic [ref=e1318]:
+                        - img "レビュアーの%がこの製品をと思っています" [ref=e1321]:
+                          - img
+                          - img
+                          - img
+                          - img
+                          - img
+                        - generic [ref=e1322]:
+                          - text: 著者：
+                          - link "hanslarr_yli5ke" [ref=e1323] [cursor=pointer]:
+                            - /url: https://www.ebay.com/usr/hanslarr_yli5ke
+                            - generic [ref=e1324]: hanslarr_yli5ke
+                        - generic [ref=e1325]: Jun 02, 2020
+                      - generic [ref=e1326]:
+                        - heading "Macho watch" [level=4] [ref=e1327]
+                        - generic [ref=e1330]: My first G-Shock, and I'm not disappointed. It takes a little adjustment to go from 100% analogue to 100% digital, but I'm making progress. The negative display is easier to read than what the critics say, but you do need to have the right viewing angle and the right lighting to see it best. In bright sunlight I can read it best. In low light conditions the LED shows the complete face just fine. Knowing my altitude and barometric pressure is nice. The atomic timekeeping is also great, but occasionally I have to take it out of my basement and manually sync it. The resin band wears comfortably, but does get sweaty during hot active days.
+                        - paragraph [ref=e1331]:
+                          - generic [ref=e1332]: 認証購入者：はい
+                          - generic [ref=e1333]: 状態： 新品
+                    - listitem [ref=e1334]:
+                      - generic [ref=e1335]:
+                        - img "レビュアーの%がこの製品をと思っています" [ref=e1338]:
+                          - img
+                          - img
+                          - img
+                          - img
+                          - img
+                        - generic [ref=e1339]:
+                          - text: 著者：
+                          - link "splitty9766" [ref=e1340] [cursor=pointer]:
+                            - /url: https://www.ebay.com/usr/splitty9766
+                            - generic [ref=e1341]: splitty9766
+                        - generic [ref=e1342]: Apr 14, 2021
+                      - generic [ref=e1343]:
+                        - heading "Black & Gold Beauty" [level=4] [ref=e1344]
+                        - generic [ref=e1347]: I own 7 other Rangeman ( GW-9400 )watches in other colors , but this all black with a hint of gold is my favorite color combination. The Rangeman ( GW-9400 ) was first released in 2013 in a positive display in black and red. So many buyers already know what to expect from this watch. It’s all about the Black and Gold combination on this watch. Thanks Casio !!!!!!
+                        - paragraph [ref=e1348]:
+                          - generic [ref=e1349]: 認証購入者：はい
+                          - generic [ref=e1350]: 状態： 中古品
+                    - listitem [ref=e1351]:
+                      - generic [ref=e1352]:
+                        - img "レビュアーの%がこの製品をと思っています" [ref=e1355]:
+                          - img
+                          - img
+                          - img
+                          - img
+                          - img
+                        - generic [ref=e1356]:
+                          - text: 著者：
+                          - link "jorgeapontepr51" [ref=e1357] [cursor=pointer]:
+                            - /url: https://www.ebay.com/usr/jorgeapontepr51
+                            - generic [ref=e1358]: jorgeapontepr51
+                        - generic [ref=e1359]: Jul 27, 2022
+                      - generic [ref=e1360]:
+                        - heading "Casio Range Man" [level=4] [ref=e1361]
+                        - generic [ref=e1364]: This is by far the best Casio watch I have ever purchased. Easy to set up and has everything I need for my profession and physical fitness routine.
+                        - paragraph [ref=e1365]:
+                          - generic [ref=e1366]: 認証購入者：はい
+                          - generic [ref=e1367]: 状態： 新品
+                          - generic [ref=e1368]: 出品者：dominancediscounts
+                    - listitem [ref=e1369]:
+                      - generic [ref=e1370]:
+                        - img "レビュアーの%がこの製品をと思っています" [ref=e1373]:
+                          - img
+                          - img
+                          - img
+                          - img
+                          - img
+                        - generic [ref=e1374]:
+                          - text: 著者：
+                          - link "spokerd2" [ref=e1375] [cursor=pointer]:
+                            - /url: https://www.ebay.com/usr/spokerd2
+                            - generic [ref=e1376]: spokerd2
+                        - generic [ref=e1377]: Feb 04, 2020
+                      - generic [ref=e1378]:
+                        - heading "Great watch" [level=4] [ref=e1379]
+                        - generic [ref=e1382]: Very cool stealthy looking watch. Great features and I have others of the same model in the different colors. Keeps great time with the atomic timekeeping feature.
+                        - paragraph [ref=e1383]:
+                          - generic [ref=e1384]: 認証購入者：はい
+                          - generic [ref=e1385]: 状態： 新品
+                    - listitem [ref=e1386]:
+                      - generic [ref=e1387]:
+                        - img "レビュアーの%がこの製品をと思っています" [ref=e1390]:
+                          - img
+                          - img
+                          - img
+                          - img
+                          - img
+                        - generic [ref=e1391]:
+                          - text: 著者：
+                          - link "darktreasurehunter" [ref=e1392] [cursor=pointer]:
+                            - /url: https://www.ebay.com/usr/darktreasurehunter
+                            - generic [ref=e1393]: darktreasurehunter
+                        - generic [ref=e1394]: Jun 28, 2021
+                      - generic [ref=e1395]:
+                        - heading "Wonderful Replacement!" [level=4] [ref=e1396]
+                        - generic [ref=e1399]: My last Casio lasted 13 years and still works. Just started glitching. This is a wonderful replacement. I hope this too lasts me 13 plus years!
+                        - paragraph [ref=e1400]:
+                          - generic [ref=e1401]: 認証購入者：はい
+                          - generic [ref=e1402]: 状態： 新品
+                          - generic [ref=e1403]: 出品者：dealzsite
+              - navigation "クイックリンク" [ref=e1404]:
+                - link "ホームページに戻る" [ref=e1405] [cursor=pointer]:
+                  - /url: https://www.ebay.com
+                - text: "|詳細を見る："
+                - link "\"Casio G-Shock Master of G Rangeman 53mm Black Resin Ca...\"" [ref=e1406] [cursor=pointer]:
+                  - /url: https://www.ebay.com/p/7035947895
+                - button "ページのトップに戻る" [ref=e1407] [cursor=pointer]
+              - generic [ref=e1409]:
+                - heading "もっと見てみる：" [level=2] [ref=e1412]
+                - list [ref=e1414]:
+                  - listitem [ref=e1415]:
+                    - link "Casio G-SHOCK G-STEEL Wristwatches," [ref=e1416] [cursor=pointer]:
+                      - /url: https://www.ebay.com/b/Casio-G-SHOCK-G-STEEL-Wristwatches/31387/bn_7117067574
+                  - listitem [ref=e1417]:
+                    - link "Casio Baby-G G-SHOCK Wristwatches," [ref=e1418] [cursor=pointer]:
+                      - /url: https://www.ebay.com/b/Casio-Baby-G-G-SHOCK-Wristwatches/31387/bn_7116707338
+                  - listitem [ref=e1419]:
+                    - link "Casio G-SHOCK MR-G Wristwatches," [ref=e1420] [cursor=pointer]:
+                      - /url: https://www.ebay.com/b/Casio-G-SHOCK-MR-G-Wristwatches/31387/bn_80614639
+                  - listitem [ref=e1421]:
+                    - link "Casio G-SHOCK MT-G Watches," [ref=e1422] [cursor=pointer]:
+                      - /url: https://www.ebay.com/b/Casio-G-SHOCK-MT-G-Watches/31387/bn_57333637
+                  - listitem [ref=e1423]:
+                    - link "Casio G-SHOCK G-LIDE Wristwatches," [ref=e1424] [cursor=pointer]:
+                      - /url: https://www.ebay.com/b/Casio-G-SHOCK-G-LIDE-Wristwatches/31387/bn_7113678489
+                  - listitem [ref=e1425]:
+                    - link "Casio G-SHOCK Mudmaster Wristwatches," [ref=e1426] [cursor=pointer]:
+                      - /url: https://www.ebay.com/b/Casio-G-SHOCK-Mudmaster-Wristwatches/31387/bn_60794237
+                  - listitem [ref=e1427]:
+                    - link "Casio G-SHOCK Frogman Watches," [ref=e1428] [cursor=pointer]:
+                      - /url: https://www.ebay.com/b/Casio-G-SHOCK-Frogman-Watches/31387/bn_56798179
+                  - listitem [ref=e1429]:
+                    - link "Casio G-SHOCK BLUETOOTH Wristwatches," [ref=e1430] [cursor=pointer]:
+                      - /url: https://www.ebay.com/b/Casio-G-SHOCK-BLUETOOTH-Wristwatches/31387/bn_7116704380
+                  - listitem [ref=e1431]:
+                    - link "Casio G-SHOCK Gulfmaster Wristwatches," [ref=e1432] [cursor=pointer]:
+                      - /url: https://www.ebay.com/b/Casio-G-SHOCK-Gulfmaster-Wristwatches/31387/bn_80632665
+                  - listitem [ref=e1433]:
+                    - link "Casio G-SHOCK GA-100 Wristwatches" [ref=e1434] [cursor=pointer]:
+                      - /url: https://www.ebay.com/b/Casio-G-SHOCK-GA-100-Wristwatches/31387/bn_7112045770
+              - generic [ref=e1436]:
+                - heading "Shop Luxury Watches" [level=2] [ref=e1437]
+                - generic [ref=e1438]:
+                  - generic [ref=e1439]:
+                    - heading "Best Sellers" [level=3] [ref=e1440]
+                    - list [ref=e1441]:
+                      - listitem [ref=e1442]:
+                        - link "Rolex Datejust 41 126334" [ref=e1443] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/Rolex-Datejust-41-126334/31387/bn_7121882296
+                          - generic [ref=e1444]: Rolex Datejust 41 126334
+                      - listitem [ref=e1445]:
+                        - link "Rolex Datejust 41 126300" [ref=e1446] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/Rolex-Datejust-41-126300/31387/bn_7121885450
+                          - generic [ref=e1447]: Rolex Datejust 41 126300
+                      - listitem [ref=e1448]:
+                        - link "Rolex GMT Master II 126710" [ref=e1449] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/Rolex-GMT-Master-II-126710/31387/bn_7121885443
+                          - generic [ref=e1450]: Rolex GMT Master II 126710
+                      - listitem [ref=e1451]:
+                        - link "Rolex Submariner Date 126610" [ref=e1452] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/Rolex-Submariner-Date-126610/31387/bn_7121885397
+                          - generic [ref=e1453]: Rolex Submariner Date 126610
+                      - listitem [ref=e1454]:
+                        - link "Rolex Sky Dweller 336934" [ref=e1455] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/Rolex-Sky-Dweller-336934/31387/bn_7121878710
+                          - generic [ref=e1456]: Rolex Sky Dweller 336934
+                  - generic [ref=e1457]:
+                    - heading "Rolex" [level=3] [ref=e1458]
+                    - list [ref=e1459]:
+                      - listitem [ref=e1460]:
+                        - link "GMT-Master II" [ref=e1461] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/Rolex-GMT-Master-II-Watches/31387/bn_56798189
+                          - generic [ref=e1462]: GMT-Master II
+                      - listitem [ref=e1463]:
+                        - link "Submariner" [ref=e1464] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/Rolex-Submariner-Watches/31387/bn_3001215
+                          - generic [ref=e1465]: Submariner
+                      - listitem [ref=e1466]:
+                        - link "Cosmograph Daytona" [ref=e1467] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/Rolex-Cosmograph-Daytona-Watches/31387/bn_2961223
+                          - generic [ref=e1468]: Cosmograph Daytona
+                      - listitem [ref=e1469]:
+                        - link "Datejust" [ref=e1470] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/Rolex-Datejust-Watches/31387/bn_56798181
+                          - generic [ref=e1471]: Datejust
+                      - listitem [ref=e1472]:
+                        - link "Oyster Perpetual" [ref=e1473] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/Rolex-Oyster-Perpetual-Watches/31387/bn_2977327
+                          - generic [ref=e1474]: Oyster Perpetual
+                  - generic [ref=e1475]:
+                    - heading "Popular Collections" [level=3] [ref=e1476]
+                    - list [ref=e1477]:
+                      - listitem [ref=e1478]:
+                        - link "Omega Seamaster" [ref=e1479] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/OMEGA-Seamaster-Watches/31387/bn_57333733
+                          - generic [ref=e1480]: Omega Seamaster
+                      - listitem [ref=e1481]:
+                        - link "Omega Speedmaster" [ref=e1482] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/OMEGA-Speedmaster-Watches/31387/bn_57333734
+                          - generic [ref=e1483]: Omega Speedmaster
+                      - listitem [ref=e1484]:
+                        - link "Breitlling Chronomat" [ref=e1485] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/Breitling-Chronomat-Watches/31387/bn_80630159
+                          - generic [ref=e1486]: Breitlling Chronomat
+                      - listitem [ref=e1487]:
+                        - link "Cartier Ballon Bleu" [ref=e1488] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/Cartier-Ballon-Bleu-Watches/31387/bn_7112594448
+                          - generic [ref=e1489]: Cartier Ballon Bleu
+                      - listitem [ref=e1490]:
+                        - link "Tag Heuer Formula 1" [ref=e1491] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/TAG-Heuer-Formula-1-Watches/31387/bn_7113638299
+                          - generic [ref=e1492]: Tag Heuer Formula 1
+                  - generic [ref=e1493]:
+                    - heading "Top Brands" [level=3] [ref=e1494]
+                    - list [ref=e1495]:
+                      - listitem [ref=e1496]:
+                        - link "Omega" [ref=e1497] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/OMEGA-Watches/31387/bn_3000908
+                          - generic [ref=e1498]: Omega
+                      - listitem [ref=e1499]:
+                        - link "Breitling" [ref=e1500] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/Breitling-Watches/31387/bn_3003445
+                          - generic [ref=e1501]: Breitling
+                      - listitem [ref=e1502]:
+                        - link "Cartier" [ref=e1503] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/Cartier-Watches/31387/bn_2967163
+                          - generic [ref=e1504]: Cartier
+                      - listitem [ref=e1505]:
+                        - link "Tag Heuer" [ref=e1506] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/TAG-Heuer-Watches/31387/bn_2999599
+                          - generic [ref=e1507]: Tag Heuer
+                      - listitem [ref=e1508]:
+                        - link "Patek Philippe" [ref=e1509] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/Patek-Philippe-Watches/31387/bn_2975769
+                          - generic [ref=e1510]: Patek Philippe
+                  - generic [ref=e1511]:
+                    - heading "Iconic Brands" [level=3] [ref=e1512]
+                    - list [ref=e1513]:
+                      - listitem [ref=e1514]:
+                        - link "Grand Seiko" [ref=e1515] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/Grand-Seiko-Watches/31387/bn_7119185158
+                          - generic [ref=e1516]: Grand Seiko
+                      - listitem [ref=e1517]:
+                        - link "Audemars Piguet" [ref=e1518] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/Audemars-Piguet-Watches/31387/bn_3007141
+                          - generic [ref=e1519]: Audemars Piguet
+                      - listitem [ref=e1520]:
+                        - link "Tudor" [ref=e1521] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/TUDOR-Wristwatches/31387/bn_3002663
+                          - generic [ref=e1522]: Tudor
+                      - listitem [ref=e1523]:
+                        - link "Richard Mille" [ref=e1524] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/Richard-Mille-Wristwatches/31387/bn_2971070
+                          - generic [ref=e1525]: Richard Mille
+                      - listitem [ref=e1526]:
+                        - link "IWC" [ref=e1527] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/IWC-Watches/31387/bn_3003753
+                          - generic [ref=e1528]: IWC
+              - generic [ref=e1530]:
+                - heading "Related searches" [level=2] [ref=e1531]
+                - list [ref=e1532]:
+                  - listitem [ref=e1533]:
+                    - link "G Shock Master" [ref=e1534] [cursor=pointer]:
+                      - /url: https://www.ebay.com/shop/g-shock-master?_nkw=g+shock+master
+                      - generic [ref=e1535]: G Shock Master
+                  - listitem [ref=e1536]:
+                    - link "Casio Master of G" [ref=e1537] [cursor=pointer]:
+                      - /url: https://www.ebay.com/shop/casio-master-of-g?_nkw=casio+master+of+g
+                      - generic [ref=e1538]: Casio Master of G
+                  - listitem [ref=e1539]:
+                    - link "G- Shock Mudmaster" [ref=e1540] [cursor=pointer]:
+                      - /url: https://www.ebay.com/shop/g-shock-mudmaster?_nkw=g%2D+shock+mudmaster
+                      - generic [ref=e1541]: G- Shock Mudmaster
+                  - listitem [ref=e1542]:
+                    - link "G Shock GMT" [ref=e1543] [cursor=pointer]:
+                      - /url: https://www.ebay.com/shop/g-shock-gmt?_nkw=g+shock+gmt
+                      - generic [ref=e1544]: G Shock GMT
+                  - listitem [ref=e1545]:
+                    - link "G Shock Mudmaster" [ref=e1546] [cursor=pointer]:
+                      - /url: https://www.ebay.com/shop/g-shock-mudmaster?_nkw=g+shock+mudmaster
+                      - generic [ref=e1547]: G Shock Mudmaster
+                  - listitem [ref=e1548]:
+                    - link "G Shock Mud Master" [ref=e1549] [cursor=pointer]:
+                      - /url: https://www.ebay.com/shop/g-shock-mud-master?_nkw=g+shock+mud+master
+                      - generic [ref=e1550]: G Shock Mud Master
+                  - listitem [ref=e1551]:
+                    - link "G- Shock Mt-G" [ref=e1552] [cursor=pointer]:
+                      - /url: https://www.ebay.com/shop/g-shock-mtg?_nkw=g%2D+shock+mt%2Dg
+                      - generic [ref=e1553]: G- Shock Mt-G
+                  - listitem [ref=e1554]:
+                    - link "G Shock Mudmaster Solar" [ref=e1555] [cursor=pointer]:
+                      - /url: https://www.ebay.com/shop/g-shock-mudmaster-solar?_nkw=g+shock+mudmaster+solar
+                      - generic [ref=e1556]: G Shock Mudmaster Solar
+                  - listitem [ref=e1557]:
+                    - link "Casio GMT" [ref=e1558] [cursor=pointer]:
+                      - /url: https://www.ebay.com/shop/casio-gmt?_nkw=casio+gmt
+                      - generic [ref=e1559]: Casio GMT
+                  - listitem [ref=e1560]:
+                    - link "Casio Masters of G" [ref=e1561] [cursor=pointer]:
+                      - /url: https://www.ebay.com/shop/casio-masters-of-g?_nkw=casio+masters+of+g
+                      - generic [ref=e1562]: Casio Masters of G
+                  - listitem [ref=e1563]:
+                    - link "Casio G-Shock Manual" [ref=e1564] [cursor=pointer]:
+                      - /url: https://www.ebay.com/shop/casio-gshock-manual?_nkw=casio+g%2Dshock+manual
+                      - generic [ref=e1565]: Casio G-Shock Manual
+                  - listitem [ref=e1566]:
+                    - link "G Shock Mudmaster Gwg 1000" [ref=e1567] [cursor=pointer]:
+                      - /url: https://www.ebay.com/shop/g-shock-mudmaster-gwg-1000?_nkw=g+shock+mudmaster+gwg+1000
+                      - generic [ref=e1568]: G Shock Mudmaster Gwg 1000
+                  - listitem [ref=e1569]:
+                    - link "G Shock Mudmaster Gwg 2000" [ref=e1570] [cursor=pointer]:
+                      - /url: https://www.ebay.com/shop/g-shock-mudmaster-gwg-2000?_nkw=g+shock+mudmaster+gwg+2000
+                      - generic [ref=e1571]: G Shock Mudmaster Gwg 2000
+                  - listitem [ref=e1572]:
+                    - link "Casio G Shock" [ref=e1573] [cursor=pointer]:
+                      - /url: https://www.ebay.com/shop/casio-g-shock?_nkw=casio+g+shock
+                      - generic [ref=e1574]: Casio G Shock
+                  - listitem [ref=e1575]:
+                    - link "G-Shock Mudmaster Gwg-1000" [ref=e1576] [cursor=pointer]:
+                      - /url: https://www.ebay.com/shop/gshock-mudmaster-gwg1000?_nkw=g%2Dshock+mudmaster+gwg%2D1000
+                      - generic [ref=e1577]: G-Shock Mudmaster Gwg-1000
+        - img [ref=e1581]
+  - contentinfo [ref=e1587]:
+    - list [ref=e1588]:
+      - listitem [ref=e1589]:
+        - link "eBayについて" [ref=e1590] [cursor=pointer]:
+          - /url: https://www.ebayinc.com/company
+      - listitem [ref=e1591]:
+        - link "お知らせ" [ref=e1592] [cursor=pointer]:
+          - /url: https://community.ebay.com/t5/Announcements/bg-p/Announcements
+      - listitem [ref=e1593]:
+        - link "コミュニティ" [ref=e1594] [cursor=pointer]:
+          - /url: https://community.ebay.com
+      - listitem [ref=e1595]:
+        - link "セキュリティセンター" [ref=e1596] [cursor=pointer]:
+          - /url: https://pages.ebay.com/securitycenter/index.html
+      - listitem [ref=e1597]:
+        - link "出品者向け情報センター" [ref=e1598] [cursor=pointer]:
+          - /url: https://pages.ebay.com/seller-center/index.html
+      - listitem [ref=e1599]:
+        - link "ポリシー" [ref=e1600] [cursor=pointer]:
+          - /url: https://www.ebay.com/help/policies/default/ebays-rules-policies?id=4205
+      - listitem [ref=e1601]:
+        - link "アフィリエイト" [ref=e1602] [cursor=pointer]:
+          - /url: https://partnernetwork.ebay.com
+      - listitem [ref=e1603]:
+        - link "ヘルプ＆お問い合わせ" [ref=e1604] [cursor=pointer]:
+          - /url: https://www.ebay.com/help/home
+      - listitem [ref=e1605]:
+        - link "サイトマップ" [ref=e1606] [cursor=pointer]:
+          - /url: https://pages.ebay.com/sitemap.html
+    - generic [ref=e1607]:
+      - text: Copyright © 1995-2026 eBay Inc. All Rights Reserved.
+      - link "利用規約" [ref=e1608] [cursor=pointer]:
+        - /url: https://www.ebay.com/help/policies/member-behaviour-policies/user-agreement?id=4259
+      - text: ","
+      - link "プライバシー" [ref=e1609] [cursor=pointer]:
+        - /url: https://www.ebay.com/help/policies/member-behaviour-policies/user-privacy-notice-privacy-policy?id=4260
+      - text: ","
+      - link "ペイメントサービス利用規約" [ref=e1610] [cursor=pointer]:
+        - /url: https://pages.ebay.com/jp/ja-jp/payment/2.0/terms.html
+      - text: ","
+      - link "Cookie" [ref=e1611] [cursor=pointer]:
+        - /url: https://www.ebay.com/help/policies/member-behaviour-policies/ebay-cookie-notice?id=4267
+      - text: と
+      - link "AdChoice" [ref=e1612] [cursor=pointer]:
+        - /url: https://www.ebay.com/adchoice
+        - text: AdChoice
+        - img
+  - img
+  - img [ref=e1614]

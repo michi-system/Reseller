@@ -23,6 +23,7 @@ from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 from .coerce import to_float as _to_float
 from .coerce import to_int as _to_int
 from .config import Settings, load_settings
+from .env import load_dotenv
 from .json_utils import load_json_dict as _load_json_file
 from .json_utils import save_json_dict as _save_json_file
 from .liquidity import estimate_ev90, evaluate_liquidity_gate, get_liquidity_signal
@@ -36,6 +37,8 @@ from .miner import create_miner_candidate
 _EBAY_TOKEN_CACHE: Dict[str, Any] = {"token": None, "expires_at": 0.0}
 _PROJECT_ROOT = Path(__file__).resolve().parents[1]
 _DATA_DIR = _PROJECT_ROOT / "data"
+_DEFAULT_DOTENV_PATH = _PROJECT_ROOT / ".env.local"
+_LIVE_FETCH_DOTENV_LOADED = False
 
 
 def _promote_legacy_data_path(
@@ -1541,7 +1544,22 @@ def _save_query_skip_entries(entries: Dict[str, Dict[str, Any]]) -> None:
     _save_json_file(_QUERY_SKIP_PATH, {"entries": entries})
 
 
+def _ensure_live_fetch_dotenv_loaded() -> None:
+    global _LIVE_FETCH_DOTENV_LOADED
+    if _LIVE_FETCH_DOTENV_LOADED:
+        return
+    try:
+        load_dotenv(_DEFAULT_DOTENV_PATH)
+    finally:
+        _LIVE_FETCH_DOTENV_LOADED = True
+
+
 def _first_env(*keys: str) -> str:
+    for key in keys:
+        val = (os.getenv(key, "") or "").strip()
+        if val:
+            return val
+    _ensure_live_fetch_dotenv_loaded()
     for key in keys:
         val = (os.getenv(key, "") or "").strip()
         if val:
@@ -3607,12 +3625,17 @@ def _liquidity_sold_sample(liquidity_signal: Dict[str, Any]) -> Dict[str, Any]:
     if not sample:
         return {}
     item_url = _first_text(sample.get("item_url"))
+    item_id = _first_text(sample.get("item_id"))
+    if (not item_id) and item_url:
+        item_id = _ebay_item_id_from_url(item_url)
     image_url = _first_text(sample.get("image_url"))
     title = _first_text(sample.get("title"))
     sold_price = _to_float(sample.get("sold_price"), -1.0)
     out: Dict[str, Any] = {}
     if item_url:
         out["item_url"] = item_url
+    if item_id:
+        out["item_id"] = item_id
     if image_url:
         out["image_url"] = image_url
     if title:
@@ -3626,8 +3649,9 @@ def _has_sold_sample_reference(sample: Dict[str, Any]) -> bool:
     if not isinstance(sample, dict) or not sample:
         return False
     item_url = _first_text(sample.get("item_url"))
+    item_id = _first_text(sample.get("item_id"))
     sold_price = _to_float(sample.get("sold_price_usd"), -1.0)
-    return bool(item_url and sold_price > 0)
+    return bool((item_url or item_id) and sold_price > 0)
 
 
 def _liquidity_signal_is_reliable_for_pair(
@@ -6822,7 +6846,9 @@ def fetch_live_miner_candidates(
         if str(sale_price_basis_type or "").strip().lower() == "sold_price_min_90d":
             market_url_display = _first_text(sold_sample.get("item_url"))
             market_image_display = _first_text(sold_sample.get("image_url"), market.image_url)
-            sold_item_id = _ebay_item_id_from_url(market_url_display)
+            sold_item_id = _first_text(sold_sample.get("item_id"))
+            if not sold_item_id:
+                sold_item_id = _ebay_item_id_from_url(market_url_display)
             if sold_item_id:
                 market_item_id_display = sold_item_id
         else:
@@ -6892,6 +6918,7 @@ def fetch_live_miner_candidates(
             },
         }
         if sold_sample:
+            payload["metadata"]["ebay_sold_item_id"] = sold_sample.get("item_id")
             payload["metadata"]["ebay_sold_item_url"] = sold_sample.get("item_url")
             payload["metadata"]["ebay_sold_image_url"] = sold_sample.get("image_url")
             payload["metadata"]["ebay_sold_title"] = sold_sample.get("title")

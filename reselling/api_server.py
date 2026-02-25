@@ -607,9 +607,13 @@ class ApiHandler(BaseHTTPRequestHandler):
         timebox_sec = max(10, _to_int(body.get("fetch_timebox_sec", 300), 300))
         max_passes = max(1, min(40, _to_int(body.get("fetch_max_passes", 20), 20)))
         continue_after_target = _to_bool(body.get("continue_after_target", True), True)
+        stage_a_big_word_limit = max(0, min(50, _to_int(body.get("stage_a_big_word_limit", 0), 0)))
+        stage_a_minimize_transitions = _to_bool(body.get("stage_a_minimize_transitions", True), True)
         fetch_kwargs = {
             "limit_per_site": int(body.get("limit_per_site", 20)),
             "max_candidates": int(body.get("max_candidates", 20)),
+            "stage_a_big_word_limit": stage_a_big_word_limit,
+            "stage_a_minimize_transitions": stage_a_minimize_transitions,
             "min_match_score": float(body.get("min_match_score", 0.72)),
             "min_profit_usd": float(body.get("min_profit_usd", 0.01)),
             "min_margin_rate": float(body.get("min_margin_rate", 0.03)),

@@ -9,9 +9,9 @@
 - 人間レビュー結果（承認/否認）を次サイクル改善に還元する。
 
 ## 2. 最短オンボーディング（10分）
-1. `docs/REQUIREMENTS.md` を読む（最終要件の正本）。
-2. `docs/DEFINITION_OF_DONE.md` を読む（完了条件の正本）。
-3. `docs/OPERATION_POLICY.json` を読む（閾値・運用ガードの正本）。
+1. `docs/MINER_SPEC.md` を読む（Minerの要件/探索仕様/DoDの正本）。
+2. `docs/OPERATION_POLICY.json` を読む（閾値・運用ガードの正本）。
+3. `docs/MINER_RUNBOOK.md` を読む（Miner実行手順の正本）。
 4. `docs/STATUS_CURRENT.md` を読む（最新スナップショット）。
 5. `docs/WORKBOARD.md` を読む（工数・計画・実装タスクの正本）。
 6. `docs/PROGRAM_OVERVIEW.md` を読む（Reseller全体像）。
@@ -27,9 +27,9 @@
 ## 3. 正本の責務（Single Source of Truth）
 | 種別 | 正本ファイル | 役割 |
 |---|---|---|
-| 要件 | `docs/REQUIREMENTS.md` | 何を満たすべきか |
-| 完了定義 | `docs/DEFINITION_OF_DONE.md` | 何をもって完了とするか |
+| Miner要件/DoD | `docs/MINER_SPEC.md` | 何を満たすべきか、何をもって完了とするか |
 | 閾値/ガード | `docs/OPERATION_POLICY.json` | 実行時パラメータの基準 |
+| Miner実行手順 | `docs/MINER_RUNBOOK.md` | 事前チェック、API、サイクル実行手順 |
 | 現在地 | `docs/STATUS_CURRENT.md` | 最新の実運用スナップショット |
 | 計画/工数/実装管理 | `docs/WORKBOARD.md` | backlog, effort, next actions |
 | 全体設計 | `docs/PROGRAM_OVERVIEW.md` | Reseller (Miner + Operator) の境界と計画 |
@@ -49,9 +49,7 @@
 | 機械可読引き継ぎ | `docs/HANDOVER_MANIFEST.json` | 新規エージェント向け定義 |
 
 ## 4. 実行コマンド入口
-- API: `docs/API_LOCAL.md`
-- 事前チェック: `docs/PREVALIDATION.md`
-- 為替・利益式: `docs/FX_PROFIT_FLOW.md`
+- Miner実行手順: `docs/MINER_RUNBOOK.md`
 - Supabase初期スキーマ: `docs/sql/reseller_supabase_schema.sql`
 - 生成物の所在確認: `docs/RECORDS_REGISTRY.md`
 
@@ -59,7 +57,7 @@
 - 生成物（`docs/*_latest.json`, `docs/autonomous_*`, `docs/cycle_diagnostics`）を手編集しない。
 - 実行状態（`data/miner_*`, `data/liquidity_*`）を手編集しない。
 - 正本を増殖させない（同じ責務の新規mdを作らない）。
-- 要件変更時に `REQUIREMENTS -> DoD -> OPERATION_POLICY` の同期を省略しない。
+- 要件変更時に `MINER_SPEC -> OPERATION_POLICY` の同期を省略しない。
 
 ## 6. 次エージェント向け作業開始手順
 1. `docs/STATUS_CURRENT.md` と `docs/WORKBOARD.md` の `Now` セクションを確認。

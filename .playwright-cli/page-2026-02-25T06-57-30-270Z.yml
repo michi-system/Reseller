@@ -1,0 +1,16 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e3]:
+    - link "メインコンテンツにスキップ" [ref=e5] [cursor=pointer]:
+      - /url: "#mainContent"
+    - link "eBayホーム" [ref=e8] [cursor=pointer]:
+      - /url: https://www.ebay.com
+      - img "eBayホーム" [ref=e9]
+  - generic [ref=e15]:
+    - generic [ref=e16]:
+      - status [ref=e17]
+      - status [ref=e18]
+      - status [ref=e19]
+    - heading "eBayにアクセスする前にブラウザを確認しています。" [level=1] [ref=e20]:
+      - generic [ref=e21]: eBayにアクセスする前にブラウザを確認しています。
+    - generic [ref=e22]: リクエストしたコンテンツはご利用のブラウザによってまもなくリダイレクトされます。お待ちください...
+    - generic [ref=e23]: 参照ID：0bc99c9f-dcec-4d4b-b8e5-f77155ac8171

@@ -4,7 +4,7 @@
 - 以前: 実運用シードは `watch` 中心で、カテゴリ横断ナレッジは未充足。
 - 今回: 追加収集により、カテゴリ入力からメーカー/シリーズ/型番へ展開するための初期辞書を作成。
 - 保存先:
-  - `/Users/tadamichikimura/Downloads/dev-HQ/ebayminer/data/category_knowledge_seeds_v1.json`
+  - `/Users/tadamichikimura/Downloads/dev-HQ/Reseller/data/category_knowledge_seeds_v1.json`
 
 ## 2. この辞書でできること
 1. 一般カテゴリ名から、優先ブランド・シリーズ・型番候補へ段階展開。

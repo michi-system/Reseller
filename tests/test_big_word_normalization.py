@@ -1,5 +1,4 @@
 import unittest
-from unittest.mock import patch
 
 from reselling import miner_seed_pool
 
@@ -10,13 +9,9 @@ class BigWordNormalizationTests(unittest.TestCase):
             "category_key": "watch",
             "display_name_ja": "腕時計",
             "aliases": ["watch", "腕時計", "G-SHOCK NEW"],
+            "seed_series": ["G-SHOCK NEW", "PROSPEX NEW", "New Balance 574 NEW"],
         }
-        with patch.object(
-            miner_seed_pool,
-            "_build_category_seed_queries",
-            return_value=(["G-SHOCK NEW", "PROSPEX NEW", "New Balance 574 NEW"], {"applied": True}),
-        ):
-            words = miner_seed_pool._category_big_words("watch", row)
+        words = miner_seed_pool._category_big_words("watch", row)
         self.assertIn("G-SHOCK", words)
         self.assertIn("PROSPEX", words)
         self.assertIn("New Balance 574", words)
@@ -28,13 +23,9 @@ class BigWordNormalizationTests(unittest.TestCase):
             "category_key": "watch",
             "display_name_ja": "腕時計",
             "aliases": ["G-SHOCK", "G-SHOCK NEW", "g-shock  new"],
+            "seed_series": ["G-SHOCK NEW"],
         }
-        with patch.object(
-            miner_seed_pool,
-            "_build_category_seed_queries",
-            return_value=(["G-SHOCK NEW"], {"applied": True}),
-        ):
-            words = miner_seed_pool._category_big_words("watch", row)
+        words = miner_seed_pool._category_big_words("watch", row)
         gshock_count = sum(1 for v in words if v.upper().replace(" ", "") == "G-SHOCK".replace(" ", ""))
         self.assertEqual(gshock_count, 1)
 

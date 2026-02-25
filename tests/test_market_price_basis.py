@@ -111,7 +111,7 @@ class MarketPriceBasisTests(unittest.TestCase):
         self.assertFalse(ok)
         self.assertEqual(reason, "signal_rpa_query_model_mismatch")
 
-    def test_has_sold_sample_reference_requires_url_and_price(self) -> None:
+    def test_has_sold_sample_reference_requires_reference_and_price(self) -> None:
         self.assertTrue(
             _has_sold_sample_reference(
                 {
@@ -120,10 +120,19 @@ class MarketPriceBasisTests(unittest.TestCase):
                 }
             )
         )
+        self.assertTrue(
+            _has_sold_sample_reference(
+                {
+                    "item_id": "v1|123456789012|0",
+                    "sold_price_usd": 120.0,
+                }
+            )
+        )
         self.assertFalse(
             _has_sold_sample_reference(
                 {
                     "item_url": "",
+                    "item_id": "",
                     "sold_price_usd": 120.0,
                 }
             )

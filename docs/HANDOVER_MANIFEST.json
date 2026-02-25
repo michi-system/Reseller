@@ -1,12 +1,12 @@
 {
   "version": 1,
-  "last_updated": "2026-02-22",
+  "last_updated": "2026-02-25",
   "entrypoint": "docs/START_HERE.md",
   "onboarding_order": [
     "docs/START_HERE.md",
-    "docs/REQUIREMENTS.md",
-    "docs/DEFINITION_OF_DONE.md",
+    "docs/MINER_SPEC.md",
     "docs/OPERATION_POLICY.json",
+    "docs/MINER_RUNBOOK.md",
     "docs/STATUS_CURRENT.md",
     "docs/WORKBOARD.md",
     "docs/INTERNAL_NAME_MIGRATION.md",
@@ -14,9 +14,11 @@
     "docs/daily_reports/TEMPLATE.md"
   ],
   "single_source_of_truth": {
-    "requirements": "docs/REQUIREMENTS.md",
-    "definition_of_done": "docs/DEFINITION_OF_DONE.md",
+    "miner_spec": "docs/MINER_SPEC.md",
+    "requirements": "docs/MINER_SPEC.md",
+    "definition_of_done": "docs/MINER_SPEC.md",
     "policy": "docs/OPERATION_POLICY.json",
+    "miner_runbook": "docs/MINER_RUNBOOK.md",
     "status_snapshot": "docs/STATUS_CURRENT.md",
     "planning_and_effort": "docs/WORKBOARD.md",
     "daily_report_template": "docs/daily_reports/TEMPLATE.md",
@@ -46,7 +48,10 @@
       "docs/query_width_summary.json",
       "docs/fetch_autotune_report_latest.json",
       "docs/min_new_autotune_batch_latest.json",
-      "docs/min_new_autotune_validation_latest.json"
+      "docs/min_new_autotune_validation_latest.json",
+      "data/rpa_training/url_filter_probe/*.json",
+      "data/rpa_training/phasea_acceptance/*.json",
+      "data/rpa_training/phasea_acceptance/screens/*.png"
     ]
   },
   "runtime_state_files": [
@@ -66,7 +71,7 @@
     "data/liquidity_rpa_signals.jsonl"
   ],
   "update_protocol": [
-    "When requirement changes, update REQUIREMENTS -> DEFINITION_OF_DONE -> OPERATION_POLICY.",
+    "When Miner spec changes, update MINER_SPEC -> OPERATION_POLICY -> MINER_RUNBOOK (if run procedure changed).",
     "When implementation changes, update WORKBOARD and STATUS_CURRENT as needed.",
     "When output path changes, update RECORDS_REGISTRY and README index."
   ],

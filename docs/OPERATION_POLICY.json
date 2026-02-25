@@ -13,6 +13,11 @@
     "min_match_score": 0.75,
     "min_ev90_usd": 0.0
   },
+  "stage_a_defaults": {
+    "query_page_unlock_enabled": true,
+    "query_page_unlock_hours_default": 24,
+    "query_page_unlock_min_pages": 1
+  },
   "env_requirements": {
     "ITEM_CONDITION": "new",
     "LIQUIDITY_REQUIRE_SIGNAL": "1",

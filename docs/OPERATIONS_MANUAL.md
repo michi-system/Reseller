@@ -19,7 +19,7 @@
 5. 日報リンクをProjectカードへ追記し、`Reported` へ移動。
 
 ## 3. Codexで必ず開く場所
-- 作業フォルダ: `/Users/tadamichikimura/Downloads/dev-HQ/ebayminer`
+- 作業フォルダ: `/Users/tadamichikimura/Downloads/dev-HQ/Reseller`
 - 最初に読む: `docs/START_HERE.md`
 - 進行管理の正本: `docs/WORKBOARD.md`
 - 日報テンプレ: `docs/daily_reports/TEMPLATE.md`
@@ -85,7 +85,8 @@ python3 scripts/generate_daily_report.py --date YYYY-MM-DD --operator @github_id
 5. `python3 scripts/backup_local_db.py --dry-run` でバックアップ運用を確認
 
 ## 11. 保存場所ルール
-- 要件/運用ルール: `docs/REQUIREMENTS.md`, `docs/OPERATION_POLICY.json`
+- 要件/運用ルール: `docs/MINER_SPEC.md`, `docs/OPERATION_POLICY.json`
+- Miner実行手順: `docs/MINER_RUNBOOK.md`
 - プロジェクト全体像: `docs/PROGRAM_OVERVIEW.md`
 - internal名移行方針: `docs/INTERNAL_NAME_MIGRATION.md`
 - 日々の作業管理: `docs/WORKBOARD.md`

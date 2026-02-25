@@ -1,6 +1,6 @@
 # STATUS CURRENT
 
-最終更新: 2026-02-22 (JST)  
+最終更新: 2026-02-25 (JST)  
 このファイルは「現時点の運用スナップショット」専用です。  
 計画/工数/実装タスクは `docs/WORKBOARD.md` に集約します。
 
@@ -24,6 +24,9 @@
 - API効率（直近検証）: cache hit 100%, network call 0
 - DBステータス（直近確認値）: `listed=364`, `rejected=110`, `approved=1`, `pending=0`
 - 否認上位傾向: `price`, `color`, `condition`, `accessories`
+- Phase A（腕時計）: 条件設定/50件取得/ページ送り/seed抽出/重複処理まで受け入れ試験を完了
+- Phase A検証レポート: `data/rpa_training/phasea_acceptance/phasea_acceptance_report_v3.json`
+- ページ送り差分検証: `data/rpa_training/phasea_acceptance/pagination_title_swap_report_v4.json`
 
 注記:
 - 上記数値は実行により変動するため、最新値は `docs/miner_cycle_report_latest.json` と DB を正とする。
@@ -33,6 +36,8 @@
 - 流動性シグナル必須 (`LIQUIDITY_REQUIRE_SIGNAL=1`)
 - 自動レビューで流動性欠損/色欠損を保守的にブロック
 - Query重複スキップ/クールダウン/履歴ベース再試行制御
+- Product Research Phase Aは URL先入れ + UI最小操作 + offset再適用でPR消費を抑制
+- `recently_sold` は `sorting=datelastsold` 先入れ + `Date last sold` ヘッダー操作で最終確定（`metadata.filter_state.sort_selection_source` で検証）
 
 ## 5. 既知課題（運用観点）
 1. レビュー候補の流入不足（カテゴリ・型番によっては枯渇）

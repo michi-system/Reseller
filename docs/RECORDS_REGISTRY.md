@@ -38,6 +38,9 @@
 | `docs/min_new_autotune_validation_latest.json` | fetch autotune処理 | min_new_items 検証結果 |
 | `docs/rpa_speed_benchmark_*` | RPAベンチ実行 | RPA速度比較 |
 | `docs/fetch_run_v16_summary.json` | 単発検証 | fetchラン集計 |
+| `data/rpa_training/url_filter_probe/*.json` | Product Research検証実行 | URLフィルタ適用可否/通信比較の検証結果 |
+| `data/rpa_training/phasea_acceptance/*.json` | Phase A受け入れ試験 | 条件設定/ページ送り/重複処理の合否結果 |
+| `data/rpa_training/phasea_acceptance/screens/*.png` | Phase A受け入れ試験 | 最終画面スクリーンショット |
 
 ## 5. 実行状態ファイル（`data/`）
 | パス | 更新元 | 用途 |
@@ -73,7 +76,7 @@
 | `docs/archive/manual/` | 手動作成レポートの退避先 |
 
 ## 7. 参照優先順
-1. 仕様確認: `docs/REQUIREMENTS.md` / `docs/DEFINITION_OF_DONE.md` / `docs/OPERATION_POLICY.json`
+1. 仕様確認: `docs/MINER_SPEC.md` / `docs/OPERATION_POLICY.json` / `docs/MINER_RUNBOOK.md`
 2. 現在地確認: `docs/STATUS_CURRENT.md`
 3. 進行確認: `docs/WORKBOARD.md`
 4. 実行結果確認: 本ファイルの各出力先
