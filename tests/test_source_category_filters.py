@@ -27,6 +27,7 @@ class SourceCategoryFilterTests(unittest.TestCase):
             os.environ,
             {
                 "RAKUTEN_APPLICATION_ID": "app-test",
+                "RAKUTEN_PUBLIC_KEY": "public-key",
                 "MINER_ACTIVE_SEED_MAX_PRICE_JPY": "18000",
             },
             clear=False,
@@ -171,6 +172,107 @@ class SourceCategoryFilterTests(unittest.TestCase):
         self.assertTrue(bool(resolved.get("applied")))
         self.assertEqual(str(resolved.get("source", "")), "auto_item_hits")
         self.assertEqual(str(resolved.get("genre_category_id", "")), "2497")
+
+    def test_resolve_rakuten_category_accepts_non_numeric_app_id_with_access_key(self) -> None:
+        watch_row = {
+            "category_key": "watch",
+            "display_name_ja": "腕時計",
+            "aliases": ["watch", "腕時計"],
+        }
+        seen_urls: list[str] = []
+
+        def fake_request(url: str, **_kwargs):
+            seen_urls.append(url)
+            if "IchibaGenre/Search" in url:
+                return 200, {}, {"children": [{"child": {"genreId": "301981", "genreName": "メンズ腕時計"}}]}
+            raise AssertionError(f"unexpected url: {url}")
+
+        with patch.dict(
+            os.environ,
+            {
+                "RAKUTEN_APPLICATION_ID": "app-test",
+                "RAKUTEN_PUBLIC_KEY": "public-key",
+            },
+            clear=False,
+        ), patch.object(
+            live_miner_fetch,
+            "_active_category_context",
+            return_value=("watch", watch_row),
+        ), patch.object(
+            live_miner_fetch,
+            "_load_category_site_filter_cache",
+            return_value={},
+        ), patch.object(
+            live_miner_fetch,
+            "_save_category_site_filter_cache",
+            return_value=None,
+        ), patch.object(
+            live_miner_fetch,
+            "_request_with_retry",
+            side_effect=fake_request,
+        ):
+            resolved = live_miner_fetch._resolve_category_filter_for_site("rakuten", "watch")
+
+        self.assertTrue(bool(resolved.get("applied")))
+        self.assertEqual(str(resolved.get("source", "")), "auto_api")
+        self.assertEqual(str(resolved.get("genreId", "")), "301981")
+        self.assertTrue(any("accessKey=public-key" in url for url in seen_urls))
+
+    def test_resolve_rakuten_category_falls_back_to_item_hits_when_genre_not_found(self) -> None:
+        watch_row = {
+            "category_key": "watch",
+            "display_name_ja": "腕時計",
+            "aliases": ["watch", "腕時計"],
+        }
+        call_count = {"value": 0}
+
+        def fake_request(url: str, **_kwargs):
+            call_count["value"] += 1
+            if "IchibaGenre/Search" in url:
+                return 200, {}, {"children": []}
+            if "IchibaItem/Search" in url:
+                return (
+                    200,
+                    {},
+                    {
+                        "Items": [
+                            {"Item": {"genreId": "301981", "itemName": "CASIO G-SHOCK メンズ腕時計 GW-M5610U-1JF"}},
+                            {"Item": {"genreId": "302145", "itemName": "G-SHOCK 用 交換バンド ベルト"}},
+                        ]
+                    },
+                )
+            raise AssertionError(f"unexpected url: {url}")
+
+        with patch.dict(
+            os.environ,
+            {
+                "RAKUTEN_APPLICATION_ID": "app-test",
+                "RAKUTEN_PUBLIC_KEY": "public-key",
+            },
+            clear=False,
+        ), patch.object(
+            live_miner_fetch,
+            "_active_category_context",
+            return_value=("watch", watch_row),
+        ), patch.object(
+            live_miner_fetch,
+            "_load_category_site_filter_cache",
+            return_value={},
+        ), patch.object(
+            live_miner_fetch,
+            "_save_category_site_filter_cache",
+            return_value=None,
+        ), patch.object(
+            live_miner_fetch,
+            "_request_with_retry",
+            side_effect=fake_request,
+        ):
+            resolved = live_miner_fetch._resolve_category_filter_for_site("rakuten", "watch")
+
+        self.assertTrue(bool(resolved.get("applied")))
+        self.assertEqual(str(resolved.get("source", "")), "auto_item_hits")
+        self.assertEqual(str(resolved.get("genreId", "")), "301981")
+        self.assertGreaterEqual(int(call_count["value"]), 2)
 
 
 if __name__ == "__main__":

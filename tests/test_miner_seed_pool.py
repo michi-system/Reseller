@@ -87,12 +87,74 @@ class MinerSeedPoolTests(unittest.TestCase):
         )
         self.assertEqual(seeds, [])
 
+    def test_extract_seed_queries_strict_model_seed_drops_non_model_tokens(self) -> None:
+        seeds = miner_seed_pool._extract_seed_queries_from_title(
+            "Rare Sealed Y2K Blister Pack CASIO G-SHOCK Watch",
+            ["CASIO"],
+            prefer_strict_model_seed=True,
+        )
+        self.assertEqual(seeds, [])
+
+    def test_extract_seed_queries_strict_model_seed_keeps_gtin(self) -> None:
+        seeds = miner_seed_pool._extract_seed_queries_from_title(
+            "Panasonic ER-GN70-K JAN 4549980658031 New",
+            ["Panasonic"],
+            prefer_strict_model_seed=True,
+        )
+        keys = [miner_seed_pool._seed_key(v) for v in seeds]
+        self.assertTrue(any("4549980658031" in key for key in keys))
+
+    def test_category_requires_strict_model_seed_watch_default_true(self) -> None:
+        with patch.dict("os.environ", {"MINER_SEED_STRICT_MODEL_ONLY_WATCH": "1"}, clear=False):
+            self.assertTrue(miner_seed_pool._category_requires_strict_model_seed("watch", {}))
+        with patch.dict("os.environ", {"MINER_SEED_STRICT_MODEL_ONLY_WATCH": "0"}, clear=False):
+            self.assertFalse(miner_seed_pool._category_requires_strict_model_seed("watch", {}))
+
     def test_pick_liquidity_query_prefers_model_when_jp_seed_is_gtin_only(self) -> None:
         picked = miner_seed_pool._pick_liquidity_query(
             seed_query="CASIO GW-M5610U-1JF",
             jp_seed_query="4971850995470",
         )
         self.assertEqual(picked, "GW-M5610U-1JF")
+
+    def test_resolve_stage1_baseline_usd_prefers_seed_then_category(self) -> None:
+        value, source = miner_seed_pool._resolve_stage1_baseline_usd(
+            seed_collected_sold_price_min_usd=180.0,
+            category_min_seed_price_usd=100.0,
+        )
+        self.assertEqual(value, 180.0)
+        self.assertEqual(source, "seed_collected")
+
+        value, source = miner_seed_pool._resolve_stage1_baseline_usd(
+            seed_collected_sold_price_min_usd=-1.0,
+            category_min_seed_price_usd=100.0,
+        )
+        self.assertEqual(value, 100.0)
+        self.assertEqual(source, "category_min")
+
+    def test_stage1_site_queries_prioritize_model_code_with_small_limit(self) -> None:
+        queries = miner_seed_pool._stage1_site_queries(
+            seed_query="G-SHOCK CASIOAK",
+            stage1_query="G-SHOCK CASIOAK",
+            seed_source_title="CASIO GM-2100-1AER Men's Watch",
+            site="rakuten",
+            max_queries=2,
+        )
+        self.assertEqual(len(queries), 2)
+        self.assertEqual(queries[0], "G-SHOCK CASIOAK")
+        expected_key = miner_seed_pool._seed_key("GM-2100-1AER")
+        self.assertTrue(any(miner_seed_pool._seed_key(q) == expected_key for q in queries[1:]))
+
+    def test_stage1_site_queries_include_source_title_model_code_fallback(self) -> None:
+        queries = miner_seed_pool._stage1_site_queries(
+            seed_query="G-SHOCK",
+            stage1_query="G-SHOCK",
+            seed_source_title="CASIO GW-M5610U-1JF Tough Solar",
+            site="yahoo",
+            max_queries=3,
+        )
+        expected_key = miner_seed_pool._seed_key("GW-M5610U-1JF")
+        self.assertTrue(any(miner_seed_pool._seed_key(q) == expected_key for q in queries))
 
     def test_resolve_stage1_source_pricing_rakuten_multi_sku_resolved(self) -> None:
         item = miner_seed_pool.MarketItem(
@@ -138,6 +200,31 @@ class MinerSeedPoolTests(unittest.TestCase):
             identifiers={},
             raw={},
         )
+        with patch.dict("os.environ", {"MINER_STAGE1_MULTI_SKU_FALLBACK_NON_RAKUTEN": "0"}, clear=False):
+            resolved = miner_seed_pool._resolve_stage1_source_pricing(
+                item=item,
+                seed_query="SBDC101",
+                seed_source_title="SEIKO Prospex SBDC101",
+                timeout=10,
+                strict_multi_sku=True,
+            )
+        self.assertFalse(bool(resolved.get("ok")))
+        self.assertEqual(str(resolved.get("skip_reason")), "multi_sku_site_not_supported")
+
+    def test_resolve_stage1_source_pricing_multi_sku_fallback_non_rakuten(self) -> None:
+        item = miner_seed_pool.MarketItem(
+            site="yahoo_shopping",
+            item_id="yh-2",
+            title="SEIKO SBDC101 SPB143",
+            item_url="https://example.com/yh/2",
+            image_url="",
+            price=59000.0,
+            shipping=0.0,
+            currency="JPY",
+            condition="new",
+            identifiers={},
+            raw={},
+        )
         resolved = miner_seed_pool._resolve_stage1_source_pricing(
             item=item,
             seed_query="SBDC101",
@@ -145,8 +232,104 @@ class MinerSeedPoolTests(unittest.TestCase):
             timeout=10,
             strict_multi_sku=True,
         )
+        self.assertTrue(bool(resolved.get("ok")))
+        self.assertEqual(str(resolved.get("price_basis_type")), "listing_price_multi_sku_fallback")
+
+    def test_stage1_candidate_match_text_uses_identifier_model_hint(self) -> None:
+        item = miner_seed_pool.MarketItem(
+            site="rakuten",
+            item_id="rk-hint",
+            title="CASIO G-SHOCK ソーラー電波 メンズ腕時計",
+            item_url="https://example.com/rk/hint",
+            image_url="",
+            price=20000.0,
+            shipping=0.0,
+            currency="JPY",
+            condition="new",
+            identifiers={"model": "GW-M5610U-1JF"},
+            raw={},
+        )
+        candidate_text = miner_seed_pool._stage1_candidate_match_text(item)
+        score, reason = miner_seed_pool._seed_title_match_score(
+            seed_query="GW-M5610U-1JF",
+            seed_source_title="CASIO G-SHOCK GW-M5610U-1JF",
+            candidate_title=candidate_text,
+        )
+        self.assertGreaterEqual(score, 0.82)
+        self.assertEqual(reason, "model_code_match")
+
+    def test_seed_title_match_score_with_precomputed_context_matches_default(self) -> None:
+        seed_query = "GW-M5610U-1JF"
+        seed_source_title = "CASIO G-SHOCK GW-M5610U-1JF"
+        candidate_title = "CASIO GW-M5610U-1AJF Tough Solar"
+        score_default, reason_default = miner_seed_pool._seed_title_match_score(
+            seed_query=seed_query,
+            seed_source_title=seed_source_title,
+            candidate_title=candidate_title,
+        )
+        context = miner_seed_pool._build_seed_match_context(
+            seed_query=seed_query,
+            seed_source_title=seed_source_title,
+        )
+        score_precomputed, reason_precomputed = miner_seed_pool._seed_title_match_score(
+            seed_query=seed_query,
+            seed_source_title=seed_source_title,
+            candidate_title=candidate_title,
+            seed_match_context=context,
+        )
+        self.assertEqual(reason_precomputed, reason_default)
+        self.assertAlmostEqual(score_precomputed, score_default, places=6)
+
+    def test_resolve_stage1_source_pricing_rakuten_timeout_is_non_fatal(self) -> None:
+        item = miner_seed_pool.MarketItem(
+            site="rakuten",
+            item_id="rk-timeout",
+            title="CASIO G-SHOCK DW-5600RL-1JF GW-M5610U-1JF",
+            item_url="https://example.com/rk/timeout",
+            image_url="https://example.com/rk.jpg",
+            price=12000.0,
+            shipping=500.0,
+            currency="JPY",
+            condition="new",
+            identifiers={},
+            raw={},
+        )
+        with patch.dict("os.environ", {"MINER_STAGE1_MULTI_SKU_FALLBACK_ON_TIMEOUT": "0"}, clear=False):
+            with patch.object(miner_seed_pool, "_resolve_rakuten_variant_price_jpy", side_effect=TimeoutError()):
+                resolved = miner_seed_pool._resolve_stage1_source_pricing(
+                    item=item,
+                    seed_query="GW-M5610U-1JF",
+                    seed_source_title="CASIO G-SHOCK GW-M5610U-1JF",
+                    timeout=10,
+                    strict_multi_sku=True,
+                )
         self.assertFalse(bool(resolved.get("ok")))
-        self.assertEqual(str(resolved.get("skip_reason")), "multi_sku_site_not_supported")
+        self.assertEqual(str(resolved.get("skip_reason")), "variant_price_timeout")
+
+    def test_resolve_stage1_source_pricing_rakuten_timeout_fallback_listing_price(self) -> None:
+        item = miner_seed_pool.MarketItem(
+            site="rakuten",
+            item_id="rk-timeout-fallback",
+            title="CASIO G-SHOCK DW-5600RL-1JF GW-M5610U-1JF",
+            item_url="https://example.com/rk/timeout2",
+            image_url="https://example.com/rk.jpg",
+            price=12000.0,
+            shipping=500.0,
+            currency="JPY",
+            condition="new",
+            identifiers={},
+            raw={},
+        )
+        with patch.object(miner_seed_pool, "_resolve_rakuten_variant_price_jpy", side_effect=TimeoutError()):
+            resolved = miner_seed_pool._resolve_stage1_source_pricing(
+                item=item,
+                seed_query="GW-M5610U-1JF",
+                seed_source_title="CASIO G-SHOCK GW-M5610U-1JF",
+                timeout=10,
+                strict_multi_sku=True,
+            )
+        self.assertTrue(bool(resolved.get("ok")))
+        self.assertEqual(str(resolved.get("price_basis_type")), "listing_price_multi_sku_fallback")
 
     def test_run_seeded_fetch_runs_stage_b_and_stage_c_pipeline(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -245,6 +428,9 @@ class MinerSeedPoolTests(unittest.TestCase):
             self.assertGreaterEqual(int(payload.get("created_count", 0)), 1)
             self.assertTrue(bool(payload.get("seed_pool")))
             self.assertGreaterEqual(int((payload.get("stage_b", {}) or {}).get("rows_count", 0)), 1)
+            stage_b_rows = list(((payload.get("stage_b", {}) or {}).get("rows") or []))
+            self.assertTrue(stage_b_rows)
+            self.assertGreaterEqual(int(stage_b_rows[0].get("stage1_rank", 0)), 1)
             self.assertEqual(str(payload.get("query")), "watch")
             timed = payload.get("timed_fetch", {}) if isinstance(payload, dict) else {}
             self.assertGreaterEqual(int(timed.get("stage1_pass_total", 0)), 1)
@@ -364,6 +550,208 @@ class MinerSeedPoolTests(unittest.TestCase):
             self.assertEqual(site_calls["yahoo"], 0)
             self.assertGreaterEqual(int(stage1_skip_counts.get("skipped_stage1_api_budget", 0)), 1)
 
+    def test_stage_b_seed_only_query_mode_uses_seed_query_single_call(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            db_path = Path(tmp) / "seed_pool_stage_b_seed_only.db"
+            settings = _dummy_settings(db_path)
+            queried: list[str] = []
+
+            def _fake_rakuten(query: str, limit: int, timeout: int, page: int = 1, require_in_stock: bool = True):
+                queried.append(str(query))
+                item = miner_seed_pool.MarketItem(
+                    site="rakuten",
+                    item_id=f"rk-{query}",
+                    title=f"{query} 新品 本体",
+                    item_url=f"https://example.com/rk/{query}",
+                    image_url="https://example.com/rk.jpg",
+                    price=10000.0,
+                    shipping=0.0,
+                    currency="JPY",
+                    condition="new",
+                    identifiers={},
+                    raw={},
+                )
+                return [item], {"status": 200, "category_filter": {"applied": True}, "cache_hit": False}
+
+            def _fake_liquidity(**kwargs):
+                return {
+                    "sold_90d_count": 10,
+                    "metadata": {
+                        "sold_price_min": 180.0,
+                        "sold_sample": {
+                            "item_url": "https://www.ebay.com/itm/123456789012",
+                            "title": "eBay sold title",
+                            "image_url": "https://example.com/sold.jpg",
+                            "sold_price": 180.0,
+                        },
+                    },
+                    "source": "rpa_json",
+                    "unavailable_reason": "",
+                }
+
+            def _fake_create(payload, settings=None):
+                return {"id": 1, "source_title": payload.get("source_title", "")}
+
+            with patch.dict(
+                "os.environ",
+                {
+                    "DB_BACKEND": "sqlite",
+                    "MINER_SEED_POOL_REFILL_THRESHOLD": "0",
+                    "MINER_STAGE1_QUERY_MODE": "seed_only",
+                    "MINER_STAGE1_MAX_QUERIES_PER_SITE": "4",
+                },
+                clear=False,
+            ):
+                with connect(settings.db_path) as conn:
+                    init_db(conn)
+                    inserted = miner_seed_pool._insert_seed_rows(
+                        conn,
+                        category_key="watch",
+                        rows=[
+                            {
+                                "seed_query": "GW-M5610U-1JF",
+                                "source_title": "CASIO G-SHOCK GW-M5610U-1JF Tough Solar",
+                                "source_item_url": "https://example.com/src/1",
+                                "source_rank": 1,
+                                "metadata": {"seed_collected_sold_price_min_usd": 180.0},
+                            }
+                        ],
+                        ttl_days=7,
+                    )
+                    self.assertEqual(inserted, 1)
+
+                with patch.object(miner_seed_pool, "_search_rakuten", side_effect=_fake_rakuten), patch.object(
+                    miner_seed_pool, "get_liquidity_signal", side_effect=_fake_liquidity
+                ), patch.object(
+                    miner_seed_pool, "create_miner_candidate", side_effect=_fake_create
+                ):
+                    payload = miner_seed_pool.run_seeded_fetch(
+                        category_query="watch",
+                        source_sites=["rakuten"],
+                        market_site="ebay",
+                        limit_per_site=20,
+                        max_candidates=5,
+                        min_match_score=0.72,
+                        min_profit_usd=0.01,
+                        min_margin_rate=0.01,
+                        require_in_stock=True,
+                        timeout=10,
+                        timed_mode=True,
+                        min_target_candidates=1,
+                        timebox_sec=60,
+                        max_passes=1,
+                        continue_after_target=False,
+                        settings=settings,
+                    )
+
+            self.assertGreaterEqual(int(payload.get("created_count", 0)), 1)
+            self.assertEqual(queried, ["GW-M5610U-1JF"])
+            applied = payload.get("applied_filters", {}) if isinstance(payload, dict) else {}
+            self.assertEqual(str(applied.get("stage_b_query_mode", "")), "seed_only")
+            timed = payload.get("timed_fetch", {}) if isinstance(payload, dict) else {}
+            passes = timed.get("passes", []) if isinstance(timed, dict) else []
+            if isinstance(passes, list) and passes:
+                first_pass = passes[0] if isinstance(passes[0], dict) else {}
+                self.assertNotIn("stage1_site_logs", first_pass)
+                self.assertNotIn("stage1_selected_rows", first_pass)
+
+    def test_stage_b_diagnostics_can_be_enabled(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            db_path = Path(tmp) / "seed_pool_stage_b_diag.db"
+            settings = _dummy_settings(db_path)
+
+            def _fake_rakuten(query: str, limit: int, timeout: int, page: int = 1, require_in_stock: bool = True):
+                item = miner_seed_pool.MarketItem(
+                    site="rakuten",
+                    item_id=f"rk-{query}",
+                    title=f"{query} 新品 本体",
+                    item_url=f"https://example.com/rk/{query}",
+                    image_url="https://example.com/rk.jpg",
+                    price=10000.0,
+                    shipping=0.0,
+                    currency="JPY",
+                    condition="new",
+                    identifiers={},
+                    raw={},
+                )
+                return [item], {"status": 200, "category_filter": {"applied": True}, "cache_hit": False}
+
+            def _fake_liquidity(**kwargs):
+                return {
+                    "sold_90d_count": 10,
+                    "metadata": {
+                        "sold_price_min": 180.0,
+                        "sold_sample": {
+                            "item_url": "https://www.ebay.com/itm/123456789012",
+                            "title": "eBay sold title",
+                            "image_url": "https://example.com/sold.jpg",
+                            "sold_price": 180.0,
+                        },
+                    },
+                    "source": "rpa_json",
+                    "unavailable_reason": "",
+                }
+
+            with patch.dict(
+                "os.environ",
+                {
+                    "DB_BACKEND": "sqlite",
+                    "MINER_SEED_POOL_REFILL_THRESHOLD": "0",
+                    "MINER_STAGE1_QUERY_MODE": "seed_only",
+                    "MINER_STAGE1_INCLUDE_DIAGNOSTICS": "1",
+                },
+                clear=False,
+            ):
+                with connect(settings.db_path) as conn:
+                    init_db(conn)
+                    inserted = miner_seed_pool._insert_seed_rows(
+                        conn,
+                        category_key="watch",
+                        rows=[
+                            {
+                                "seed_query": "GW-M5610U-1JF",
+                                "source_title": "CASIO G-SHOCK GW-M5610U-1JF Tough Solar",
+                                "source_item_url": "https://example.com/src/1",
+                                "source_rank": 1,
+                                "metadata": {"seed_collected_sold_price_min_usd": 180.0},
+                            }
+                        ],
+                        ttl_days=7,
+                    )
+                    self.assertEqual(inserted, 1)
+
+                with patch.object(miner_seed_pool, "_search_rakuten", side_effect=_fake_rakuten), patch.object(
+                    miner_seed_pool, "get_liquidity_signal", side_effect=_fake_liquidity
+                ), patch.object(
+                    miner_seed_pool, "create_miner_candidate", return_value={"id": 1}
+                ):
+                    payload = miner_seed_pool.run_seeded_fetch(
+                        category_query="watch",
+                        source_sites=["rakuten"],
+                        market_site="ebay",
+                        limit_per_site=20,
+                        max_candidates=5,
+                        min_match_score=0.72,
+                        min_profit_usd=0.01,
+                        min_margin_rate=0.01,
+                        require_in_stock=True,
+                        timeout=10,
+                        timed_mode=True,
+                        min_target_candidates=1,
+                        timebox_sec=60,
+                        max_passes=1,
+                        continue_after_target=False,
+                        settings=settings,
+                    )
+
+            timed = payload.get("timed_fetch", {}) if isinstance(payload, dict) else {}
+            passes = timed.get("passes", []) if isinstance(timed, dict) else []
+            self.assertTrue(isinstance(passes, list) and passes)
+            first_pass = passes[0] if isinstance(passes[0], dict) else {}
+            self.assertIn("stage1_site_logs", first_pass)
+            self.assertIn("stage1_selected_rows", first_pass)
+
+
     def test_taken_seed_is_reusable_and_pool_does_not_shrink(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             db_path = Path(tmp) / "seed_pool_cycle.db"
@@ -402,6 +790,97 @@ class MinerSeedPoolTests(unittest.TestCase):
             self.assertEqual(available_after_1, 1)
             self.assertEqual(len(picked_2), 1)
             self.assertEqual(available_after_2, 1)
+
+    def test_insert_seed_rows_strict_model_only_filters_non_model(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            db_path = Path(tmp) / "seed_pool_insert_strict.db"
+            settings = _dummy_settings(db_path)
+            with patch.dict("os.environ", {"DB_BACKEND": "sqlite"}, clear=False):
+                with connect(settings.db_path) as conn:
+                    init_db(conn)
+                    inserted = miner_seed_pool._insert_seed_rows(
+                        conn,
+                        category_key="watch",
+                        rows=[
+                            {"seed_query": "CASIO GW-M5610U-1JF", "source_title": "a", "source_item_url": "", "source_rank": 1},
+                            {"seed_query": "RARE SEALED", "source_title": "b", "source_item_url": "", "source_rank": 2},
+                            {"seed_query": "4549980658031", "source_title": "c", "source_item_url": "", "source_rank": 3},
+                        ],
+                        ttl_days=7,
+                        strict_model_only=True,
+                    )
+                    rows = conn.execute(
+                        "SELECT seed_query FROM miner_seed_pool WHERE category_key = ? ORDER BY source_rank ASC",
+                        ("watch",),
+                    ).fetchall()
+            self.assertEqual(inserted, 2)
+            self.assertEqual([str(r["seed_query"]) for r in rows], ["CASIO GW-M5610U-1JF", "4549980658031"])
+
+    def test_prune_non_model_seed_rows_removes_noise_seed(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            db_path = Path(tmp) / "seed_pool_prune_non_model.db"
+            settings = _dummy_settings(db_path)
+            with patch.dict("os.environ", {"DB_BACKEND": "sqlite"}, clear=False):
+                with connect(settings.db_path) as conn:
+                    init_db(conn)
+                    inserted = miner_seed_pool._insert_seed_rows(
+                        conn,
+                        category_key="watch",
+                        rows=[
+                            {"seed_query": "CASIO GW-M5610U-1JF", "source_title": "a", "source_item_url": "", "source_rank": 1},
+                            {"seed_query": "RARE SEALED", "source_title": "b", "source_item_url": "", "source_rank": 2},
+                            {"seed_query": "4549980658031", "source_title": "c", "source_item_url": "", "source_rank": 3},
+                        ],
+                        ttl_days=7,
+                    )
+                    self.assertEqual(inserted, 3)
+                    deleted = miner_seed_pool._prune_non_model_seed_rows(conn, category_key="watch")
+                    rows = conn.execute(
+                        "SELECT seed_query FROM miner_seed_pool WHERE category_key = ? ORDER BY source_rank ASC",
+                        ("watch",),
+                    ).fetchall()
+            self.assertEqual(deleted, 1)
+            self.assertEqual([str(r["seed_query"]) for r in rows], ["CASIO GW-M5610U-1JF", "4549980658031"])
+
+    def test_refill_prunes_non_model_seed_even_when_threshold_not_reached(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            db_path = Path(tmp) / "seed_pool_refill_prune_threshold.db"
+            settings = _dummy_settings(db_path)
+            with patch.dict(
+                "os.environ",
+                {
+                    "DB_BACKEND": "sqlite",
+                    "MINER_SEED_POOL_REFILL_THRESHOLD": "0",
+                    "MINER_SEED_STRICT_MODEL_ONLY_WATCH": "1",
+                },
+                clear=False,
+            ):
+                with connect(settings.db_path) as conn:
+                    init_db(conn)
+                    inserted = miner_seed_pool._insert_seed_rows(
+                        conn,
+                        category_key="watch",
+                        rows=[
+                            {"seed_query": "CASIO GW-M5610U-1JF", "source_title": "a", "source_item_url": "", "source_rank": 1},
+                            {"seed_query": "RARE SEALED", "source_title": "b", "source_item_url": "", "source_rank": 2},
+                        ],
+                        ttl_days=7,
+                    )
+                    self.assertEqual(inserted, 2)
+                    summary = miner_seed_pool._refill_seed_pool(
+                        conn,
+                        category_key="watch",
+                        category_label="腕時計",
+                        category_row={"category_key": "watch", "display_name_ja": "腕時計"},
+                    )
+                    rows = conn.execute(
+                        "SELECT seed_query FROM miner_seed_pool WHERE category_key = ? ORDER BY source_rank ASC",
+                        ("watch",),
+                    ).fetchall()
+            self.assertEqual(str(summary.get("reason", "")), "threshold_not_reached")
+            self.assertEqual(int(summary.get("pre_refill_pruned_non_model_seed_count", 0)), 1)
+            self.assertTrue(bool(summary.get("strict_model_seed")))
+            self.assertEqual([str(r["seed_query"]) for r in rows], ["CASIO GW-M5610U-1JF"])
 
     def test_bootstrap_refill_can_supply_non_watch_without_rpa(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

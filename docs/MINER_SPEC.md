@@ -50,7 +50,11 @@
 - 実行: 新品・価格昇順・seed上限価格付きでYahoo/Rakuten検索
 - 既定ガード:
   - `MINER_STAGE1_API_MAX_CALLS_PER_RUN`（1実行あたりの日本側API呼び出し上限）
+  - `MINER_STAGE1_QUERY_MODE`（`seed_only` / `auto`。腕時計は既定で`seed_only`）
   - `MINER_STAGE1_MULTI_SKU_STRICT=true`（複数型番ページで対象型番価格を解決できない候補を除外）
+  - `MINER_STAGE1_MULTI_SKU_FALLBACK_NON_RAKUTEN=true`（Yahoo系で型番厳密解決不能時のみ、listing価格fallback許可）
+  - `MINER_STAGE1_MULTI_SKU_FALLBACK_ON_TIMEOUT=true`（Rakuten variant解決timeout時のみ、listing価格fallback許可）
+  - `MINER_STAGE1_INCLUDE_DIAGNOSTICS=false`（本番既定。詳細クエリログは必要時のみ有効化）
 - 出力:
   - B段階の取得結果は `stage_b.rows` として保持し、`seed A` を消費せずに `seed B` 情報としてC段階へ引き継ぐ
 - 補足: ヒットなしでも理由ログを必ず残す

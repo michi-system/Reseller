@@ -1,7 +1,10 @@
 import unittest
+from unittest.mock import patch
 
 from reselling.live_miner_fetch import (
     _extract_rakuten_variant_price_from_html,
+    _request_text,
+    _resolve_rakuten_variant_price_jpy,
     _specific_model_codes_in_title,
 )
 
@@ -35,6 +38,26 @@ class RakutenVariantPriceTests(unittest.TestCase):
             target_code="GW-M5610U-1JF",
         )
         self.assertLess(price, 0.0)
+
+    def test_request_text_timeout_returns_internal_timeout_error(self) -> None:
+        with patch("reselling.live_miner_fetch.urllib.request.urlopen", side_effect=TimeoutError()):
+            status, headers, body = _request_text("https://example.com/rakuten/item", timeout=5)
+        self.assertEqual(status, 0)
+        self.assertEqual(body, "")
+        self.assertEqual(str(headers.get("x-reseller-error", "")), "timeout")
+
+    def test_resolve_rakuten_variant_price_uses_timeout_reason(self) -> None:
+        with patch(
+            "reselling.live_miner_fetch._request_text",
+            return_value=(0, {"x-reseller-error": "timeout"}, ""),
+        ):
+            price, info = _resolve_rakuten_variant_price_jpy(
+                item_url="https://example.com/rakuten/item",
+                target_code="GW-M5610U-1JF",
+                timeout=5,
+            )
+        self.assertLess(price, 0.0)
+        self.assertEqual(str(info.get("reason", "")), "timeout")
 
 
 if __name__ == "__main__":

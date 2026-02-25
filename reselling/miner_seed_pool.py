@@ -21,6 +21,7 @@ from .live_miner_fetch import (
     MarketItem,
     _maybe_refresh_rpa_for_fetch,
     _rpa_daily_limit_reached,
+    _build_site_queries,
     _build_category_seed_queries,
     _canonical_code_set,
     _load_category_knowledge,
@@ -640,7 +641,12 @@ def _extract_gtin_candidates(text: str) -> List[str]:
     return out
 
 
-def _extract_seed_queries_from_title(title: str, brand_hints: Sequence[str]) -> List[str]:
+def _extract_seed_queries_from_title(
+    title: str,
+    brand_hints: Sequence[str],
+    *,
+    prefer_strict_model_seed: bool = False,
+) -> List[str]:
     compact = re.sub(r"\s+", " ", unicodedata.normalize("NFKC", str(title or ""))).strip()
     if not compact:
         return []
@@ -688,6 +694,8 @@ def _extract_seed_queries_from_title(title: str, brand_hints: Sequence[str]) -> 
         ]
         if narrowed:
             dedup = narrowed
+    if bool(prefer_strict_model_seed):
+        dedup = [v for v in dedup if _seed_query_is_model_or_gtin(v)]
     return dedup
 
 
@@ -705,6 +713,39 @@ def _looks_specific_seed(seed_query: str) -> bool:
         if alpha >= 2 and digit >= 2 and len(token) >= 6:
             return True
     return False
+
+
+def _seed_query_is_model_or_gtin(seed_query: str) -> bool:
+    text = str(seed_query or "").strip()
+    if not text:
+        return False
+    return bool(_looks_specific_seed(text) or _extract_gtin_candidates(text))
+
+
+def _seed_candidates_have_model_or_gtin(seed_candidates: Sequence[str]) -> bool:
+    return any(_seed_query_is_model_or_gtin(v) for v in seed_candidates)
+
+
+def _to_bool(value: Any) -> Optional[bool]:
+    if isinstance(value, bool):
+        return value
+    text = str(value or "").strip().lower()
+    if not text:
+        return None
+    if text in {"1", "true", "yes", "on", "enabled"}:
+        return True
+    if text in {"0", "false", "no", "off", "disabled"}:
+        return False
+    return None
+
+
+def _category_requires_strict_model_seed(category_key: str, category_row: Dict[str, Any]) -> bool:
+    row_bool = _to_bool((category_row or {}).get("seed_strict_model_only"))
+    if row_bool is not None:
+        return bool(row_bool)
+    if _normalize_category_key(category_key) == "watch":
+        return env_bool("MINER_SEED_STRICT_MODEL_ONLY_WATCH", True)
+    return env_bool("MINER_SEED_STRICT_MODEL_ONLY", False)
 
 
 def _ebay_item_id_from_url(url: str) -> str:
@@ -1909,6 +1950,7 @@ def _insert_seed_rows(
     category_key: str,
     rows: Sequence[Dict[str, Any]],
     ttl_days: int,
+    strict_model_only: bool = False,
 ) -> int:
     now_ts = int(time.time())
     created_at = utc_iso(now_ts)
@@ -1918,6 +1960,8 @@ def _insert_seed_rows(
         seed_query = _normalize_seed_query(row.get("seed_query", ""))
         seed_key = _seed_key(seed_query)
         if not seed_query or len(seed_key) < 4:
+            continue
+        if bool(strict_model_only) and not _seed_query_is_model_or_gtin(seed_query):
             continue
         cur = conn.execute(
             """
@@ -1955,6 +1999,45 @@ def _insert_seed_rows(
         if rowcount != 0:
             inserted += 1
     return inserted
+
+
+def _prune_non_model_seed_rows(
+    conn: Any,
+    *,
+    category_key: str,
+) -> int:
+    rows = conn.execute(
+        """
+        SELECT id, seed_query
+        FROM miner_seed_pool
+        WHERE category_key = ?
+        """,
+        (category_key,),
+    ).fetchall()
+    delete_ids: List[int] = []
+    for row in rows:
+        sid = max(0, to_int(row["id"], 0))
+        if sid <= 0:
+            continue
+        seed_query = _normalize_seed_query(str(row["seed_query"] or ""))
+        if not seed_query:
+            delete_ids.append(sid)
+            continue
+        if not _seed_query_is_model_or_gtin(seed_query):
+            delete_ids.append(sid)
+    if not delete_ids:
+        return 0
+    chunk_size = 500
+    deleted = 0
+    for start in range(0, len(delete_ids), chunk_size):
+        chunk = delete_ids[start : start + chunk_size]
+        placeholders = ", ".join(["?"] * len(chunk))
+        conn.execute(
+            f"DELETE FROM miner_seed_pool WHERE id IN ({placeholders})",
+            tuple(chunk),
+        )
+        deleted += len(chunk)
+    return int(deleted)
 
 
 def _take_seeds_for_run(
@@ -2676,6 +2759,7 @@ def _refill_seed_pool(
         "ran": False,
         "available_before": available,
         "available_after": available,
+        "pre_refill_pruned_non_model_seed_count": 0,
         "added_count": 0,
         "bootstrap_added_count": 0,
         "skipped_fresh_pages": 0,
@@ -2751,6 +2835,20 @@ def _refill_seed_pool(
         now_ts=now_ts,
     )
     summary["cooldown_active_count"] = int(len(active_low_liquidity_cooldown_keys))
+    strict_model_seed = _category_requires_strict_model_seed(category_key, category_row)
+    summary["strict_model_seed"] = bool(strict_model_seed)
+    if bool(strict_model_seed):
+        pruned_count = _prune_non_model_seed_rows(conn, category_key=category_key)
+        summary["pre_refill_pruned_non_model_seed_count"] = int(pruned_count)
+        if pruned_count > 0:
+            available = _count_available(conn, category_key=category_key, now_ts=now_ts)
+            summary["available_before"] = int(available)
+            _trace(
+                "prune_non_model_seed_rows",
+                pruned_count=int(pruned_count),
+                available_before=int(available),
+            )
+
     if available > refill_trigger_available_le:
         _trace(
             "refill_skipped_threshold",
@@ -2775,7 +2873,13 @@ def _refill_seed_pool(
             existing_keys=existing_keys,
             max_rows=bootstrap_target,
         )
-        bootstrap_added = _insert_seed_rows(conn, category_key=category_key, rows=bootstrap_rows, ttl_days=ttl_days)
+        bootstrap_added = _insert_seed_rows(
+            conn,
+            category_key=category_key,
+            rows=bootstrap_rows,
+            ttl_days=ttl_days,
+            strict_model_only=bool(strict_model_seed),
+        )
         summary["bootstrap_added_count"] = max(0, int(bootstrap_added))
         if summary["bootstrap_added_count"] > 0:
             summary["ran"] = True
@@ -3113,12 +3217,19 @@ def _refill_seed_pool(
                     title_trace["status"] = "accessory_filtered"
                     title_traces.append(title_trace)
                     continue
-                title_candidates = _extract_seed_queries_from_title(title, brand_hints)
+                title_candidates = _extract_seed_queries_from_title(
+                    title,
+                    brand_hints,
+                    prefer_strict_model_seed=bool(strict_model_seed),
+                )
                 seed_candidates = list(title_candidates)
                 entry_source = str(entry.get("seed_entry_source", "") or "filtered").strip().lower()
                 extraction_mode = "title_raw_fallback" if entry_source in {"raw_fallback", "query_fallback"} else "title"
                 api_backfill_reason = ""
-                needs_api_backfill = (not seed_candidates) or (not any(_looks_specific_seed(v) for v in seed_candidates))
+                if bool(strict_model_seed):
+                    needs_api_backfill = (not seed_candidates) or (not _seed_candidates_have_model_or_gtin(seed_candidates))
+                else:
+                    needs_api_backfill = (not seed_candidates) or (not any(_looks_specific_seed(v) for v in seed_candidates))
                 title_trace["title_seed_candidates"] = list(title_candidates)
                 if needs_api_backfill:
                     seed_api_attempts += 1
@@ -3150,6 +3261,8 @@ def _refill_seed_pool(
                                 text = _normalize_seed_query(raw_seed)
                                 skey = _seed_key(text)
                                 if not text or len(skey) < 4 or skey in seen_keys:
+                                    continue
+                                if bool(strict_model_seed) and not _seed_query_is_model_or_gtin(text):
                                     continue
                                 seen_keys.add(skey)
                                 merged.append(text)
@@ -3243,7 +3356,13 @@ def _refill_seed_pool(
                 title_trace["status"] = "accepted" if accepted_count > 0 else "all_filtered_or_duplicate"
                 title_traces.append(title_trace)
 
-            inserted = _insert_seed_rows(conn, category_key=category_key, rows=new_rows, ttl_days=ttl_days)
+            inserted = _insert_seed_rows(
+                conn,
+                category_key=category_key,
+                rows=new_rows,
+                ttl_days=ttl_days,
+                strict_model_only=bool(strict_model_seed),
+            )
             if max(0, int(inserted)) > 0:
                 zero_gain_pages = 0
             else:
@@ -3509,6 +3628,24 @@ def _model_code_set(text: str) -> Set[str]:
     return out
 
 
+def _model_codes_equivalent(seed_code: str, candidate_code: str) -> bool:
+    seed = str(seed_code or "").strip().upper()
+    cand = str(candidate_code or "").strip().upper()
+    if not seed or not cand:
+        return False
+    if seed == cand:
+        return True
+    shorter, longer = (seed, cand) if len(seed) <= len(cand) else (cand, seed)
+    if len(shorter) < 6:
+        return False
+    if not longer.startswith(shorter):
+        return False
+    suffix = longer[len(shorter) :]
+    if not suffix or len(suffix) > 3:
+        return False
+    return bool(re.fullmatch(r"[A-Z0-9]{1,3}", suffix))
+
+
 def _query_tokens(text: str) -> List[str]:
     normalized = unicodedata.normalize("NFKC", str(text or "")).upper()
     normalized = re.sub(r"[^A-Z0-9\u3040-\u30FF\u3400-\u9FFF]+", " ", normalized)
@@ -3523,30 +3660,49 @@ def _query_tokens(text: str) -> List[str]:
     return tokens
 
 
+def _build_seed_match_context(*, seed_query: str, seed_source_title: str) -> Dict[str, Any]:
+    return {
+        "seed_codes": _model_code_set(seed_query) | _model_code_set(seed_source_title),
+        "seed_tokens": set(_query_tokens(seed_query)),
+        "broad_seed": not _looks_specific_seed(seed_query),
+    }
+
+
 def _seed_title_match_score(
     *,
     seed_query: str,
     seed_source_title: str,
     candidate_title: str,
+    seed_match_context: Optional[Dict[str, Any]] = None,
 ) -> Tuple[float, str]:
     if _is_accessory_title(candidate_title):
         return 0.0, "accessory_title"
 
-    seed_codes = _model_code_set(seed_query) | _model_code_set(seed_source_title)
+    context = seed_match_context if isinstance(seed_match_context, dict) else {}
+    seed_codes = context.get("seed_codes")
+    if not isinstance(seed_codes, set):
+        seed_codes = _model_code_set(seed_query) | _model_code_set(seed_source_title)
     candidate_codes = _model_code_set(candidate_title)
     if seed_codes:
         if not candidate_codes:
             return 0.0, "candidate_model_missing"
-        shared = seed_codes.intersection(candidate_codes)
-        if not shared:
+        matched_seed_codes = {
+            seed_code
+            for seed_code in seed_codes
+            if any(_model_codes_equivalent(seed_code, cand_code) for cand_code in candidate_codes)
+        }
+        if not matched_seed_codes:
             return 0.0, "model_code_mismatch"
-        overlap = len(shared) / max(1, len(seed_codes))
+        overlap = len(matched_seed_codes) / max(1, len(seed_codes))
         score = min(0.98, 0.82 + (0.12 * overlap))
         return float(score), "model_code_match"
 
-    seed_tokens = set(_query_tokens(seed_query))
+    seed_tokens = context.get("seed_tokens")
+    if not isinstance(seed_tokens, set):
+        seed_tokens = set(_query_tokens(seed_query))
     candidate_tokens = set(_query_tokens(candidate_title))
-    broad_seed = not _looks_specific_seed(seed_query)
+    broad_seed_raw = context.get("broad_seed")
+    broad_seed = bool(broad_seed_raw) if isinstance(broad_seed_raw, bool) else not _looks_specific_seed(seed_query)
     if not seed_tokens or not candidate_tokens:
         if broad_seed and candidate_codes:
             # 例: "PROSPEX" vs "セイコー プロスペックス SBDC101"。
@@ -3564,6 +3720,35 @@ def _seed_title_match_score(
         # broad seedはtoken被りが薄くても、実運用での取りこぼしを減らすため最低スコアを設ける。
         score = max(score, 0.64)
     return float(score), "token_overlap"
+
+
+def _stage1_candidate_match_text(item: MarketItem) -> str:
+    parts: List[str] = [str(item.title or "").strip()]
+    identifiers = item.identifiers if isinstance(item.identifiers, dict) else {}
+    for key in ("model", "mpn", "manufacturerPartNumber", "sku", "jan", "ean", "upc"):
+        raw = identifiers.get(key) if isinstance(identifiers, dict) else ""
+        text = str(raw or "").strip()
+        if text:
+            parts.append(text)
+    raw = item.raw if isinstance(item.raw, dict) else {}
+    if isinstance(raw, dict):
+        for key in ("itemCode", "model", "modelNumber", "mpn", "manufacturerPartNumber", "sku"):
+            raw_val = raw.get(key)
+            text = str(raw_val or "").strip()
+            if text:
+                parts.append(text)
+    merged: List[str] = []
+    seen: Set[str] = set()
+    for raw_text in parts:
+        text = re.sub(r"\s+", " ", str(raw_text or "").strip())
+        if not text:
+            continue
+        key = text.lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        merged.append(text)
+    return " ".join(merged).strip()
 
 
 def _pick_jp_seed_query(
@@ -3594,6 +3779,84 @@ def _pick_liquidity_query(*, seed_query: str, jp_seed_query: str) -> str:
             if _looks_specific_seed(token):
                 return token
     return jp_query
+
+
+def _normalize_query_text(raw: str) -> str:
+    return re.sub(r"\s+", " ", str(raw or "").strip())
+
+
+def _resolve_stage1_baseline_usd(
+    *,
+    seed_collected_sold_price_min_usd: float,
+    category_min_seed_price_usd: float,
+) -> Tuple[float, str]:
+    seed_value = to_float(seed_collected_sold_price_min_usd, -1.0)
+    if seed_value > 0:
+        return float(seed_value), "seed_collected"
+    category_value = max(0.0, to_float(category_min_seed_price_usd, 0.0))
+    if category_value > 0:
+        return float(category_value), "category_min"
+    return -1.0, "unavailable"
+
+
+def _stage1_site_queries(
+    *,
+    seed_query: str,
+    stage1_query: str,
+    seed_source_title: str,
+    site: str,
+    max_queries: int,
+) -> List[str]:
+    limit = max(1, int(max_queries))
+    out: List[str] = []
+    seen: Set[str] = set()
+
+    def _push(raw: str) -> None:
+        text = re.sub(r"\s+", " ", str(raw or "").strip())
+        if not text:
+            return
+        key = text.lower()
+        if key in seen:
+            return
+        seen.add(key)
+        out.append(text)
+
+    code_queries: List[str] = []
+    code_seen: Set[str] = set()
+    for text in (stage1_query, seed_query, seed_source_title):
+        for raw_code in _extract_codes(text):
+            code_text = str(raw_code or "").strip().upper()
+            code_key = _seed_key(code_text)
+            if len(code_key) < 4 or code_key in code_seen:
+                continue
+            code_seen.add(code_key)
+            code_queries.append(code_text)
+
+    _push(stage1_query)
+    for code in code_queries:
+        _push(code)
+        if len(out) >= limit:
+            return out[:limit]
+    if str(seed_query or "").strip():
+        _push(seed_query)
+    if len(out) >= limit:
+        return out[:limit]
+
+    for q in _build_site_queries(stage1_query, site):
+        _push(q)
+        if len(out) >= limit:
+            break
+    if len(out) < limit:
+        for q in _build_site_queries(seed_query, site):
+            _push(q)
+            if len(out) >= limit:
+                break
+    if len(out) < limit:
+        for q in _extract_seed_queries_from_title(seed_source_title, []):
+            _push(q)
+            if len(out) >= limit:
+                break
+    return out[:limit]
 
 
 def _stage1_seed_model_code_set(*, seed_query: str, seed_source_title: str) -> Set[str]:
@@ -3632,6 +3895,8 @@ def _resolve_stage1_source_pricing(
     seed_source_title: str,
     timeout: int,
     strict_multi_sku: bool,
+    allow_non_rakuten_fallback: Optional[bool] = None,
+    allow_timeout_fallback: Optional[bool] = None,
 ) -> Dict[str, Any]:
     base_price = max(0.0, to_float(item.price, 0.0))
     base_shipping = max(0.0, to_float(item.shipping, 0.0))
@@ -3672,11 +3937,16 @@ def _resolve_stage1_source_pricing(
                 target_raw = str(raw)
                 break
         target_code = target_raw or target_canon
-        resolved_price, resolved_info = _resolve_rakuten_variant_price_jpy(
-            item_url=str(item.item_url or ""),
-            target_code=target_code,
-            timeout=timeout,
-        )
+        try:
+            resolved_price, resolved_info = _resolve_rakuten_variant_price_jpy(
+                item_url=str(item.item_url or ""),
+                target_code=target_code,
+                timeout=timeout,
+            )
+        except TimeoutError:
+            resolved_price, resolved_info = -1.0, {"ok": False, "reason": "variant_price_timeout"}
+        except Exception as err:
+            resolved_price, resolved_info = -1.0, {"ok": False, "reason": f"variant_price_error_{type(err).__name__}"}
         if isinstance(resolved_info, dict):
             resolution.update(resolved_info)
         if resolved_price > 0:
@@ -3695,7 +3965,38 @@ def _resolve_stage1_source_pricing(
     else:
         resolution["reason"] = "multi_sku_site_not_supported"
 
+    def _fallback_allowed_for_strict_listing_price(reason_text: str) -> bool:
+        reason_key = str(reason_text or "").strip().lower()
+        if not target_canon:
+            return False
+        site_key = str(item.site or "").strip().lower()
+        allow_non_rakuten = (
+            bool(env_bool("MINER_STAGE1_MULTI_SKU_FALLBACK_NON_RAKUTEN", True))
+            if allow_non_rakuten_fallback is None
+            else bool(allow_non_rakuten_fallback)
+        )
+        allow_timeout = (
+            bool(env_bool("MINER_STAGE1_MULTI_SKU_FALLBACK_ON_TIMEOUT", True))
+            if allow_timeout_fallback is None
+            else bool(allow_timeout_fallback)
+        )
+        if site_key in {"yahoo", "yahoo_shopping"} and allow_non_rakuten:
+            return reason_key in {"multi_sku_site_not_supported"}
+        if site_key == "rakuten" and allow_timeout:
+            return reason_key in {"variant_price_timeout", "timeout"}
+        return False
+
     if strict_multi_sku:
+        strict_reason = str(resolution.get("reason", "") or "source_variant_unresolved")
+        if _fallback_allowed_for_strict_listing_price(strict_reason):
+            resolution["reason"] = f"{strict_reason}_fallback_listing_price"
+            return {
+                "ok": True,
+                "price_jpy": float(base_price),
+                "shipping_jpy": float(base_shipping),
+                "price_basis_type": "listing_price_multi_sku_fallback",
+                "resolution": resolution,
+            }
         return {
             "ok": False,
             "price_jpy": float(base_price),
@@ -4187,21 +4488,31 @@ def run_seeded_fetch(
     if not source_fetchers:
         source_fetchers = [("rakuten", _search_rakuten), ("yahoo", _search_yahoo)]
 
+    stage1_query_mode_raw = str(os.getenv("MINER_STAGE1_QUERY_MODE", "") or "").strip().lower()
+    stage1_query_mode = stage1_query_mode_raw if stage1_query_mode_raw in {"seed_only", "auto"} else ""
+    if not stage1_query_mode:
+        stage1_query_mode = "seed_only" if _category_requires_strict_model_seed(category_key, category_row) else "auto"
+
     stage1_limit_per_site = max(5, min(100, env_int("MINER_STAGE1_LIMIT_PER_SITE", max(20, int(limit_per_site)))))
+    stage1_max_queries_default = 1 if stage1_query_mode == "seed_only" else 2
+    stage1_max_queries_per_site = max(1, min(4, env_int("MINER_STAGE1_MAX_QUERIES_PER_SITE", stage1_max_queries_default)))
     stage1_take_per_seed = max(
         1,
         min(
             max(1, int(max_candidates)),
             5,
-            env_int("MINER_STAGE1_TOP_MATCHES_PER_SEED", 2),
+            env_int("MINER_STAGE1_TOP_MATCHES_PER_SEED", 3),
         ),
     )
     stage1_multi_sku_strict = env_bool("MINER_STAGE1_MULTI_SKU_STRICT", True)
+    stage1_multi_sku_fallback_non_rakuten = env_bool("MINER_STAGE1_MULTI_SKU_FALLBACK_NON_RAKUTEN", True)
+    stage1_multi_sku_fallback_on_timeout = env_bool("MINER_STAGE1_MULTI_SKU_FALLBACK_ON_TIMEOUT", True)
+    stage1_include_diagnostics = env_bool("MINER_STAGE1_INCLUDE_DIAGNOSTICS", False)
     stage1_api_max_calls = max(
         0,
         env_int(
             "MINER_STAGE1_API_MAX_CALLS_PER_RUN",
-            max(4, len(selected_seeds) * max(1, len(source_fetchers))),
+            max(4, len(selected_seeds) * max(1, len(source_fetchers)) * stage1_max_queries_per_site),
         ),
     )
     stage1_api_calls = 0
@@ -4265,8 +4576,14 @@ def run_seeded_fetch(
         "stage_b_condition": "new",
         "stage_b_sort": "price_asc",
         "stage_b_price_cap": "seed_collected_sold_price_min_usd",
+        "stage_b_baseline_floor_usd": float(min_seed_price_usd),
+        "stage_b_baseline_policy": "seed_collected_or_category_min",
         "stage_b_multi_sku_strict": bool(stage1_multi_sku_strict),
+        "stage_b_multi_sku_fallback_non_rakuten": bool(stage1_multi_sku_fallback_non_rakuten),
+        "stage_b_multi_sku_fallback_on_timeout": bool(stage1_multi_sku_fallback_on_timeout),
+        "stage_b_query_mode": str(stage1_query_mode),
         "stage_b_api_max_calls_per_run": int(stage1_api_max_calls),
+        "stage_b_max_queries_per_site": int(stage1_max_queries_per_site),
         "stage_c_price_basis": "sold_price_min_90d",
         "stage_c_min_sold_90d": int(liquidity_min_sold_90d),
         "stage_c_pr_category_id": int(pr_category_filter.get("category_id", 0) or 0),
@@ -4328,7 +4645,10 @@ def run_seeded_fetch(
         )
         if not stage1_query:
             stage1_query = seed_query
-        baseline_usd = to_float(seed.get("seed_collected_sold_price_min_usd"), -1.0)
+        baseline_usd, baseline_source = _resolve_stage1_baseline_usd(
+            seed_collected_sold_price_min_usd=to_float(seed.get("seed_collected_sold_price_min_usd"), -1.0),
+            category_min_seed_price_usd=min_seed_price_usd,
+        )
         seed_max_price_jpy = int(max(0.0, baseline_usd * fx_seed_rate)) if baseline_usd > 0 else 0
         if bool(timed_mode) and elapsed >= max(10, int(timebox_sec)) and idx > min_stage1_attempts_before_timebox:
             stop_reason = "timebox_reached"
@@ -4362,6 +4682,10 @@ def run_seeded_fetch(
         effective_min_match_score = max(0.0, min(0.99, float(min_match_score)))
         if (not has_model_code) and effective_min_match_score > 0.62:
             effective_min_match_score = 0.62
+        seed_match_context = _build_seed_match_context(
+            seed_query=stage1_query,
+            seed_source_title=seed_source_title,
+        )
         stage_context_env: Dict[str, str] = {
             "MINER_ACTIVE_CATEGORY_KEY": category_key,
             "MINER_ACTIVE_CATEGORY_LABEL": category_label,
@@ -4376,133 +4700,181 @@ def run_seeded_fetch(
         for site_key, fetcher in source_fetchers:
             if stage1_api_max_calls > 0 and stage1_api_calls >= stage1_api_max_calls:
                 _inc_skip(stage1_skip_counts, "skipped_stage1_api_budget", 1)
-                stage1_site_logs.append(
-                    {
-                        "site": site_key,
-                        "query": stage1_query,
-                        "seed_query": seed_query,
-                        "ok": False,
-                        "error": "stage1_api_budget_reached",
-                        "raw_count": 0,
-                        "selected_count": 0,
-                    }
-                )
-                break
-            with _temporary_env(stage_context_env):
-                try:
-                    stage1_api_calls += 1
-                    items, fetch_info = fetcher(stage1_query, stage1_limit_per_site, timeout, 1, require_in_stock)
-                except Exception as err:
-                    _inc_skip(stage1_skip_counts, "skipped_fetch_error", 1)
-                    errors.append(
-                        {
-                            "seed_query": seed_query,
-                            "stage1_query": stage1_query,
-                            "site": site_key,
-                            "message": str(err),
-                        }
-                    )
+                if stage1_include_diagnostics:
                     stage1_site_logs.append(
                         {
                             "site": site_key,
-                            "query": stage1_query,
+                            "queries": [stage1_query],
                             "seed_query": seed_query,
                             "ok": False,
-                            "error": str(err),
+                            "error": "stage1_api_budget_reached",
                             "raw_count": 0,
                             "selected_count": 0,
                         }
                     )
-                    continue
-
-            slot = fetched_aggregate.setdefault(site_key, {"calls_made": 0, "network_calls": 0, "cache_hits": 0, "count": 0})
-            slot["calls_made"] = int(slot.get("calls_made", 0)) + 1
-            slot["network_calls"] = int(slot.get("network_calls", 0)) + 1
-            slot["count"] = int(slot.get("count", 0)) + len(items)
-            if bool((fetch_info or {}).get("cache_hit")):
-                slot["cache_hits"] = int(slot.get("cache_hits", 0)) + 1
-
+                break
             selected_for_site = 0
-            for item in items:
-                if not isinstance(item, MarketItem):
-                    continue
-                source_pricing = _resolve_stage1_source_pricing(
-                    item=item,
-                    seed_query=stage1_query,
+            site_query_logs: List[Dict[str, Any]] = []
+            if stage1_query_mode == "seed_only":
+                primary_query = _normalize_query_text(seed_query) or _normalize_query_text(stage1_query)
+                site_queries = [primary_query] if primary_query else []
+            else:
+                site_queries = _stage1_site_queries(
+                    seed_query=seed_query,
+                    stage1_query=stage1_query,
                     seed_source_title=seed_source_title,
-                    timeout=timeout,
-                    strict_multi_sku=stage1_multi_sku_strict,
+                    site=site_key,
+                    max_queries=stage1_max_queries_per_site,
                 )
-                if not bool(source_pricing.get("ok")):
-                    _inc_skip(stage1_skip_counts, "skipped_source_variant_unresolved", 1)
-                    continue
-                source_price_jpy = max(0.0, to_float(source_pricing.get("price_jpy"), to_float(item.price, 0.0)))
-                source_shipping_jpy = max(
-                    0.0,
-                    to_float(source_pricing.get("shipping_jpy"), to_float(item.shipping, 0.0)),
-                )
-                source_total_jpy = source_price_jpy + source_shipping_jpy
-                if source_total_jpy <= 0:
-                    _inc_skip(stage1_skip_counts, "skipped_invalid_price", 1)
-                    continue
-                score, reason = _seed_title_match_score(
-                    seed_query=stage1_query,
-                    seed_source_title=seed_source_title,
-                    candidate_title=str(item.title or ""),
-                )
-                if reason == "accessory_title":
-                    _inc_skip(stage1_skip_counts, "skipped_accessory_title", 1)
-                    continue
-                if score < effective_min_match_score:
-                    _inc_skip(stage1_skip_counts, "skipped_low_match", 1)
-                    stage1_low_match_reasons[reason] = int(stage1_low_match_reasons.get(reason, 0)) + 1
-                    continue
-                if baseline_usd > 0:
-                    source_total_usd = source_total_jpy / fx_seed_rate if fx_seed_rate > 0 else -1.0
-                    if source_total_usd <= 0 or source_total_usd >= baseline_usd:
-                        stage1_baseline_reject += 1
+            for site_query in site_queries:
+                if stage1_api_max_calls > 0 and stage1_api_calls >= stage1_api_max_calls:
+                    _inc_skip(stage1_skip_counts, "skipped_stage1_api_budget", 1)
+                    if stage1_include_diagnostics:
+                        site_query_logs.append(
+                            {
+                                "query": site_query,
+                                "ok": False,
+                                "error": "stage1_api_budget_reached",
+                                "raw_count": 0,
+                                "matched_count": 0,
+                            }
+                        )
+                    break
+                with _temporary_env(stage_context_env):
+                    try:
+                        stage1_api_calls += 1
+                        items, fetch_info = fetcher(site_query, stage1_limit_per_site, timeout, 1, require_in_stock)
+                    except Exception as err:
+                        _inc_skip(stage1_skip_counts, "skipped_fetch_error", 1)
+                        errors.append(
+                            {
+                                "seed_query": seed_query,
+                                "stage1_query": stage1_query,
+                                "site_query": site_query,
+                                "site": site_key,
+                                "message": str(err),
+                            }
+                        )
+                        if stage1_include_diagnostics:
+                            site_query_logs.append(
+                                {
+                                    "query": site_query,
+                                    "ok": False,
+                                    "error": str(err),
+                                    "raw_count": 0,
+                                    "matched_count": 0,
+                                }
+                            )
                         continue
 
-                item_key = "|".join(
-                    [
-                        str(item.site or ""),
-                        str(item.item_id or ""),
-                        str(item.item_url or ""),
-                        _seed_key(str(item.title or "")),
-                    ]
+                slot = fetched_aggregate.setdefault(
+                    site_key, {"calls_made": 0, "network_calls": 0, "cache_hits": 0, "count": 0}
                 )
-                if item_key in stage1_seen:
-                    _inc_skip(stage1_skip_counts, "skipped_duplicates", 1)
-                    continue
-                stage1_seen.add(item_key)
-                stage1_candidates.append(
+                slot["calls_made"] = int(slot.get("calls_made", 0)) + 1
+                slot["network_calls"] = int(slot.get("network_calls", 0)) + 1
+                slot["count"] = int(slot.get("count", 0)) + len(items)
+                if bool((fetch_info or {}).get("cache_hit")):
+                    slot["cache_hits"] = int(slot.get("cache_hits", 0)) + 1
+
+                matched_this_query = 0
+                for item in items:
+                    if not isinstance(item, MarketItem):
+                        continue
+                    source_pricing = _resolve_stage1_source_pricing(
+                        item=item,
+                        seed_query=stage1_query,
+                        seed_source_title=seed_source_title,
+                        timeout=timeout,
+                        strict_multi_sku=stage1_multi_sku_strict,
+                        allow_non_rakuten_fallback=stage1_multi_sku_fallback_non_rakuten,
+                        allow_timeout_fallback=stage1_multi_sku_fallback_on_timeout,
+                    )
+                    if not bool(source_pricing.get("ok")):
+                        _inc_skip(stage1_skip_counts, "skipped_source_variant_unresolved", 1)
+                        continue
+                    source_price_jpy = max(0.0, to_float(source_pricing.get("price_jpy"), to_float(item.price, 0.0)))
+                    source_shipping_jpy = max(
+                        0.0,
+                        to_float(source_pricing.get("shipping_jpy"), to_float(item.shipping, 0.0)),
+                    )
+                    source_total_jpy = source_price_jpy + source_shipping_jpy
+                    if source_total_jpy <= 0:
+                        _inc_skip(stage1_skip_counts, "skipped_invalid_price", 1)
+                        continue
+                    score, reason = _seed_title_match_score(
+                        seed_query=stage1_query,
+                        seed_source_title=seed_source_title,
+                        candidate_title=_stage1_candidate_match_text(item),
+                        seed_match_context=seed_match_context,
+                    )
+                    if reason == "accessory_title":
+                        _inc_skip(stage1_skip_counts, "skipped_accessory_title", 1)
+                        continue
+                    if score < effective_min_match_score:
+                        _inc_skip(stage1_skip_counts, "skipped_low_match", 1)
+                        stage1_low_match_reasons[reason] = int(stage1_low_match_reasons.get(reason, 0)) + 1
+                        continue
+                    if baseline_usd > 0:
+                        source_total_usd = source_total_jpy / fx_seed_rate if fx_seed_rate > 0 else -1.0
+                        if source_total_usd <= 0 or source_total_usd >= baseline_usd:
+                            stage1_baseline_reject += 1
+                            continue
+
+                    item_key = "|".join(
+                        [
+                            str(item.site or ""),
+                            str(item.item_id or ""),
+                            str(item.item_url or ""),
+                            _seed_key(str(item.title or "")),
+                        ]
+                    )
+                    if item_key in stage1_seen:
+                        _inc_skip(stage1_skip_counts, "skipped_duplicates", 1)
+                        continue
+                    stage1_seen.add(item_key)
+                    stage1_candidates.append(
+                        {
+                            "item": item,
+                            "site": site_key,
+                            "score": float(score),
+                            "reason": str(reason),
+                            "source_price_jpy": float(source_price_jpy),
+                            "source_shipping_jpy": float(source_shipping_jpy),
+                            "source_total_jpy": float(source_total_jpy),
+                            "source_price_basis_type": str(source_pricing.get("price_basis_type", "") or "listing_price"),
+                            "source_variant_resolution": source_pricing.get("resolution")
+                            if isinstance(source_pricing.get("resolution"), dict)
+                            else {},
+                        }
+                    )
+                    selected_for_site += 1
+                    matched_this_query += 1
+
+                if stage1_include_diagnostics:
+                    site_query_logs.append(
+                        {
+                            "query": site_query,
+                            "ok": True,
+                            "raw_count": len(items),
+                            "matched_count": int(matched_this_query),
+                            "category_filter": (fetch_info or {}).get("category_filter")
+                            if isinstance(fetch_info, dict)
+                            else {},
+                        }
+                    )
+                if selected_for_site >= stage1_take_per_seed:
+                    break
+            if stage1_include_diagnostics:
+                stage1_site_logs.append(
                     {
-                        "item": item,
                         "site": site_key,
-                        "score": float(score),
-                        "reason": str(reason),
-                        "source_price_jpy": float(source_price_jpy),
-                        "source_shipping_jpy": float(source_shipping_jpy),
-                        "source_total_jpy": float(source_total_jpy),
-                        "source_price_basis_type": str(source_pricing.get("price_basis_type", "") or "listing_price"),
-                        "source_variant_resolution": source_pricing.get("resolution")
-                        if isinstance(source_pricing.get("resolution"), dict)
-                        else {},
+                        "queries": list(site_queries),
+                        "seed_query": seed_query,
+                        "ok": True,
+                        "selected_count": int(selected_for_site),
+                        "query_logs": site_query_logs,
                     }
                 )
-                selected_for_site += 1
-
-            stage1_site_logs.append(
-                {
-                    "site": site_key,
-                    "query": stage1_query,
-                    "seed_query": seed_query,
-                    "ok": True,
-                    "raw_count": len(items),
-                    "selected_count": selected_for_site,
-                    "category_filter": (fetch_info or {}).get("category_filter") if isinstance(fetch_info, dict) else {},
-                }
-            )
 
         stage1_candidates.sort(
             key=lambda row: (
@@ -4513,26 +4885,28 @@ def run_seeded_fetch(
         )
         selected_stage1 = stage1_candidates[:stage1_take_per_seed]
         stage1_selected_rows_preview: List[Dict[str, Any]] = []
-        for row in selected_stage1:
+        for stage1_rank, row in enumerate(selected_stage1, start=1):
             item = row.get("item")
             if not isinstance(item, MarketItem):
                 continue
-            stage1_selected_rows_preview.append(
-                {
-                    "source_site": str(item.site or row.get("site") or ""),
-                    "source_item_id": str(item.item_id or ""),
-                    "source_item_url": str(item.item_url or ""),
-                    "source_title": str(item.title or ""),
-                    "source_price_jpy": float(to_float(row.get("source_price_jpy"), to_float(item.price, 0.0))),
-                    "source_shipping_jpy": float(
-                        to_float(row.get("source_shipping_jpy"), to_float(item.shipping, 0.0))
-                    ),
-                    "source_total_jpy": float(to_float(row.get("source_total_jpy"), 0.0)),
-                    "source_price_basis_type": str(row.get("source_price_basis_type", "") or "listing_price"),
-                    "stage1_match_score": float(to_float(row.get("score"), 0.0)),
-                    "stage1_match_reason": str(row.get("reason", "") or ""),
-                }
-            )
+            if stage1_include_diagnostics:
+                stage1_selected_rows_preview.append(
+                    {
+                        "stage1_rank": int(stage1_rank),
+                        "source_site": str(item.site or row.get("site") or ""),
+                        "source_item_id": str(item.item_id or ""),
+                        "source_item_url": str(item.item_url or ""),
+                        "source_title": str(item.title or ""),
+                        "source_price_jpy": float(to_float(row.get("source_price_jpy"), to_float(item.price, 0.0))),
+                        "source_shipping_jpy": float(
+                            to_float(row.get("source_shipping_jpy"), to_float(item.shipping, 0.0))
+                        ),
+                        "source_total_jpy": float(to_float(row.get("source_total_jpy"), 0.0)),
+                        "source_price_basis_type": str(row.get("source_price_basis_type", "") or "listing_price"),
+                        "stage1_match_score": float(to_float(row.get("score"), 0.0)),
+                        "stage1_match_reason": str(row.get("reason", "") or ""),
+                    }
+                )
             stage_b_key = "|".join(
                 [
                     str(seed_key_text or ""),
@@ -4547,9 +4921,12 @@ def run_seeded_fetch(
             stage_b_rows.append(
                 {
                     "seed_id": int(to_int(seed.get("id"), 0)),
+                    "stage1_rank": int(stage1_rank),
                     "seed_key": str(seed_key_text),
                     "seed_query": str(seed_query),
                     "seed_source_title": str(seed_source_title),
+                    "seed_baseline_source": str(baseline_source),
+                    "seed_baseline_usd": float(baseline_usd),
                     "stage1_query": str(stage1_query),
                     "source_site": str(item.site or row.get("site") or ""),
                     "source_item_id": str(item.item_id or ""),
@@ -4574,22 +4951,26 @@ def run_seeded_fetch(
         stage1_count = len(selected_stage1)
         stage1_seed_baseline_reject_total += int(stage1_baseline_reject)
         stage1_pass_total += stage1_count
+
+        def _pass_row(*, stage2_created_count: int) -> Dict[str, Any]:
+            row_payload: Dict[str, Any] = {
+                "pass": idx,
+                "seed_query": seed_query,
+                "stage1_query": stage1_query,
+                "stage1_candidate_count": int(stage1_count),
+                "stage2_created_count": int(stage2_created_count),
+                "stage1_seed_baseline_reject_count": int(stage1_baseline_reject),
+                "elapsed_sec": round(time.monotonic() - started, 3),
+                "min_match_score": effective_min_match_score,
+                "has_model_code": has_model_code,
+            }
+            if stage1_include_diagnostics:
+                row_payload["stage1_site_logs"] = stage1_site_logs
+                row_payload["stage1_selected_rows"] = stage1_selected_rows_preview
+            return row_payload
+
         if stage1_count <= 0:
-            passes.append(
-                {
-                    "pass": idx,
-                    "seed_query": seed_query,
-                    "stage1_query": stage1_query,
-                    "stage1_candidate_count": 0,
-                    "stage2_created_count": 0,
-                    "stage1_seed_baseline_reject_count": int(stage1_baseline_reject),
-                    "elapsed_sec": round(time.monotonic() - started, 3),
-                    "min_match_score": effective_min_match_score,
-                    "has_model_code": has_model_code,
-                    "stage1_site_logs": stage1_site_logs,
-                    "stage1_selected_rows": stage1_selected_rows_preview,
-                }
-            )
+            passes.append(_pass_row(stage2_created_count=0))
             continue
 
         if callable(progress_callback):
@@ -4898,6 +5279,7 @@ def run_seeded_fetch(
                         "seed_query": seed_query,
                         "seed_source_title": seed_source_title,
                         "seed_collected_sold_price_min_usd": baseline_usd,
+                        "seed_collected_sold_price_min_usd_source": str(baseline_source),
                     },
                     "seed_jp": {
                         "query": jp_seed_query,
@@ -4928,21 +5310,7 @@ def run_seeded_fetch(
                 stop_reason = "target_reached"
                 break
 
-        passes.append(
-                {
-                    "pass": idx,
-                    "seed_query": seed_query,
-                    "stage1_query": stage1_query,
-                    "stage1_candidate_count": stage1_count,
-                "stage2_created_count": stage2_created_count,
-                "stage1_seed_baseline_reject_count": int(stage1_baseline_reject),
-                "elapsed_sec": round(time.monotonic() - started, 3),
-                "min_match_score": effective_min_match_score,
-                "has_model_code": has_model_code,
-                "stage1_site_logs": stage1_site_logs,
-                "stage1_selected_rows": stage1_selected_rows_preview,
-            }
-        )
+        passes.append(_pass_row(stage2_created_count=stage2_created_count))
         if bool(rpa_daily_limit_reached):
             break
         if stop_reason == "target_reached":

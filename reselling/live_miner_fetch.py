@@ -303,6 +303,15 @@ _FORCE_ACCESSORY_TERMS = {
     "ガラスフィルム",
     "強化ガラス",
     "液晶保護",
+    "腕時計部品",
+    "修理部品",
+    "裏蓋ネジ",
+    "裏蓋パッキン",
+    "Oパッキン",
+    "バネ棒",
+    "加入料",
+    "延長保証",
+    "長期修理保証",
 }
 _WATCH_CORE_TERMS = {
     "WATCH",
@@ -1701,8 +1710,12 @@ def _request_text(
     except urllib.error.HTTPError as err:
         body = err.read().decode("utf-8", errors="replace")
         return int(err.code), dict(err.headers.items()), body
-    except urllib.error.URLError:
-        return 0, {}, ""
+    except TimeoutError:
+        return 0, _make_internal_error_headers(error="timeout", budget_remaining="-1"), ""
+    except urllib.error.URLError as err:
+        reason_text = str(getattr(err, "reason", err) or "").strip().lower()
+        error = "timeout" if "timed out" in reason_text else "url_error"
+        return 0, _make_internal_error_headers(error=error, budget_remaining="-1"), ""
 
 
 def _request_with_retry(
@@ -2923,6 +2936,73 @@ def _yahoo_category_probe_query(category_key: str, category_row: Optional[Dict[s
     return str(category_key or "").replace("_", " ").strip()
 
 
+def _rakuten_category_probe_query(category_key: str, category_row: Optional[Dict[str, Any]], terms: Sequence[str]) -> str:
+    return _yahoo_category_probe_query(category_key, category_row, terms)
+
+
+def _resolve_rakuten_genre_from_item_hits(
+    *,
+    payload: Dict[str, Any],
+    terms: Sequence[str],
+    category_key: str,
+) -> Tuple[str, str, int]:
+    if not isinstance(payload, dict):
+        return "", "", 0
+    rows = payload.get("Items", [])
+    if not isinstance(rows, list):
+        return "", "", 0
+
+    score_by_id: Dict[str, Dict[str, Any]] = {}
+    for row in rows[:200]:
+        item = row.get("Item") if isinstance(row, dict) and isinstance(row.get("Item"), dict) else row
+        if not isinstance(item, dict):
+            continue
+        gid = str(item.get("genreId", "") or "").strip()
+        gname = str(item.get("genreName", "") or "").strip()
+        title = str(item.get("itemName", "") or "").strip()
+        if not gid or not title:
+            continue
+        base_score = _score_category_name(title, terms)
+        if base_score <= 0:
+            continue
+        accessory_penalty = 0
+        if str(category_key or "").strip().lower() in {"watch", "watches", "wristwatch"}:
+            if _is_accessory_title(title):
+                accessory_penalty = 24
+        weighted = max(0, base_score - accessory_penalty)
+        if weighted <= 0:
+            continue
+        row_score = score_by_id.get(gid, {})
+        row_score["score"] = float(_to_float(row_score.get("score"), 0.0) + float(weighted))
+        row_score["count"] = int(_to_int(row_score.get("count"), 0) + 1)
+        row_score["name"] = str(row_score.get("name", "") or "").strip() or gname
+        row_score["sample_name"] = str(row_score.get("sample_name", "") or "").strip() or title
+        row_score["accessory"] = bool(_is_accessory_title(str(row_score.get("sample_name", "") or "")))
+        score_by_id[gid] = row_score
+
+    if not score_by_id:
+        return "", "", 0
+
+    ranked = sorted(
+        score_by_id.items(),
+        key=lambda kv: (
+            0 if bool((kv[1] or {}).get("accessory")) else 1,
+            float((kv[1] or {}).get("score", 0.0)),
+            int((kv[1] or {}).get("count", 0)),
+        ),
+        reverse=True,
+    )
+    chosen_id, chosen_row = ranked[0]
+    chosen_name = str((chosen_row or {}).get("name", "") or "").strip()
+    if not chosen_name:
+        chosen_name = str((chosen_row or {}).get("sample_name", "") or "").strip()
+    return (
+        str(chosen_id or "").strip(),
+        chosen_name,
+        int(_to_int((chosen_row or {}).get("count"), 0)),
+    )
+
+
 def _resolve_yahoo_category_from_item_hits(
     *,
     payload: Dict[str, Any],
@@ -3045,38 +3125,95 @@ def _resolve_category_filter_for_site(site: str, query: str) -> Dict[str, Any]:
         app_id = _first_env("RAKUTEN_APPLICATION_ID")
         if not app_id:
             return {"applied": False, "reason": "rakuten_app_id_missing"}
-        # 新openapiキー（UUID形式）は genre検索APIと互換がないため、無駄な400を避ける。
-        if not re.fullmatch(r"[0-9]+", str(app_id or "").strip()):
-            return {"applied": False, "reason": "rakuten_genre_skip_non_numeric_app_id"}
-        base_url = (
-            _first_env("RAKUTEN_GENRE_API_BASE_URL")
-            or "https://app.rakuten.co.jp/services/api/IchibaGenre/Search/20140222"
+        access_key = _first_env("RAKUTEN_PUBLIC_KEY")
+        genre_base_url_env = _first_env("RAKUTEN_GENRE_API_BASE_URL")
+        genre_base_urls: List[str] = []
+        if genre_base_url_env:
+            genre_base_urls = [genre_base_url_env]
+        else:
+            genre_base_urls = [
+                "https://openapi.rakuten.co.jp/ichibagt/api/IchibaGenre/Search/20170711",
+                "https://app.rakuten.co.jp/services/api/IchibaGenre/Search/20140222",
+            ]
+        genre_error_reason = "rakuten_genre_not_found"
+        for base_url in genre_base_urls:
+            params = {"applicationId": app_id, "genreId": "0", "format": "json"}
+            if access_key:
+                params["accessKey"] = access_key
+            status, _headers, payload = _request_with_retry(
+                f"{base_url}?{urllib.parse.urlencode(params)}",
+                timeout=max(5, _env_int("MINER_CATEGORY_FILTER_TIMEOUT_SECONDS", 12)),
+                site="rakuten",
+            )
+            if status != 200 or not isinstance(payload, dict):
+                genre_error_reason = f"rakuten_genre_http_{status if status else 'error'}"
+                continue
+            best_id = ""
+            best_score = 0
+            best_name = ""
+            for gid, gname in _extract_rakuten_genre_rows(payload):
+                score = _score_category_name(gname, terms)
+                if score > best_score:
+                    best_id, best_score, best_name = gid, score, gname
+            if best_id and best_score > 0:
+                entries[cache_key] = {
+                    "genreId": best_id,
+                    "genreName": best_name,
+                    "fetched_at": now_ts,
+                }
+                cache["entries"] = entries
+                _save_category_site_filter_cache(cache)
+                return {"applied": True, "source": "auto_api", "genreId": best_id, "genreName": best_name}
+            genre_error_reason = "rakuten_genre_not_found"
+
+        probe_query = _rakuten_category_probe_query(category_key, category_row, terms)
+        if not probe_query:
+            return {"applied": False, "reason": genre_error_reason}
+        item_base_url = (
+            _first_env("RAKUTEN_API_BASE_URL")
+            or "https://openapi.rakuten.co.jp/ichibams/api/IchibaItem/Search/20220601"
         )
-        params = {"applicationId": app_id, "genreId": "0", "format": "json"}
-        status, _headers, payload = _request_with_retry(
-            f"{base_url}?{urllib.parse.urlencode(params)}",
+        probe_params = {
+            "applicationId": app_id,
+            "keyword": probe_query,
+            "hits": str(max(10, min(30, _env_int("MINER_RAKUTEN_CATEGORY_PROBE_HITS", 20)))),
+            "page": "1",
+            "format": "json",
+            "sort": (_first_env("RAKUTEN_SEARCH_SORT") or "+itemPrice"),
+        }
+        if access_key:
+            probe_params["accessKey"] = access_key
+        affiliate_id = _first_env("RAKUTEN_AFFILIATE_ID")
+        if affiliate_id:
+            probe_params["affiliateId"] = affiliate_id
+        probe_status, _probe_headers, probe_payload = _request_with_retry(
+            f"{item_base_url}?{urllib.parse.urlencode(probe_params)}",
             timeout=max(5, _env_int("MINER_CATEGORY_FILTER_TIMEOUT_SECONDS", 12)),
             site="rakuten",
         )
-        if status != 200 or not isinstance(payload, dict):
-            return {"applied": False, "reason": f"rakuten_genre_http_{status if status else 'error'}"}
-        best_id = ""
-        best_score = 0
-        best_name = ""
-        for gid, gname in _extract_rakuten_genre_rows(payload):
-            score = _score_category_name(gname, terms)
-            if score > best_score:
-                best_id, best_score, best_name = gid, score, gname
-        if not best_id or best_score <= 0:
-            return {"applied": False, "reason": "rakuten_genre_not_found"}
-        entries[cache_key] = {
-            "genreId": best_id,
-            "genreName": best_name,
-            "fetched_at": now_ts,
-        }
-        cache["entries"] = entries
-        _save_category_site_filter_cache(cache)
-        return {"applied": True, "source": "auto_api", "genreId": best_id, "genreName": best_name}
+        if probe_status == 200 and isinstance(probe_payload, dict):
+            resolved_id, resolved_name, hit_count = _resolve_rakuten_genre_from_item_hits(
+                payload=probe_payload,
+                terms=terms,
+                category_key=category_key,
+            )
+            if resolved_id:
+                entries[cache_key] = {
+                    "genreId": resolved_id,
+                    "genreName": resolved_name,
+                    "fetched_at": now_ts,
+                }
+                cache["entries"] = entries
+                _save_category_site_filter_cache(cache)
+                return {
+                    "applied": True,
+                    "source": "auto_item_hits",
+                    "genreId": resolved_id,
+                    "genreName": resolved_name,
+                    "probe_query": probe_query,
+                    "probe_hit_count": int(hit_count),
+                }
+        return {"applied": False, "reason": genre_error_reason}
 
     if site_key in {"yahoo", "yahoo_shopping"}:
         app_id = _first_env("YAHOO_APP_ID", "YAHOO_CLIENT_ID")
@@ -4483,6 +4620,7 @@ def _source_stock_status(item: MarketItem) -> str:
 def _is_accessory_title(title: str) -> bool:
     upper = str(title or "").upper()
     jp = str(title or "")
+    compact_jp = re.sub(r"\s+", "", jp)
     has_case_dimension = ("ケース幅" in jp) or ("CASE WIDTH" in upper) or ("CASE SIZE" in upper)
     for term in _FORCE_ACCESSORY_TERMS:
         if term in {"ケース", "CASE"} and has_case_dimension:
@@ -4491,7 +4629,7 @@ def _is_accessory_title(title: str) -> bool:
             if term in upper:
                 return True
         else:
-            if term in jp:
+            if term in jp or term in compact_jp:
                 return True
 
     if "BRACELET" in upper and "WATCH" not in upper and "腕時計" not in jp:
@@ -4504,7 +4642,7 @@ def _is_accessory_title(title: str) -> bool:
             if term in upper:
                 return True
         else:
-            if term in jp:
+            if term in jp or term in compact_jp:
                 return True
 
     has_accessory = False
@@ -4517,7 +4655,7 @@ def _is_accessory_title(title: str) -> bool:
                 has_accessory = True
                 accessory_hits += 1
         else:
-            if term in jp:
+            if term in jp or term in compact_jp:
                 has_accessory = True
                 accessory_hits += 1
     if not has_accessory:
@@ -4532,7 +4670,7 @@ def _is_accessory_title(title: str) -> bool:
                 has_hint = True
                 break
         else:
-            if hint in jp:
+            if hint in jp or hint in compact_jp:
                 has_hint = True
                 break
 
@@ -4543,7 +4681,7 @@ def _is_accessory_title(title: str) -> bool:
                 has_watch_core = True
                 break
         else:
-            if term in jp:
+            if term in jp or term in compact_jp:
                 has_watch_core = True
                 break
 
@@ -4716,8 +4854,11 @@ def _resolve_rakuten_variant_price_jpy(
     code = str(target_code or "").strip().upper()
     if not url or not code:
         return -1.0, {"ok": False, "reason": "missing_url_or_code"}
-    status, _headers, html = _request_text(url, timeout=max(5, int(timeout)))
+    status, headers, html = _request_text(url, timeout=max(5, int(timeout)))
     if status != 200 or not html:
+        header_reason = _header_read(headers, _HEADER_ERROR_KEYS, "").strip().lower()
+        if header_reason:
+            return -1.0, {"ok": False, "reason": header_reason}
         return -1.0, {"ok": False, "reason": f"http_{status if status else 'error'}"}
     price = _extract_rakuten_variant_price_from_html(html, target_code=code)
     if price <= 0:
