@@ -290,6 +290,37 @@ class RpaProductResearchFilterTests(unittest.TestCase):
         state = self.mod._detect_sold_filters_from_url(DummyPage())
         self.assertAlmostEqual(float(state.get("min_price", 0.0)), 100.0)
 
+    def test_detect_sold_filters_from_url_parses_active_tab(self) -> None:
+        class DummyPage:
+            url = (
+                "https://www.ebay.com/sh/research?"
+                "marketplace=EBAY-US&keywords=G-SHOCK&tabName=ACTIVE&conditionId=1000"
+            )
+
+        state = self.mod._detect_sold_filters_from_url(DummyPage())
+        self.assertFalse(bool(state.get("tab_sold")))
+        self.assertTrue(bool(state.get("tab_active")))
+        self.assertEqual(str(state.get("tab_name", "")), "ACTIVE")
+
+    def test_rewrite_research_tab_url_switches_to_active(self) -> None:
+        url = (
+            "https://www.ebay.com/sh/research?"
+            "marketplace=EBAY-US&keywords=G-SHOCK&tabName=SOLD&minPrice=100&limit=50"
+        )
+        rewritten = self.mod._rewrite_research_tab_url(url, "ACTIVE")
+        parsed = urllib.parse.urlparse(rewritten)
+        params = urllib.parse.parse_qs(parsed.query)
+        self.assertEqual(params.get("tabName"), ["ACTIVE"])
+        self.assertEqual(params.get("keywords"), ["G-SHOCK"])
+        self.assertEqual(params.get("minPrice"), ["100"])
+
+    def test_detect_active_count_from_tab_label(self) -> None:
+        class DummyPage:
+            def evaluate(self, _script: str):
+                return 1234
+
+        self.assertEqual(self.mod._detect_active_count_from_tab_label(DummyPage()), 1234)
+
     def test_detect_min_price_filter_selected_uses_url_min_price(self) -> None:
         class DummyPage:
             url = "https://www.ebay.com/sh/research?keywords=G-SHOCK&tabName=SOLD&minPrice=150"

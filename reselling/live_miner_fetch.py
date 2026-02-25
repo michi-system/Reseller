@@ -738,6 +738,14 @@ def _run_rpa_collect_for_fetch(queries: Sequence[str]) -> Dict[str, Any]:
         cmd.append("--strict-condition")
     if _env_bool("LIQUIDITY_RPA_PRIMARY_FIXED_PRICE_ONLY", True):
         cmd.append("--fixed-price-only")
+    if _env_bool("LIQUIDITY_RPA_COLLECT_ACTIVE_TAB", False):
+        cmd.append("--collect-active-tab")
+    screenshot_active = (os.getenv("LIQUIDITY_RPA_SCREENSHOT_ACTIVE", "") or "").strip()
+    if screenshot_active:
+        cmd.extend(["--screenshot-active", screenshot_active])
+    html_active = (os.getenv("LIQUIDITY_RPA_HTML_ACTIVE", "") or "").strip()
+    if html_active:
+        cmd.extend(["--html-active", html_active])
     for query in query_list:
         cmd.extend(["--query", query])
 

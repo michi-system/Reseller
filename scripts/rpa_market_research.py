@@ -1200,6 +1200,156 @@ class MetricAccumulator:
         }
 
 
+def _rows_to_active_rows(rows: Any) -> List[Dict[str, Any]]:
+    if not isinstance(rows, list):
+        return []
+    out: List[Dict[str, Any]] = []
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        converted = dict(row)
+        price = _to_float(converted.get("sold_price"), -1.0)
+        if price > 0:
+            converted["active_price"] = round(price, 4)
+        out.append(converted)
+    return out
+
+
+def _sold_sample_to_active_sample(sample: Dict[str, Any]) -> Dict[str, Any]:
+    if not isinstance(sample, dict):
+        return {}
+    out: Dict[str, Any] = {}
+    title = str(sample.get("title", "") or "").strip()
+    if title:
+        out["title"] = title[:220]
+    item_url = str(sample.get("item_url", "") or "").strip()
+    if item_url:
+        out["item_url"] = item_url
+    item_id = str(sample.get("item_id", "") or "").strip()
+    if item_id:
+        out["item_id"] = item_id
+    image_url = str(sample.get("image_url", "") or "").strip()
+    if image_url:
+        out["image_url"] = image_url
+    price = _to_float(sample.get("sold_price"), _to_float(sample.get("sold_price_usd"), -1.0))
+    if price > 0:
+        out["active_price"] = round(price, 4)
+    return out
+
+
+def _collect_active_tab_metrics(
+    page: Any,
+    *,
+    query: str,
+    wait_seconds: int,
+    screenshot_template: str = "",
+    html_template: str = "",
+    query_index: int = 1,
+) -> Dict[str, Any]:
+    result: Dict[str, Any] = {
+        "active_tab_state": {},
+        "active_count": -1,
+        "active_price_min": -1.0,
+        "active_price_median": -1.0,
+        "active_sample": {},
+        "active_result_rows": [],
+        "raw_active_result_rows": [],
+        "daily_limit_reached": False,
+        "screenshot_path": "",
+        "html_path": "",
+    }
+    state = _switch_to_active_tab(page, wait_seconds=max(1, int(wait_seconds)))
+    result["active_tab_state"] = state
+    if not bool(state.get("active_tab_selected")):
+        return result
+
+    acc = MetricAccumulator.create(query=query)
+
+    def _on_response(resp: Any) -> None:
+        try:
+            req = resp.request
+            if req.resource_type not in {"fetch", "xhr"}:
+                return
+            if not _is_research_response(resp):
+                return
+            body = resp.json()
+            acc.ingest_payload(body)
+        except Exception:
+            return
+
+    page.on("response", _on_response)
+    try:
+        list_state = _wait_for_research_list_visible(page, max(1, int(wait_seconds)))
+        state["active_tab_rows"] = max(0, _to_int(list_state.get("rows"), 0))
+        state["active_tab_no_sold_message"] = bool(list_state.get("no_sold"))
+        state["active_tab_busy"] = bool(list_state.get("busy"))
+        state["active_tab_count_label"] = _detect_active_count_from_tab_label(page)
+        response_wait_timeout_ms = max(
+            800,
+            _to_int(
+                os.getenv(
+                    "LIQUIDITY_RPA_RESPONSE_WAIT_TIMEOUT_MS",
+                    str(min(2200, max(1000, int(max(1, wait_seconds) * 300)))),
+                ),
+                min(2200, max(1000, int(max(1, wait_seconds) * 300))),
+            ),
+        )
+        try:
+            page.wait_for_response(
+                lambda resp: bool(_is_research_response(resp)),
+                timeout=response_wait_timeout_ms,
+            )
+        except Exception:
+            pass
+        _wait_for_research_ready(page, max(1, min(3, int(wait_seconds))))
+        try:
+            html = page.content()
+            acc.ingest_html(html)
+            if _contains_daily_limit_message(html):
+                result["daily_limit_reached"] = True
+        except Exception:
+            html = ""
+        if not acc.filtered_row_prices and not acc.row_prices:
+            try:
+                text = page.inner_text("body")
+                acc.ingest_dom_text(text)
+                if _contains_daily_limit_message(text):
+                    result["daily_limit_reached"] = True
+            except Exception:
+                pass
+
+        screenshot_template = str(screenshot_template or "").strip()
+        html_template = str(html_template or "").strip()
+        if screenshot_template:
+            shot_path = _resolve_filters_screenshot_path(screenshot_template, query, query_index)
+            shot_path.parent.mkdir(parents=True, exist_ok=True)
+            shot_timeout_ms = max(3000, _to_int(os.getenv("LIQUIDITY_RPA_SCREENSHOT_TIMEOUT_MS", "15000"), 15000))
+            page.screenshot(path=str(shot_path), full_page=False, timeout=shot_timeout_ms)
+            result["screenshot_path"] = str(shot_path)
+        if html_template:
+            active_html_path = _resolve_filters_html_path(html_template, query, query_index)
+            active_html_path.parent.mkdir(parents=True, exist_ok=True)
+            active_html_path.write_text(str(page.content() or ""), encoding="utf-8")
+            result["html_path"] = str(active_html_path)
+    finally:
+        page.remove_listener("response", _on_response)
+
+    active_metrics = acc.finalize()
+    active_count = _to_int(active_metrics.get("active_count"), -1)
+    if active_count < 0:
+        active_count = _to_int(state.get("active_tab_count_label"), -1)
+    if active_count < 0:
+        active_count = max(0, _to_int(state.get("active_tab_rows"), 0)) if _to_int(state.get("active_tab_rows"), 0) > 0 else -1
+    result["active_count"] = active_count
+    result["active_price_min"] = _to_float(active_metrics.get("sold_price_min"), -1.0)
+    result["active_price_median"] = _to_float(active_metrics.get("sold_price_median"), -1.0)
+    sample = active_metrics.get("sold_sample") if isinstance(active_metrics.get("sold_sample"), dict) else {}
+    result["active_sample"] = _sold_sample_to_active_sample(sample)
+    result["active_result_rows"] = _rows_to_active_rows(active_metrics.get("filtered_result_rows"))
+    result["raw_active_result_rows"] = _rows_to_active_rows(active_metrics.get("raw_result_rows"))
+    return result
+
+
 def _load_queries(args: argparse.Namespace) -> List[str]:
     out: List[str] = []
     for item in args.query:
@@ -1586,6 +1736,38 @@ def _detect_sold_tab_selected(page: Any) -> bool:
         return False
 
 
+def _detect_active_tab_selected(page: Any) -> bool:
+    try:
+        result = page.evaluate(
+            """() => {
+              const visible = (el) => {
+                if (!el) return false;
+                const st = window.getComputedStyle(el);
+                if (st.display === "none" || st.visibility === "hidden") return false;
+                const r = el.getBoundingClientRect();
+                return r.width > 1 && r.height > 1;
+              };
+              const nodes = [...document.querySelectorAll("[role='tab'], button, [role='button'], a, div")];
+              for (const el of nodes) {
+                if (!visible(el)) continue;
+                const text = (el.textContent || "").trim().toLowerCase();
+                if (!text) continue;
+                if (!(text === "active" || text.startsWith("active ") || text.includes(" active"))) continue;
+                const ariaSelected = (el.getAttribute("aria-selected") || "").toLowerCase();
+                const ariaCurrent = (el.getAttribute("aria-current") || "").toLowerCase();
+                const ariaPressed = (el.getAttribute("aria-pressed") || "").toLowerCase();
+                const className = ((el.className || "") + "").toLowerCase();
+                if (ariaSelected === "true" || ariaCurrent === "true" || ariaPressed === "true") return true;
+                if (className.includes("active") || className.includes("selected")) return true;
+              }
+              return false;
+            }"""
+        )
+        return bool(result)
+    except Exception:
+        return False
+
+
 def _detect_fixed_price_selected(page: Any) -> bool:
     try:
         result = page.evaluate(
@@ -1646,6 +1828,8 @@ def _detect_fixed_price_selected(page: Any) -> bool:
 def _detect_sold_filters_from_url(page: Any) -> Dict[str, Any]:
     out: Dict[str, Any] = {
         "tab_sold": False,
+        "tab_active": False,
+        "tab_name": "",
         "fixed_price": False,
         "condition_new": False,
         "min_price": 0.0,
@@ -1672,6 +1856,9 @@ def _detect_sold_filters_from_url(page: Any) -> Dict[str, Any]:
             if str(v or "").strip()
         ]
         out["tab_sold"] = any(value == "sold" for value in tab_values)
+        out["tab_active"] = any(value == "active" for value in tab_values)
+        if tab_values:
+            out["tab_name"] = str(tab_values[0] or "").strip().upper()
         out["fixed_price"] = any(value in {"fixed_price", "buy_it_now", "bin"} for value in format_values)
         out["condition_new"] = any(value in {"1000", "new"} for value in condition_values)
         raw_sort = str(sort_values[0] if sort_values else "").strip()
@@ -1689,6 +1876,117 @@ def _detect_sold_filters_from_url(page: Any) -> Dict[str, Any]:
     except Exception:
         return out
     return out
+
+
+def _rewrite_research_tab_url(current_url: str, tab_name: str) -> str:
+    raw_url = str(current_url or "").strip()
+    if not raw_url:
+        return ""
+    safe_tab = str(tab_name or "").strip().upper()
+    if safe_tab not in {"SOLD", "ACTIVE"}:
+        safe_tab = "SOLD"
+    try:
+        parsed = urllib.parse.urlparse(raw_url)
+    except Exception:
+        return ""
+    if "/sh/research" not in str(parsed.path or ""):
+        return ""
+    params = urllib.parse.parse_qs(parsed.query or "")
+    params["tabName"] = [safe_tab]
+    rebuilt = urllib.parse.urlunparse(
+        (
+            parsed.scheme,
+            parsed.netloc,
+            parsed.path,
+            parsed.params,
+            urllib.parse.urlencode(params, doseq=True),
+            parsed.fragment,
+        )
+    )
+    return str(rebuilt or "").strip()
+
+
+def _switch_to_active_tab(page: Any, *, wait_seconds: int) -> Dict[str, Any]:
+    state: Dict[str, Any] = {
+        "active_tab_attempted": True,
+        "active_tab_selected": False,
+        "active_tab_selection_source": "",
+        "active_tab_url_attempted": False,
+        "active_tab_url_target": "",
+        "active_tab_ui_attempted": False,
+        "active_tab_ui_clicked": False,
+    }
+    wait_sec = max(1, int(wait_seconds))
+    try:
+        current_url = str(getattr(page, "url", "") or "").strip()
+    except Exception:
+        current_url = ""
+    state["active_tab_url_before"] = current_url
+
+    target_url = _rewrite_research_tab_url(current_url, "ACTIVE")
+    if target_url:
+        state["active_tab_url_attempted"] = True
+        state["active_tab_url_target"] = target_url
+        try:
+            page.goto(target_url, wait_until="commit")
+            _wait_for_research_interactive(page, wait_sec)
+            _wait_for_research_ready(page, wait_sec)
+            url_state = _detect_sold_filters_from_url(page)
+            if _detect_active_tab_selected(page) or bool(url_state.get("tab_active")):
+                state["active_tab_selected"] = True
+                state["active_tab_selection_source"] = "url"
+        except Exception as err:
+            state["active_tab_url_error"] = f"{type(err).__name__}:{err}"[:200]
+
+    if not bool(state.get("active_tab_selected")):
+        state["active_tab_ui_attempted"] = True
+        clicked = _click_button_by_text_tokens(page, ["active", "出品中"])
+        state["active_tab_ui_clicked"] = bool(clicked)
+        if clicked:
+            try:
+                page.wait_for_timeout(max(30, _to_int(os.getenv("LIQUIDITY_RPA_FILTER_SETTLE_MS", "45"), 45)))
+                _wait_for_research_ready(page, wait_sec)
+                url_state = _detect_sold_filters_from_url(page)
+                if _detect_active_tab_selected(page) or bool(url_state.get("tab_active")):
+                    state["active_tab_selected"] = True
+                    state["active_tab_selection_source"] = "ui"
+            except Exception as err:
+                state["active_tab_ui_error"] = f"{type(err).__name__}:{err}"[:200]
+
+    try:
+        state["active_tab_url_after"] = str(getattr(page, "url", "") or "").strip()
+    except Exception:
+        state["active_tab_url_after"] = ""
+    return state
+
+
+def _detect_active_count_from_tab_label(page: Any) -> int:
+    try:
+        value = page.evaluate(
+            """() => {
+              const visible = (el) => {
+                if (!el) return false;
+                const st = window.getComputedStyle(el);
+                if (st.display === "none" || st.visibility === "hidden") return false;
+                const r = el.getBoundingClientRect();
+                return r.width > 1 && r.height > 1;
+              };
+              const nodes = [...document.querySelectorAll("[role='tab'], button, [role='button'], a, div")];
+              for (const el of nodes) {
+                if (!visible(el)) continue;
+                const text = (el.textContent || "").trim();
+                if (!/active/i.test(text)) continue;
+                const m = text.match(/active\\s*\\(([0-9,]+)\\)/i);
+                if (m && m[1]) {
+                  return parseInt(String(m[1]).replace(/,/g, ""), 10) || -1;
+                }
+              }
+              return -1;
+            }"""
+        )
+        return max(-1, _to_int(value, -1))
+    except Exception:
+        return -1
 
 
 def _get_result_offset_from_url(url: str) -> int:
@@ -3545,6 +3843,38 @@ def run(args: argparse.Namespace) -> int:
                 continue
 
             metrics = acc.finalize()
+            active_result: Dict[str, Any] = {}
+            if bool(getattr(args, "collect_active_tab", False)):
+                _emit_progress(
+                    phase="active_tab_collecting",
+                    message="Activeタブ情報を取得しています",
+                    progress_percent=_query_progress_percent(index, len(queries), 0.86),
+                    query=query,
+                    query_index=index,
+                    total_queries=len(queries),
+                )
+                active_result = _collect_active_tab_metrics(
+                    page,
+                    query=query,
+                    wait_seconds=max(2, min(6, int(effective_wait))),
+                    screenshot_template=str(getattr(args, "screenshot_active", "") or "").strip(),
+                    html_template=str(getattr(args, "html_active", "") or "").strip(),
+                    query_index=index,
+                )
+                if bool(active_result.get("daily_limit_reached")):
+                    daily_limit_reached = True
+                _emit_progress(
+                    phase="active_tab_done",
+                    message="Activeタブ情報の取得が完了しました",
+                    progress_percent=_query_progress_percent(index, len(queries), 0.9),
+                    query=query,
+                    query_index=index,
+                    total_queries=len(queries),
+                    extra={
+                        "active_count": _to_int(active_result.get("active_count"), -1),
+                        "active_price_min": _to_float(active_result.get("active_price_min"), -1.0),
+                    },
+                )
             timings["total_query_sec"] = round(max(0.0, time.perf_counter() - query_started), 4)
             confidence = _to_float(metrics.get("confidence"), 0.3)
             condition_mode = str(args.condition or "").strip().lower()
@@ -3552,13 +3882,17 @@ def run(args: argparse.Namespace) -> int:
                 confidence = max(0.05, confidence - 0.12)
             if not bool(args.strict_condition):
                 confidence = max(0.05, confidence - 0.06)
+            active_count_value = _to_int(metrics.get("active_count"), -1)
+            active_count_from_tab = _to_int(active_result.get("active_count"), -1)
+            if active_count_from_tab >= 0:
+                active_count_value = active_count_from_tab
 
             signal_key = _resolve_signal_key(query, signal_map)
             row = {
                 "signal_key": signal_key,
                 "query": query,
                 "sold_90d_count": metrics["sold_90d_count"],
-                "active_count": metrics["active_count"],
+                "active_count": active_count_value,
                 "sold_price_min": metrics["sold_price_min"],
                 "sold_price_median": metrics["sold_price_median"],
                 "sold_price_currency": metrics["sold_price_currency"],
@@ -3572,6 +3906,7 @@ def run(args: argparse.Namespace) -> int:
                     "wait_seconds": int(effective_wait),
                     "headless": bool(args.headless),
                     "pass_label": str(args.pass_label or "primary_new"),
+                    "collect_active_tab": bool(getattr(args, "collect_active_tab", False)),
                     "filter_state": filter_state,
                     "filtered_row_count": int(metrics.get("filtered_row_count", 0)),
                     "raw_row_count": int(metrics.get("raw_row_count", 0)),
@@ -3588,6 +3923,35 @@ def run(args: argparse.Namespace) -> int:
                 row["metadata"]["filters_screenshot_path"] = filters_screenshot_path
             if filters_html_path:
                 row["metadata"]["filters_html_path"] = filters_html_path
+            if active_result:
+                active_tab_state = active_result.get("active_tab_state") if isinstance(active_result.get("active_tab_state"), dict) else {}
+                if active_tab_state:
+                    row["metadata"]["active_tab_state"] = active_tab_state
+                active_price_min = _to_float(active_result.get("active_price_min"), -1.0)
+                if active_price_min > 0:
+                    row["metadata"]["active_price_min"] = round(active_price_min, 4)
+                active_price_median = _to_float(active_result.get("active_price_median"), -1.0)
+                if active_price_median > 0:
+                    row["metadata"]["active_price_median"] = round(active_price_median, 4)
+                active_sample = active_result.get("active_sample") if isinstance(active_result.get("active_sample"), dict) else {}
+                if active_sample:
+                    row["metadata"]["active_sample"] = active_sample
+                active_rows = active_result.get("active_result_rows") if isinstance(active_result.get("active_result_rows"), list) else []
+                if active_rows:
+                    row["metadata"]["active_result_rows"] = active_rows
+                raw_active_rows = (
+                    active_result.get("raw_active_result_rows")
+                    if isinstance(active_result.get("raw_active_result_rows"), list)
+                    else []
+                )
+                if raw_active_rows:
+                    row["metadata"]["raw_active_result_rows"] = raw_active_rows
+                active_shot = str(active_result.get("screenshot_path", "") or "").strip()
+                if active_shot:
+                    row["metadata"]["active_screenshot_path"] = active_shot
+                active_html = str(active_result.get("html_path", "") or "").strip()
+                if active_html:
+                    row["metadata"]["active_html_path"] = active_html
             sold_sample = metrics.get("sold_sample") if isinstance(metrics.get("sold_sample"), dict) else {}
             if sold_sample:
                 row["metadata"]["sold_sample"] = sold_sample
@@ -3599,7 +3963,7 @@ def run(args: argparse.Namespace) -> int:
                 row["metadata"]["raw_result_rows"] = raw_rows
             if bool(filter_state.get("early_no_sold_detected")):
                 row["sold_90d_count"] = 0
-                row["active_count"] = -1
+                row["active_count"] = active_count_from_tab if active_count_from_tab >= 0 else -1
                 row["sold_price_min"] = -1.0
                 row["sold_price_median"] = -1.0
                 row["confidence"] = max(0.6, _to_float(row.get("confidence"), 0.3))
@@ -3646,9 +4010,11 @@ def run(args: argparse.Namespace) -> int:
             else:
                 records[signal_key] = row
             print(
-                "  -> sold_90d={sold} min={minp} median={med} ccy={ccy} conf={conf}".format(
+                "  -> sold_90d={sold} min={minp} active={active} active_min={active_min} median={med} ccy={ccy} conf={conf}".format(
                     sold=row["sold_90d_count"],
                     minp=row["sold_price_min"],
+                    active=row["active_count"],
+                    active_min=row["metadata"].get("active_price_min", -1.0),
                     med=row["sold_price_median"],
                     ccy=row["sold_price_currency"],
                     conf=row["confidence"],
@@ -3665,6 +4031,8 @@ def run(args: argparse.Namespace) -> int:
                 extra={
                     "sold_90d_count": int(row["sold_90d_count"]),
                     "sold_price_min": float(row["sold_price_min"]),
+                    "active_count": int(_to_int(row.get("active_count"), -1)),
+                    "active_price_min": float(_to_float((row.get("metadata") or {}).get("active_price_min"), -1.0)),
                     "sold_price_median": float(row["sold_price_median"]),
                 },
             )
@@ -3783,6 +4151,22 @@ def build_parser() -> argparse.ArgumentParser:
         "--html-after-filters",
         default="",
         help="Save HTML after filter setup once results list is visible (supports {query}/{index}/{ts}).",
+    )
+    parser.add_argument(
+        "--collect-active-tab",
+        action="store_true",
+        default=bool(_to_int(os.getenv("LIQUIDITY_RPA_COLLECT_ACTIVE_TAB", "0"), 0)),
+        help="After sold metrics capture, switch to Active tab and collect active count/min sample.",
+    )
+    parser.add_argument(
+        "--screenshot-active",
+        default="",
+        help="Save screenshot after Active tab capture (supports {query}/{index}/{ts}).",
+    )
+    parser.add_argument(
+        "--html-active",
+        default="",
+        help="Save HTML after Active tab capture (supports {query}/{index}/{ts}).",
     )
     parser.add_argument(
         "--min-price-usd",

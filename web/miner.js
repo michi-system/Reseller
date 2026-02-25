@@ -2506,9 +2506,17 @@ function renderCandidate(candidate) {
 
   const liquidityRows = [];
   if (v.liquidity) {
+    const liqMetaLocal = (typeof v.liquidity.metadata === "object" && v.liquidity.metadata) ? v.liquidity.metadata : {};
     const sold90d = toNumber(v.liquidity.sold_90d_count);
+    const activeCount = toNumber(v.liquidity.active_count);
     const soldMinInfo = getSoldMinOutlierInfo(v.liquidity);
+    const activeMin = toNumber(
+      liqMetaLocal?.active_price_min
+      ?? v.meta?.ebay_active_price_min_usd
+      ?? v.meta?.active_price_min
+    );
     liquidityRows.push({ key: "90日売却件数", val: Number.isFinite(sold90d) && sold90d >= 0 ? `${sold90d}件` : "未取得" });
+    liquidityRows.push({ key: "アクティブ件数", val: Number.isFinite(activeCount) && activeCount >= 0 ? `${activeCount}件` : "未取得" });
     if (soldMinInfo.isOutlier) {
       const rawText = moneyDualText({ jpy: null, usd: soldMinInfo.soldMinRaw, fxRate: v.fxRate });
       const ratioText = Number.isFinite(soldMinInfo.ratio) ? ` (ratio=${soldMinInfo.ratio.toFixed(3)})` : "";
@@ -2523,6 +2531,13 @@ function renderCandidate(candidate) {
       liquidityRows.push({
         key: "90日最低成約価格(raw)",
         val: moneyDualHtml({ jpy: null, usd: soldMinInfo.soldMinRaw, fxRate: v.fxRate, align: "left" }),
+        html: true,
+      });
+    }
+    if (Number.isFinite(activeMin) && activeMin > 0) {
+      liquidityRows.push({
+        key: "アクティブ最低価格",
+        val: moneyDualHtml({ jpy: null, usd: activeMin, fxRate: v.fxRate, align: "left" }),
         html: true,
       });
     }

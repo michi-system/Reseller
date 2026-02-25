@@ -814,6 +814,24 @@ def _provider_rpa_json(
         )
     if sold_price_min > 0:
         metadata["sold_price_min"] = round(sold_price_min, 4)
+    active_price_min = _to_float(
+        meta.get("active_price_min"),
+        _to_float(row.get("active_price_min"), -1.0),
+    )
+    if active_price_min > 0:
+        metadata["active_price_min"] = round(active_price_min, 4)
+    active_price_median = _to_float(
+        meta.get("active_price_median"),
+        _to_float(row.get("active_price_median"), -1.0),
+    )
+    if active_price_median > 0:
+        metadata["active_price_median"] = round(active_price_median, 4)
+    active_sample = meta.get("active_sample") if isinstance(meta.get("active_sample"), dict) else {}
+    if isinstance(active_sample, dict) and active_sample:
+        sample_url = str(active_sample.get("item_url", "") or "").strip()
+        sample_price = _to_float(active_sample.get("active_price"), -1.0)
+        if sample_url or sample_price > 0:
+            metadata["active_sample"] = active_sample
     if accepted_without_filtered_rows:
         metadata["accepted_without_filtered_rows"] = True
         metadata["accepted_without_filtered_rows_reason"] = "url_tabName_sold"
@@ -829,6 +847,10 @@ def _provider_rpa_json(
         unavailable_reason="",
         metadata=metadata,
     )
+    if sold_price_min > 0:
+        signal["sold_price_min"] = round(sold_price_min, 4)
+    if active_price_min > 0:
+        signal["active_price_min"] = round(active_price_min, 4)
     return signal, ""
 
 

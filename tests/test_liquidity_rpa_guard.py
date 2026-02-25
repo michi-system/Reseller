@@ -261,6 +261,70 @@ class LiquidityRpaGuardTests(unittest.TestCase):
         self.assertIsInstance(signal, dict)
         self.assertEqual(int(signal.get("sold_90d_count", -1)), 0)
 
+    def test_provider_keeps_active_price_metadata(self) -> None:
+        row = _row(
+            signal_key="model:BC0420-61A",
+            query="BC0420-61A",
+            sold_90d_count=5,
+            sold_price_min=188.0,
+            sold_price_median=201.0,
+            sold_tab_selected=True,
+            lookback_selected="Last 90 days",
+            filtered_row_count=3,
+            sold_sample={
+                "item_url": "https://www.ebay.com/itm/123456789012",
+                "sold_price": 188.0,
+            },
+        )
+        meta = row.get("metadata") if isinstance(row.get("metadata"), dict) else {}
+        meta["active_price_min"] = 244.5
+        meta["active_sample"] = {
+            "item_url": "https://www.ebay.com/itm/314253529095",
+            "active_price": 244.5,
+            "title": "CASIO GW-M5610U-1JF NEW",
+        }
+        row["metadata"] = meta
+
+        signal, reason = self._call_provider(
+            [row],
+            query="BC0420-61A",
+            signal_key="model:BC0420-61A",
+        )
+        self.assertEqual(reason, "")
+        self.assertIsInstance(signal, dict)
+        metadata = signal.get("metadata") if isinstance(signal.get("metadata"), dict) else {}
+        self.assertAlmostEqual(float(metadata.get("active_price_min", -1.0)), 244.5, places=3)
+        active_sample = metadata.get("active_sample") if isinstance(metadata.get("active_sample"), dict) else {}
+        self.assertEqual(str(active_sample.get("item_url", "")), "https://www.ebay.com/itm/314253529095")
+
+    def test_provider_exposes_top_level_price_min_fields(self) -> None:
+        row = _row(
+            signal_key="model:BC0420-61A",
+            query="BC0420-61A",
+            sold_90d_count=5,
+            sold_price_min=188.0,
+            sold_price_median=201.0,
+            sold_tab_selected=True,
+            lookback_selected="Last 90 days",
+            filtered_row_count=3,
+            sold_sample={
+                "item_url": "https://www.ebay.com/itm/123456789012",
+                "sold_price": 188.0,
+            },
+        )
+        meta = row.get("metadata") if isinstance(row.get("metadata"), dict) else {}
+        meta["active_price_min"] = 244.5
+        row["metadata"] = meta
+        signal, reason = self._call_provider(
+            [row],
+            query="BC0420-61A",
+            signal_key="model:BC0420-61A",
+        )
+        self.assertEqual(reason, "")
+        self.assertIsInstance(signal, dict)
+        self.assertAlmostEqual(float(signal.get("sold_price_min", -1.0)), 188.0, places=3)
+        self.assertAlmostEqual(float(signal.get("active_price_min", -1.0)), 244.5, places=3)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -117,6 +117,67 @@ class MinerSeedPoolTests(unittest.TestCase):
         )
         self.assertEqual(picked, "GW-M5610U-1JF")
 
+    def test_pick_liquidity_query_prefers_source_confirmed_model_code(self) -> None:
+        picked = miner_seed_pool._pick_liquidity_query(
+            seed_query="CASIO G-SHOCK",
+            jp_seed_query="G-SHOCK",
+            seed_source_title="CASIO GW-M5610U-1JF Tough Solar",
+            source_title="CASIO GW-M5610U-1JF New",
+            source_identifiers={"model": "GW-M5610U-1JF"},
+        )
+        self.assertEqual(miner_seed_pool._seed_key(picked), miner_seed_pool._seed_key("GW-M5610U-1JF"))
+
+    def test_liquidity_active_min_usd_prefers_metadata_value(self) -> None:
+        signal = {
+            "active_count": 120,
+            "metadata": {
+                "active_price_min": 245.55,
+                "active_sample": {
+                    "item_url": "https://www.ebay.com/itm/123456789012",
+                    "active_price": 245.55,
+                },
+            },
+        }
+        self.assertAlmostEqual(miner_seed_pool._liquidity_active_min_usd(signal), 245.55, places=3)
+        sample = miner_seed_pool._liquidity_active_sample(signal)
+        self.assertEqual(str(sample.get("item_url", "")), "https://www.ebay.com/itm/123456789012")
+
+    def test_parse_ebay_item_detail_html_extracts_price_brand_shipping(self) -> None:
+        html = """
+        <html>
+          <head>
+            <meta property="og:title" content="Casio GW-M5610U-1JF Tough Solar Watch" />
+            <meta property="og:image" content="https://i.ebayimg.com/images/g/example/s-l1600.jpg" />
+            <script type="application/ld+json">
+              {
+                "@context": "https://schema.org",
+                "@type": "Product",
+                "name": "Casio GW-M5610U-1JF Tough Solar Watch",
+                "brand": {"@type":"Brand","name":"Casio"},
+                "offers": {
+                  "@type":"Offer",
+                  "price":"219.99",
+                  "priceCurrency":"USD",
+                  "shippingDetails": {
+                    "@type":"OfferShippingDetails",
+                    "shippingRate": {"@type":"MonetaryAmount","value":"15.00","currency":"USD"}
+                  }
+                }
+              }
+            </script>
+          </head>
+          <body></body>
+        </html>
+        """
+        parsed = miner_seed_pool._parse_ebay_item_detail_html(
+            html,
+            item_url="https://www.ebay.com/itm/123456789012",
+        )
+        self.assertEqual(str(parsed.get("brand", "")), "Casio")
+        self.assertAlmostEqual(float(parsed.get("price_usd", 0.0)), 219.99, places=2)
+        self.assertAlmostEqual(float(parsed.get("shipping_usd", -1.0)), 15.0, places=2)
+        self.assertEqual(str(parsed.get("item_id", "")), "v1|123456789012|0")
+
     def test_resolve_stage1_baseline_usd_prefers_seed_then_category(self) -> None:
         value, source = miner_seed_pool._resolve_stage1_baseline_usd(
             seed_collected_sold_price_min_usd=180.0,

@@ -9,7 +9,9 @@ import subprocess
 import tempfile
 import time
 import unicodedata
+import html
 import urllib.parse
+import urllib.request
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Sequence, Set, Tuple
@@ -38,6 +40,7 @@ from .live_miner_fetch import (
 from .miner import create_miner_candidate
 from .models import connect, init_db
 from .profit import ProfitInput, calculate_profit
+from .rpa_runtime import resolve_rpa_output_path as _resolve_rpa_output_path
 from .time_utils import iso_to_epoch, utc_iso
 
 
@@ -3766,7 +3769,79 @@ def _pick_jp_seed_query(
     return str(candidates[0]).strip()
 
 
-def _pick_liquidity_query(*, seed_query: str, jp_seed_query: str) -> str:
+def _phase_c_best_model_code(
+    *,
+    seed_query: str,
+    jp_seed_query: str,
+    seed_source_title: str = "",
+    source_title: str = "",
+    source_identifiers: Optional[Dict[str, Any]] = None,
+) -> str:
+    # A/B双方から候補型番を集め、共通出現(+重み)が高いものを優先する。
+    score_map: Dict[str, float] = {}
+    display_map: Dict[str, str] = {}
+    order: List[str] = []
+
+    def _add(raw_code: str, score: float) -> None:
+        text = str(raw_code or "").strip()
+        if not text:
+            return
+        canon = _canonical_model_code(text)
+        if len(canon) < 4:
+            return
+        alpha = sum(1 for ch in canon if "A" <= ch <= "Z")
+        digit = sum(1 for ch in canon if ch.isdigit())
+        if alpha < 1 or digit < 1:
+            return
+        if canon not in score_map:
+            order.append(canon)
+            score_map[canon] = 0.0
+            display_map[canon] = text
+        score_map[canon] += float(score)
+        current_disp = str(display_map.get(canon, "") or "")
+        if len(text) > len(current_disp):
+            display_map[canon] = text
+
+    for code in _extract_codes(seed_query):
+        _add(code, 3.0)
+    for code in _extract_codes(jp_seed_query):
+        _add(code, 4.0)
+    for code in _extract_codes(seed_source_title):
+        _add(code, 2.0)
+    for code in _extract_codes(source_title):
+        _add(code, 4.0)
+    identifiers = source_identifiers if isinstance(source_identifiers, dict) else {}
+    for raw_value in identifiers.values():
+        for code in _extract_codes(str(raw_value or "")):
+            _add(code, 5.0)
+
+    if not score_map:
+        return ""
+    ranked = sorted(
+        score_map.items(),
+        key=lambda kv: (-float(kv[1]), -len(str(display_map.get(kv[0], "") or kv[0])), order.index(kv[0])),
+    )
+    best_canon = str(ranked[0][0] or "").strip()
+    return str(display_map.get(best_canon, best_canon) or "").strip()
+
+
+def _pick_liquidity_query(
+    *,
+    seed_query: str,
+    jp_seed_query: str,
+    seed_source_title: str = "",
+    source_title: str = "",
+    source_identifiers: Optional[Dict[str, Any]] = None,
+) -> str:
+    preferred_code = _phase_c_best_model_code(
+        seed_query=seed_query,
+        jp_seed_query=jp_seed_query,
+        seed_source_title=seed_source_title,
+        source_title=source_title,
+        source_identifiers=source_identifiers if isinstance(source_identifiers, dict) else {},
+    )
+    if preferred_code:
+        return preferred_code
     jp_query = re.sub(r"\s+", " ", str(jp_seed_query or "").strip())
     if not jp_query:
         jp_query = re.sub(r"\s+", " ", str(seed_query or "").strip())
@@ -4082,6 +4157,231 @@ def _liquidity_sold_min_usd(signal: Dict[str, Any]) -> float:
     return -1.0
 
 
+def _liquidity_active_sample(signal: Dict[str, Any]) -> Dict[str, Any]:
+    metadata = signal.get("metadata") if isinstance(signal.get("metadata"), dict) else {}
+    sample = metadata.get("active_sample") if isinstance(metadata.get("active_sample"), dict) else {}
+    if not isinstance(sample, dict):
+        sample = {}
+    item_url = str(sample.get("item_url", "") or "").strip()
+    title = str(sample.get("title", "") or "").strip()
+    image_url = str(sample.get("image_url", "") or "").strip()
+    active_price = to_float(sample.get("active_price"), to_float(sample.get("sold_price"), -1.0))
+    out: Dict[str, Any] = {}
+    if item_url:
+        out["item_url"] = item_url
+    if title:
+        out["title"] = title
+    if image_url:
+        out["image_url"] = image_url
+    if active_price > 0:
+        out["active_price_usd"] = float(active_price)
+    return out
+
+
+def _liquidity_active_min_usd(signal: Dict[str, Any]) -> float:
+    metadata = signal.get("metadata") if isinstance(signal.get("metadata"), dict) else {}
+    active_sample = _liquidity_active_sample(signal)
+    candidates = [
+        metadata.get("active_price_min"),
+        metadata.get("active_price_median"),
+        signal.get("active_price_min"),
+        active_sample.get("active_price_usd"),
+    ]
+    for raw in candidates:
+        active_min = to_float(raw, -1.0)
+        if active_min > 0:
+            return active_min
+    return -1.0
+
+
+def _iter_json_ld_dicts(html_text: str) -> List[Dict[str, Any]]:
+    text = str(html_text or "")
+    out: List[Dict[str, Any]] = []
+    if not text:
+        return out
+    scripts = re.findall(
+        r'<script[^>]+type=["\']application/ld\+json["\'][^>]*>(.*?)</script>',
+        text,
+        flags=re.IGNORECASE | re.DOTALL,
+    )
+    for script in scripts:
+        raw = html.unescape(str(script or "").strip())
+        if not raw:
+            continue
+        parsed: Any = None
+        try:
+            parsed = json.loads(raw)
+        except Exception:
+            continue
+        stack: List[Any] = [parsed]
+        while stack:
+            node = stack.pop()
+            if isinstance(node, dict):
+                out.append(node)
+                for value in node.values():
+                    if isinstance(value, (dict, list)):
+                        stack.append(value)
+            elif isinstance(node, list):
+                stack.extend(node[:80])
+    return out
+
+
+def _parse_ebay_item_detail_html(html_text: str, *, item_url: str) -> Dict[str, Any]:
+    out: Dict[str, Any] = {}
+    nodes = _iter_json_ld_dicts(html_text)
+    product_node: Dict[str, Any] = {}
+    offer_node: Dict[str, Any] = {}
+
+    for node in nodes:
+        node_type = str(node.get("@type", "") or "").strip().lower()
+        if (not product_node) and ("product" in node_type):
+            product_node = node
+        if (not offer_node) and ("offer" in node_type):
+            offer_node = node
+        offers = node.get("offers")
+        if (not offer_node) and isinstance(offers, dict):
+            offer_node = offers
+        if (not offer_node) and isinstance(offers, list):
+            for offer in offers:
+                if isinstance(offer, dict):
+                    offer_node = offer
+                    break
+        if product_node and offer_node:
+            break
+
+    title = ""
+    for probe in (product_node.get("name"), offer_node.get("name")):
+        text = re.sub(r"\s+", " ", str(probe or "").strip())
+        if text:
+            title = text
+            break
+    if not title:
+        og = re.search(
+            r'<meta[^>]+property=["\']og:title["\'][^>]+content=["\']([^"\']+)["\']',
+            str(html_text or ""),
+            flags=re.IGNORECASE,
+        )
+        if og:
+            title = re.sub(r"\s+", " ", html.unescape(str(og.group(1) or "").strip()))
+    if title:
+        out["title"] = title[:220]
+
+    brand_val = ""
+    brand_raw = product_node.get("brand")
+    if isinstance(brand_raw, dict):
+        brand_val = str(brand_raw.get("name", "") or "").strip()
+    elif isinstance(brand_raw, str):
+        brand_val = str(brand_raw or "").strip()
+    if brand_val:
+        out["brand"] = brand_val[:120]
+
+    price_usd = to_float(
+        offer_node.get("price"),
+        to_float(offer_node.get("lowPrice"), -1.0),
+    )
+    if price_usd > 0:
+        out["price_usd"] = float(price_usd)
+
+    currency = str(
+        offer_node.get("priceCurrency")
+        or product_node.get("priceCurrency")
+        or ""
+    ).strip()
+    if currency:
+        out["currency"] = currency[:16]
+
+    shipping_usd = -1.0
+    shipping_details = offer_node.get("shippingDetails") if isinstance(offer_node.get("shippingDetails"), dict) else {}
+    shipping_rate = (
+        shipping_details.get("shippingRate")
+        if isinstance(shipping_details.get("shippingRate"), dict)
+        else {}
+    )
+    if isinstance(shipping_rate, dict):
+        shipping_usd = to_float(shipping_rate.get("value"), -1.0)
+    if shipping_usd <= 0:
+        m_ship = re.search(
+            r"(?:US\s*\$|\$)\s*([0-9][0-9,]{0,8}(?:\.[0-9]{1,2})?)\s*(?:shipping|postage)",
+            str(html_text or ""),
+            flags=re.IGNORECASE,
+        )
+        if m_ship:
+            shipping_usd = to_float(str(m_ship.group(1) or "").replace(",", ""), -1.0)
+    if shipping_usd <= 0 and re.search(r"free\s+shipping", str(html_text or ""), flags=re.IGNORECASE):
+        shipping_usd = 0.0
+    if shipping_usd >= 0:
+        out["shipping_usd"] = float(shipping_usd)
+
+    image_url = ""
+    image_raw = product_node.get("image")
+    if isinstance(image_raw, str):
+        image_url = str(image_raw or "").strip()
+    elif isinstance(image_raw, list):
+        for candidate in image_raw:
+            text = str(candidate or "").strip()
+            if text:
+                image_url = text
+                break
+    if not image_url:
+        og_img = re.search(
+            r'<meta[^>]+property=["\']og:image["\'][^>]+content=["\']([^"\']+)["\']',
+            str(html_text or ""),
+            flags=re.IGNORECASE,
+        )
+        if og_img:
+            image_url = str(og_img.group(1) or "").strip()
+    if image_url:
+        out["image_url"] = image_url
+
+    item_url_text = str(item_url or "").strip()
+    if item_url_text:
+        out["item_url"] = item_url_text
+        item_id = _ebay_item_id_from_url(item_url_text)
+        if item_id:
+            out["item_id"] = item_id
+
+    model_code = ""
+    for code in _extract_codes(
+        " ".join(
+            [
+                str(out.get("title", "") or ""),
+                str(product_node.get("sku", "") or ""),
+                str(product_node.get("mpn", "") or ""),
+            ]
+        )
+    ):
+        model_code = str(code or "").strip()
+        if model_code:
+            break
+    if model_code:
+        out["model"] = model_code
+
+    return out
+
+
+def _fetch_ebay_item_detail_from_url(item_url: str, *, timeout: int) -> Dict[str, Any]:
+    url = str(item_url or "").strip()
+    if not url:
+        return {}
+    req = urllib.request.Request(
+        url,
+        headers={
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+            "(KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+            "Accept-Language": "en-US,en;q=0.9",
+        },
+    )
+    html_text = ""
+    try:
+        with urllib.request.urlopen(req, timeout=max(3, int(timeout))) as res:
+            body = res.read(1_500_000)
+        html_text = body.decode("utf-8", errors="ignore")
+    except Exception:
+        return {}
+    parsed = _parse_ebay_item_detail_html(html_text, item_url=url)
+    return parsed if isinstance(parsed, dict) else {}
+
+
 def _is_rpa_daily_limit_signal(signal: Dict[str, Any]) -> bool:
     parts: List[str] = []
     parts.append(str(signal.get("unavailable_reason", "") or ""))
@@ -4152,14 +4452,21 @@ def _refresh_liquidity_rpa(
     # new + fixed price + strict condition を強制して流動性判定の一貫性を保つ。
     safe_category_id = max(0, int(category_id))
     safe_category_slug = re.sub(r"[^a-z0-9_-]+", "", str(category_slug or "").strip().lower())
+    seed_rpa_json_path = _resolve_rpa_output_path(
+        ROOT_DIR,
+        env_key="MINER_SEED_POOL_RPA_JSON_PATH",
+        default_path="data/liquidity_rpa_signals.jsonl",
+    )
     with _temporary_env(
         {
             "LIQUIDITY_RPA_FETCH_MAX_QUERIES": str(max(1, int(max_queries))),
             "LIQUIDITY_RPA_PRIMARY_CONDITION": "new",
             "LIQUIDITY_RPA_PRIMARY_STRICT_CONDITION": "1",
             "LIQUIDITY_RPA_PRIMARY_FIXED_PRICE_ONLY": "1",
+            "LIQUIDITY_RPA_COLLECT_ACTIVE_TAB": "1",
             "LIQUIDITY_RPA_CATEGORY_ID": str(safe_category_id),
             "LIQUIDITY_RPA_CATEGORY_SLUG": safe_category_slug,
+            "LIQUIDITY_RPA_JSON_PATH": str(seed_rpa_json_path),
         }
     ):
         summary = _maybe_refresh_rpa_for_fetch(normalized, force=bool(force))
@@ -4542,6 +4849,18 @@ def run_seeded_fetch(
     stage2_liquidity_refresh_runs: List[Dict[str, Any]] = []
     stage2_low_liquidity_cooldown_rows: List[Dict[str, Any]] = []
     stage2_allow_missing_sold_sample = env_bool("MINER_STAGE2_ALLOW_MISSING_SOLD_SAMPLE", False)
+    stage2_ebay_item_detail_enabled = env_bool("MINER_STAGE2_EBAY_ITEM_DETAIL_ENABLED", True)
+    stage2_ebay_item_detail_timeout_sec = max(3, env_int("MINER_STAGE2_EBAY_ITEM_DETAIL_TIMEOUT_SECONDS", 8))
+    stage2_ebay_item_detail_max_fetch = max(0, env_int("MINER_STAGE2_EBAY_ITEM_DETAIL_MAX_FETCH_PER_RUN", 30))
+    stage2_ebay_item_detail_fetched = 0
+    stage2_ebay_item_detail_cache: Dict[str, Dict[str, Any]] = {}
+    stage_c_rpa_json_path = str(
+        _resolve_rpa_output_path(
+            ROOT_DIR,
+            env_key="MINER_SEED_POOL_RPA_JSON_PATH",
+            default_path="data/liquidity_rpa_signals.jsonl",
+        )
+    )
 
     applied_filters = {
         "seed_pool_mode": "A/B/C_spec",
@@ -4592,6 +4911,10 @@ def run_seeded_fetch(
         "stage_c_liquidity_refresh_on_miss_enabled": bool(stage2_liquidity_refresh_enabled),
         "stage_c_liquidity_refresh_on_miss_budget": int(stage2_liquidity_retry_budget_total),
         "stage_c_allow_missing_sold_sample": bool(stage2_allow_missing_sold_sample),
+        "stage_c_collect_active_tab": bool(stage2_liquidity_refresh_enabled),
+        "stage_c_rpa_json_path": stage_c_rpa_json_path,
+        "stage_c_ebay_item_detail_enabled": bool(stage2_ebay_item_detail_enabled),
+        "stage_c_ebay_item_detail_max_fetch_per_run": int(stage2_ebay_item_detail_max_fetch),
     }
 
     stage1_pass_total = 0
@@ -4689,9 +5012,23 @@ def run_seeded_fetch(
         stage_context_env: Dict[str, str] = {
             "MINER_ACTIVE_CATEGORY_KEY": category_key,
             "MINER_ACTIVE_CATEGORY_LABEL": category_label,
+            "LIQUIDITY_RPA_JSON_PATH": stage_c_rpa_json_path,
         }
         if seed_max_price_jpy > 0:
             stage_context_env["MINER_ACTIVE_SEED_MAX_PRICE_JPY"] = str(seed_max_price_jpy)
+
+        def _get_stage2_liquidity_signal(item_obj: MarketItem, query_text: str) -> Dict[str, Any]:
+            with _temporary_env(stage_context_env):
+                return get_liquidity_signal(
+                    query=query_text,
+                    source_title=str(item_obj.title or ""),
+                    market_title=query_text,
+                    source_identifiers=item_obj.identifiers if isinstance(item_obj.identifiers, dict) else {},
+                    market_identifiers={},
+                    active_count_hint=-1,
+                    timeout=max(5, int(timeout)),
+                    settings=settings,
+                )
 
         stage1_candidates: List[Dict[str, Any]] = []
         stage1_seen: Set[str] = set()
@@ -5015,18 +5352,12 @@ def run_seeded_fetch(
             liquidity_query = _pick_liquidity_query(
                 seed_query=stage1_query,
                 jp_seed_query=jp_seed_query,
+                seed_source_title=seed_source_title,
+                source_title=str(item.title or ""),
+                source_identifiers=item.identifiers if isinstance(item.identifiers, dict) else {},
             )
             query_key = re.sub(r"\s+", " ", str(liquidity_query or "").strip()).lower()
-            signal = get_liquidity_signal(
-                query=liquidity_query,
-                source_title=str(item.title or ""),
-                market_title=liquidity_query,
-                source_identifiers=item.identifiers if isinstance(item.identifiers, dict) else {},
-                market_identifiers={},
-                active_count_hint=-1,
-                timeout=max(5, int(timeout)),
-                settings=settings,
-            )
+            signal = _get_stage2_liquidity_signal(item, liquidity_query)
             if _is_rpa_daily_limit_signal(signal):
                 rpa_daily_limit_reached = True
                 stop_reason = "rpa_daily_limit_reached"
@@ -5060,16 +5391,7 @@ def run_seeded_fetch(
                         rpa_daily_limit_reached = True
                         stop_reason = "rpa_daily_limit_reached"
                         break
-                    signal = get_liquidity_signal(
-                        query=liquidity_query,
-                        source_title=str(item.title or ""),
-                        market_title=liquidity_query,
-                        source_identifiers=item.identifiers if isinstance(item.identifiers, dict) else {},
-                        market_identifiers={},
-                        active_count_hint=-1,
-                        timeout=max(5, int(timeout)),
-                        settings=settings,
-                    )
+                    signal = _get_stage2_liquidity_signal(item, liquidity_query)
                     if _is_rpa_daily_limit_signal(signal):
                         rpa_daily_limit_reached = True
                         stop_reason = "rpa_daily_limit_reached"
@@ -5138,16 +5460,7 @@ def run_seeded_fetch(
                             rpa_daily_limit_reached = True
                             stop_reason = "rpa_daily_limit_reached"
                             break
-                        signal = get_liquidity_signal(
-                            query=liquidity_query,
-                            source_title=str(item.title or ""),
-                            market_title=liquidity_query,
-                            source_identifiers=item.identifiers if isinstance(item.identifiers, dict) else {},
-                            market_identifiers={},
-                            active_count_hint=-1,
-                            timeout=max(5, int(timeout)),
-                            settings=settings,
-                        )
+                        signal = _get_stage2_liquidity_signal(item, liquidity_query)
                         if _is_rpa_daily_limit_signal(signal):
                             rpa_daily_limit_reached = True
                             stop_reason = "rpa_daily_limit_reached"
@@ -5171,6 +5484,13 @@ def run_seeded_fetch(
                 sold_sample_price = float(sold_min_usd)
                 if not str(sold_sample.get("title", "") or "").strip():
                     sold_sample["title"] = str(liquidity_query or jp_seed_query or seed_query)
+            active_count_signal = to_int(signal.get("active_count"), -1)
+            active_min_usd = _liquidity_active_min_usd(signal)
+            active_sample = _liquidity_active_sample(signal)
+            active_item_url = str(active_sample.get("item_url", "") or "").strip()
+            active_item_title = str(active_sample.get("title", "") or "").strip()
+            active_image_url = str(active_sample.get("image_url", "") or "").strip()
+            active_sample_price = to_float(active_sample.get("active_price_usd"), -1.0)
 
             source_price_jpy = max(
                 0.0,
@@ -5234,6 +5554,37 @@ def run_seeded_fetch(
             market_item_id = _ebay_item_id_from_url(sold_item_url)
             if not market_item_id and bool(used_missing_sold_sample_fallback):
                 market_item_id = _seed_key(str(liquidity_query or jp_seed_query or seed_query))
+            sold_item_detail: Dict[str, Any] = {}
+            if bool(stage2_ebay_item_detail_enabled) and sold_item_url:
+                cached_detail = stage2_ebay_item_detail_cache.get(sold_item_url)
+                if isinstance(cached_detail, dict):
+                    sold_item_detail = dict(cached_detail)
+                elif stage2_ebay_item_detail_fetched < stage2_ebay_item_detail_max_fetch:
+                    detail = _fetch_ebay_item_detail_from_url(
+                        sold_item_url,
+                        timeout=stage2_ebay_item_detail_timeout_sec,
+                    )
+                    sold_item_detail = detail if isinstance(detail, dict) else {}
+                    stage2_ebay_item_detail_cache[sold_item_url] = dict(sold_item_detail)
+                    stage2_ebay_item_detail_fetched += 1
+            detail_title = str(sold_item_detail.get("title", "") or "").strip()
+            if detail_title:
+                market_title = detail_title
+            market_identifiers: Dict[str, str] = {}
+            detail_brand = str(sold_item_detail.get("brand", "") or "").strip()
+            detail_model = str(sold_item_detail.get("model", "") or "").strip()
+            if detail_brand:
+                market_identifiers["brand"] = detail_brand
+            if detail_model:
+                market_identifiers["model"] = detail_model
+                market_identifiers["mpn"] = detail_model
+            if (not detail_model) and market_title:
+                codes = _extract_codes(market_title)
+                if codes:
+                    first_code = str(codes[0] or "").strip()
+                    if first_code:
+                        market_identifiers["model"] = first_code
+                        market_identifiers["mpn"] = first_code
             candidate_payload = {
                 "source_site": str(item.site or row.get("site") or ""),
                 "market_site": str(market_site or "ebay"),
@@ -5256,22 +5607,44 @@ def run_seeded_fetch(
                     "source_total_jpy": float(source_total_jpy),
                     "source_currency": str(item.currency or "JPY"),
                     "source_identifiers": item.identifiers if isinstance(item.identifiers, dict) else {},
+                    "market_identifiers": market_identifiers,
                     "source_price_basis_type": str(row.get("source_price_basis_type", "") or "listing_price"),
                     "source_variant_price_resolution": row.get("source_variant_resolution")
                     if isinstance(row.get("source_variant_resolution"), dict)
                     else {},
                     "market_item_url": sold_item_url,
-                    "market_image_url": str(sold_sample.get("image_url", "") or ""),
+                    "market_image_url": str(
+                        sold_sample.get("image_url", "")
+                        or sold_item_detail.get("image_url", "")
+                        or ""
+                    ),
+                    "market_item_url_active": active_item_url,
+                    "market_image_url_active": active_image_url,
                     "market_price_basis_usd": float(sold_min_usd),
                     "market_shipping_basis_usd": 0.0,
                     "market_revenue_basis_usd": float(sold_min_usd),
                     "market_price_basis_type": "sold_price_min_90d",
                     "ebay_sold_item_url": sold_item_url,
-                    "ebay_sold_image_url": str(sold_sample.get("image_url", "") or ""),
-                    "ebay_sold_title": market_title,
+                    "ebay_sold_image_url": str(
+                        sold_sample.get("image_url", "")
+                        or sold_item_detail.get("image_url", "")
+                        or ""
+                    ),
+                    "ebay_sold_title": str(sold_item_detail.get("title", "") or market_title),
                     "ebay_sold_price_usd": float(sold_sample_price),
                     "ebay_sold_sample_reference_ok": not bool(used_missing_sold_sample_fallback),
                     "ebay_sold_sample_fallback_used": bool(used_missing_sold_sample_fallback),
+                    "ebay_active_count": int(active_count_signal),
+                    "ebay_active_price_min_usd": float(active_min_usd) if active_min_usd > 0 else -1.0,
+                    "ebay_active_item_url": active_item_url,
+                    "ebay_active_image_url": active_image_url,
+                    "ebay_active_title": active_item_title,
+                    "ebay_active_sample_price_usd": float(active_sample_price) if active_sample_price > 0 else -1.0,
+                    "ebay_sold_detail": sold_item_detail,
+                    "ebay_sold_detail_brand": str(sold_item_detail.get("brand", "") or "").strip(),
+                    "ebay_sold_detail_title": str(sold_item_detail.get("title", "") or "").strip(),
+                    "ebay_sold_detail_price_usd": float(to_float(sold_item_detail.get("price_usd"), -1.0)),
+                    "ebay_sold_detail_shipping_usd": float(to_float(sold_item_detail.get("shipping_usd"), -1.0)),
                     "liquidity_query": liquidity_query,
                     "liquidity": signal,
                     "seed_pool": {
@@ -5400,6 +5773,10 @@ def run_seeded_fetch(
         hints.append(
             f"C段階の流動性RPA更新: 実行{ran_count}回 / miss再試行{len(miss_retry_runs)}回 / sample再試行{len(sample_retry_runs)}回"
         )
+    if stage2_ebay_item_detail_enabled and stage2_ebay_item_detail_fetched > 0:
+        hints.append(
+            f"C段階のeBay商品ページ補完: {stage2_ebay_item_detail_fetched}件取得"
+        )
     if len(created_ids) <= 0 and stage1_seed_baseline_reject_total > 0:
         hints.append(f"B段階でseed基準価格を満たさず除外: {stage1_seed_baseline_reject_total}件")
     if stop_reason == "timebox_reached":
@@ -5443,6 +5820,12 @@ def run_seeded_fetch(
             "retry_budget_used": int(stage2_liquidity_retry_budget_used),
             "runs": stage2_liquidity_refresh_runs,
         },
+        "stage2_ebay_item_detail": {
+            "enabled": bool(stage2_ebay_item_detail_enabled),
+            "fetched_count": int(stage2_ebay_item_detail_fetched),
+            "max_fetch_per_run": int(stage2_ebay_item_detail_max_fetch),
+            "timeout_sec": int(stage2_ebay_item_detail_timeout_sec),
+        },
         "stage2_low_liquidity_cooldown_saved": int(stage2_low_liquidity_cooldown_saved),
         "timed_fetch": {
             "enabled": bool(timed_mode),
@@ -5466,6 +5849,12 @@ def run_seeded_fetch(
                 "retry_budget_total": int(stage2_liquidity_retry_budget_total),
                 "retry_budget_used": int(stage2_liquidity_retry_budget_used),
                 "runs": stage2_liquidity_refresh_runs,
+            },
+            "stage2_ebay_item_detail": {
+                "enabled": bool(stage2_ebay_item_detail_enabled),
+                "fetched_count": int(stage2_ebay_item_detail_fetched),
+                "max_fetch_per_run": int(stage2_ebay_item_detail_max_fetch),
+                "timeout_sec": int(stage2_ebay_item_detail_timeout_sec),
             },
             "stage2_low_liquidity_cooldown_saved": int(stage2_low_liquidity_cooldown_saved),
             "stage_b": {
@@ -5499,6 +5888,7 @@ def run_seeded_fetch(
             "stage2_runs": int(stage2_runs),
             "stage1_seed_baseline_reject_total": int(stage1_seed_baseline_reject_total),
             "stage2_low_liquidity_cooldown_saved": int(stage2_low_liquidity_cooldown_saved),
+            "stage2_ebay_item_detail_fetched": int(stage2_ebay_item_detail_fetched),
         }
     )
     return payload
