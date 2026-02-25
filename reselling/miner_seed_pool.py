@@ -94,6 +94,14 @@ _SEED_FALLBACK_BROAD_SERIES_KEYS: Set[str] = {
     "SPORTS",
 }
 
+_SEED_UI_NOISE_KEYS: Set[str] = {
+    "CANTFINDTHEWORDSSEARCHWITHANIMAGE",
+    "VISUALSEARCHHANDLER",
+    "RTMTRACKING",
+    "DEVICEFINGERPRINT",
+    "USERSHIPLOCATION",
+}
+
 _SEED_LEADING_CONDITION_WORDS: Set[str] = {
     "NIB",
     "UNUSED",
@@ -636,6 +644,8 @@ def _extract_seed_queries_from_title(title: str, brand_hints: Sequence[str]) -> 
     compact = re.sub(r"\s+", " ", unicodedata.normalize("NFKC", str(title or ""))).strip()
     if not compact:
         return []
+    if _is_seed_ui_noise_title(compact):
+        return []
     brand = _pick_brand(compact, brand_hints)
     out: List[str] = []
     gtins = _extract_gtin_candidates(compact)
@@ -708,6 +718,30 @@ def _ebay_item_id_from_url(url: str) -> str:
     if not item_num:
         return ""
     return f"v1|{item_num}|0"
+
+
+def _is_seed_ui_noise_title(title: str) -> bool:
+    text = re.sub(r"\s+", " ", unicodedata.normalize("NFKC", str(title or ""))).strip()
+    if not text:
+        return False
+    upper = text.upper()
+    key = re.sub(r"[^A-Z0-9]+", "", upper)
+    if not key:
+        return False
+    if key in _SEED_UI_NOISE_KEYS:
+        return True
+    # eBay UI文言混入の既知パターン
+    if "CANTFIND" in key and "SEARCHWITHANIMAGE" in key:
+        return True
+    # 計測/ハンドラ名のような疑似タイトル
+    if not re.search(r"\d", upper):
+        if "_" in upper and any(token in upper for token in ("TRACKING", "HANDLER", "FINGER", "SHIP", "LOCATION")):
+            return True
+        if re.fullmatch(r"[A-Z _-]{8,}", upper) and any(
+            token in upper for token in ("TRACKING", "HANDLER", "VISUAL", "FINGER", "LOCATION")
+        ):
+            return True
+    return False
 
 
 def _load_seed_api_usage() -> Dict[str, Any]:
@@ -1197,10 +1231,10 @@ def _run_rpa_page(
     )
     child_env["LIQUIDITY_RPA_PRE_FILTER_WAIT_SECONDS"] = str(
         max(
-            1,
+            2,
             env_int(
                 "MINER_SEED_POOL_RPA_PRE_FILTER_WAIT_SECONDS",
-                env_int("LIQUIDITY_RPA_PRE_FILTER_WAIT_SECONDS", 1),
+                env_int("LIQUIDITY_RPA_PRE_FILTER_WAIT_SECONDS", 2),
             ),
         )
     )
@@ -1348,6 +1382,8 @@ def _collect_row_entries(row: Dict[str, Any]) -> List[Dict[str, Any]]:
             continue
         title = str(raw.get("title", "") or "").strip()
         if not title:
+            continue
+        if _is_seed_ui_noise_title(title):
             continue
         out.append(
             {

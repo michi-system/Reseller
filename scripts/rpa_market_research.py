@@ -156,6 +156,15 @@ _NON_MAIN_ITEM_PATTERNS = (
     re.compile(r"(箱|外箱|説明書|取扱説明書|保証書|カード|付属品|ケース)\s*のみ"),
 )
 
+_UI_NOISE_TITLE_TERMS = {
+    "CAN'T FIND THE WORDS? SEARCH WITH AN IMAGE",
+    "CANT FIND THE WORDS? SEARCH WITH AN IMAGE",
+    "VISUAL_SEARCH_HANDLER",
+    "RTM_TRACKING",
+    "DEVICE_FINGER_PRINT",
+    "USER_SHIP_LOCATION",
+}
+
 _PRICE_PATH_EXCLUDES = {
     "shipping",
     "postage",
@@ -274,6 +283,17 @@ def _is_non_main_item_row(text: str) -> bool:
 
 def _is_accessory_row(text: str) -> bool:
     return _contains_row_term(text, _ACCESSORY_TERMS) or _is_non_main_item_row(text)
+
+
+def _is_ui_noise_title(text: str) -> bool:
+    normalized = re.sub(r"\s+", " ", str(text or "").strip().upper())
+    if not normalized:
+        return False
+    if normalized in _UI_NOISE_TITLE_TERMS:
+        return True
+    if any(token in normalized for token in ("VISUAL_SEARCH_HANDLER", "DEVICE_FINGER_PRINT", "RTM_TRACKING")):
+        return True
+    return False
 
 
 def _is_candidate_price_path(path: str) -> bool:
@@ -408,6 +428,8 @@ def _extract_filtered_rows_from_payload(
 
         if not title:
             continue
+        if _is_ui_noise_title(title):
+            continue
         if _is_accessory_row(title):
             continue
         if not _row_matches_query_text(title, query_codes=query_codes, query_tokens=query_tokens):
@@ -513,6 +535,8 @@ def _extract_raw_rows_from_payload(payload: Any) -> Tuple[List[float], List[Dict
                         sold_price = numeric
 
         if not title:
+            continue
+        if _is_ui_noise_title(title):
             continue
         dedup_key = _normalize_code(title) + "|" + _normalize_code(item_url)
         if dedup_key in seen_rows:
@@ -691,6 +715,8 @@ def _extract_filtered_rows_with_rows(
         row_text = _strip_html_text(block)
         if not row_text:
             continue
+        if _is_ui_noise_title(row_text):
+            continue
         if _is_accessory_row(row_text):
             continue
         if not _row_matches_query_text(row_text, query_codes=query_codes, query_tokens=query_tokens):
@@ -769,6 +795,8 @@ def _extract_raw_rows_with_rows(
         block = text[start:end]
         row_text = _strip_html_text(block)
         if not row_text:
+            continue
+        if _is_ui_noise_title(row_text):
             continue
         row_entry: Dict[str, Any] = {"title": row_text[:220], "rank": idx + 1}
         link_match = _RE_HTML_ROW_LINK.search(block)
@@ -1344,10 +1372,10 @@ def _search_and_wait(
         if settle_ms > 0:
             page.wait_for_timeout(settle_ms)
     pre_filter_wait = max(
-        1,
+        2,
         _to_int(
-            os.getenv("LIQUIDITY_RPA_PRE_FILTER_WAIT_SECONDS", str(max(1, min(2, int(wait_seconds))))),
-            max(1, min(2, int(wait_seconds))),
+            os.getenv("LIQUIDITY_RPA_PRE_FILTER_WAIT_SECONDS", str(max(2, min(4, int(wait_seconds))))),
+            max(2, min(4, int(wait_seconds))),
         ),
     )
     _wait_for_research_interactive(page, pre_filter_wait)
@@ -1432,13 +1460,31 @@ def _wait_for_research_interactive(page: Any, wait_seconds: int) -> bool:
                   };
                   const soldTab = [...document.querySelectorAll("[role='tab'], button, div")].some((el) => {
                     const t = (el.textContent || "").trim().toLowerCase();
-                    return visible(el) && t === "sold";
+                    return visible(el) && (
+                      t === "sold" ||
+                      t.startsWith("sold ") ||
+                      t.includes(" sold") ||
+                      t.includes("売れた")
+                    );
                   });
                   const hasFilterButton = [...document.querySelectorAll("button, [role='button']")].some((el) => {
                     const t = (el.textContent || "").trim().toLowerCase();
-                    return visible(el) && (t.includes("condition filter") || t.includes("format filter") || t.startsWith("last "));
+                    return visible(el) && (
+                      t.includes("condition filter") ||
+                      t.includes("format filter") ||
+                      t.includes("price filter") ||
+                      t.includes("more filters") ||
+                      t.includes("lock selected filters") ||
+                      t.startsWith("last ") ||
+                      t.includes("コンディション") ||
+                      t.includes("販売形式") ||
+                      t.includes("価格") ||
+                      t.includes("絞り込み")
+                    );
                   });
-                  return soldTab || hasFilterButton;
+                  const hasResearchRow = document.querySelectorAll("tr.research-table-row, div.research-table-row").length > 0;
+                  const hasSummary = !!document.querySelector("[class*='avgSoldPrice'], [class*='soldPriceRange'], [class*='research-table']");
+                  return soldTab || hasFilterButton || hasResearchRow || hasSummary;
                 }"""
             )
             if bool(interactive):
@@ -2897,6 +2943,30 @@ def _finalize_filter_state_two_stage(
     return state
 
 
+def _should_retry_filter_application_once(state: Dict[str, Any]) -> bool:
+    if not isinstance(state, dict) or not state:
+        return True
+    auto_reasons = {
+        "condition_filter_unavailable",
+        "condition_filter_no_match",
+        "condition_filter_not_confirmed",
+        "fixed_price_filter_not_confirmed",
+        "min_price_filter_not_confirmed",
+        "sold_sort_not_confirmed",
+        "lock_selected_filters_not_confirmed",
+    }
+    reason = str(state.get("strict_reason", "") or "").strip()
+    if reason in auto_reasons:
+        return True
+    sold_ok = bool(state.get("sold_tab_selected"))
+    condition_ok = bool(state.get("condition_selected"))
+    format_ok = bool(state.get("format_fixed_price_selected"))
+    min_price_ok = bool(state.get("min_price_selected")) or (_to_float(state.get("min_price_target_usd"), 0.0) <= 0)
+    sort_target = _normalize_sold_sort(str(state.get("sort_target", "default") or "default"))
+    sort_ok = bool(state.get("sort_selected")) or sort_target == "default"
+    return not (sold_ok and condition_ok and format_ok and min_price_ok and sort_ok)
+
+
 def _load_existing_rows(path: Path) -> Dict[str, Dict[str, Any]]:
     rows: Dict[str, Dict[str, Any]] = {}
     if not path.exists():
@@ -3237,6 +3307,34 @@ def run(args: argparse.Namespace) -> int:
                         min_price_usd=max(0.0, _to_float(getattr(args, "min_price_usd", 0.0), 0.0)),
                         sold_sort=str(getattr(args, "sold_sort", "default") or "default"),
                     )
+                    if _should_retry_filter_application_once(filter_state):
+                        retry_wait_sec = max(
+                            2,
+                            _to_int(
+                                os.getenv(
+                                    "LIQUIDITY_RPA_FILTER_RETRY_WAIT_SECONDS",
+                                    str(max(2, min(8, int(effective_wait)))),
+                                ),
+                                max(2, min(8, int(effective_wait))),
+                            ),
+                        )
+                        _wait_for_research_interactive(page, retry_wait_sec)
+                        page.wait_for_timeout(max(40, _to_int(os.getenv("LIQUIDITY_RPA_FILTER_SETTLE_MS", "45"), 45)))
+                        retry_state = _apply_ui_filters(
+                            page,
+                            lookback_days=int(args.lookback_days),
+                            condition=str(args.condition or "new"),
+                            strict_condition=bool(args.strict_condition),
+                            fixed_price_only=bool(args.fixed_price_only),
+                            min_price_usd=max(0.0, _to_float(getattr(args, "min_price_usd", 0.0), 0.0)),
+                            sold_sort=str(getattr(args, "sold_sort", "default") or "default"),
+                        )
+                        retry_state["filter_apply_retry_attempted"] = True
+                        retry_state["filter_apply_retry_wait_sec"] = retry_wait_sec
+                        retry_state["filter_apply_retry_from_reason"] = str(
+                            filter_state.get("strict_reason", "insufficient_confirmations")
+                        )
+                        filter_state = retry_state
                 timings["filter_apply_sec"] = round(max(0.0, time.perf_counter() - t_filters), 4)
                 desired_offset = max(0, int(args.result_offset))
                 if (not short_circuit_no_sold) and desired_offset > 0:

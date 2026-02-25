@@ -72,6 +72,24 @@ class RpaProductResearchFilterTests(unittest.TestCase):
         self.assertEqual(int(metrics.get("sold_90d_count", -1)), 1)
         self.assertAlmostEqual(float(metrics.get("sold_price_min", -1.0)), 120.0)
 
+    def test_extract_raw_rows_from_payload_ignores_ui_noise_title(self) -> None:
+        payload = [
+            {
+                "title": "VISUAL_SEARCH_HANDLER",
+                "soldPrice": 199.99,
+                "itemUrl": "https://www.ebay.com/itm/111111111111",
+            },
+            {
+                "title": "Casio G-SHOCK GA-B2100MF-1A Mens Watch",
+                "soldPrice": 160.55,
+                "itemUrl": "https://www.ebay.com/itm/222222222222",
+            },
+        ]
+        prices, rows = self.mod._extract_raw_rows_from_payload(payload)
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(str(rows[0].get("title", "")), "Casio G-SHOCK GA-B2100MF-1A Mens Watch")
+        self.assertEqual(prices, [160.55])
+
     def test_metric_accumulator_uses_lowest_sold_sample(self) -> None:
         acc = self.mod.MetricAccumulator.create(query="seiko sbdc101")
         acc.filtered_sold_samples.append(
@@ -721,6 +739,32 @@ class RpaProductResearchFilterTests(unittest.TestCase):
 
         self.assertTrue(bool(state.get("strict_blocked")))
         self.assertEqual(str(state.get("strict_reason", "")), "condition_filter_not_confirmed")
+
+    def test_should_retry_filter_application_once_when_confirmations_missing(self) -> None:
+        state = {
+            "sold_tab_selected": False,
+            "condition_selected": [],
+            "format_fixed_price_selected": False,
+            "min_price_selected": False,
+            "min_price_target_usd": 100.0,
+            "sort_target": "recently_sold",
+            "sort_selected": False,
+            "strict_reason": "condition_filter_not_confirmed",
+        }
+        self.assertTrue(self.mod._should_retry_filter_application_once(state))
+
+    def test_should_retry_filter_application_once_false_when_confirmed(self) -> None:
+        state = {
+            "sold_tab_selected": True,
+            "condition_selected": ["New with box and papers"],
+            "format_fixed_price_selected": True,
+            "min_price_selected": True,
+            "min_price_target_usd": 100.0,
+            "sort_target": "recently_sold",
+            "sort_selected": True,
+            "strict_reason": "",
+        }
+        self.assertFalse(self.mod._should_retry_filter_application_once(state))
 
     def test_build_parser_default_pause_for_login_is_zero(self) -> None:
         parser = self.mod.build_parser()

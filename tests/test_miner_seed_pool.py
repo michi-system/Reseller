@@ -80,6 +80,13 @@ class MinerSeedPoolTests(unittest.TestCase):
         keys = [miner_seed_pool._seed_key(v) for v in seeds]
         self.assertTrue(any(key == "CITIZENATTESA" for key in keys))
 
+    def test_extract_seed_queries_ignores_ui_noise_title(self) -> None:
+        seeds = miner_seed_pool._extract_seed_queries_from_title(
+            "Can't find the words? Search with an image",
+            ["CASIO"],
+        )
+        self.assertEqual(seeds, [])
+
     def test_pick_liquidity_query_prefers_model_when_jp_seed_is_gtin_only(self) -> None:
         picked = miner_seed_pool._pick_liquidity_query(
             seed_query="CASIO GW-M5610U-1JF",
@@ -1916,6 +1923,34 @@ class MinerSeedPoolTests(unittest.TestCase):
         entries = miner_seed_pool._collect_row_entries(row)
         self.assertEqual(len(entries), 1)
         self.assertAlmostEqual(float(entries[0].get("sold_price", 0.0)), 179.86)
+
+    def test_collect_row_entries_filters_ui_noise_titles(self) -> None:
+        row = {
+            "sold_90d_count": 44,
+            "sold_price_min": 100.0,
+            "metadata": {
+                "raw_row_count": 2,
+                "filtered_result_rows": [
+                    {
+                        "title": "VISUAL_SEARCH_HANDLER",
+                        "item_id": "",
+                        "item_url": "",
+                        "sold_price": 0.0,
+                        "rank": 1,
+                    },
+                    {
+                        "title": "CASIO G-SHOCK GW-M5610U-1JF",
+                        "item_id": "v1|123456789012|0",
+                        "item_url": "https://www.ebay.com/itm/123456789012",
+                        "sold_price": 200.0,
+                        "rank": 2,
+                    },
+                ],
+            },
+        }
+        entries = miner_seed_pool._collect_row_entries(row)
+        self.assertEqual(len(entries), 1)
+        self.assertEqual(str(entries[0].get("title", "")), "CASIO G-SHOCK GW-M5610U-1JF")
 
 
 if __name__ == "__main__":
