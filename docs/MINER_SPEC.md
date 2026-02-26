@@ -1,153 +1,150 @@
 # Miner Specification (Unified)
 
-最終更新: 2026-02-25
+最終更新: 2026-02-26
 
-この文書は、Minerの要件・探索フロー・完了条件（DoD）を1本に統合した正本です。
+この文書は Miner の正本仕様です。A/B/C 各段階、UI設定、候補化条件、受け入れ条件をこの1本に集約します。
 
 ## 1. 目的
-- 一般カテゴリ名だけで探索を開始し、レビュー候補まで自動生成する。
-- US eBayの90日売却実績と日本側の最安在庫を突合し、利益見込みのある同一新品商品のみを候補化する。
+- カテゴリ起点で seed を補充し、日本側最安候補と eBay 実売データを突合して、レビュー候補を自動生成する。
+- 同一商品性・流動性・利益を満たす候補のみを `pending` に投入する。
 
 ## 2. スコープ
 - 売り先: US eBay
-- 仕入れ先: Yahooショッピング / 楽天
-- 既定条件: 新品のみ、在庫あり必須（必要時のみ解除）
+- 仕入れ先: Rakuten / Yahoo
+- 基本条件: 新品、在庫あり（UIで変更可）
 
-## 3. ユーザ操作要件
-1. 一般カテゴリ名を入力する。
-2. 開始ボタンを押す。
-3. システムが自動で以下を実行する。
-- カテゴリ展開（メーカー/シリーズ/型番）
-- A/B/C探索
-- 同一商品判定
-- 90日流動性判定
-- 利益算出
-- レビュー待ちキュー投入
+## 3. 処理の全体像
+1. A段階で `seed A` を補充（Product Research）
+2. B段階で `seed A` を使って日本側最安候補を抽出（`seed B` 行を生成）
+3. C段階で `seed B` を eBay 90日データで再判定し、レビュー候補を作成
 
-## 4. A/B/C探索フロー
-### A段階（補充）
-- 目的: カテゴリseedの補充
-- 条件: `active_seed_count` が補充閾値以下で起動
-- 実行: 事前準備済みbig wordを使い、Product Research の 90 days sold / New / Fixed Price でseed抽出
-- big word作成/更新は運用前工程（Codex + 調査）で行い、A段階は読み込みのみ行う
-- 既定ガード:
-  - `MINER_SEED_POOL_REFILL_THRESHOLD=0`
-  - `MINER_SEED_POOL_REFILL_TIMEBOX_SEC=300`
-  - `MINER_SEED_POOL_MAX_TIMEOUT_PAGES_PER_RUN=2`
-  - ビッグワード別ページ解放:
-    - `MINER_STAGEA_QUERY_PAGE_UNLOCK_ENABLED=1`
-    - `MINER_STAGEA_QUERY_PAGE_UNLOCK_HOURS_DEFAULT=24`
-    - `MINER_STAGEA_QUERY_PAGE_UNLOCK_MIN_PAGES=1`
-    - `MINER_STAGEA_QUERY_PAGE_UNLOCK_INITIAL_PAGES`（履歴未作成時の初期ページ数）
-    - `MINER_STAGEA_QUERY_PAGE_UNLOCK_HOURS_JSON`（ビッグワード別 `hours/page` 上書き）
-  - `page_unlock_wait` 時のカテゴリフォールバック:
-    - `MINER_STAGEA_FALLBACK_ON_PAGE_UNLOCK_WAIT=1`
-    - `MINER_STAGEA_FALLBACK_MAX_CATEGORIES=8`
-    - 主カテゴリが待機中の場合、他カテゴリを順次補充して合計新規seedが目標件数に達したらA段階を終了
+## 4. A/B/C仕様
+### 4.1 A段階（seed補充）
+- 目的: B/Cで使う seed を増やす
+- 入力: big word（カテゴリ知識で事前管理）
+- Product Research 条件:
+  - Sold / Last 90 days
+  - Condition = New
+  - Format = Fixed price
+  - min price（カテゴリ別）
+  - Date last sold = 新しい順（URL先入れ + UI確定）
+- 取得: 1ページ50件、ページ送り対応
+- 保存最小項目: `title`, `sold_price`, `item_url`, `item_id`
+- 重複排除: `category_key + seed_key` で一意化
+- ページ解放:
+  - big wordごとに `hours/page` を使って許可ページ数を算出
+  - 主カテゴリが `page_unlock_wait` のときは他カテゴリにフォールバックして目標補充数を達成
 
-### B段階（日本側一次取得）
-- 目的: 古いseedから20件を順に消化し、日本側最安本体候補を取得
-- 実行: 新品・価格昇順・seed上限価格付きでYahoo/Rakuten検索
-- 既定ガード:
-  - `MINER_STAGE1_API_MAX_CALLS_PER_RUN`（1実行あたりの日本側API呼び出し上限）
-  - `MINER_STAGE1_QUERY_MODE`（`seed_only` / `auto`。腕時計は既定で`seed_only`）
-  - `MINER_STAGE1_MULTI_SKU_STRICT=true`（複数型番ページで対象型番価格を解決できない候補を除外）
-  - `MINER_STAGE1_MULTI_SKU_FALLBACK_NON_RAKUTEN=true`（Yahoo系で型番厳密解決不能時のみ、listing価格fallback許可）
-  - `MINER_STAGE1_MULTI_SKU_FALLBACK_ON_TIMEOUT=true`（Rakuten variant解決timeout時のみ、listing価格fallback許可）
-  - `MINER_STAGE1_INCLUDE_DIAGNOSTICS=false`（本番既定。詳細クエリログは必要時のみ有効化）
+### 4.2 B段階（日本側一次探索）
+- 目的: `seed A` から日本側候補を抽出して `seed B` を作る
+- 実行順:
+  - `seed A` は古い順で処理
+  - 日本側候補は `source_total_jpy = price + shipping` の昇順で評価
+- 既定:
+  - `stage_b_query_mode = seed_only`
+  - `stage_b_max_queries_per_site = 1`
+  - `stage_b_top_matches_per_seed = 3`
+  - `stage_b_api_max_calls_per_run = 0`（自動）
+- 複数SKU対応:
+  - 型番解決できない候補は除外
+  - 一部条件でのみ listing price fallback を許可
 - 出力:
-  - B段階の取得結果は `stage_b.rows` として保持し、`seed A` を消費せずに `seed B` 情報としてC段階へ引き継ぐ
-- 補足: ヒットなしでも理由ログを必ず残す
+  - `stage_b.rows` に候補行を保存（`stage1_rank` 含む）
+  - `seed A` は消費しない（B/Cで再利用可能）
 
-### C段階（最終再判定）
-- 目的: 日本側価格とeBay最新90日実績の再突合
-- 実行: 日本産seedでeBay 90days soldを再取得
-- 既定ガード:
-  - `MINER_STAGE2_ALLOW_MISSING_SOLD_SAMPLE=false`
-  - sold根拠URL欠損候補はpending化しない
+### 4.3 C段階（eBay最終再判定）
+- 目的: 90日売却実績で最終利益判定を更新
+- 入力: `seed B` 行（+ `seed A` 情報）
+- 判定データ:
+  - sold 90d 件数
+  - sold 90d 最低価格（`sold_price_min_90d`）
+  - active 件数
+  - active 最低価格
+  - sold 最低価格の参照URL/サンプル
+- 既定:
+  - `stage_c_min_sold_90d = 10`
+  - `stage_c_liquidity_refresh_on_miss_enabled = true`
+  - `stage_c_liquidity_refresh_on_miss_budget = 12`
+  - `stage_c_retry_missing_active_enabled = false`（PR節約のため既定OFF）
+  - `stage_c_allow_missing_sold_sample = false`
+  - `stage_c_ebay_item_detail_enabled = true`
+  - `stage_c_ebay_item_detail_max_fetch_per_run = 30`
+- 再取得戦略（RPA JSON）:
+  - `sold_90d_count` 欠損時: `on_miss_retry`
+  - soldサンプル欠損時: `on_missing_sample_retry`
+  - active 欠損時: `on_missing_active_retry`
+  - PR上限到達時は即停止
+- 重複排除:
+  - C段階実行重複: `site + item_id + item_url + source_total_jpy`
+  - 候補重複: `source side + sold side` の署名で抑止
 
-## 5. 候補化ルール（レビュー待ち投入条件）
-以下をすべて満たす候補のみレビュー待ちへ投入する。
-1. 同一商品判定を通過（識別子/型番/ブランド/バリアント）
+## 5. 候補化ルール（pending投入条件）
+以下をすべて満たす候補のみ投入する。
+1. 同一商品判定を通過
 2. 新品条件を通過
-3. 日本側在庫あり（既定）
-4. 90日流動性シグナル取得済み（`sold_count_90d != -1`）
-5. 90日売却件数が基準以上
-6. 期待利益が基準以上
-7. 期待利益率が基準以上
+3. 日本側在庫条件を通過
+4. 流動性シグナル取得済み（`sold_90d_count >= 0`）
+5. `sold_90d_count >= stage_c_min_sold_90d`
+6. 期待利益 `>= min_profit_usd`
+7. 期待粗利率 `>= min_margin_rate`
+8. `source_total_usd < sold_price_min_90d`
 
-期待利益には以下を含める。
-- 仕入れ価格
-- 国内送料
-- 国際送料
-- eBay/決済手数料
-- 為替レート
-- 安全マージン
+## 6. データ契約（要点）
+### 6.1 seed A（DB: `miner_seed_pool`）
+- `seed_query`, `seed_key`, `source_title`, `source_item_url`, `source_rank`, `metadata_json`
 
-## 6. レビュー表示要件
-- 左: eBay（90日売却実績、最低成約価格）
-- 右: 日本側（現在の最安在庫）
-- 必須表示項目:
-  - `expected_profit_usd`
-  - `expected_profit_jpy`
-  - `sold_count_90d`
-  - `sold_price_min_90d`
-  - `source_price_jpy`
-  - `fx_rate_used`
-  - 商品リンク
-  - 商品画像
+### 6.2 seed B（レスポンス: `stage_b.rows`）
+- `seed_id`, `stage1_rank`, `stage1_query`
+- `source_site`, `source_item_id`, `source_item_url`, `source_title`
+- `source_price_jpy`, `source_shipping_jpy`, `source_total_jpy`
+- `source_price_basis_type`, `stage1_match_score`, `stage1_match_reason`
 
-## 7. DoD（完了条件）
-### 7.1 1サイクル完了条件
-- `reviewed_count=24`
-- `unresolved_count=0`
-- `miner_cycle_report` / `auto_miner_report` / `close_report` / `validation_report` が揃う
+### 6.3 C段階候補（`miner_candidates.metadata_json`）
+- eBay: `ebay_sold_*`, `ebay_active_*`, `market_item_url`, `market_item_url_active`
+- 日本側: `source_*`, `source_variant_price_resolution`
+- 判定根拠: `liquidity_query`, `liquidity`, `seed_pool`, `seed_jp`, `calc_*`
 
-### 7.2 運用ガード
-- `.env.local` は `ITEM_CONDITION=new`
-- `LIQUIDITY_REQUIRE_SIGNAL=1`
-- `AUTO_MINER_REQUIRE_LIQUIDITY_SIGNAL=1`
-- `LIQUIDITY_PROVIDER_MODE` は `rpa_json` または `ebay_marketplace_insights`
-- 閾値の正本は `docs/OPERATION_POLICY.json`
+## 7. Miner UI設定（永続化）
+- エンドポイント:
+  - `GET /v1/miner/settings`
+  - `POST /v1/miner/settings`
+- 保存先: `miner_ui_settings` テーブル（`settings_key = miner_fetch_settings_v1`）
+- リセット:
+  - UIの「詳細設定 > リセット」でデフォルトに戻し、DBへ保存
+- 保存対象:
+  - A段階: 在庫条件、件数、big word制限、遷移最小化
+  - B段階: query mode、query上限、top matches、API上限
+  - C段階: sold基準、再取得ON/OFF、再取得予算、sample欠損許容、詳細取得ON/OFF、詳細取得上限
+  - 共通: `min_match_score`, `min_profit_usd`, `min_margin_rate`
 
-### 7.3 逸脱時
-- サイクル開始前に停止
-- `docs/miner_cycle_validation_latest.json` で原因を確認してから再開
+## 8. 受け入れ条件（DoD）
+### 8.1 Phase A
+1. 条件設定再現（Sold/90days/New/Fixed/minPrice/新しい順）
+2. 50件取得できる
+3. ページ送りで内容が入れ替わる
+4. seed最小項目を保存できる
+5. 重複投入を抑止できる
 
-## 8. 非機能要件
-- API節約:
-  - レート制限順守
-  - 重複取得抑制
-  - 低収率クエリ停止
-- 鮮度:
-  - 商品情報は短TTL
-  - カテゴリ傾向は中長期TTL
-- 監査可能性:
-  - 候補ごとに採用根拠を保存
-  - 否認理由を改善サイクルへ還元
+### 8.2 Phase B
+1. `source_total_jpy` 昇順で上位候補が取れる
+2. `stage_b.rows` に `stage1_rank` と価格情報が入る
+3. 複数SKU誤取得を抑止できる
 
-## 9. 変更ルール
-要件・完了条件・閾値を変更する場合は次を同時更新する。
+### 8.3 Phase C
+1. sold 90d 最低価格で利益再計算できる
+2. sold件数 / active件数 / active最低価格が取得できる
+3. sold/active欠損時に予算内で再取得できる
+4. PR上限時に停止理由を明示して安全停止する
+
+## 9. 運用ガード
+- 生成物・状態ファイルは手編集しない
+- PR上限・API制限を前提に低リスク実行を優先する
+- DOM変更等で取得不能になった場合は無限再試行せず停止してUIへ理由を出す
+
+## 10. 更新ルール
+要件変更時は最低限、以下を同時更新する。
 1. `docs/MINER_SPEC.md`
-2. `docs/OPERATION_POLICY.json`
-3. `web/miner.*`（表示項目・文言に影響がある場合）
-4. `docs/WORKBOARD.md`（Decision Log）
-5. `docs/STATUS_CURRENT.md`（必要時）
-
-## 10. 統合前の原本（退避先）
-- `docs/archive/miner_legacy/REQUIREMENTS.md`
-- `docs/archive/miner_legacy/DEFINITION_OF_DONE.md`
-- `docs/archive/miner_legacy/miner_explore_to_review_flow.md`
-
-## 11. Phase A受け入れ条件（腕時計プロファイル）
-腕時計カテゴリでは、次を満たしたとき Phase A を完了とする。
-1. 条件設定が再現できること（`Sold` / `Last 90 days` / `Condition=New` / `Format=Fixed price` / `minPrice` / `Date last sold=新しい順`）。
-2. 1ページ50件のタイトルと価格を取得できること（`result_limit=50`）。
-3. ページ送りで一覧が切り替わること（`result_offset=0` と `result_offset=50` の重複率が低いこと）。
-4. seed抽出に必要な最小情報を保存できること（`title`, `sold_price`, `item_url`, `item_id`）。
-5. 重複処理が効くこと（同一seedの再投入時に追加0件になること）。
-
-運用補足:
-- `format=fixed_price` は URL だけでは不安定なため、UIでの確定操作を前提にする。
-- `conditionId` / `minPrice` / `offset` / `sorting=datelastsold` は URL先入れを試行し、反映不足はUIで補正する。
-- 新しい順運用では、前回取得時刻からの経過時間に応じてビッグワードごとの許可ページ数を計算する（短時間の再探索で深いページを掘りすぎない）。
+2. `docs/MINER_RUNBOOK.md`
+3. `web/miner.html`, `web/miner.js`, `web/miner.css`（表示変更がある場合）
+4. `docs/STATUS_CURRENT.md`
+5. `docs/WORKBOARD.md`

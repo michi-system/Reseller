@@ -20,13 +20,43 @@ const ISSUE_TARGET_LABEL_MAP = {
 
 const LIVE_FETCH_SOURCE_SITES = ["rakuten", "yahoo"];
 const DEFAULT_MIN_MATCH_SCORE = 0.72;
+const DEFAULT_FETCH_SETTINGS = Object.freeze({
+  requireInStock: true,
+  limitPerSite: 20,
+  maxCandidates: 20,
+  stageABigWordLimit: 0,
+  stageAMinimizeTransitions: true,
+  stageBQueryMode: "seed_only",
+  stageBMaxQueriesPerSite: 1,
+  stageBTopMatchesPerSeed: 3,
+  stageBApiMaxCallsPerRun: 0,
+  stageCMinSold90d: 10,
+  stageCLiquidityRefreshEnabled: true,
+  stageCLiquidityRefreshBudget: 12,
+  stageCAllowMissingSoldSample: false,
+  stageCEbayItemDetailEnabled: true,
+  stageCEbayItemDetailMaxFetch: 30,
+  minMatchScore: DEFAULT_MIN_MATCH_SCORE,
+  minProfitUsd: 0.01,
+  minMarginRate: 0.03,
+});
 const TAB_COUNT_CAP = 9999;
 
 const STATUS_LABELS = {
   pending: "未レビュー",
   rejected: "否認済み",
-  listed: "承認済み（ダミー出品）",
+  listed: "承認済み（送信済み）",
   approved: "自動承認（要最終確認）",
+};
+
+const LISTING_STATE_LABELS = {
+  dummy_pending: "未送信",
+  dummy_pending_final_review: "最終確認待ち",
+  dummy_submitted: "送信済み",
+  pending: "未送信",
+  pending_final_review: "最終確認待ち",
+  submitted: "送信済み",
+  ready: "準備完了",
 };
 
 const SITE_LABELS = {
@@ -109,11 +139,23 @@ const refs = {
   resetSeedBtn: document.getElementById("resetSeedBtn"),
   openSettingsBtn: document.getElementById("openSettingsBtn"),
   settingsOverlay: document.getElementById("settingsOverlay"),
+  resetSettingsBtn: document.getElementById("resetSettingsBtn"),
   closeSettingsBtn: document.getElementById("closeSettingsBtn"),
   requireInStock: document.getElementById("requireInStock"),
   limitPerSite: document.getElementById("limitPerSite"),
   maxCandidates: document.getElementById("maxCandidates"),
   stageABigWordLimit: document.getElementById("stageABigWordLimit"),
+  stageAMinimizeTransitions: document.getElementById("stageAMinimizeTransitions"),
+  stageBQueryMode: document.getElementById("stageBQueryMode"),
+  stageBMaxQueriesPerSite: document.getElementById("stageBMaxQueriesPerSite"),
+  stageBTopMatchesPerSeed: document.getElementById("stageBTopMatchesPerSeed"),
+  stageBApiMaxCallsPerRun: document.getElementById("stageBApiMaxCallsPerRun"),
+  stageCMinSold90d: document.getElementById("stageCMinSold90d"),
+  stageCLiquidityRefreshEnabled: document.getElementById("stageCLiquidityRefreshEnabled"),
+  stageCLiquidityRefreshBudget: document.getElementById("stageCLiquidityRefreshBudget"),
+  stageCAllowMissingSoldSample: document.getElementById("stageCAllowMissingSoldSample"),
+  stageCEbayItemDetailEnabled: document.getElementById("stageCEbayItemDetailEnabled"),
+  stageCEbayItemDetailMaxFetch: document.getElementById("stageCEbayItemDetailMaxFetch"),
   minMatchScore: document.getElementById("minMatchScore"),
   minProfitUsd: document.getElementById("minProfitUsd"),
   minMarginRate: document.getElementById("minMarginRate"),
@@ -146,6 +188,8 @@ const refs = {
   ebayExtraCosts: document.getElementById("ebayExtraCosts"),
   ebaySoldCount90d: document.getElementById("ebaySoldCount90d"),
   ebaySoldMin90d: document.getElementById("ebaySoldMin90d"),
+  ebayActiveCount90d: document.getElementById("ebayActiveCount90d"),
+  ebayActiveMin90d: document.getElementById("ebayActiveMin90d"),
   jpPrice: document.getElementById("jpPrice"),
   jpShipping: document.getElementById("jpShipping"),
   jpTotal: document.getElementById("jpTotal"),
@@ -706,6 +750,12 @@ function labelForStatus(status) {
   return STATUS_LABELS[key] || key || "-";
 }
 
+function labelForListingState(state) {
+  const key = String(state || "").trim().toLowerCase();
+  if (!key) return "-";
+  return LISTING_STATE_LABELS[key] || key;
+}
+
 function labelForSite(site) {
   const key = String(site || "").toLowerCase();
   return SITE_LABELS[key] || site || "-";
@@ -717,6 +767,10 @@ function formatIsoShort(text) {
   const d = new Date(raw);
   if (Number.isNaN(d.getTime())) return raw;
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+}
+
+function onOffText(flag) {
+  return flag ? "ON" : "OFF";
 }
 
 function getLatestRejection(candidate) {
@@ -853,6 +907,13 @@ function getSeedPoolView(payload) {
   const seedCountRaw = Number(seedPool.seed_count ?? availableAfter ?? selectedCount ?? 0);
   const seedCount = Number.isFinite(seedCountRaw) ? seedCountRaw : 0;
   const skippedLowQuality = Number(seedPool.skipped_low_quality_count || 0);
+  const skippedCooldown = Number(seedPool.skipped_cooldown_count || 0);
+  const cooldownActive = Number(seedPool.cooldown_active_count || 0);
+  const strictModelSeed = Boolean(seedPool.strict_model_seed ?? refill.strict_model_seed);
+  const cleanedExpired = Number(seedPool.cleaned_expired_count || 0);
+  const normalizedSeed = Number(seedPool.normalized_seed_count || 0);
+  const dedupedSeed = Number(seedPool.deduped_seed_count || 0);
+  const deletedInvalidSeed = Number(seedPool.deleted_invalid_seed_count || 0);
   const reasonKey = String(refill.reason || "").trim().toLowerCase();
   const reason = refillReasonLabel(refill.reason);
   const lastRefillAt = String(refill.last_refill_at || "").trim();
@@ -876,6 +937,13 @@ function getSeedPoolView(payload) {
     selectedCount,
     seedCount,
     skippedLowQuality,
+    skippedCooldown,
+    cooldownActive,
+    strictModelSeed,
+    cleanedExpired,
+    normalizedSeed,
+    dedupedSeed,
+    deletedInvalidSeed,
     reasonKey,
     reason,
     lastRefillAt,
@@ -909,6 +977,8 @@ function renderSeedPoolSummary(payload) {
   const lastRefillAt = view.lastRefillAt;
   const categoryLabel = view.categoryLabel;
   const seedCount = view.seedCount;
+  const selectedCount = Number(view.selectedCount || seedCount || 0);
+  const availableAfter = Number(view.availableAfter || 0);
   const addedCount = Number(refill.added_count || 0);
   const beforeCount = Number(refill.available_before || 0);
   const afterCount = Number(refill.available_after || 0);
@@ -916,6 +986,13 @@ function renderSeedPoolSummary(payload) {
   const pageRuns = view.pageRuns;
   const skippedFreshPages = Number(refill.skipped_fresh_pages || 0);
   const lowQuality = Number(view.skippedLowQuality || 0);
+  const skippedCooldown = Number(view.skippedCooldown || 0);
+  const cooldownActive = Number(view.cooldownActive || 0);
+  const strictModelSeed = Boolean(view.strictModelSeed);
+  const cleanedExpired = Number(view.cleanedExpired || 0);
+  const normalizedSeed = Number(view.normalizedSeed || 0);
+  const dedupedSeed = Number(view.dedupedSeed || 0);
+  const deletedInvalidSeed = Number(view.deletedInvalidSeed || 0);
   const lastRefillMessage = String(refill.last_refill_message || "").trim();
   const reasonKey = view.reasonKey;
   const waitPrefix = {
@@ -937,10 +1014,12 @@ function renderSeedPoolSummary(payload) {
   refs.seedPoolSummary.classList.toggle("warn", view.dailyLimitReached);
   refs.seedPoolSummary.innerHTML = `
     ${waitMessage ? `<div class="seed-pool-wait">${escapeHtml(waitMessage)}</div>` : ""}
-    <div><strong>${escapeHtml(categoryLabel)}</strong> / seed ${Number.isFinite(seedCount) ? seedCount : 0}件</div>
+    <div><strong>${escapeHtml(categoryLabel)}</strong> / 実行対象 ${Number.isFinite(selectedCount) ? selectedCount : 0}件 / 利用可能 ${Number.isFinite(availableAfter) ? availableAfter : 0}件</div>
     <div class="seed-pool-chip-row">
       <span class="seed-pool-chip">補充状態 ${escapeHtml(reason)}</span>
       ${showAddedChip ? `<span class="seed-pool-chip">補充 +${Number.isFinite(addedCount) ? addedCount : 0}件</span>` : ""}
+      ${strictModelSeed ? `<span class="seed-pool-chip">型番seed厳密ON</span>` : ""}
+      ${cooldownActive > 0 ? `<span class="seed-pool-chip">cooldown待機 ${cooldownActive}件</span>` : ""}
       ${lastRefillAt ? `<span class="seed-pool-chip">更新 ${escapeHtml(formatIsoShort(lastRefillAt))}</span>` : ""}
       ${cooldownUntil ? `<span class="seed-pool-chip">次回 ${escapeHtml(formatIsoShort(cooldownUntil))}</span>` : ""}
     </div>
@@ -950,6 +1029,11 @@ function renderSeedPoolSummary(payload) {
       ${pageRuns > 0 ? `<li>補充ページ ${pageRuns}ページ</li>` : ""}
       ${skippedFreshPages > 0 ? `<li>直近取得スキップ ${skippedFreshPages}ページ</li>` : ""}
       ${lowQuality > 0 ? `<li>低品質除外 ${lowQuality}件</li>` : ""}
+      ${skippedCooldown > 0 ? `<li>実行時にcooldown除外 ${skippedCooldown}件</li>` : ""}
+      ${cleanedExpired > 0 ? `<li>期限切れseed整理 ${cleanedExpired}件</li>` : ""}
+      ${normalizedSeed > 0 ? `<li>seed正規化 ${normalizedSeed}件</li>` : ""}
+      ${dedupedSeed > 0 ? `<li>seed重複整理 ${dedupedSeed}件</li>` : ""}
+      ${deletedInvalidSeed > 0 ? `<li>無効seed削除 ${deletedInvalidSeed}件</li>` : ""}
       ${lastRefillMessage ? `<li>補充ログ: ${escapeHtml(lastRefillMessage)}</li>` : ""}
     </ul>
   `;
@@ -1183,7 +1267,7 @@ function buildDecisionSummary(candidate, normalized) {
 
   if (status === "listed") {
     return {
-      label: "承認済み（ダミー出品）",
+      label: "承認済み（送信済み）",
       sub: "最終レビュー済みの候補です。",
       tone: "info",
     };
@@ -1277,29 +1361,178 @@ function buildDecisionReasons(candidate, normalized, colorRisk) {
   }
 
   const status = String(candidate?.status || "").toLowerCase();
-  if (status === "listed") reasons.push({ text: "ダミー出品済み", tone: "good" });
+  if (status === "listed") reasons.push({ text: "送信済み", tone: "good" });
   if (status === "rejected") reasons.push({ text: "過去に否認済み", tone: "warn" });
 
   return reasons.slice(0, 5);
 }
 
-function boundedNumber(inputEl, fallback, min, max) {
-  const raw = Number(inputEl?.value);
+function boundedNumber(rawValue, fallback, min, max) {
+  const raw = Number(rawValue);
   if (!Number.isFinite(raw)) return fallback;
   return Math.min(max, Math.max(min, raw));
 }
 
-function buildFetchConfig() {
+function toBoolean(raw, fallback) {
+  if (typeof raw === "boolean") return raw;
+  if (typeof raw === "number") return raw !== 0;
+  if (typeof raw === "string") {
+    const norm = raw.trim().toLowerCase();
+    if (["1", "true", "on", "yes"].includes(norm)) return true;
+    if (["0", "false", "off", "no"].includes(norm)) return false;
+  }
+  return fallback;
+}
+
+function normalizeFetchConfig(raw) {
+  const source = (raw && typeof raw === "object") ? raw : {};
+  const stageBQueryModeRaw = String(source.stageBQueryMode || DEFAULT_FETCH_SETTINGS.stageBQueryMode).trim().toLowerCase();
+  const stageBQueryMode = stageBQueryModeRaw === "auto" ? "auto" : "seed_only";
   return {
-    requireInStock: refs.requireInStock ? Boolean(refs.requireInStock.checked) : true,
-    limitPerSite: Math.round(boundedNumber(refs.limitPerSite, 20, 1, 30)),
-    maxCandidates: Math.round(boundedNumber(refs.maxCandidates, 20, 1, 50)),
-    stageABigWordLimit: Math.round(boundedNumber(refs.stageABigWordLimit, 0, 0, 50)),
-    stageAMinimizeTransitions: true,
-    minMatchScore: boundedNumber(refs.minMatchScore, DEFAULT_MIN_MATCH_SCORE, 0.5, 0.99),
-    minProfitUsd: boundedNumber(refs.minProfitUsd, 0.01, 0.0, 999999),
-    minMarginRate: boundedNumber(refs.minMarginRate, 0.03, 0.0, 1.0),
+    requireInStock: toBoolean(source.requireInStock, DEFAULT_FETCH_SETTINGS.requireInStock),
+    limitPerSite: Math.round(
+      boundedNumber(source.limitPerSite, DEFAULT_FETCH_SETTINGS.limitPerSite, 1, 30)
+    ),
+    maxCandidates: Math.round(
+      boundedNumber(source.maxCandidates, DEFAULT_FETCH_SETTINGS.maxCandidates, 1, 50)
+    ),
+    stageABigWordLimit: Math.round(
+      boundedNumber(source.stageABigWordLimit, DEFAULT_FETCH_SETTINGS.stageABigWordLimit, 0, 50)
+    ),
+    stageAMinimizeTransitions: toBoolean(
+      source.stageAMinimizeTransitions,
+      DEFAULT_FETCH_SETTINGS.stageAMinimizeTransitions
+    ),
+    stageBQueryMode,
+    stageBMaxQueriesPerSite: Math.round(
+      boundedNumber(source.stageBMaxQueriesPerSite, DEFAULT_FETCH_SETTINGS.stageBMaxQueriesPerSite, 1, 4)
+    ),
+    stageBTopMatchesPerSeed: Math.round(
+      boundedNumber(source.stageBTopMatchesPerSeed, DEFAULT_FETCH_SETTINGS.stageBTopMatchesPerSeed, 1, 5)
+    ),
+    stageBApiMaxCallsPerRun: Math.round(
+      boundedNumber(source.stageBApiMaxCallsPerRun, DEFAULT_FETCH_SETTINGS.stageBApiMaxCallsPerRun, 0, 2000)
+    ),
+    stageCMinSold90d: Math.round(
+      boundedNumber(source.stageCMinSold90d, DEFAULT_FETCH_SETTINGS.stageCMinSold90d, 0, 1000)
+    ),
+    stageCLiquidityRefreshEnabled: toBoolean(
+      source.stageCLiquidityRefreshEnabled,
+      DEFAULT_FETCH_SETTINGS.stageCLiquidityRefreshEnabled
+    ),
+    stageCLiquidityRefreshBudget: Math.round(
+      boundedNumber(source.stageCLiquidityRefreshBudget, DEFAULT_FETCH_SETTINGS.stageCLiquidityRefreshBudget, 0, 200)
+    ),
+    stageCAllowMissingSoldSample: toBoolean(
+      source.stageCAllowMissingSoldSample,
+      DEFAULT_FETCH_SETTINGS.stageCAllowMissingSoldSample
+    ),
+    stageCEbayItemDetailEnabled: toBoolean(
+      source.stageCEbayItemDetailEnabled,
+      DEFAULT_FETCH_SETTINGS.stageCEbayItemDetailEnabled
+    ),
+    stageCEbayItemDetailMaxFetch: Math.round(
+      boundedNumber(source.stageCEbayItemDetailMaxFetch, DEFAULT_FETCH_SETTINGS.stageCEbayItemDetailMaxFetch, 0, 500)
+    ),
+    minMatchScore: boundedNumber(source.minMatchScore, DEFAULT_FETCH_SETTINGS.minMatchScore, 0.5, 0.99),
+    minProfitUsd: boundedNumber(source.minProfitUsd, DEFAULT_FETCH_SETTINGS.minProfitUsd, 0.0, 999999),
+    minMarginRate: boundedNumber(source.minMarginRate, DEFAULT_FETCH_SETTINGS.minMarginRate, 0.0, 1.0),
   };
+}
+
+function buildFetchConfig() {
+  return normalizeFetchConfig({
+    requireInStock: refs.requireInStock ? refs.requireInStock.checked : DEFAULT_FETCH_SETTINGS.requireInStock,
+    limitPerSite: refs.limitPerSite?.value,
+    maxCandidates: refs.maxCandidates?.value,
+    stageABigWordLimit: refs.stageABigWordLimit?.value,
+    stageAMinimizeTransitions: refs.stageAMinimizeTransitions?.checked,
+    stageBQueryMode: refs.stageBQueryMode?.value,
+    stageBMaxQueriesPerSite: refs.stageBMaxQueriesPerSite?.value,
+    stageBTopMatchesPerSeed: refs.stageBTopMatchesPerSeed?.value,
+    stageBApiMaxCallsPerRun: refs.stageBApiMaxCallsPerRun?.value,
+    stageCMinSold90d: refs.stageCMinSold90d?.value,
+    stageCLiquidityRefreshEnabled: refs.stageCLiquidityRefreshEnabled?.checked,
+    stageCLiquidityRefreshBudget: refs.stageCLiquidityRefreshBudget?.value,
+    stageCAllowMissingSoldSample: refs.stageCAllowMissingSoldSample?.checked,
+    stageCEbayItemDetailEnabled: refs.stageCEbayItemDetailEnabled?.checked,
+    stageCEbayItemDetailMaxFetch: refs.stageCEbayItemDetailMaxFetch?.value,
+    minMatchScore: refs.minMatchScore?.value,
+    minProfitUsd: refs.minProfitUsd?.value,
+    minMarginRate: refs.minMarginRate?.value,
+  });
+}
+
+function applyFetchConfigToInputs(raw) {
+  const cfg = normalizeFetchConfig(raw);
+  if (refs.requireInStock) refs.requireInStock.checked = cfg.requireInStock;
+  if (refs.limitPerSite) refs.limitPerSite.value = String(cfg.limitPerSite);
+  if (refs.maxCandidates) refs.maxCandidates.value = String(cfg.maxCandidates);
+  if (refs.stageABigWordLimit) refs.stageABigWordLimit.value = String(cfg.stageABigWordLimit);
+  if (refs.stageAMinimizeTransitions) refs.stageAMinimizeTransitions.checked = cfg.stageAMinimizeTransitions;
+  if (refs.stageBQueryMode) refs.stageBQueryMode.value = cfg.stageBQueryMode;
+  if (refs.stageBMaxQueriesPerSite) refs.stageBMaxQueriesPerSite.value = String(cfg.stageBMaxQueriesPerSite);
+  if (refs.stageBTopMatchesPerSeed) refs.stageBTopMatchesPerSeed.value = String(cfg.stageBTopMatchesPerSeed);
+  if (refs.stageBApiMaxCallsPerRun) refs.stageBApiMaxCallsPerRun.value = String(cfg.stageBApiMaxCallsPerRun);
+  if (refs.stageCMinSold90d) refs.stageCMinSold90d.value = String(cfg.stageCMinSold90d);
+  if (refs.stageCLiquidityRefreshEnabled) refs.stageCLiquidityRefreshEnabled.checked = cfg.stageCLiquidityRefreshEnabled;
+  if (refs.stageCLiquidityRefreshBudget) refs.stageCLiquidityRefreshBudget.value = String(cfg.stageCLiquidityRefreshBudget);
+  if (refs.stageCAllowMissingSoldSample) refs.stageCAllowMissingSoldSample.checked = cfg.stageCAllowMissingSoldSample;
+  if (refs.stageCEbayItemDetailEnabled) refs.stageCEbayItemDetailEnabled.checked = cfg.stageCEbayItemDetailEnabled;
+  if (refs.stageCEbayItemDetailMaxFetch) refs.stageCEbayItemDetailMaxFetch.value = String(cfg.stageCEbayItemDetailMaxFetch);
+  if (refs.minMatchScore) refs.minMatchScore.value = String(cfg.minMatchScore);
+  if (refs.minProfitUsd) refs.minProfitUsd.value = String(cfg.minProfitUsd);
+  if (refs.minMarginRate) refs.minMarginRate.value = String(cfg.minMarginRate);
+}
+
+function getSettingsInputs() {
+  return [
+    refs.requireInStock,
+    refs.limitPerSite,
+    refs.maxCandidates,
+    refs.stageABigWordLimit,
+    refs.stageAMinimizeTransitions,
+    refs.stageBQueryMode,
+    refs.stageBMaxQueriesPerSite,
+    refs.stageBTopMatchesPerSeed,
+    refs.stageBApiMaxCallsPerRun,
+    refs.stageCMinSold90d,
+    refs.stageCLiquidityRefreshEnabled,
+    refs.stageCLiquidityRefreshBudget,
+    refs.stageCAllowMissingSoldSample,
+    refs.stageCEbayItemDetailEnabled,
+    refs.stageCEbayItemDetailMaxFetch,
+    refs.minMatchScore,
+    refs.minProfitUsd,
+    refs.minMarginRate,
+  ].filter(Boolean);
+}
+
+async function saveMinerSettings({ silent = true } = {}) {
+  const cfg = buildFetchConfig();
+  try {
+    await api("/v1/miner/settings", {
+      method: "POST",
+      body: JSON.stringify(cfg),
+    });
+    return true;
+  } catch (err) {
+    if (!silent) showToast(`設定保存エラー: ${err.message}`);
+    return false;
+  }
+}
+
+async function loadMinerSettings() {
+  applyFetchConfigToInputs(DEFAULT_FETCH_SETTINGS);
+  try {
+    const payload = await api("/v1/miner/settings");
+    const settings = (payload && typeof payload === "object" && payload.settings && typeof payload.settings === "object")
+      ? payload.settings
+      : {};
+    applyFetchConfigToInputs(settings);
+  } catch (_) {
+    // 初回起動など未保存時はUI既定値をそのまま使う。
+  }
 }
 
 function toNumber(v) {
@@ -1651,6 +1884,10 @@ function renderRpaProgress(snapshot, { running = false } = {}) {
   const stage2Runs = Number(data.stage2_runs || 0);
   const stage1SkipTopReason = String(data.stage1_skip_top_reason || "").trim();
   const stage1SkipTopCount = Number(data.stage1_skip_top_count || 0);
+  const selectedSeedCount = Number(data.selected_seed_count || 0);
+  const poolAvailable = Number(data.pool_available || 0);
+  const poolThreshold = Number(data.pool_threshold || 0);
+  const poolGatePassed = Boolean(data.pool_gate_passed);
   const elapsedSec = Number(data.elapsed_sec || 0);
   const flowStageLabelRaw = String(data.flow_stage_label || "").trim();
   const flowStage = resolveFlowStage(data);
@@ -1661,6 +1898,11 @@ function renderRpaProgress(snapshot, { running = false } = {}) {
   const qIndex = Number(data.query_index || 0);
   const qTotal = Number(data.total_queries || 0);
   const updatedAgoSec = Number(data.updated_ago_sec || 0);
+  const hasPoolSnapshot = (
+    Object.prototype.hasOwnProperty.call(data, "selected_seed_count")
+    || Object.prototype.hasOwnProperty.call(data, "pool_available")
+    || Object.prototype.hasOwnProperty.call(data, "pool_threshold")
+  );
   const runLabel = (passIndex > 0 && maxPasses > 0)
     ? ` (${passIndex}/${maxPasses})`
     : ((qIndex > 0 && qTotal > 0) ? ` (${qIndex}/${qTotal})` : "");
@@ -1704,6 +1946,17 @@ function renderRpaProgress(snapshot, { running = false } = {}) {
     ? (updatedAgoSec > 12 ? `進捗更新遅延 ${Math.round(updatedAgoSec)}秒` : `進捗更新 ${Math.round(Math.max(0, updatedAgoSec))}秒前`)
     : "-";
   const detailBottomParts = [`除外トップ: ${topReject}`, `経過: ${elapsedText}`];
+  if (flowStage === "A" || hasPoolSnapshot) {
+    const poolBits = [
+      `実行seed ${Math.max(0, Number.isFinite(selectedSeedCount) ? selectedSeedCount : 0)}件`,
+      `利用可能 ${Math.max(0, Number.isFinite(poolAvailable) ? poolAvailable : 0)}件`,
+    ];
+    if (Number.isFinite(poolThreshold) && poolThreshold >= 0) {
+      poolBits.push(`補充閾値 ${Math.max(0, poolThreshold)}件`);
+    }
+    poolBits.push(poolGatePassed ? "補充不要" : "補充実行");
+    detailBottomParts.push(`pool: ${poolBits.join(" / ")}`);
+  }
   if (prText !== "-") {
     detailBottomParts.push(`PR進捗: ${prText}`);
   }
@@ -1915,6 +2168,21 @@ function renderFetchStats(payload) {
   const queryCacheSkip = Boolean(payload.query_cache_skip);
   const errors = Array.isArray(payload.errors) ? payload.errors : [];
   const fetched = (payload.fetched && typeof payload.fetched === "object") ? payload.fetched : {};
+  const timedFetch = (payload.timed_fetch && typeof payload.timed_fetch === "object") ? payload.timed_fetch : {};
+  const stageB = (payload.stage_b && typeof payload.stage_b === "object") ? payload.stage_b : {};
+  const stage2Refresh = (payload.stage2_liquidity_refresh && typeof payload.stage2_liquidity_refresh === "object")
+    ? payload.stage2_liquidity_refresh
+    : {};
+  const stage2Detail = (payload.stage2_ebay_item_detail && typeof payload.stage2_ebay_item_detail === "object")
+    ? payload.stage2_ebay_item_detail
+    : {};
+  const appliedFilters = (payload.applied_filters && typeof payload.applied_filters === "object")
+    ? payload.applied_filters
+    : {};
+  const stage2SkipCounts = (payload.stage2_skip_counts && typeof payload.stage2_skip_counts === "object")
+    ? payload.stage2_skip_counts
+    : {};
+  const seedPoolView = getSeedPoolView(payload);
   const dailyLimitReached = isRpaDailyLimitReached(payload);
 
   let headline = `今回探索: 追加 ${createdCount}件`;
@@ -1923,6 +2191,39 @@ function renderFetchStats(payload) {
   if (dailyLimitReached) headline += " / PR上限到達";
   if (errors.length > 0) headline += ` / エラー ${errors.length}件`;
   setFetchHeadline(headline, { warn: dailyLimitReached, running: false });
+
+  const stage2Top = Object.entries(stage2SkipCounts)
+    .map(([k, v]) => [String(k), Number(v)])
+    .filter(([, v]) => Number.isFinite(v) && v > 0)
+    .sort((a, b) => b[1] - a[1])[0];
+  const stage2TopText = stage2Top ? `${skipReasonLabel(stage2Top[0])} ${Number(stage2Top[1])}件` : "-";
+  const stageBRows = Number(stageB.rows_count || 0);
+  const stageBApiCalls = Number(stageB.api_calls || 0);
+  const stageBApiMax = Number(stageB.api_max_calls_per_run || 0);
+  const stageBMode = String(appliedFilters.stage_b_query_mode || "-");
+  const stage2Runs = Number(timedFetch.stage2_runs || 0);
+  const stageCMinSold = Number(appliedFilters.stage_c_min_sold_90d || 0);
+  const stageCLiquidityMode = String(appliedFilters.stage_c_liquidity_mode || "-");
+  const stageCAllowMissingSample = Boolean(appliedFilters.stage_c_allow_missing_sold_sample);
+  const stage2RefreshUsed = Number(stage2Refresh.retry_budget_used || 0);
+  const stage2RefreshTotal = Number(stage2Refresh.retry_budget_total || 0);
+  const stage2DetailFetched = Number(stage2Detail.fetched_count || 0);
+  const stage2DetailMax = Number(stage2Detail.max_fetch_per_run || 0);
+  const stageStop = stopReasonLabel(timedFetch.stop_reason || "");
+  const stageSummaryHtml = `
+    <div class="fetch-row">
+      <div class="head">
+        <span>A/B/Cサマリ</span>
+        <span class="fetch-stop">${escapeHtml(stageStop)}</span>
+      </div>
+      <ul class="fetch-list">
+        <li>A: 実行seed ${Number(seedPoolView.selectedCount || 0)}件 / 利用可能 ${Number(seedPoolView.availableAfter || 0)}件 / 補充 ${escapeHtml(seedPoolView.reason || "-")}</li>
+        <li>B: seed B ${stageBRows}件 / API ${stageBApiCalls}回${stageBApiMax > 0 ? ` (上限${stageBApiMax})` : ""} / mode ${escapeHtml(stageBMode)}</li>
+        <li>C: 再判定 ${stage2Runs}件 / 追加 ${createdCount}件 / 除外トップ ${escapeHtml(stage2TopText)}</li>
+      </ul>
+      <p class="fetch-note">C設定: sold>=${Number.isFinite(stageCMinSold) ? stageCMinSold : 0} / liquidity=${escapeHtml(stageCLiquidityMode)} / refresh ${stage2RefreshUsed}/${stage2RefreshTotal} / detail ${stage2DetailFetched}/${stage2DetailMax} / sample欠損許容 ${onOffText(stageCAllowMissingSample)}</p>
+    </div>
+  `;
 
   const rows = Object.entries(fetched);
   const siteRows = rows.filter(([site]) => {
@@ -1939,6 +2240,7 @@ function renderFetchStats(payload) {
       : "";
     refs.fetchStatsRows.innerHTML = `
       ${alertHtml}
+      ${stageSummaryHtml}
       <div class="fetch-row">
         <div class="head"><span>探索ログなし</span><span class="fetch-stop">-</span></div>
         <p class="fetch-note">この探索ではサイト別の取得データがありませんでした。</p>
@@ -1955,7 +2257,7 @@ function renderFetchStats(payload) {
     `
     : "";
 
-  refs.fetchStatsRows.innerHTML = warningBlock + siteRows.map(([site, info]) => {
+  refs.fetchStatsRows.innerHTML = warningBlock + stageSummaryHtml + siteRows.map(([site, info]) => {
     const calls = Number(info?.calls_made || 0);
     const networkCalls = Number(info?.network_calls || 0);
     const cacheHits = Number(info?.cache_hits || 0);
@@ -2012,8 +2314,15 @@ async function refreshSeedPoolStatusForCurrentCategory({ updateHeadline = true, 
           { warn: true, running: false },
         );
       } else {
+        const poolBits = [
+          `実行seed ${Number(view.selectedCount || 0)}件`,
+          `利用可能 ${Number(view.availableAfter || 0)}件`,
+        ];
+        if (Number(view.cooldownActive || 0) > 0) {
+          poolBits.push(`cooldown待機 ${Number(view.cooldownActive || 0)}件`);
+        }
         setFetchHeadline(
-          `探索前: ${view.categoryLabel}`,
+          `探索前: ${view.categoryLabel} / ${poolBits.join(" / ")}`,
           { warn: Boolean(view.dailyLimitReached), running: false },
         );
       }
@@ -2178,6 +2487,8 @@ function renderCandidate(candidate) {
     if (refs.ebayExtraCosts) refs.ebayExtraCosts.textContent = "-";
     refs.ebaySoldCount90d.textContent = "-";
     refs.ebaySoldMin90d.textContent = "-";
+    if (refs.ebayActiveCount90d) refs.ebayActiveCount90d.textContent = "-";
+    if (refs.ebayActiveMin90d) refs.ebayActiveMin90d.textContent = "-";
     refs.jpPrice.textContent = "-";
     refs.jpShipping.textContent = "-";
     refs.jpTotal.textContent = "-";
@@ -2227,7 +2538,7 @@ function renderCandidate(candidate) {
     refs.approveBtn.disabled = true;
     refs.rejectBtn.disabled = true;
     refs.approveBtn.textContent = "同一商品・利益OK（承認）";
-    setApproveHint("承認するとダミー出品ステータスに遷移します。");
+    setApproveHint("承認すると送信済みステータスに遷移します。");
     refs.currentCandidateLabel.textContent = "候補を選択してください";
     renderSelectedSampleLog(null, null);
     markActiveCandidateInList(null);
@@ -2271,6 +2582,25 @@ function renderCandidate(candidate) {
     ? `${v.ebay.soldCount90d}件`
     : "未取得";
   setMoneyCell(refs.ebaySoldMin90d, { jpy: null, usd: v.ebay.soldMin90d, fxRate: v.fxRate });
+  const liqMetaForCard = (typeof v.liquidity?.metadata === "object" && v.liquidity?.metadata) ? v.liquidity.metadata : {};
+  const activeCountCard = toNumber(v.liquidity?.active_count ?? v.meta?.ebay_active_count);
+  const activeMinCard = toNumber(
+    liqMetaForCard.active_price_min
+    ?? v.meta?.ebay_active_price_min_usd
+    ?? v.meta?.active_price_min
+  );
+  if (refs.ebayActiveCount90d) {
+    refs.ebayActiveCount90d.textContent = Number.isFinite(activeCountCard) && activeCountCard >= 0
+      ? `${activeCountCard}件`
+      : "未取得";
+  }
+  if (refs.ebayActiveMin90d) {
+    if (Number.isFinite(activeMinCard) && activeMinCard > 0) {
+      setMoneyCell(refs.ebayActiveMin90d, { jpy: null, usd: activeMinCard, fxRate: v.fxRate });
+    } else {
+      refs.ebayActiveMin90d.textContent = "未取得";
+    }
+  }
   setMoneyCell(refs.jpPrice, { jpy: v.jp.priceJpy, usd: null, fxRate: v.fxRate });
   setShippingCell(refs.jpShipping, { jpy: v.jp.shippingJpy, usd: null, fxRate: v.fxRate });
   setMoneyCell(refs.jpTotal, { jpy: v.jp.totalJpy, usd: v.jp.totalUsd, fxRate: v.fxRate });
@@ -2434,7 +2764,7 @@ function renderCandidate(candidate) {
   refs.approveBtn.disabled = !canApprove;
   refs.rejectBtn.disabled = !canReject;
   refs.approveBtn.textContent = isAutoApproved
-    ? "最終承認してダミー出品へ"
+    ? "最終承認して送信済みへ"
     : "同一商品・利益OK（承認）";
 
   const riskBadges = [];
@@ -2445,7 +2775,7 @@ function renderCandidate(candidate) {
 
   if (status === "listed") {
     refs.approveHint.classList.remove("warn");
-    setApproveHint("この候補は既にダミー出品済みです。");
+    setApproveHint("この候補は既に送信済みです。");
   } else if (isAutoApproved) {
     refs.approveHint.classList.toggle("warn", colorRisk.hasColorMissingRisk);
     if (colorRisk.hasColorMissingRisk) {
@@ -2458,7 +2788,7 @@ function renderCandidate(candidate) {
     if (colorRisk.hasColorMissingRisk) {
       setApproveHint("色情報が欠損したマッチです。リンク先画像・型番・色表記を確認してから承認してください。");
     } else {
-      setApproveHint("承認するとダミー出品ステータスに遷移します。");
+      setApproveHint("承認すると送信済みステータスに遷移します。");
     }
   }
 
@@ -2575,7 +2905,7 @@ function renderCandidate(candidate) {
   const opsRows = [
     { key: "作成日時", val: formatIsoShort(candidate.created_at) },
     { key: "更新日時", val: formatIsoShort(candidate.updated_at) },
-    { key: "出品状態(ダミー)", val: candidate.listing_state || "-" },
+    { key: "出品状態", val: labelForListingState(candidate.listing_state) },
     { key: "出品参照ID", val: candidate.listing_reference || "-" },
   ];
 
@@ -3131,8 +3461,8 @@ async function onApprove() {
   await applyCandidateActionLocally(updated, id);
   showToast(
     wasAutoApproved
-      ? `候補 #${id} を最終承認し、ダミー出品へ遷移しました。`
-      : `候補 #${id} を承認し、ダミー出品へ遷移しました。`
+      ? `候補 #${id} を最終承認し、送信済みに遷移しました。`
+      : `候補 #${id} を承認し、送信済みに遷移しました。`
   );
   void refreshQueues({ preserveSelection: true }).catch(() => {});
 }
@@ -3232,6 +3562,16 @@ async function onFetchLiveCandidates() {
         max_candidates: cfg.maxCandidates,
         stage_a_big_word_limit: cfg.stageABigWordLimit,
         stage_a_minimize_transitions: cfg.stageAMinimizeTransitions,
+        stage_b_query_mode: cfg.stageBQueryMode,
+        stage_b_max_queries_per_site: cfg.stageBMaxQueriesPerSite,
+        stage_b_top_matches_per_seed: cfg.stageBTopMatchesPerSeed,
+        stage_b_api_max_calls_per_run: cfg.stageBApiMaxCallsPerRun,
+        stage_c_min_sold_90d: cfg.stageCMinSold90d,
+        stage_c_liquidity_refresh_on_miss_enabled: cfg.stageCLiquidityRefreshEnabled,
+        stage_c_liquidity_refresh_on_miss_budget: cfg.stageCLiquidityRefreshBudget,
+        stage_c_allow_missing_sold_sample: cfg.stageCAllowMissingSoldSample,
+        stage_c_ebay_item_detail_enabled: cfg.stageCEbayItemDetailEnabled,
+        stage_c_ebay_item_detail_max_fetch_per_run: cfg.stageCEbayItemDetailMaxFetch,
         min_match_score: cfg.minMatchScore,
         min_profit_usd: cfg.minProfitUsd,
         min_margin_rate: cfg.minMarginRate,
@@ -3420,6 +3760,7 @@ function bindEvents() {
 
   refs.fetchBtn.addEventListener("click", async () => {
     try {
+      await saveMinerSettings({ silent: true });
       await onFetchLiveCandidates();
     } catch (err) {
       showToast(`取得エラー: ${err.message}`);
@@ -3440,6 +3781,18 @@ function bindEvents() {
 
   refs.closeSettingsBtn?.addEventListener("click", () => {
     closeSettingsOverlay();
+  });
+
+  refs.resetSettingsBtn?.addEventListener("click", async () => {
+    applyFetchConfigToInputs(DEFAULT_FETCH_SETTINGS);
+    const saved = await saveMinerSettings({ silent: false });
+    if (saved) showToast("詳細設定をデフォルトに戻しました。");
+  });
+
+  getSettingsInputs().forEach((el) => {
+    el.addEventListener("change", () => {
+      void saveMinerSettings({ silent: true });
+    });
   });
 
   refs.settingsOverlay?.addEventListener("click", (event) => {
@@ -3548,6 +3901,7 @@ async function init() {
     refs.endpointLabel.textContent = `API接続先: ${endpointLabel}`;
   }
   await loadCategoryOptions();
+  await loadMinerSettings();
   resetHeaderForCategorySelection({ loading: true });
   await refreshSeedPoolStatusForCurrentCategory({ updateHeadline: true, showLoading: false });
   try {

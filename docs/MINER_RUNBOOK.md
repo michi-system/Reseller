@@ -1,44 +1,22 @@
 # Miner Runbook (Unified)
 
-最終更新: 2026-02-25
+最終更新: 2026-02-26
 
-この文書は、Minerの実行手順（事前チェック / API / サイクル運用 / 利益計算）を1本に統合した運用手順書です。
+この文書は Miner 実運用の手順書です。A/B/C 実行、UI設定、確認コマンドを最新実装に合わせています。
 
 ## 1. 事前準備
-`.env.local` を使用し、機密情報はgit管理しない。
+- `.env.local` に秘密情報を設定し、Git管理しない
+- 主要キー:
+  - `EBAY_CLIENT_ID`
+  - `EBAY_CLIENT_SECRET`
+  - `YAHOO_APP_ID`（または `YAHOO_CLIENT_ID`）
+  - `RAKUTEN_APPLICATION_ID`
 
-必須（preflight）:
-- `EBAY_CLIENT_ID`
-- `EBAY_CLIENT_SECRET`
-- `YAHOO_APP_ID`（または `YAHOO_CLIENT_ID`）
-- `RAKUTEN_APPLICATION_ID`
+推奨:
+- `DB_BACKEND=sqlite`（ローカル検証時）
+- `LIQUIDITY_PROVIDER_MODE=rpa_json`
 
-推奨ランタイム:
-- `TARGET_MARKETPLACE=EBAY_US`
-- `TARGET_CATEGORY=watch_new`
-- `ITEM_CONDITION=new`
-- `DEFAULT_QUERY=seiko watch`
-- `EBAY_RATE_LIMIT_RPS=2`
-- `YAHOO_RATE_LIMIT_RPS=1`
-- `RAKUTEN_RATE_LIMIT_RPS=1`
-
-## 2. Preflight
-ネットワークなし:
-```bash
-python3 scripts/preflight.py
-```
-
-オンライン最小確認（各サイト1リクエスト）:
-```bash
-python3 scripts/preflight.py --online --query "seiko sbga211"
-```
-
-FX必須で確認:
-```bash
-python3 scripts/preflight.py --online --require-fx --query "seiko sbga211"
-```
-
-## 3. APIサーバ起動
+## 2. API起動
 ```bash
 python3 scripts/run_api.py --host 127.0.0.1 --port 8000
 ```
@@ -48,126 +26,121 @@ python3 scripts/run_api.py --host 127.0.0.1 --port 8000
 curl -sS http://127.0.0.1:8000/healthz
 ```
 
-代表エンドポイント:
-- `GET /v1/system/fx-rate`
-- `POST /v1/system/fx-rate/refresh`
-- `POST /v1/profit/calc`
-- `POST /v1/miner/fetch`
-- `GET /v1/miner/queue`
-- `GET /v1/miner/cycle/active`
-
-## 4. Fetchと流動性判定
-推奨キュー確認（利益・精度優先）:
+## 3. Miner UI設定（永続化）
+取得:
 ```bash
-curl -sS "http://127.0.0.1:8000/v1/miner/queue?status=pending&limit=50&min_profit_usd=0.01&min_margin_rate=0.03&min_match_score=0.75&condition=new"
+curl -sS http://127.0.0.1:8000/v1/miner/settings
 ```
 
-流動性Gateの主要設定:
-- `LIQUIDITY_GATE_ENABLED=1`
-- `LIQUIDITY_REQUIRE_SIGNAL=1`
-- `LIQUIDITY_MIN_SOLD_90D`
-- `LIQUIDITY_MIN_SELL_THROUGH_90D`
-- `LIQUIDITY_PROVIDER_MODE=rpa_json` または `ebay_marketplace_insights`
-
-`sold_90d_count` の意味:
-- `>=0`: 取得成功（`0` は90日売却なし）
-- `-1`: 未取得/判定不能
-
-## 5. サイクル実行コマンド
-24件バッチ（精度優先）:
+保存:
 ```bash
-python3 scripts/run_miner_cycle.py --target-count 24 --hard-cap 30 --min-profit-usd 0.01 --min-margin-rate 0.03 --min-match-score 0.75 --require-full-batch
+curl -sS -X POST http://127.0.0.1:8000/v1/miner/settings \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "requireInStock": true,
+    "limitPerSite": 20,
+    "maxCandidates": 20,
+    "stageABigWordLimit": 0,
+    "stageAMinimizeTransitions": true,
+    "stageBQueryMode": "seed_only",
+    "stageBMaxQueriesPerSite": 1,
+    "stageBTopMatchesPerSeed": 3,
+    "stageBApiMaxCallsPerRun": 0,
+    "stageCMinSold90d": 10,
+    "stageCLiquidityRefreshEnabled": true,
+    "stageCLiquidityRefreshBudget": 12,
+    "stageCAllowMissingSoldSample": false,
+    "stageCEbayItemDetailEnabled": true,
+    "stageCEbayItemDetailMaxFetch": 30,
+    "minMatchScore": 0.72,
+    "minProfitUsd": 0.01,
+    "minMarginRate": 0.03
+  }'
 ```
 
-API制限を意識した検証モード:
+## 4. 探索実行（A→B→C）
 ```bash
-python3 scripts/run_miner_cycle.py \
-  --target-count 24 \
-  --hard-cap 30 \
-  --max-zero-gain-strikes 2 \
-  --daily-budget-ebay 120 \
-  --daily-budget-rakuten 120 \
-  --daily-budget-yahoo 120
+curl -sS -X POST http://127.0.0.1:8000/v1/miner/fetch \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "query": "watch",
+    "source_sites": ["rakuten", "yahoo"],
+    "timed_mode": true,
+    "target_min_candidates": 3,
+    "fetch_timebox_sec": 300,
+    "fetch_max_passes": 20,
+    "continue_after_target": true,
+    "require_in_stock": true,
+    "limit_per_site": 20,
+    "max_candidates": 20,
+    "stage_a_big_word_limit": 0,
+    "stage_a_minimize_transitions": true,
+    "stage_b_query_mode": "seed_only",
+    "stage_b_max_queries_per_site": 1,
+    "stage_b_top_matches_per_seed": 3,
+    "stage_b_api_max_calls_per_run": 0,
+    "stage_c_min_sold_90d": 10,
+    "stage_c_liquidity_refresh_on_miss_enabled": true,
+    "stage_c_liquidity_refresh_on_miss_budget": 12,
+    "stage_c_allow_missing_sold_sample": false,
+    "stage_c_ebay_item_detail_enabled": true,
+    "stage_c_ebay_item_detail_max_fetch_per_run": 30,
+    "min_match_score": 0.72,
+    "min_profit_usd": 0.01,
+    "min_margin_rate": 0.03
+  }'
 ```
 
-クローズレポート:
+## 5. 実行中の確認
+進捗:
 ```bash
-python3 scripts/close_miner_cycle.py --reject-floor 10 --min-reviewed-ratio 1.0 --min-reject-rate 0.10
+curl -sS http://127.0.0.1:8000/v1/system/fetch-progress
 ```
 
-## 6. Query Widthの運用基準
-推奨waterfall:
-1. eBay: `L1_precise_new` 開始、不足時のみ `L2_precise`
-2. Yahoo: `L2_precise` 開始、不足時 `L3_mid`
-3. Rakuten: `L2_precise` 開始、不足時 `L3_mid`
-
-補助レポート:
-- `docs/query_width_report*.json`
-- `docs/query_width_summary.json`
-- `docs/query_width_strategy.md`
-
-## 7. FX + Profit運用
-為替参照順序:
-1. プロセスキャッシュ
-2. DB `fx_rate_states`
-3. `FX_USD_JPY`（env fallback）
-
-利益試算:
+seed pool:
 ```bash
-python3 scripts/profit_demo.py --refresh-fx --sale-usd 420 --purchase-jpy 42000 --domestic-shipping-jpy 1200 --international-shipping-usd 28 --customs-usd 8 --packaging-usd 3
+curl -sS 'http://127.0.0.1:8000/v1/miner/seed-pool-status?category=watch'
 ```
 
-## 8. 事故防止
-- `docs/miner_cycle_*_latest.json` は手編集しない
-- `data/miner_*` / `data/liquidity_*` は手編集しない
-- 設定変更時は `docs/WORKBOARD.md` の Decision Log を更新
-
-## 9. 統合前の原本（退避先）
-- `docs/archive/miner_legacy/API_LOCAL.md`
-- `docs/archive/miner_legacy/PREVALIDATION.md`
-- `docs/archive/miner_legacy/FX_PROFIT_FLOW.md`
-
-## 10. Product Research RPA（Phase A運用）
-腕時計カテゴリの seed 補充で使う `scripts/rpa_market_research.py` の推奨例。
-
-初回ページ（offset=0）:
+RPA進捗:
 ```bash
-python3 scripts/rpa_market_research.py \
-  --query "G-SHOCK" \
-  --condition new \
-  --sold-sort recently_sold \
-  --fixed-price-only \
-  --lookback-days 90 \
-  --min-price-usd 100 \
-  --result-limit 50 \
-  --result-offset 0 \
-  --output data/liquidity_rpa_signals.jsonl \
-  --headless
+curl -sS http://127.0.0.1:8000/v1/system/rpa-progress
 ```
 
-2ページ目（offset=50）:
+## 6. 結果確認
+レビュー待ち:
 ```bash
-python3 scripts/rpa_market_research.py \
-  --query "G-SHOCK" \
-  --condition new \
-  --sold-sort recently_sold \
-  --fixed-price-only \
-  --lookback-days 90 \
-  --min-price-usd 100 \
-  --result-limit 50 \
-  --result-offset 50 \
-  --output data/liquidity_rpa_signals.jsonl \
-  --headless
+curl -sS 'http://127.0.0.1:8000/v1/miner/queue?status=pending&limit=50'
 ```
 
-実装前提（2026-02-25時点）:
-- `--pause-for-login` の既定値は `0`（本番での待機時間なし）。
-- `conditionId` / `minPrice` / `offset` / `sorting=datelastsold` は URL先入れを試行し、未反映分はUI操作で補完する。
-- `fixed_price` は URLのみだと不安定なため、UIで選択状態を確認する。
-- `recently_sold` は `Date last sold` ヘッダー操作で確定する（`metadata.filter_state.sort_selection_source` に記録）。
-- `result_offset` はフィルタ適用後に戻る場合があるため、コード側で再適用・再確認する。
-- `Lock selected filters` は有効化を試行する（状態は `metadata.filter_state` に保存）。
+レビュー済み:
+```bash
+curl -sS 'http://127.0.0.1:8000/v1/miner/queue?status=reviewed&limit=50'
+```
 
-検証時のみ使うオプション:
-- `--screenshot-after-filters` / `--html-after-filters` を付ける。
-- 本番運用では不要なため付けない（速度優先）。
+## 7. Product Research（A/C向け）運用要点
+- URL先入れで `condition/minPrice/offset/sorting` を試行
+- `format=fixed_price` はUI確定が必要なため、URLのみを信用しない
+- `Date last sold` ヘッダーで新しい順を最終確定
+- 本番では `--screenshot-after-filters` / `--html-after-filters` は無効（速度優先）
+
+## 8. テスト
+主要回帰（SQLite固定）:
+```bash
+DB_BACKEND=sqlite python3 -m unittest -q \
+  tests.test_miner_seed_pool \
+  tests.test_liquidity_rpa_guard \
+  tests.test_api_miner_settings \
+  tests.test_api_fetch_progress \
+  tests.test_miner_queue_status
+```
+
+## 9. 障害時ガイド
+- `rpa_daily_limit_reached`: 当日停止。翌日に再実行
+- `seed_pool_empty`: A段階補充条件/カテゴリ設定を確認
+- `skipped_liquidity_unavailable` 多発: RPA JSONの更新状態、DOM変化、PR上限を確認
+- `skipped_source_variant_unresolved` 多発: 複数SKUページの型番解決失敗。サイト別fallback条件を再確認
+
+## 10. 禁止事項
+- `docs/*_latest.json`, `docs/autonomous_*`, `docs/cycle_diagnostics/*` の手編集禁止
+- `data/miner_*`, `data/liquidity_*` の手編集禁止

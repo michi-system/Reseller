@@ -1,6 +1,6 @@
 # STATUS CURRENT
 
-最終更新: 2026-02-25 (JST)  
+最終更新: 2026-02-26 (JST)  
 このファイルは「現時点の運用スナップショット」専用です。  
 計画/工数/実装タスクは `docs/WORKBOARD.md` に集約します。
 
@@ -19,14 +19,19 @@
 6. UI: `web/miner.html` + `web/miner.js`
 
 ## 3. 現在地スナップショット
-- 最新サイクルID: `cycle-20260220-031359`
-- 直近確認値: `cycle_ready=false`, `batch_size=0`
-- API効率（直近検証）: cache hit 100%, network call 0
-- DBステータス（直近確認値）: `listed=364`, `rejected=110`, `approved=1`, `pending=0`
-- 否認上位傾向: `price`, `color`, `condition`, `accessories`
-- Phase A（腕時計）: 条件設定/50件取得/ページ送り/seed抽出/重複処理まで受け入れ試験を完了
-- Phase A検証レポート: `data/rpa_training/phasea_acceptance/phasea_acceptance_report_v3.json`
-- ページ送り差分検証: `data/rpa_training/phasea_acceptance/pagination_title_swap_report_v4.json`
+- Phase A: 腕時計カテゴリで条件設定・50件取得・ページ送り・重複抑止まで実装済み
+- Phase B: `seed_only` 既定、`source_total_jpy` 昇順、`stage1_rank` 付きで `stage_b.rows` を生成
+- Phase C: sold/activeの再判定、欠損時再取得（miss/sample/active）、eBay詳細補完を実装済み
+- Miner UI:
+  - ヘッダー進捗に A/B/C 段階と pool状態を表示
+  - seed pool要約（補充理由・cooldown・正規化/重複整理）を表示
+  - 詳細設定をDB永続化し、リセットボタンで既定値へ復帰可能
+- 主要既定:
+  - `stage_b_query_mode=seed_only`
+  - `stage_b_top_matches_per_seed=3`
+  - `stage_c_min_sold_90d=10`
+  - `stage_c_liquidity_refresh_on_miss_budget=12`
+  - `stage_c_ebay_item_detail_max_fetch_per_run=30`
 
 注記:
 - 上記数値は実行により変動するため、最新値は `docs/miner_cycle_report_latest.json` と DB を正とする。
@@ -40,10 +45,10 @@
 - `recently_sold` は `sorting=datelastsold` 先入れ + `Date last sold` ヘッダー操作で最終確定（`metadata.filter_state.sort_selection_source` で検証）
 
 ## 5. 既知課題（運用観点）
-1. レビュー候補の流入不足（カテゴリ・型番によっては枯渇）
-2. 流動性データ欠損時の歩留まり低下
-3. 型番/色/付属品境界の誤判定リスク
-4. UI可読性・操作速度の継続改善余地
+1. カテゴリ/ビッグワードにより seed 補充速度が偏る（hours/page の継続最適化が必要）
+2. マルチSKU商品ページの型番解決失敗は引き続き発生しうる
+3. eBay側DOM変更時に RPA抽出が不安定化する可能性がある
+4. 候補流入量はカテゴリごとの差が大きく、運用側で最小件数保証の監視が必要
 
 ## 6. 参照先
 - 作業計画: `docs/WORKBOARD.md`

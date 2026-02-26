@@ -34,6 +34,7 @@
 ## 3. Recently Completed
 | 日付 | ID | 内容 | 反映先 |
 |---|---|---|---|
+| 2026-02-26 | WB-MINER-031 | Phase C最終化（active欠損再取得、重複抑止、設定反映）とMiner UI同期（進捗ヘッダー/seed pool/設定永続化）を完了 | `reselling/miner_seed_pool.py`, `reselling/api_server.py`, `reselling/models.py`, `web/miner.*`, `tests/test_miner_seed_pool.py`, `tests/test_api_miner_settings.py` |
 | 2026-02-24 | WB-DOC-006 | Miner関連ドキュメントを2本へ統合（仕様/手順）し、旧資料を `docs/archive/miner_legacy/` へ退避 | `docs/MINER_SPEC.md`, `docs/MINER_RUNBOOK.md`, `docs/archive/miner_legacy/*` |
 | 2026-02-21 | WB-DOC-001 | ドキュメント導線の一本化（`START_HERE` 追加） | `docs/START_HERE.md` |
 | 2026-02-21 | WB-DOC-002 | docs運用ルールの明文化 | `docs/DOCS_GOVERNANCE.md` |
@@ -114,6 +115,7 @@
 | 2026-02-25 | DEC-028 | A段階の探索は「取りこぼし少量許容・重複最小化」を優先し、big wordごとに時差を持たせた再探索（経過時間に応じた許可ページ数）へ移行する方針とする | 毎日探索しない運用では完全回収よりも、重複抑制とPR効率の方が実利が高いため |
 | 2026-02-25 | DEC-029 | 最終形は探索ボタン中心運用から、0時起点の自動探索（PR上限到達まで）へ段階移行する。手動探索は移行完了までの暫定運用とする | 実装安定後は定時自動化で回収漏れを減らし、運用負荷と手動ミスを下げるため |
 | 2026-02-25 | DEC-030 | A段階の `recently_sold` は URL先入れ（`sorting=datelastsold`）を試行しつつ、最終的には `Date last sold` ヘッダー操作で新しい順を確定する実装を正本とする | URLだけでは並び方向が安定しないため、PR節約と精度を両立するには「URL試行 + UI確定」の二段構えが必要なため |
+| 2026-02-26 | DEC-031 | C段階は `sold_90d_count / sold_price_min / active_count / active_min` を同一run内で揃える方針とし、欠損時は予算内で `on_miss/on_missing_sample/on_missing_active` 再取得を実施する | 候補品質を維持しつつ PR 消費を制御するため |
 
 ## 7. 次エージェント向け起点
 1. `Now` の `in_progress` を上から順に処理。

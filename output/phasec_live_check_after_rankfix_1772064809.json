@@ -1,0 +1,342 @@
+{
+  "query": "watch",
+  "market_site": "ebay",
+  "source_sites": [
+    "rakuten",
+    "yahoo"
+  ],
+  "fetched": {
+    "rakuten": {
+      "calls_made": 8,
+      "network_calls": 8,
+      "cache_hits": 8,
+      "count": 0
+    },
+    "yahoo": {
+      "calls_made": 8,
+      "network_calls": 8,
+      "cache_hits": 8,
+      "count": 0
+    }
+  },
+  "created_count": 0,
+  "created_ids": [],
+  "created": [],
+  "errors": [],
+  "hints": [
+    "A段階のカテゴリ最低価格フィルタ: $100.00 を適用しました。",
+    "C段階の流動性RPA更新: 実行0回 / miss再試行0回 / sample再試行0回"
+  ],
+  "search_scope_done": true,
+  "applied_filters": {
+    "seed_pool_mode": "A/B/C_spec",
+    "stage_a_refill_trigger_available_le": 0,
+    "stage_a_rpa_wait_seconds": 8,
+    "stage_a_low_yield_consecutive_pages": 3,
+    "stage_a_min_pages_before_low_yield_stop": 2,
+    "stage_a_min_seed_sold_price_usd": 100.0,
+    "stage_a_pr_category_id": 31387,
+    "stage_a_pr_category_slug": "wristwatches",
+    "stage_a_big_word_limit": 0,
+    "stage_a_big_word_count": 0,
+    "stage_a_target_count_base": 0,
+    "stage_a_target_count": 0,
+    "stage_a_timebox_base_sec": 300,
+    "stage_a_timebox_sec": 300,
+    "stage_a_minimize_transitions": true,
+    "stage_a_transition_page_size": 0,
+    "stage_a_transition_max_pages_per_query": 0,
+    "stage_b_limit_per_site": 20,
+    "stage_b_pick_per_seed": 3,
+    "stage_b_condition": "new",
+    "stage_b_sort": "price_asc",
+    "stage_b_price_cap": "seed_collected_sold_price_min_usd",
+    "stage_b_baseline_floor_usd": 100.0,
+    "stage_b_baseline_policy": "seed_collected_or_category_min",
+    "stage_b_multi_sku_strict": true,
+    "stage_b_multi_sku_fallback_non_rakuten": true,
+    "stage_b_multi_sku_fallback_on_timeout": true,
+    "stage_b_query_mode": "seed_only",
+    "stage_b_api_max_calls_per_run": 0,
+    "stage_b_max_queries_per_site": 1,
+    "stage_c_price_basis": "sold_price_min_90d",
+    "stage_c_min_sold_90d": 10,
+    "stage_c_pr_category_id": 31387,
+    "stage_c_pr_category_slug": "wristwatches",
+    "stage_c_liquidity_mode": "rpa_json",
+    "stage_c_liquidity_refresh_on_miss_enabled": true,
+    "stage_c_liquidity_refresh_on_miss_budget": 4,
+    "stage_c_allow_missing_sold_sample": false,
+    "stage_c_collect_active_tab": true,
+    "stage_c_rpa_json_path": "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/data/liquidity_rpa_signals.jsonl",
+    "stage_c_ebay_item_detail_enabled": true,
+    "stage_c_ebay_item_detail_max_fetch_per_run": 30
+  },
+  "query_cache_skip": false,
+  "query_cache_ttl_sec": 0,
+  "rpa_daily_limit_reached": false,
+  "seed_pool": {
+    "category_key": "watch",
+    "category_label": "腕時計",
+    "seed_count": 8,
+    "selected_seed_count": 8,
+    "available_after_refill": 256,
+    "skipped_low_quality_count": 0,
+    "skipped_cooldown_count": 0,
+    "cooldown_active_count": 0,
+    "select_min_seed_score": 0,
+    "refill": {
+      "ran": false,
+      "available_before": 256,
+      "available_after": 256,
+      "pre_refill_pruned_non_model_seed_count": 0,
+      "added_count": 0,
+      "bootstrap_added_count": 0,
+      "skipped_fresh_pages": 0,
+      "page_runs": [],
+      "reason": "threshold_not_reached",
+      "daily_limit_reached": false,
+      "cooldown_until": "",
+      "cooldown_active_count": 0,
+      "cooldown_blocked_count": 0,
+      "query": "",
+      "queries": [],
+      "big_word_limit": 0,
+      "big_word_count": 0,
+      "big_word_total_count": 0,
+      "big_word_scale_ratio": 1.0,
+      "target_count": 0,
+      "target_count_base": 0,
+      "timebox_sec": 300,
+      "timebox_base_sec": 300,
+      "trace_path": "",
+      "trace_session": "",
+      "minimize_transitions": true,
+      "transition_page_size": 0,
+      "transition_max_pages_per_query": 0,
+      "query_page_unlock_enabled": true,
+      "query_page_unlock_default_hours": 24.0,
+      "query_page_unlock_min_pages": 1,
+      "query_page_unlock_category_overrides_count": 8,
+      "query_page_unlock_overrides_count": 0,
+      "pr_category_id": 31387,
+      "pr_category_slug": "wristwatches",
+      "pr_category_filter_enabled": true,
+      "min_seed_sold_price_usd": 100.0,
+      "min_price_filtered_count": 0,
+      "strict_model_seed": true,
+      "fallback_on_page_unlock_wait_enabled": true,
+      "fallback_target_new_seeds": 100,
+      "fallback_total_added_count": 0,
+      "fallback_refill_runs": [],
+      "phase_a_completed_with_fallback": false
+    }
+  },
+  "stage_b": {
+    "rows_count": 0,
+    "rows": [],
+    "api_calls": 16,
+    "api_max_calls_per_run": 0
+  },
+  "stage1_skip_counts": {},
+  "stage2_skip_counts": {},
+  "stage1_low_match_reason_counts": {},
+  "stage2_low_match_reason_counts": {},
+  "stage1_seed_baseline_reject_total": 0,
+  "stage2_liquidity_refresh": {
+    "enabled": true,
+    "retry_budget_total": 4,
+    "retry_budget_used": 0,
+    "runs": [
+      {
+        "phase": "prefetch",
+        "summary": {
+          "enabled": false,
+          "mode": "none",
+          "ran": false,
+          "reason": "disabled_or_non_rpa_mode",
+          "queries": [
+            "GA-110EVA30-7AJR",
+            "CASIO GA-110EVA30-7AJR",
+            "GW-BX5600-1A1JF",
+            "CASIO GW-BX5600-1A1JF",
+            "GPR-H1000-1JR",
+            "CASIO GPR-H1000-1JR",
+            "GX-56MF-1",
+            "CASIO GX-56MF-1"
+          ]
+        }
+      }
+    ]
+  },
+  "stage2_ebay_item_detail": {
+    "enabled": true,
+    "fetched_count": 0,
+    "max_fetch_per_run": 30,
+    "timeout_sec": 8
+  },
+  "stage2_low_liquidity_cooldown_saved": 0,
+  "timed_fetch": {
+    "enabled": true,
+    "min_target_candidates": 3,
+    "timebox_sec": 300,
+    "max_passes": 8,
+    "continue_after_target": true,
+    "passes_run": 8,
+    "stop_reason": "seed_batch_completed",
+    "elapsed_sec": 11.005,
+    "reached_min_target": false,
+    "stage1_pass_total": 0,
+    "stage2_runs": 0,
+    "stage1_skip_counts": {},
+    "stage2_skip_counts": {},
+    "stage1_low_match_reason_counts": {},
+    "stage2_low_match_reason_counts": {},
+    "stage1_seed_baseline_reject_total": 0,
+    "stage2_liquidity_refresh": {
+      "enabled": true,
+      "retry_budget_total": 4,
+      "retry_budget_used": 0,
+      "runs": [
+        {
+          "phase": "prefetch",
+          "summary": {
+            "enabled": false,
+            "mode": "none",
+            "ran": false,
+            "reason": "disabled_or_non_rpa_mode",
+            "queries": [
+              "GA-110EVA30-7AJR",
+              "CASIO GA-110EVA30-7AJR",
+              "GW-BX5600-1A1JF",
+              "CASIO GW-BX5600-1A1JF",
+              "GPR-H1000-1JR",
+              "CASIO GPR-H1000-1JR",
+              "GX-56MF-1",
+              "CASIO GX-56MF-1"
+            ]
+          }
+        }
+      ]
+    },
+    "stage2_ebay_item_detail": {
+      "enabled": true,
+      "fetched_count": 0,
+      "max_fetch_per_run": 30,
+      "timeout_sec": 8
+    },
+    "stage2_low_liquidity_cooldown_saved": 0,
+    "stage_b": {
+      "rows_count": 0,
+      "api_calls": 16,
+      "api_max_calls_per_run": 0
+    },
+    "passes": [
+      {
+        "pass": 1,
+        "seed_query": "CASIO GA-110EVA30-7AJR",
+        "stage1_query": "CASIO GA-110EVA30-7AJR",
+        "stage1_candidate_count": 0,
+        "stage2_created_count": 0,
+        "stage1_seed_baseline_reject_count": 0,
+        "elapsed_sec": 10.989,
+        "min_match_score": 0.72,
+        "has_model_code": true
+      },
+      {
+        "pass": 2,
+        "seed_query": "GA-110EVA30-7AJR",
+        "stage1_query": "CASIO GA-110EVA30-7AJR",
+        "stage1_candidate_count": 0,
+        "stage2_created_count": 0,
+        "stage1_seed_baseline_reject_count": 0,
+        "elapsed_sec": 10.991,
+        "min_match_score": 0.72,
+        "has_model_code": true
+      },
+      {
+        "pass": 3,
+        "seed_query": "CASIO GW-BX5600-1A1JF",
+        "stage1_query": "CASIO GW-BX5600-1A1JF",
+        "stage1_candidate_count": 0,
+        "stage2_created_count": 0,
+        "stage1_seed_baseline_reject_count": 0,
+        "elapsed_sec": 10.993,
+        "min_match_score": 0.72,
+        "has_model_code": true
+      },
+      {
+        "pass": 4,
+        "seed_query": "GW-BX5600-1A1JF",
+        "stage1_query": "CASIO GW-BX5600-1A1JF",
+        "stage1_candidate_count": 0,
+        "stage2_created_count": 0,
+        "stage1_seed_baseline_reject_count": 0,
+        "elapsed_sec": 10.995,
+        "min_match_score": 0.72,
+        "has_model_code": true
+      },
+      {
+        "pass": 5,
+        "seed_query": "CASIO GPR-H1000-1JR",
+        "stage1_query": "CASIO GPR-H1000-1JR",
+        "stage1_candidate_count": 0,
+        "stage2_created_count": 0,
+        "stage1_seed_baseline_reject_count": 0,
+        "elapsed_sec": 10.999,
+        "min_match_score": 0.72,
+        "has_model_code": true
+      },
+      {
+        "pass": 6,
+        "seed_query": "GPR-H1000-1JR",
+        "stage1_query": "CASIO GPR-H1000-1JR",
+        "stage1_candidate_count": 0,
+        "stage2_created_count": 0,
+        "stage1_seed_baseline_reject_count": 0,
+        "elapsed_sec": 11.002,
+        "min_match_score": 0.72,
+        "has_model_code": true
+      },
+      {
+        "pass": 7,
+        "seed_query": "CASIO GX-56MF-1",
+        "stage1_query": "CASIO GX-56MF-1",
+        "stage1_candidate_count": 0,
+        "stage2_created_count": 0,
+        "stage1_seed_baseline_reject_count": 0,
+        "elapsed_sec": 11.004,
+        "min_match_score": 0.72,
+        "has_model_code": true
+      },
+      {
+        "pass": 8,
+        "seed_query": "GX-56MF-1",
+        "stage1_query": "CASIO GX-56MF-1",
+        "stage1_candidate_count": 0,
+        "stage2_created_count": 0,
+        "stage1_seed_baseline_reject_count": 0,
+        "elapsed_sec": 11.005,
+        "min_match_score": 0.72,
+        "has_model_code": true
+      }
+    ]
+  },
+  "skipped_duplicates": 0,
+  "skipped_low_match": 0,
+  "skipped_invalid_price": 0,
+  "skipped_unprofitable": 0,
+  "skipped_low_margin": 0,
+  "skipped_low_ev90": 0,
+  "skipped_low_liquidity": 0,
+  "skipped_liquidity_unavailable": 0,
+  "skipped_missing_sold_min": 0,
+  "skipped_missing_sold_sample": 0,
+  "skipped_below_sold_min": 0,
+  "skipped_implausible_sold_min": 0,
+  "skipped_source_variant_unresolved": 0,
+  "skipped_stage1_api_budget": 0,
+  "skipped_blocked": 0,
+  "skipped_group_cap": 0,
+  "skipped_ambiguous_model_title": 0
+}

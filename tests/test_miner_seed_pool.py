@@ -127,6 +127,17 @@ class MinerSeedPoolTests(unittest.TestCase):
         )
         self.assertEqual(miner_seed_pool._seed_key(picked), miner_seed_pool._seed_key("GW-M5610U-1JF"))
 
+    def test_liquidity_refresh_queries_include_brand_prefixed_model_first(self) -> None:
+        queries = miner_seed_pool._liquidity_refresh_queries_for_seed(
+            "DW-5600",
+            max_count=3,
+            source_title="CASIO G-SHOCK DW-5600RL-1JF Tough Solar",
+            brand_hints=["CASIO", "SEIKO"],
+        )
+        self.assertGreaterEqual(len(queries), 2)
+        self.assertEqual(queries[0], "DW-5600")
+        self.assertEqual(queries[1], "CASIO DW-5600")
+
     def test_liquidity_active_min_usd_prefers_metadata_value(self) -> None:
         signal = {
             "active_count": 120,
@@ -392,6 +403,29 @@ class MinerSeedPoolTests(unittest.TestCase):
         self.assertTrue(bool(resolved.get("ok")))
         self.assertEqual(str(resolved.get("price_basis_type")), "listing_price_multi_sku_fallback")
 
+    def test_refresh_liquidity_rpa_forces_rpa_json_mode_env(self) -> None:
+        captured: dict[str, str] = {}
+
+        def _fake_refresh(*args, **kwargs):
+            captured["mode"] = str(os.getenv("LIQUIDITY_PROVIDER_MODE", "") or "")
+            captured["collect_active"] = str(os.getenv("LIQUIDITY_RPA_COLLECT_ACTIVE_TAB", "") or "")
+            return {"enabled": True, "ran": False, "reason": "noop"}
+
+        with patch.dict("os.environ", {"LIQUIDITY_PROVIDER_MODE": ""}, clear=False), patch.object(
+            miner_seed_pool, "_maybe_refresh_rpa_for_fetch", side_effect=_fake_refresh
+        ):
+            summary = miner_seed_pool._refresh_liquidity_rpa(
+                ["GW-M5610U-1JF"],
+                max_queries=1,
+                force=False,
+                category_id=31387,
+                category_slug="wristwatches",
+            )
+
+        self.assertTrue(bool(summary.get("enabled")))
+        self.assertEqual(captured.get("mode"), "rpa_json")
+        self.assertEqual(captured.get("collect_active"), "1")
+
     def test_run_seeded_fetch_runs_stage_b_and_stage_c_pipeline(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             db_path = Path(tmp) / "seed_pool_test.db"
@@ -407,6 +441,8 @@ class MinerSeedPoolTests(unittest.TestCase):
             }
 
             created_counter = {"value": 0}
+            liquidity_modes: list[str] = []
+            liquidity_market_ids: list[dict] = []
 
             def _fake_search(query: str, limit: int, timeout: int, page: int = 1, require_in_stock: bool = True):
                 item = miner_seed_pool.MarketItem(
@@ -425,6 +461,10 @@ class MinerSeedPoolTests(unittest.TestCase):
                 return [item], {"status": 200, "category_filter": {"applied": True}, "cache_hit": False}
 
             def _fake_liquidity(**kwargs):
+                liquidity_modes.append(str(os.getenv("LIQUIDITY_PROVIDER_MODE", "") or ""))
+                market_ids = kwargs.get("market_identifiers")
+                if isinstance(market_ids, dict):
+                    liquidity_market_ids.append(dict(market_ids))
                 return {
                     "sold_90d_count": 12,
                     "metadata": {
@@ -453,6 +493,7 @@ class MinerSeedPoolTests(unittest.TestCase):
 
             env = {
                 "DB_BACKEND": "sqlite",
+                "LIQUIDITY_PROVIDER_MODE": "",
                 "MINER_SEED_POOL_MAX_PAGES": "1",
                 "MINER_SEED_POOL_TARGET_COUNT": "4",
                 "MINER_SEED_POOL_SOFT_TARGET_RATIO": "0.8",
@@ -483,10 +524,16 @@ class MinerSeedPoolTests(unittest.TestCase):
                             timebox_sec=60,
                             max_passes=4,
                             continue_after_target=False,
+                            stage_c_liquidity_refresh_on_miss_enabled=True,
                             settings=settings,
                         )
 
             self.assertGreaterEqual(int(payload.get("created_count", 0)), 1)
+            self.assertTrue(any(mode == "rpa_json" for mode in liquidity_modes))
+            expected_key = miner_seed_pool._seed_key("GW-M5610U-1JF")
+            self.assertTrue(
+                any(miner_seed_pool._seed_key(str(row.get("model", "") or "")) == expected_key for row in liquidity_market_ids)
+            )
             self.assertTrue(bool(payload.get("seed_pool")))
             self.assertGreaterEqual(int((payload.get("stage_b", {}) or {}).get("rows_count", 0)), 1)
             stage_b_rows = list(((payload.get("stage_b", {}) or {}).get("rows") or []))
@@ -599,10 +646,11 @@ class MinerSeedPoolTests(unittest.TestCase):
                         timed_mode=True,
                         min_target_candidates=1,
                         timebox_sec=60,
-                        max_passes=2,
-                        continue_after_target=False,
-                        settings=settings,
-                    )
+                            max_passes=2,
+                            continue_after_target=False,
+                            stage_c_liquidity_refresh_on_miss_enabled=True,
+                            settings=settings,
+                        )
 
             stage_b = payload.get("stage_b", {}) if isinstance(payload, dict) else {}
             stage1_skip_counts = payload.get("stage1_skip_counts", {}) if isinstance(payload, dict) else {}
@@ -610,6 +658,235 @@ class MinerSeedPoolTests(unittest.TestCase):
             self.assertEqual(site_calls["rakuten"], 1)
             self.assertEqual(site_calls["yahoo"], 0)
             self.assertGreaterEqual(int(stage1_skip_counts.get("skipped_stage1_api_budget", 0)), 1)
+
+    def test_stage_c_retries_when_active_signal_missing(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            db_path = Path(tmp) / "seed_pool_stage_c_active_retry.db"
+            settings = _dummy_settings(db_path)
+            fake_page_row = {
+                "query": "watch",
+                "metadata": {
+                    "filtered_result_rows": [
+                        {"title": "CASIO GW-M5610U-1JF watch", "rank": 1},
+                    ]
+                },
+            }
+            liquidity_calls = {"count": 0}
+
+            def _fake_rakuten(query: str, limit: int, timeout: int, page: int = 1, require_in_stock: bool = True):
+                item = miner_seed_pool.MarketItem(
+                    site="rakuten",
+                    item_id=f"rk-{query}-{page}",
+                    title=f"{query} 新品 本体",
+                    item_url=f"https://example.com/rk/{query}/{page}",
+                    image_url="https://example.com/rk.jpg",
+                    price=10000.0,
+                    shipping=0.0,
+                    currency="JPY",
+                    condition="new",
+                    identifiers={},
+                    raw={},
+                )
+                return [item], {"status": 200, "category_filter": {"applied": True}, "cache_hit": False}
+
+            def _fake_liquidity(**kwargs):
+                liquidity_calls["count"] += 1
+                metadata = {
+                    "sold_price_min": 180.0,
+                    "sold_sample": {
+                        "item_url": "https://www.ebay.com/itm/123456789012",
+                        "title": "eBay sold title",
+                        "image_url": "https://example.com/sold.jpg",
+                        "sold_price": 180.0,
+                    },
+                }
+                if liquidity_calls["count"] >= 2:
+                    metadata["active_price_min"] = 210.0
+                    metadata["active_sample"] = {
+                        "item_url": "https://www.ebay.com/itm/223456789012",
+                        "title": "eBay active title",
+                        "image_url": "https://example.com/active.jpg",
+                        "active_price": 210.0,
+                    }
+                return {
+                    "sold_90d_count": 12,
+                    "active_count": 8 if liquidity_calls["count"] >= 2 else -1,
+                    "metadata": metadata,
+                    "source": "rpa_json",
+                    "unavailable_reason": "",
+                }
+
+            def _fake_refresh(*args, **kwargs):
+                return {
+                    "enabled": True,
+                    "ran": True,
+                    "reason": "ok",
+                    "daily_limit_reached": False,
+                }
+
+            def _fake_create(payload, settings=None):
+                return {
+                    "id": 1,
+                    "source_title": payload.get("source_title", ""),
+                    "market_title": payload.get("market_title", ""),
+                    "metadata": payload.get("metadata", {}),
+                }
+
+            with patch.dict(
+                "os.environ",
+                {
+                    "DB_BACKEND": "sqlite",
+                    "LIQUIDITY_PROVIDER_MODE": "rpa_json",
+                    "MINER_SEED_POOL_REFILL_THRESHOLD": "0",
+                    "MINER_SEED_POOL_RUN_BATCH_SIZE": "1",
+                    "MINER_STAGE2_RETRY_MISSING_ACTIVE_ENABLED": "1",
+                    "MINER_STAGE2_LIQUIDITY_REFRESH_ON_MISS_BUDGET": "3",
+                },
+                clear=False,
+            ), patch.object(
+                miner_seed_pool, "_run_rpa_page", return_value={"ok": True, "rows": [fake_page_row], "reason": "ok"}
+            ), patch.object(
+                miner_seed_pool, "_search_rakuten", side_effect=_fake_rakuten
+            ), patch.object(
+                miner_seed_pool, "get_liquidity_signal", side_effect=_fake_liquidity
+            ), patch.object(
+                miner_seed_pool, "_refresh_liquidity_rpa", side_effect=_fake_refresh
+            ), patch.object(
+                miner_seed_pool, "create_miner_candidate", side_effect=_fake_create
+            ):
+                payload = miner_seed_pool.run_seeded_fetch(
+                    category_query="watch",
+                    source_sites=["rakuten"],
+                    market_site="ebay",
+                    limit_per_site=20,
+                    max_candidates=5,
+                    min_match_score=0.72,
+                    min_profit_usd=0.01,
+                    min_margin_rate=0.01,
+                    require_in_stock=True,
+                    timeout=10,
+                    timed_mode=True,
+                    min_target_candidates=1,
+                    timebox_sec=60,
+                    max_passes=1,
+                    continue_after_target=False,
+                    stage_c_liquidity_refresh_on_miss_enabled=True,
+                    stage_c_ebay_item_detail_enabled=False,
+                    settings=settings,
+                )
+
+        self.assertGreaterEqual(int(payload.get("created_count", 0)), 1)
+        self.assertGreaterEqual(int(liquidity_calls.get("count", 0)), 2)
+        refresh = payload.get("stage2_liquidity_refresh", {}) if isinstance(payload, dict) else {}
+        runs = list(refresh.get("runs") or [])
+        self.assertTrue(any(str(row.get("phase", "")) == "on_missing_active_retry" for row in runs))
+        created = list(payload.get("created") or [])
+        self.assertTrue(created)
+        metadata = created[0].get("metadata", {}) if isinstance(created[0], dict) else {}
+        self.assertEqual(int(metadata.get("ebay_active_count", -1)), 8)
+
+    def test_stage_c_does_not_retry_missing_active_by_default(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            db_path = Path(tmp) / "seed_pool_stage_c_active_retry_default_off.db"
+            settings = _dummy_settings(db_path)
+            fake_page_row = {
+                "query": "watch",
+                "metadata": {
+                    "filtered_result_rows": [
+                        {"title": "CASIO GW-M5610U-1JF watch", "rank": 1},
+                    ]
+                },
+            }
+
+            def _fake_rakuten(query: str, limit: int, timeout: int, page: int = 1, require_in_stock: bool = True):
+                item = miner_seed_pool.MarketItem(
+                    site="rakuten",
+                    item_id=f"rk-{query}-{page}",
+                    title=f"{query} 新品 本体",
+                    item_url=f"https://example.com/rk/{query}/{page}",
+                    image_url="https://example.com/rk.jpg",
+                    price=10000.0,
+                    shipping=0.0,
+                    currency="JPY",
+                    condition="new",
+                    identifiers={},
+                    raw={},
+                )
+                return [item], {"status": 200, "category_filter": {"applied": True}, "cache_hit": False}
+
+            def _fake_liquidity(**kwargs):
+                return {
+                    "sold_90d_count": 12,
+                    "active_count": -1,
+                    "metadata": {
+                        "sold_price_min": 180.0,
+                        "sold_sample": {
+                            "item_url": "https://www.ebay.com/itm/123456789012",
+                            "title": "eBay sold title",
+                            "image_url": "https://example.com/sold.jpg",
+                            "sold_price": 180.0,
+                        },
+                    },
+                    "source": "rpa_json",
+                    "unavailable_reason": "",
+                }
+
+            refresh_calls = {"count": 0}
+
+            def _fake_refresh(*args, **kwargs):
+                refresh_calls["count"] += 1
+                return {"enabled": True, "ran": True, "reason": "ok", "daily_limit_reached": False}
+
+            def _fake_create(payload, settings=None):
+                return {"id": 1, "metadata": payload.get("metadata", {})}
+
+            with patch.dict(
+                "os.environ",
+                {
+                    "DB_BACKEND": "sqlite",
+                    "LIQUIDITY_PROVIDER_MODE": "rpa_json",
+                    "MINER_SEED_POOL_REFILL_THRESHOLD": "0",
+                    "MINER_SEED_POOL_RUN_BATCH_SIZE": "1",
+                    "MINER_STAGE2_RETRY_MISSING_ACTIVE_ENABLED": "0",
+                    "MINER_STAGE2_LIQUIDITY_REFRESH_ON_MISS_BUDGET": "3",
+                },
+                clear=False,
+            ), patch.object(
+                miner_seed_pool, "_run_rpa_page", return_value={"ok": True, "rows": [fake_page_row], "reason": "ok"}
+            ), patch.object(
+                miner_seed_pool, "_search_rakuten", side_effect=_fake_rakuten
+            ), patch.object(
+                miner_seed_pool, "get_liquidity_signal", side_effect=_fake_liquidity
+            ), patch.object(
+                miner_seed_pool, "_refresh_liquidity_rpa", side_effect=_fake_refresh
+            ), patch.object(
+                miner_seed_pool, "create_miner_candidate", side_effect=_fake_create
+            ):
+                payload = miner_seed_pool.run_seeded_fetch(
+                    category_query="watch",
+                    source_sites=["rakuten"],
+                    market_site="ebay",
+                    limit_per_site=20,
+                    max_candidates=5,
+                    min_match_score=0.72,
+                    min_profit_usd=0.01,
+                    min_margin_rate=0.01,
+                    require_in_stock=True,
+                    timeout=10,
+                    timed_mode=True,
+                    min_target_candidates=1,
+                    timebox_sec=60,
+                    max_passes=1,
+                    continue_after_target=False,
+                    stage_c_liquidity_refresh_on_miss_enabled=True,
+                    stage_c_ebay_item_detail_enabled=False,
+                    settings=settings,
+                )
+
+        self.assertGreaterEqual(int(payload.get("created_count", 0)), 1)
+        self.assertEqual(int(refresh_calls.get("count", 0)), 0)
+        applied = payload.get("applied_filters", {}) if isinstance(payload, dict) else {}
+        self.assertFalse(bool(applied.get("stage_c_retry_missing_active_enabled")))
 
     def test_stage_b_seed_only_query_mode_uses_seed_query_single_call(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -2368,6 +2645,145 @@ class MinerSeedPoolTests(unittest.TestCase):
         timed = payload.get("timed_fetch", {}) if isinstance(payload, dict) else {}
         self.assertEqual(str(timed.get("stop_reason", "")), "timebox_reached")
         self.assertGreaterEqual(int(timed.get("passes_run", 0)), 2)
+
+    def test_run_seeded_fetch_applies_stage_overrides(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            db_path = Path(tmp) / "seed_pool_stage_override.db"
+            settings = _dummy_settings(db_path)
+            fake_page_row = {
+                "query": "watch",
+                "sold_90d_count": 30,
+                "sold_price_min": 150.0,
+                "metadata": {
+                    "filtered_result_rows": [
+                        {"title": "CASIO GW-M5610U-1JF watch", "rank": 1},
+                    ]
+                },
+            }
+
+            def _empty_search(*args, **kwargs):
+                return [], {"status": 200, "cache_hit": False}
+
+            env = {
+                "DB_BACKEND": "sqlite",
+                "LIQUIDITY_PROVIDER_MODE": "rpa_json",
+                "LIQUIDITY_RPA_AUTO_REFRESH": "1",
+                "LIQUIDITY_RPA_RUN_ON_FETCH": "1",
+                "MINER_STAGE2_LIQUIDITY_REFRESH_ON_MISS_ENABLED": "1",
+                "MINER_SEED_POOL_RUN_BATCH_SIZE": "1",
+                "MINER_SEED_POOL_PAGE_SIZE": "50",
+                "MINER_SEED_POOL_MAX_PAGES": "1",
+                "MINER_SEED_POOL_TARGET_COUNT": "1",
+                "MINER_SEED_POOL_REFILL_THRESHOLD": "0",
+            }
+            with patch.dict("os.environ", env, clear=False), patch.object(
+                miner_seed_pool, "_run_rpa_page", return_value={"ok": True, "rows": [fake_page_row], "reason": "ok"}
+            ), patch.object(
+                miner_seed_pool, "_search_rakuten", side_effect=_empty_search
+            ), patch.object(
+                miner_seed_pool, "_search_yahoo", side_effect=_empty_search
+            ):
+                payload = miner_seed_pool.run_seeded_fetch(
+                    category_query="watch",
+                    source_sites=["rakuten"],
+                    market_site="ebay",
+                    limit_per_site=10,
+                    max_candidates=10,
+                    min_match_score=0.72,
+                    min_profit_usd=0.01,
+                    min_margin_rate=0.03,
+                    require_in_stock=True,
+                    timeout=8,
+                    timed_mode=True,
+                    min_target_candidates=1,
+                    timebox_sec=30,
+                    max_passes=1,
+                    continue_after_target=False,
+                    stage_b_query_mode="auto",
+                    stage_b_max_queries_per_site=4,
+                    stage_b_top_matches_per_seed=5,
+                    stage_b_api_max_calls_per_run=77,
+                    stage_c_min_sold_90d=10,
+                    stage_c_liquidity_refresh_on_miss_enabled=False,
+                    stage_c_liquidity_refresh_on_miss_budget=9,
+                    stage_c_allow_missing_sold_sample=True,
+                    stage_c_ebay_item_detail_enabled=False,
+                    stage_c_ebay_item_detail_max_fetch_per_run=11,
+                    settings=settings,
+                )
+
+        applied = payload.get("applied_filters", {}) if isinstance(payload, dict) else {}
+        self.assertEqual(str(applied.get("stage_b_query_mode", "")), "auto")
+        self.assertEqual(int(applied.get("stage_b_max_queries_per_site", 0)), 4)
+        self.assertEqual(int(applied.get("stage_b_pick_per_seed", 0)), 5)
+        self.assertEqual(int(applied.get("stage_b_api_max_calls_per_run", 0)), 77)
+        self.assertEqual(int(applied.get("stage_c_min_sold_90d", 0)), 10)
+        self.assertFalse(bool(applied.get("stage_c_liquidity_refresh_on_miss_enabled")))
+        self.assertEqual(int(applied.get("stage_c_liquidity_refresh_on_miss_budget", 0)), 9)
+        self.assertTrue(bool(applied.get("stage_c_allow_missing_sold_sample")))
+        self.assertFalse(bool(applied.get("stage_c_ebay_item_detail_enabled")))
+        self.assertEqual(int(applied.get("stage_c_ebay_item_detail_max_fetch_per_run", 0)), 11)
+
+    def test_run_seeded_fetch_stage_c_refresh_uses_rpa_json_fallback_when_mode_unset(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            db_path = Path(tmp) / "seed_pool_stage_c_mode_fallback.db"
+            settings = _dummy_settings(db_path)
+            fake_page_row = {
+                "query": "watch",
+                "sold_90d_count": 30,
+                "sold_price_min": 150.0,
+                "metadata": {
+                    "filtered_result_rows": [
+                        {"title": "CASIO GW-M5610U-1JF watch", "rank": 1},
+                    ]
+                },
+            }
+
+            def _empty_search(*args, **kwargs):
+                return [], {"status": 200, "cache_hit": False}
+
+            env = {
+                "DB_BACKEND": "sqlite",
+                "LIQUIDITY_PROVIDER_MODE": "",
+                "LIQUIDITY_RPA_AUTO_REFRESH": "1",
+                "LIQUIDITY_RPA_RUN_ON_FETCH": "1",
+                "MINER_STAGE2_LIQUIDITY_REFRESH_ON_MISS_ENABLED": "1",
+                "MINER_SEED_POOL_RUN_BATCH_SIZE": "1",
+                "MINER_SEED_POOL_PAGE_SIZE": "50",
+                "MINER_SEED_POOL_MAX_PAGES": "1",
+                "MINER_SEED_POOL_TARGET_COUNT": "1",
+                "MINER_SEED_POOL_REFILL_THRESHOLD": "0",
+            }
+            with patch.dict("os.environ", env, clear=False), patch.object(
+                miner_seed_pool, "_run_rpa_page", return_value={"ok": True, "rows": [fake_page_row], "reason": "ok"}
+            ), patch.object(
+                miner_seed_pool, "_search_rakuten", side_effect=_empty_search
+            ), patch.object(
+                miner_seed_pool, "_search_yahoo", side_effect=_empty_search
+            ):
+                payload = miner_seed_pool.run_seeded_fetch(
+                    category_query="watch",
+                    source_sites=["rakuten"],
+                    market_site="ebay",
+                    limit_per_site=10,
+                    max_candidates=10,
+                    min_match_score=0.72,
+                    min_profit_usd=0.01,
+                    min_margin_rate=0.03,
+                    require_in_stock=True,
+                    timeout=8,
+                    timed_mode=True,
+                    min_target_candidates=1,
+                    timebox_sec=30,
+                    max_passes=1,
+                    continue_after_target=False,
+                    stage_c_liquidity_refresh_on_miss_enabled=True,
+                    settings=settings,
+                )
+
+        applied = payload.get("applied_filters", {}) if isinstance(payload, dict) else {}
+        self.assertEqual(str(applied.get("stage_c_liquidity_mode", "")), "rpa_json")
+        self.assertTrue(bool(applied.get("stage_c_liquidity_refresh_on_miss_enabled")))
 
     def test_run_rpa_page_enforces_phase_a_filter_requirements_by_default(self) -> None:
         captured: dict = {}

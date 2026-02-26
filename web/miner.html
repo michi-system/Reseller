@@ -60,31 +60,91 @@
       <section class="overlay-panel" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
         <div class="overlay-head">
           <h2 id="settingsTitle">詳細設定</h2>
-          <button id="closeSettingsBtn" type="button" class="secondary">閉じる</button>
+          <div class="overlay-actions">
+            <button id="resetSettingsBtn" type="button" class="secondary">リセット</button>
+            <button id="closeSettingsBtn" type="button" class="secondary">閉じる</button>
+          </div>
         </div>
-        <div class="options-grid">
-          <label class="inline-check">
-            <input id="requireInStock" type="checkbox" checked />
-            日本側 在庫ありのみ（既定）
-          </label>
-          <label>サイトあたり取得件数
-            <input id="limitPerSite" type="number" min="1" max="30" step="1" value="20" />
-          </label>
-          <label>最大候補数
-            <input id="maxCandidates" type="number" min="1" max="50" step="1" value="20" />
-          </label>
-          <label>A段階 big word数（0で全件）
-            <input id="stageABigWordLimit" type="number" min="0" max="50" step="1" value="0" />
-          </label>
-          <label>最小一致スコア
-            <input id="minMatchScore" type="number" min="0.50" max="0.99" step="0.01" value="0.75" />
-          </label>
-          <label>最小利益(USD)
-            <input id="minProfitUsd" type="number" min="0.00" step="0.01" value="0.01" />
-          </label>
-          <label>最小粗利率
-            <input id="minMarginRate" type="number" min="0.00" max="1.00" step="0.01" value="0.03" />
-          </label>
+        <div class="settings-sections">
+          <section class="settings-stage">
+            <h3>A段階（Seed収集）</h3>
+            <div class="options-grid">
+              <label class="inline-check">
+                <input id="requireInStock" type="checkbox" checked />
+                日本側 在庫ありのみ（既定）
+              </label>
+              <label>サイトあたり取得件数
+                <input id="limitPerSite" type="number" min="1" max="30" step="1" value="20" />
+              </label>
+              <label>最大候補数
+                <input id="maxCandidates" type="number" min="1" max="50" step="1" value="20" />
+              </label>
+              <label>A段階 big word数（0で全件）
+                <input id="stageABigWordLimit" type="number" min="0" max="50" step="1" value="0" />
+              </label>
+              <label class="inline-check">
+                <input id="stageAMinimizeTransitions" type="checkbox" checked />
+                A段階 画面遷移を最小化（既定）
+              </label>
+              <label>最小一致スコア
+                <input id="minMatchScore" type="number" min="0.50" max="0.99" step="0.01" value="0.72" />
+              </label>
+              <label>最小利益(USD)
+                <input id="minProfitUsd" type="number" min="0.00" step="0.01" value="0.01" />
+              </label>
+              <label>最小粗利率
+                <input id="minMarginRate" type="number" min="0.00" max="1.00" step="0.01" value="0.03" />
+              </label>
+            </div>
+          </section>
+
+          <section class="settings-stage">
+            <h3>B段階（日本側最安探索）</h3>
+            <div class="options-grid">
+              <label>クエリモード
+                <select id="stageBQueryMode">
+                  <option value="seed_only" selected>seedのみ（推奨）</option>
+                  <option value="auto">auto</option>
+                </select>
+              </label>
+              <label>サイトあたりクエリ数
+                <input id="stageBMaxQueriesPerSite" type="number" min="1" max="4" step="1" value="1" />
+              </label>
+              <label>seedあたり採用件数
+                <input id="stageBTopMatchesPerSeed" type="number" min="1" max="5" step="1" value="3" />
+              </label>
+              <label>B段階 API上限/1実行（0で自動）
+                <input id="stageBApiMaxCallsPerRun" type="number" min="0" max="2000" step="1" value="0" />
+              </label>
+            </div>
+          </section>
+
+          <section class="settings-stage">
+            <h3>C段階（eBay再検証）</h3>
+            <div class="options-grid">
+              <label>90日最低売却件数
+                <input id="stageCMinSold90d" type="number" min="0" max="1000" step="1" value="10" />
+              </label>
+              <label>流動性再取得 予算/1実行
+                <input id="stageCLiquidityRefreshBudget" type="number" min="0" max="200" step="1" value="12" />
+              </label>
+              <label>商品詳細取得 最大件数/1実行
+                <input id="stageCEbayItemDetailMaxFetch" type="number" min="0" max="500" step="1" value="30" />
+              </label>
+              <label class="inline-check">
+                <input id="stageCLiquidityRefreshEnabled" type="checkbox" checked />
+                流動性不足時にPR再取得（既定）
+              </label>
+              <label class="inline-check">
+                <input id="stageCAllowMissingSoldSample" type="checkbox" />
+                売却サンプル欠損を許容（通常はOFF）
+              </label>
+              <label class="inline-check">
+                <input id="stageCEbayItemDetailEnabled" type="checkbox" checked />
+                eBay商品詳細を追加取得（既定）
+              </label>
+            </div>
+          </section>
         </div>
       </section>
     </div>
@@ -129,6 +189,8 @@
               <div><span>参考諸経費</span><strong id="ebayExtraCosts">-</strong></div>
               <div><span>90日売却件数</span><strong id="ebaySoldCount90d">-</strong></div>
               <div><span>90日最低成約価格</span><strong id="ebaySoldMin90d">-</strong></div>
+              <div><span>アクティブ件数</span><strong id="ebayActiveCount90d">-</strong></div>
+              <div><span>アクティブ最低価格</span><strong id="ebayActiveMin90d">-</strong></div>
             </div>
             <a id="ebayLink" class="link-btn" target="_blank" rel="noopener noreferrer">商品ページを開く</a>
           </article>
@@ -252,7 +314,7 @@
           <h2>レビュー操作</h2>
           <div class="approve-zone">
             <button id="approveBtn" type="button" class="approve">同一商品・利益OK（承認）</button>
-            <p id="approveHint" class="hint">承認するとダミー出品ステータスに遷移します。</p>
+            <p id="approveHint" class="hint">承認すると送信済みステータスに遷移します。</p>
           </div>
           <div class="reject-zone">
             <div id="issueTargets" class="checks"></div>

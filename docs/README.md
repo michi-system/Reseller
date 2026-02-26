@@ -6,9 +6,9 @@
 ## 1. 最初に読む
 1. `docs/START_HERE.md`
 2. `docs/MINER_SPEC.md`
-3. `docs/PHASE_A_GUIDE.md`
-4. `docs/OPERATION_POLICY.json`
-5. `docs/MINER_RUNBOOK.md`
+3. `docs/MINER_RUNBOOK.md`
+4. `docs/PHASE_A_GUIDE.md`
+5. `docs/OPERATION_POLICY.json`
 6. `docs/STATUS_CURRENT.md`
 7. `docs/WORKBOARD.md`
 8. `docs/PROGRAM_OVERVIEW.md`
@@ -25,7 +25,7 @@
 | 種別 | 正本 | 用途 |
 |---|---|---|
 | Miner要件/DoD | `docs/MINER_SPEC.md` | Minerが満たすべき条件と完了判定 |
-| 閾値/運用ガード | `docs/OPERATION_POLICY.json` | しきい値と運用制約 |
+| 閾値/運用ガード | `docs/OPERATION_POLICY.json` | しきい値と運用制約（UI既定値・運用ガード） |
 | Miner実行手順 | `docs/MINER_RUNBOOK.md` | 事前チェック・API・サイクル運用手順 |
 | 現在地 | `docs/STATUS_CURRENT.md` | 最新スナップショット |
 | 計画/工数/進行 | `docs/WORKBOARD.md` | タスク・工数・決定ログ |
@@ -47,10 +47,9 @@
 ## 3. 参照ドキュメント（補助）
 - `docs/MINER_RUNBOOK.md`: ローカル実行コマンドと運用手順
 - `docs/PHASE_A_GUIDE.md`: Phase A（seed補充）の平易な運用解説
+- `docs/MINER_SPEC.md`: A/B/C仕様、UI設定永続化、C段階再取得方針の正本
 - `docs/KNOWLEDGE_LIBRARY.md`: カテゴリ展開ナレッジ
-- `docs/RESEARCH_NOTES.md`: 調査メモ（未確定情報）
 - `docs/query_width_strategy.md`: API探索幅の戦略サマリ
-- `docs/RPA_SPEEDUP_NOTES_2026-02-21.md`: RPA高速化メモ
 - `data/rpa_training/phasea_acceptance/`: Product Research Phase A受け入れ試験のレポート/スクショ
 - `docs/LOCAL_DB_STRATEGY.md`: ローカルDB運用と移行計画
 - `docs/SUPABASE_BIG_BANG_MIGRATION.md`: Supabase一括移行とロールバック手順
@@ -65,6 +64,8 @@
 ## 5. アーカイブ
 - `docs/archive/manual/PROJECT_SUPREME_REPORT_2026-02-19.md`
 - `docs/archive/manual/CYCLE_BOTTLENECK_REPORT_2026-02-20.md`
+- `docs/archive/manual/RESEARCH_NOTES_2026-02-26.md`
+- `docs/archive/manual/RPA_SPEEDUP_NOTES_2026-02-21.md`
 - `docs/archive/miner_legacy/*.md`（統合前のMiner要件/手順原本）
 
 ## 6. 変更時の最小更新セット

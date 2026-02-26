@@ -214,6 +214,46 @@ class LiquidityRpaGuardTests(unittest.TestCase):
         metadata = signal.get("metadata") if isinstance(signal.get("metadata"), dict) else {}
         self.assertAlmostEqual(float(metadata.get("sold_price_min", -1.0)), 188.0)
 
+    def test_prefers_strict_row_when_multiple_entries_exist(self) -> None:
+        strict_row = _row(
+            signal_key="model:BC0420-61A",
+            query="BC0420-61A",
+            sold_90d_count=4,
+            sold_price_min=188.0,
+            sold_price_median=201.0,
+            sold_tab_selected=True,
+            lookback_selected="Last 90 days",
+            filtered_row_count=2,
+            sold_sample={
+                "item_url": "https://www.ebay.com/itm/123456789012",
+                "sold_price": 188.0,
+            },
+        )
+        non_strict_row = _row(
+            signal_key="model:BC0420-61A",
+            query="BC0420-61A",
+            sold_90d_count=9,
+            sold_price_min=166.0,
+            sold_price_median=220.0,
+            sold_tab_selected=False,
+            lookback_selected="Last 90 days",
+            filtered_row_count=2,
+            sold_sample={
+                "item_url": "https://www.ebay.com/itm/223456789012",
+                "sold_price": 166.0,
+            },
+        )
+        non_strict_row["confidence"] = 0.99
+
+        signal, reason = self._call_provider(
+            [non_strict_row, strict_row],
+            query="BC0420-61A",
+            signal_key="model:BC0420-61A",
+        )
+        self.assertEqual(reason, "")
+        self.assertIsInstance(signal, dict)
+        self.assertEqual(int(signal.get("sold_90d_count", -1)), 4)
+
     def test_accepts_mpn_key_by_aliasing_to_model_key(self) -> None:
         signal, reason = self._call_provider(
             [

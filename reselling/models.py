@@ -124,6 +124,15 @@ def init_db(conn: DbConnection) -> None:
         )
         conn.execute(
             """
+            CREATE TABLE IF NOT EXISTS miner_ui_settings (
+                settings_key TEXT PRIMARY KEY,
+                settings_json TEXT NOT NULL DEFAULT '{}',
+                updated_at TEXT NOT NULL
+            )
+            """
+        )
+        conn.execute(
+            """
             CREATE INDEX IF NOT EXISTS idx_miner_candidates_status_created_at
             ON miner_candidates(status, created_at DESC)
             """
@@ -300,6 +309,15 @@ def init_db(conn: DbConnection) -> None:
             created_at TEXT NOT NULL,
             updated_at TEXT NOT NULL,
             UNIQUE(category_key, seed_key)
+        )
+        """
+    )
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS miner_ui_settings (
+            settings_key TEXT PRIMARY KEY,
+            settings_json TEXT NOT NULL DEFAULT '{}',
+            updated_at TEXT NOT NULL
         )
         """
     )

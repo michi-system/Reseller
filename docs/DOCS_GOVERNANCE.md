@@ -6,7 +6,7 @@
 | クラス | 編集可否 | 例 | 用途 |
 |---|---|---|---|
 | 正本 | 手動更新 | `docs/MINER_SPEC.md`, `docs/OPERATION_POLICY.json` | 要件・基準・運用判断の正本 |
-| 補助資料 | 手動更新 | `docs/RESEARCH_NOTES.md`, `docs/MINER_RUNBOOK.md` | 調査・運用補助 |
+| 補助資料 | 手動更新 | `docs/MINER_RUNBOOK.md`, `docs/PHASE_A_GUIDE.md` | 運用補助 |
 | 生成物 | 手動編集禁止 | `docs/miner_cycle_*_latest.json`, `docs/autonomous_*` | 実行結果の証跡 |
 | 実行状態 | 原則手動編集禁止 | `data/miner_query_cache.json` など | ランタイム継続状態 |
 | アーカイブ | 原則固定 | `docs/archive/**` | 旧資料保管 |
@@ -29,7 +29,7 @@
 | internal名の段階移行計画 | `docs/INTERNAL_NAME_MIGRATION.md` |
 | 承認済み商品の受け渡し仕様 | `docs/DATA_CONTRACT_APPROVED_LISTING.md` |
 | ナレッジ確定版 | `docs/KNOWLEDGE_LIBRARY.md` + `data/category_knowledge_seeds_v1.json` |
-| 未確定調査メモ | `docs/RESEARCH_NOTES.md` |
+| 未確定調査メモ | `docs/WORKBOARD.md`（Backlog/Decision Log） |
 | 生成物の所在/意味 | `docs/RECORDS_REGISTRY.md` |
 
 ## 3. 更新トランザクション（必須手順）

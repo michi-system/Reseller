@@ -16,6 +16,7 @@ from urllib.parse import parse_qs, urlparse
 from .coerce import to_bool as _to_bool
 from .coerce import to_float as _to_float
 from .coerce import to_int as _to_int
+from .config import load_settings
 from .fx_rate import get_current_usd_jpy_snapshot, maybe_refresh_usd_jpy_rate
 from .live_miner_fetch import (
     backfill_candidate_market_images,
@@ -23,6 +24,7 @@ from .live_miner_fetch import (
 )
 from .miner_seed_pool import get_seed_pool_status, reset_seed_pool_category_state, run_seeded_fetch
 from .profit import ProfitInput, calculate_profit
+from .models import connect, init_db
 from .miner import (
     approve_miner_candidate,
     create_miner_candidate,
@@ -192,6 +194,193 @@ def _get_fetch_progress_snapshot() -> Dict[str, Any]:
             if rpa_message:
                 snap["message"] = f"{str(snap.get('message', '') or '').strip()} / Product Research: {rpa_message}"
     return snap
+
+
+_MINER_UI_SETTINGS_KEY = "miner_fetch_settings_v1"
+_MINER_UI_SETTINGS_DEFAULTS: Dict[str, Any] = {
+    "requireInStock": True,
+    "limitPerSite": 20,
+    "maxCandidates": 20,
+    "stageABigWordLimit": 0,
+    "stageAMinimizeTransitions": True,
+    "stageBQueryMode": "seed_only",
+    "stageBMaxQueriesPerSite": 1,
+    "stageBTopMatchesPerSeed": 3,
+    "stageBApiMaxCallsPerRun": 0,
+    "stageCMinSold90d": 10,
+    "stageCLiquidityRefreshEnabled": True,
+    "stageCLiquidityRefreshBudget": 12,
+    "stageCAllowMissingSoldSample": False,
+    "stageCEbayItemDetailEnabled": True,
+    "stageCEbayItemDetailMaxFetch": 30,
+    "minMatchScore": 0.72,
+    "minProfitUsd": 0.01,
+    "minMarginRate": 0.03,
+}
+
+
+def _sanitize_miner_ui_settings(raw: Any) -> Dict[str, Any]:
+    payload = raw if isinstance(raw, dict) else {}
+    query_mode_raw = str(
+        payload.get("stageBQueryMode", _MINER_UI_SETTINGS_DEFAULTS["stageBQueryMode"])
+        or _MINER_UI_SETTINGS_DEFAULTS["stageBQueryMode"]
+    ).strip().lower()
+    query_mode = query_mode_raw if query_mode_raw in {"seed_only", "auto"} else "seed_only"
+    return {
+        "requireInStock": _to_bool(
+            payload.get("requireInStock", _MINER_UI_SETTINGS_DEFAULTS["requireInStock"]),
+            bool(_MINER_UI_SETTINGS_DEFAULTS["requireInStock"]),
+        ),
+        "limitPerSite": max(
+            1, min(30, _to_int(payload.get("limitPerSite", _MINER_UI_SETTINGS_DEFAULTS["limitPerSite"]), 20))
+        ),
+        "maxCandidates": max(
+            1, min(50, _to_int(payload.get("maxCandidates", _MINER_UI_SETTINGS_DEFAULTS["maxCandidates"]), 20))
+        ),
+        "stageABigWordLimit": max(
+            0,
+            min(
+                50,
+                _to_int(payload.get("stageABigWordLimit", _MINER_UI_SETTINGS_DEFAULTS["stageABigWordLimit"]), 0),
+            ),
+        ),
+        "stageAMinimizeTransitions": _to_bool(
+            payload.get("stageAMinimizeTransitions", _MINER_UI_SETTINGS_DEFAULTS["stageAMinimizeTransitions"]),
+            bool(_MINER_UI_SETTINGS_DEFAULTS["stageAMinimizeTransitions"]),
+        ),
+        "stageBQueryMode": query_mode,
+        "stageBMaxQueriesPerSite": max(
+            1,
+            min(
+                4,
+                _to_int(
+                    payload.get("stageBMaxQueriesPerSite", _MINER_UI_SETTINGS_DEFAULTS["stageBMaxQueriesPerSite"]),
+                    1,
+                ),
+            ),
+        ),
+        "stageBTopMatchesPerSeed": max(
+            1,
+            min(
+                5,
+                _to_int(
+                    payload.get("stageBTopMatchesPerSeed", _MINER_UI_SETTINGS_DEFAULTS["stageBTopMatchesPerSeed"]),
+                    3,
+                ),
+            ),
+        ),
+        "stageBApiMaxCallsPerRun": max(
+            0,
+            min(
+                2000,
+                _to_int(
+                    payload.get("stageBApiMaxCallsPerRun", _MINER_UI_SETTINGS_DEFAULTS["stageBApiMaxCallsPerRun"]),
+                    0,
+                ),
+            ),
+        ),
+        "stageCMinSold90d": max(
+            0,
+            min(1000, _to_int(payload.get("stageCMinSold90d", _MINER_UI_SETTINGS_DEFAULTS["stageCMinSold90d"]), 10)),
+        ),
+        "stageCLiquidityRefreshEnabled": _to_bool(
+            payload.get(
+                "stageCLiquidityRefreshEnabled", _MINER_UI_SETTINGS_DEFAULTS["stageCLiquidityRefreshEnabled"]
+            ),
+            bool(_MINER_UI_SETTINGS_DEFAULTS["stageCLiquidityRefreshEnabled"]),
+        ),
+        "stageCLiquidityRefreshBudget": max(
+            0,
+            min(
+                200,
+                _to_int(
+                    payload.get(
+                        "stageCLiquidityRefreshBudget", _MINER_UI_SETTINGS_DEFAULTS["stageCLiquidityRefreshBudget"]
+                    ),
+                    12,
+                ),
+            ),
+        ),
+        "stageCAllowMissingSoldSample": _to_bool(
+            payload.get("stageCAllowMissingSoldSample", _MINER_UI_SETTINGS_DEFAULTS["stageCAllowMissingSoldSample"]),
+            bool(_MINER_UI_SETTINGS_DEFAULTS["stageCAllowMissingSoldSample"]),
+        ),
+        "stageCEbayItemDetailEnabled": _to_bool(
+            payload.get("stageCEbayItemDetailEnabled", _MINER_UI_SETTINGS_DEFAULTS["stageCEbayItemDetailEnabled"]),
+            bool(_MINER_UI_SETTINGS_DEFAULTS["stageCEbayItemDetailEnabled"]),
+        ),
+        "stageCEbayItemDetailMaxFetch": max(
+            0,
+            min(
+                500,
+                _to_int(
+                    payload.get("stageCEbayItemDetailMaxFetch", _MINER_UI_SETTINGS_DEFAULTS["stageCEbayItemDetailMaxFetch"]),
+                    30,
+                ),
+            ),
+        ),
+        "minMatchScore": max(
+            0.5,
+            min(
+                0.99,
+                _to_float(payload.get("minMatchScore", _MINER_UI_SETTINGS_DEFAULTS["minMatchScore"]), 0.72),
+            ),
+        ),
+        "minProfitUsd": max(
+            0.0,
+            min(
+                999999.0,
+                _to_float(payload.get("minProfitUsd", _MINER_UI_SETTINGS_DEFAULTS["minProfitUsd"]), 0.01),
+            ),
+        ),
+        "minMarginRate": max(
+            0.0,
+            min(
+                1.0,
+                _to_float(payload.get("minMarginRate", _MINER_UI_SETTINGS_DEFAULTS["minMarginRate"]), 0.03),
+            ),
+        ),
+    }
+
+
+def _load_miner_ui_settings(db_path: Path) -> Dict[str, Any]:
+    with connect(db_path) as conn:
+        init_db(conn)
+        row = conn.execute(
+            """
+            SELECT settings_json
+            FROM miner_ui_settings
+            WHERE settings_key = ?
+            """,
+            (_MINER_UI_SETTINGS_KEY,),
+        ).fetchone()
+    if row is None:
+        return dict(_MINER_UI_SETTINGS_DEFAULTS)
+    try:
+        raw = json.loads(str(row["settings_json"] or "{}"))
+    except Exception:
+        raw = {}
+    return _sanitize_miner_ui_settings(raw)
+
+
+def _save_miner_ui_settings(db_path: Path, raw: Any) -> Dict[str, Any]:
+    settings = _sanitize_miner_ui_settings(raw)
+    encoded = json.dumps(settings, ensure_ascii=False)
+    now_epoch = str(int(time.time()))
+    with connect(db_path) as conn:
+        init_db(conn)
+        conn.execute(
+            """
+            INSERT INTO miner_ui_settings (settings_key, settings_json, updated_at)
+            VALUES (?, ?, ?)
+            ON CONFLICT(settings_key) DO UPDATE SET
+                settings_json = excluded.settings_json,
+                updated_at = excluded.updated_at
+            """,
+            (_MINER_UI_SETTINGS_KEY, encoded, now_epoch),
+        )
+        conn.commit()
+    return settings
 
 
 class ApiHandler(BaseHTTPRequestHandler):
@@ -609,11 +798,40 @@ class ApiHandler(BaseHTTPRequestHandler):
         continue_after_target = _to_bool(body.get("continue_after_target", True), True)
         stage_a_big_word_limit = max(0, min(50, _to_int(body.get("stage_a_big_word_limit", 0), 0)))
         stage_a_minimize_transitions = _to_bool(body.get("stage_a_minimize_transitions", True), True)
+        stage_b_query_mode_raw = str(body.get("stage_b_query_mode", "seed_only") or "seed_only").strip().lower()
+        stage_b_query_mode = stage_b_query_mode_raw if stage_b_query_mode_raw in {"seed_only", "auto"} else "seed_only"
+        stage_b_max_queries_per_site = max(1, min(4, _to_int(body.get("stage_b_max_queries_per_site", 1), 1)))
+        stage_b_top_matches_per_seed = max(1, min(5, _to_int(body.get("stage_b_top_matches_per_seed", 3), 3)))
+        stage_b_api_max_calls_per_run = max(0, min(2000, _to_int(body.get("stage_b_api_max_calls_per_run", 0), 0)))
+        stage_c_min_sold_90d = max(0, min(1000, _to_int(body.get("stage_c_min_sold_90d", 10), 10)))
+        stage_c_liquidity_refresh_on_miss_enabled = _to_bool(
+            body.get("stage_c_liquidity_refresh_on_miss_enabled", True), True
+        )
+        stage_c_liquidity_refresh_on_miss_budget = max(
+            0,
+            min(200, _to_int(body.get("stage_c_liquidity_refresh_on_miss_budget", 12), 12)),
+        )
+        stage_c_allow_missing_sold_sample = _to_bool(body.get("stage_c_allow_missing_sold_sample", False), False)
+        stage_c_ebay_item_detail_enabled = _to_bool(body.get("stage_c_ebay_item_detail_enabled", True), True)
+        stage_c_ebay_item_detail_max_fetch_per_run = max(
+            0,
+            min(500, _to_int(body.get("stage_c_ebay_item_detail_max_fetch_per_run", 30), 30)),
+        )
         fetch_kwargs = {
             "limit_per_site": int(body.get("limit_per_site", 20)),
             "max_candidates": int(body.get("max_candidates", 20)),
             "stage_a_big_word_limit": stage_a_big_word_limit,
             "stage_a_minimize_transitions": stage_a_minimize_transitions,
+            "stage_b_query_mode": stage_b_query_mode,
+            "stage_b_max_queries_per_site": stage_b_max_queries_per_site,
+            "stage_b_top_matches_per_seed": stage_b_top_matches_per_seed,
+            "stage_b_api_max_calls_per_run": stage_b_api_max_calls_per_run,
+            "stage_c_min_sold_90d": stage_c_min_sold_90d,
+            "stage_c_liquidity_refresh_on_miss_enabled": stage_c_liquidity_refresh_on_miss_enabled,
+            "stage_c_liquidity_refresh_on_miss_budget": stage_c_liquidity_refresh_on_miss_budget,
+            "stage_c_allow_missing_sold_sample": stage_c_allow_missing_sold_sample,
+            "stage_c_ebay_item_detail_enabled": stage_c_ebay_item_detail_enabled,
+            "stage_c_ebay_item_detail_max_fetch_per_run": stage_c_ebay_item_detail_max_fetch_per_run,
             "min_match_score": float(body.get("min_match_score", 0.72)),
             "min_profit_usd": float(body.get("min_profit_usd", 0.01)),
             "min_margin_rate": float(body.get("min_margin_rate", 0.03)),
@@ -880,6 +1098,18 @@ class ApiHandler(BaseHTTPRequestHandler):
 
         miner_api_path = path
 
+        if miner_api_path == "/v1/miner/settings":
+            settings = load_settings()
+            payload = _load_miner_ui_settings(settings.db_path)
+            self._send(
+                HTTPStatus.OK,
+                {
+                    "settings": payload,
+                    "db_path": str(settings.db_path),
+                },
+            )
+            return
+
         if miner_api_path == "/v1/miner/queue":
             try:
                 status = self._q_str(query, "status", "pending")
@@ -1010,6 +1240,18 @@ class ApiHandler(BaseHTTPRequestHandler):
                 force_body = _to_bool(body.get("force", False), False)
                 result = maybe_refresh_usd_jpy_rate(force=(force_q or force_body))
                 self._send(HTTPStatus.OK, result)
+                return
+
+            if miner_api_path == "/v1/miner/settings":
+                settings = load_settings()
+                payload = _save_miner_ui_settings(settings.db_path, body)
+                self._send(
+                    HTTPStatus.OK,
+                    {
+                        "settings": payload,
+                        "db_path": str(settings.db_path),
+                    },
+                )
                 return
 
             if miner_api_path == "/v1/miner/candidates":

@@ -4403,7 +4403,13 @@ def _is_rpa_daily_limit_signal(signal: Dict[str, Any]) -> bool:
     )
 
 
-def _liquidity_refresh_queries_for_seed(seed_query: str, *, max_count: int) -> List[str]:
+def _liquidity_refresh_queries_for_seed(
+    seed_query: str,
+    *,
+    max_count: int,
+    source_title: str = "",
+    brand_hints: Optional[Sequence[str]] = None,
+) -> List[str]:
     out: List[str] = []
     seen: Set[str] = set()
 
@@ -4417,8 +4423,35 @@ def _liquidity_refresh_queries_for_seed(seed_query: str, *, max_count: int) -> L
         seen.add(key)
         out.append(text)
 
-    for code in _extract_codes(seed_query):
+    normalized_brand_hints: List[str] = []
+    if isinstance(brand_hints, Sequence):
+        for raw_brand in brand_hints:
+            text = re.sub(r"\s+", " ", str(raw_brand or "").strip())
+            if text:
+                normalized_brand_hints.append(text)
+
+    title_hint = re.sub(r"\s+", " ", str(source_title or "").strip())
+    brand = _pick_brand(f"{seed_query} {title_hint}".strip(), normalized_brand_hints)
+
+    code_candidates: List[str] = []
+    code_seen: Set[str] = set()
+    for text in (seed_query, source_title):
+        for raw_code in _extract_codes(text):
+            code_text = str(raw_code or "").strip().upper()
+            code_key = _seed_key(code_text)
+            if len(code_key) < 4 or code_key in code_seen:
+                continue
+            code_seen.add(code_key)
+            code_candidates.append(code_text)
+
+    for code in code_candidates:
         _push(code)
+        if brand:
+            _push(f"{brand} {code}")
+
+    if title_hint:
+        for candidate in _extract_seed_queries_from_title(title_hint, normalized_brand_hints):
+            _push(candidate)
     _push(seed_query)
     if len(out) > max_count:
         return out[:max_count]
@@ -4459,6 +4492,7 @@ def _refresh_liquidity_rpa(
     )
     with _temporary_env(
         {
+            "LIQUIDITY_PROVIDER_MODE": "rpa_json",
             "LIQUIDITY_RPA_FETCH_MAX_QUERIES": str(max(1, int(max_queries))),
             "LIQUIDITY_RPA_PRIMARY_CONDITION": "new",
             "LIQUIDITY_RPA_PRIMARY_STRICT_CONDITION": "1",
@@ -4504,6 +4538,16 @@ def run_seeded_fetch(
     continue_after_target: bool,
     stage_a_big_word_limit: int = 0,
     stage_a_minimize_transitions: bool = False,
+    stage_b_query_mode: Optional[str] = None,
+    stage_b_max_queries_per_site: Optional[int] = None,
+    stage_b_top_matches_per_seed: Optional[int] = None,
+    stage_b_api_max_calls_per_run: Optional[int] = None,
+    stage_c_min_sold_90d: Optional[int] = None,
+    stage_c_liquidity_refresh_on_miss_enabled: Optional[bool] = None,
+    stage_c_liquidity_refresh_on_miss_budget: Optional[int] = None,
+    stage_c_allow_missing_sold_sample: Optional[bool] = None,
+    stage_c_ebay_item_detail_enabled: Optional[bool] = None,
+    stage_c_ebay_item_detail_max_fetch_per_run: Optional[int] = None,
     progress_callback: Optional[Callable[[Dict[str, Any]], None]] = None,
     settings: Optional[Settings] = None,
 ) -> Dict[str, Any]:
@@ -4614,6 +4658,11 @@ def run_seeded_fetch(
             "skipped_low_quality_count": 0,
             "skipped_cooldown_count": int(skipped_cooldown_count),
             "cooldown_active_count": int(cooldown_active_count),
+            "strict_model_seed": bool(refill_summary.get("strict_model_seed", False)),
+            "cleaned_expired_count": int(cleaned),
+            "normalized_seed_count": int(normalized_seed_count),
+            "deduped_seed_count": int(deduped_seed_count),
+            "deleted_invalid_seed_count": int(deleted_invalid_seed_count),
             "select_min_seed_score": 0,
             "refill": refill_summary,
         }
@@ -4795,37 +4844,52 @@ def run_seeded_fetch(
     if not source_fetchers:
         source_fetchers = [("rakuten", _search_rakuten), ("yahoo", _search_yahoo)]
 
-    stage1_query_mode_raw = str(os.getenv("MINER_STAGE1_QUERY_MODE", "") or "").strip().lower()
+    stage1_query_mode_raw = str(stage_b_query_mode if stage_b_query_mode is not None else os.getenv("MINER_STAGE1_QUERY_MODE", "") or "").strip().lower()
     stage1_query_mode = stage1_query_mode_raw if stage1_query_mode_raw in {"seed_only", "auto"} else ""
     if not stage1_query_mode:
         stage1_query_mode = "seed_only" if _category_requires_strict_model_seed(category_key, category_row) else "auto"
 
     stage1_limit_per_site = max(5, min(100, env_int("MINER_STAGE1_LIMIT_PER_SITE", max(20, int(limit_per_site)))))
     stage1_max_queries_default = 1 if stage1_query_mode == "seed_only" else 2
-    stage1_max_queries_per_site = max(1, min(4, env_int("MINER_STAGE1_MAX_QUERIES_PER_SITE", stage1_max_queries_default)))
+    if stage_b_max_queries_per_site is None:
+        stage1_max_queries_per_site = max(
+            1, min(4, env_int("MINER_STAGE1_MAX_QUERIES_PER_SITE", stage1_max_queries_default))
+        )
+    else:
+        stage1_max_queries_per_site = max(1, min(4, int(stage_b_max_queries_per_site)))
     stage1_take_per_seed = max(
         1,
         min(
             max(1, int(max_candidates)),
             5,
-            env_int("MINER_STAGE1_TOP_MATCHES_PER_SEED", 3),
+            int(stage_b_top_matches_per_seed)
+            if stage_b_top_matches_per_seed is not None
+            else env_int("MINER_STAGE1_TOP_MATCHES_PER_SEED", 3),
         ),
     )
     stage1_multi_sku_strict = env_bool("MINER_STAGE1_MULTI_SKU_STRICT", True)
     stage1_multi_sku_fallback_non_rakuten = env_bool("MINER_STAGE1_MULTI_SKU_FALLBACK_NON_RAKUTEN", True)
     stage1_multi_sku_fallback_on_timeout = env_bool("MINER_STAGE1_MULTI_SKU_FALLBACK_ON_TIMEOUT", True)
     stage1_include_diagnostics = env_bool("MINER_STAGE1_INCLUDE_DIAGNOSTICS", False)
-    stage1_api_max_calls = max(
-        0,
-        env_int(
-            "MINER_STAGE1_API_MAX_CALLS_PER_RUN",
-            max(4, len(selected_seeds) * max(1, len(source_fetchers)) * stage1_max_queries_per_site),
-        ),
-    )
+    if stage_b_api_max_calls_per_run is None:
+        stage1_api_max_calls = max(
+            0,
+            env_int(
+                "MINER_STAGE1_API_MAX_CALLS_PER_RUN",
+                max(4, len(selected_seeds) * max(1, len(source_fetchers)) * stage1_max_queries_per_site),
+            ),
+        )
+    else:
+        stage1_api_max_calls = max(0, int(stage_b_api_max_calls_per_run))
     stage1_api_calls = 0
     stage_b_rows: List[Dict[str, Any]] = []
     stage_b_seen_keys: Set[str] = set()
-    liquidity_min_sold_90d = max(0, env_int("LIQUIDITY_MIN_SOLD_90D", 3))
+    liquidity_min_sold_90d = max(
+        0,
+        int(stage_c_min_sold_90d)
+        if stage_c_min_sold_90d is not None
+        else env_int("LIQUIDITY_MIN_SOLD_90D", 10),
+    )
     fx_seed_rate = max(1.0, to_float(getattr(settings, "fx_usd_jpy_default", 150.0), 150.0))
     brand_hints = _brand_hints(category_row)
     marketplace_fee_rate = max(0.0, env_float("MARKETPLACE_FEE_RATE", 0.13))
@@ -4835,23 +4899,60 @@ def run_seeded_fetch(
     packaging_usd = max(0.0, env_float("EST_PACKAGING_USD", 0.0))
     fixed_fee_usd = max(0.0, env_float("FIXED_FEE_USD", 0.0))
     runtime_pair_signatures: Set[str] = set()
-    liquidity_mode = (os.getenv("LIQUIDITY_PROVIDER_MODE", "none") or "none").strip().lower()
-    stage2_liquidity_refresh_enabled = bool(
+    liquidity_mode_raw = (os.getenv("LIQUIDITY_PROVIDER_MODE", "none") or "none").strip().lower()
+    if liquidity_mode_raw in {"rpa", "rpa_json"}:
+        liquidity_mode = liquidity_mode_raw
+    elif stage_c_liquidity_refresh_on_miss_enabled is True:
+        # UIでC段階再取得が有効化されている場合は、未設定環境でもrpa_jsonで実行する。
+        liquidity_mode = "rpa_json"
+    else:
+        liquidity_mode = "none"
+    stage2_liquidity_refresh_enabled_default = bool(
         liquidity_mode in {"rpa", "rpa_json"}
         and env_bool("LIQUIDITY_RPA_AUTO_REFRESH", True)
         and env_bool("LIQUIDITY_RPA_RUN_ON_FETCH", True)
         and env_bool("MINER_STAGE2_LIQUIDITY_REFRESH_ON_MISS_ENABLED", True)
     )
-    stage2_liquidity_prefetch_max_queries = max(1, env_int("MINER_STAGE2_LIQUIDITY_PREFETCH_MAX_QUERIES", 12))
-    stage2_liquidity_retry_budget_total = max(0, env_int("MINER_STAGE2_LIQUIDITY_REFRESH_ON_MISS_BUDGET", 12))
+    if stage_c_liquidity_refresh_on_miss_enabled is None:
+        stage2_liquidity_refresh_enabled = stage2_liquidity_refresh_enabled_default
+    else:
+        stage2_liquidity_refresh_enabled = bool(
+            stage_c_liquidity_refresh_on_miss_enabled
+            and liquidity_mode in {"rpa", "rpa_json"}
+            and env_bool("LIQUIDITY_RPA_AUTO_REFRESH", True)
+            and env_bool("LIQUIDITY_RPA_RUN_ON_FETCH", True)
+        )
+    stage2_liquidity_prefetch_max_queries = max(0, env_int("MINER_STAGE2_LIQUIDITY_PREFETCH_MAX_QUERIES", 0))
+    stage2_liquidity_retry_budget_total = max(
+        0,
+        int(stage_c_liquidity_refresh_on_miss_budget)
+        if stage_c_liquidity_refresh_on_miss_budget is not None
+        else env_int("MINER_STAGE2_LIQUIDITY_REFRESH_ON_MISS_BUDGET", 12),
+    )
     stage2_liquidity_retry_budget_used = 0
     stage2_liquidity_retry_queries_seen: Set[str] = set()
     stage2_liquidity_refresh_runs: List[Dict[str, Any]] = []
     stage2_low_liquidity_cooldown_rows: List[Dict[str, Any]] = []
-    stage2_allow_missing_sold_sample = env_bool("MINER_STAGE2_ALLOW_MISSING_SOLD_SAMPLE", False)
-    stage2_ebay_item_detail_enabled = env_bool("MINER_STAGE2_EBAY_ITEM_DETAIL_ENABLED", True)
+    stage2_retry_missing_active_enabled = bool(
+        stage2_liquidity_refresh_enabled and env_bool("MINER_STAGE2_RETRY_MISSING_ACTIVE_ENABLED", False)
+    )
+    stage2_allow_missing_sold_sample = (
+        bool(stage_c_allow_missing_sold_sample)
+        if stage_c_allow_missing_sold_sample is not None
+        else env_bool("MINER_STAGE2_ALLOW_MISSING_SOLD_SAMPLE", False)
+    )
+    stage2_ebay_item_detail_enabled = (
+        bool(stage_c_ebay_item_detail_enabled)
+        if stage_c_ebay_item_detail_enabled is not None
+        else env_bool("MINER_STAGE2_EBAY_ITEM_DETAIL_ENABLED", True)
+    )
     stage2_ebay_item_detail_timeout_sec = max(3, env_int("MINER_STAGE2_EBAY_ITEM_DETAIL_TIMEOUT_SECONDS", 8))
-    stage2_ebay_item_detail_max_fetch = max(0, env_int("MINER_STAGE2_EBAY_ITEM_DETAIL_MAX_FETCH_PER_RUN", 30))
+    stage2_ebay_item_detail_max_fetch = max(
+        0,
+        int(stage_c_ebay_item_detail_max_fetch_per_run)
+        if stage_c_ebay_item_detail_max_fetch_per_run is not None
+        else env_int("MINER_STAGE2_EBAY_ITEM_DETAIL_MAX_FETCH_PER_RUN", 30),
+    )
     stage2_ebay_item_detail_fetched = 0
     stage2_ebay_item_detail_cache: Dict[str, Dict[str, Any]] = {}
     stage_c_rpa_json_path = str(
@@ -4910,6 +5011,8 @@ def run_seeded_fetch(
         "stage_c_liquidity_mode": liquidity_mode,
         "stage_c_liquidity_refresh_on_miss_enabled": bool(stage2_liquidity_refresh_enabled),
         "stage_c_liquidity_refresh_on_miss_budget": int(stage2_liquidity_retry_budget_total),
+        "stage_c_retry_missing_active_enabled": bool(stage2_retry_missing_active_enabled),
+        "stage_c_liquidity_prefetch_max_queries": int(stage2_liquidity_prefetch_max_queries),
         "stage_c_allow_missing_sold_sample": bool(stage2_allow_missing_sold_sample),
         "stage_c_collect_active_tab": bool(stage2_liquidity_refresh_enabled),
         "stage_c_rpa_json_path": stage_c_rpa_json_path,
@@ -4919,12 +5022,13 @@ def run_seeded_fetch(
 
     stage1_pass_total = 0
     stage2_runs = 0
+    stage2_seen_item_keys: Set[str] = set()
     stage1_seed_baseline_reject_total = 0
     min_stage1_attempts_before_timebox = min(
         len(selected_seeds),
         max(1, env_int("MINER_TIMED_FETCH_MIN_STAGE1_ATTEMPTS", 20)),
     )
-    if stage2_liquidity_refresh_enabled and selected_seeds:
+    if stage2_liquidity_refresh_enabled and selected_seeds and stage2_liquidity_prefetch_max_queries > 0:
         prefetch_queries: List[str] = []
         for seed in selected_seeds:
             seed_query_text = str(seed.get("seed_query", "") or "")
@@ -4932,6 +5036,8 @@ def run_seeded_fetch(
                 _liquidity_refresh_queries_for_seed(
                     seed_query_text,
                     max_count=2,
+                    source_title=str(seed.get("source_title", "") or ""),
+                    brand_hints=brand_hints,
                 )
             )
             if len(prefetch_queries) >= stage2_liquidity_prefetch_max_queries:
@@ -5014,17 +5120,26 @@ def run_seeded_fetch(
             "MINER_ACTIVE_CATEGORY_LABEL": category_label,
             "LIQUIDITY_RPA_JSON_PATH": stage_c_rpa_json_path,
         }
+        if liquidity_mode in {"rpa_json", "rpa"}:
+            stage_context_env["LIQUIDITY_PROVIDER_MODE"] = liquidity_mode
         if seed_max_price_jpy > 0:
             stage_context_env["MINER_ACTIVE_SEED_MAX_PRICE_JPY"] = str(seed_max_price_jpy)
 
         def _get_stage2_liquidity_signal(item_obj: MarketItem, query_text: str) -> Dict[str, Any]:
+            market_identifiers: Dict[str, str] = {}
+            query_codes = _extract_codes(query_text)
+            if query_codes:
+                primary_code = str(query_codes[0] or "").strip()
+                if primary_code:
+                    market_identifiers["model"] = primary_code
+                    market_identifiers["mpn"] = primary_code
             with _temporary_env(stage_context_env):
                 return get_liquidity_signal(
                     query=query_text,
                     source_title=str(item_obj.title or ""),
                     market_title=query_text,
                     source_identifiers=item_obj.identifiers if isinstance(item_obj.identifiers, dict) else {},
-                    market_identifiers={},
+                    market_identifiers=market_identifiers,
                     active_count_hint=-1,
                     timeout=max(5, int(timeout)),
                     settings=settings,
@@ -5246,10 +5361,10 @@ def run_seeded_fetch(
                 )
             stage_b_key = "|".join(
                 [
-                    str(seed_key_text or ""),
                     str(item.site or ""),
                     str(item.item_id or ""),
                     str(item.item_url or ""),
+                    f"{to_float(row.get('source_total_jpy'), 0.0):.2f}",
                 ]
             )
             if stage_b_key in stage_b_seen_keys:
@@ -5339,11 +5454,23 @@ def run_seeded_fetch(
 
         stage2_created_count = 0
         for stage2_index, row in enumerate(selected_stage1, start=1):
-            stage2_runs += 1
             item = row.get("item")
             if not isinstance(item, MarketItem):
                 _inc_skip(stage2_skip_counts, "skipped_invalid_price", 1)
                 continue
+            stage2_item_key = "|".join(
+                [
+                    str(item.site or ""),
+                    str(item.item_id or ""),
+                    str(item.item_url or ""),
+                    f"{to_float(row.get('source_total_jpy'), 0.0):.2f}",
+                ]
+            )
+            if stage2_item_key in stage2_seen_item_keys:
+                _inc_skip(stage2_skip_counts, "skipped_duplicates", 1)
+                continue
+            stage2_seen_item_keys.add(stage2_item_key)
+            stage2_runs += 1
             jp_seed_query = _pick_jp_seed_query(
                 seed_query=stage1_query,
                 source_title=str(item.title or ""),
@@ -5372,7 +5499,12 @@ def run_seeded_fetch(
                 if can_retry:
                     stage2_liquidity_retry_queries_seen.add(query_key)
                     stage2_liquidity_retry_budget_used += 1
-                    retry_queries = _liquidity_refresh_queries_for_seed(liquidity_query, max_count=2)
+                    retry_queries = _liquidity_refresh_queries_for_seed(
+                        liquidity_query,
+                        max_count=2,
+                        source_title=f"{seed_source_title} {str(item.title or '')}".strip(),
+                        brand_hints=brand_hints,
+                    )
                     retry_summary = _refresh_liquidity_rpa(
                         retry_queries,
                         max_queries=2,
@@ -5441,7 +5573,12 @@ def run_seeded_fetch(
                     if can_retry_missing_sample:
                         stage2_liquidity_retry_queries_seen.add(query_key)
                         stage2_liquidity_retry_budget_used += 1
-                        retry_queries = _liquidity_refresh_queries_for_seed(liquidity_query, max_count=2)
+                        retry_queries = _liquidity_refresh_queries_for_seed(
+                            liquidity_query,
+                            max_count=2,
+                            source_title=f"{seed_source_title} {str(item.title or '')}".strip(),
+                            brand_hints=brand_hints,
+                        )
                         retry_summary = _refresh_liquidity_rpa(
                             retry_queries,
                             max_queries=2,
@@ -5487,10 +5624,6 @@ def run_seeded_fetch(
             active_count_signal = to_int(signal.get("active_count"), -1)
             active_min_usd = _liquidity_active_min_usd(signal)
             active_sample = _liquidity_active_sample(signal)
-            active_item_url = str(active_sample.get("item_url", "") or "").strip()
-            active_item_title = str(active_sample.get("title", "") or "").strip()
-            active_image_url = str(active_sample.get("image_url", "") or "").strip()
-            active_sample_price = to_float(active_sample.get("active_price_usd"), -1.0)
 
             source_price_jpy = max(
                 0.0,
@@ -5548,6 +5681,57 @@ def run_seeded_fetch(
                 _inc_skip(stage2_skip_counts, "skipped_duplicates", 1)
                 continue
             runtime_pair_signatures.add(pair_signature)
+
+            # active 指標は候補化条件ではないため、候補化可能と判定できた行のみ再取得する。
+            if stage2_retry_missing_active_enabled and active_count_signal < 0 and active_min_usd <= 0:
+                can_retry_missing_active = (
+                    bool(query_key)
+                    and query_key not in stage2_liquidity_retry_queries_seen
+                    and stage2_liquidity_retry_budget_used < stage2_liquidity_retry_budget_total
+                )
+                if can_retry_missing_active:
+                    stage2_liquidity_retry_queries_seen.add(query_key)
+                    stage2_liquidity_retry_budget_used += 1
+                    retry_queries = _liquidity_refresh_queries_for_seed(
+                        liquidity_query,
+                        max_count=2,
+                        source_title=f"{seed_source_title} {str(item.title or '')}".strip(),
+                        brand_hints=brand_hints,
+                    )
+                    retry_summary = _refresh_liquidity_rpa(
+                        retry_queries,
+                        max_queries=2,
+                        force=True,
+                        category_id=int(pr_category_filter.get("category_id", 0) or 0),
+                        category_slug=str(pr_category_filter.get("category_slug", "") or ""),
+                    )
+                    stage2_liquidity_refresh_runs.append(
+                        {
+                            "phase": "on_missing_active_retry",
+                            "query": liquidity_query,
+                            "summary": retry_summary,
+                        }
+                    )
+                    if _rpa_daily_limit_reached(retry_summary):
+                        rpa_daily_limit_reached = True
+                        stop_reason = "rpa_daily_limit_reached"
+                        break
+                    signal = _get_stage2_liquidity_signal(item, liquidity_query)
+                    if _is_rpa_daily_limit_signal(signal):
+                        rpa_daily_limit_reached = True
+                        stop_reason = "rpa_daily_limit_reached"
+                        break
+                    active_count_signal = to_int(signal.get("active_count"), -1)
+                    active_min_usd = _liquidity_active_min_usd(signal)
+                    active_sample = _liquidity_active_sample(signal)
+
+            if stop_reason == "rpa_daily_limit_reached":
+                break
+
+            active_item_url = str(active_sample.get("item_url", "") or "").strip()
+            active_item_title = str(active_sample.get("title", "") or "").strip()
+            active_image_url = str(active_sample.get("image_url", "") or "").strip()
+            active_sample_price = to_float(active_sample.get("active_price_usd"), -1.0)
 
             score = to_float(row.get("score"), 0.0)
             market_title = str(sold_sample.get("title", "") or "").strip() or jp_seed_query
@@ -5764,6 +5948,11 @@ def run_seeded_fetch(
             for row in stage2_liquidity_refresh_runs
             if isinstance(row, dict) and str(row.get("phase", "") or "") == "on_missing_sample_retry"
         ]
+        active_retry_runs = [
+            row
+            for row in stage2_liquidity_refresh_runs
+            if isinstance(row, dict) and str(row.get("phase", "") or "") == "on_missing_active_retry"
+        ]
         ran_count = sum(
             1
             for row in stage2_liquidity_refresh_runs
@@ -5771,7 +5960,7 @@ def run_seeded_fetch(
             and bool((row.get("summary") if isinstance(row, dict) else {}).get("ran"))
         )
         hints.append(
-            f"C段階の流動性RPA更新: 実行{ran_count}回 / miss再試行{len(miss_retry_runs)}回 / sample再試行{len(sample_retry_runs)}回"
+            f"C段階の流動性RPA更新: 実行{ran_count}回 / miss再試行{len(miss_retry_runs)}回 / sample再試行{len(sample_retry_runs)}回 / active再試行{len(active_retry_runs)}回"
         )
     if stage2_ebay_item_detail_enabled and stage2_ebay_item_detail_fetched > 0:
         hints.append(

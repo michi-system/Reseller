@@ -416,9 +416,11 @@ def _provider_http_json(
 
 
 def _load_rpa_json_entries(path: Path) -> Tuple[Dict[str, Dict[str, Any]], Dict[str, Dict[str, Any]]]:
-    def _row_rank(row: Dict[str, Any]) -> tuple[int, int, int, float, int]:
+    def _row_rank(row: Dict[str, Any]) -> tuple[int, int, int, int, int, float, int]:
         sold_90d = _to_int(row.get("sold_90d_count"), -1)
         sold_ok = 1 if sold_90d >= 0 else 0
+        strict_ok = 1 if _rpa_row_has_strict_sold_filters(row) else 0
+        positive_evidence_ok = 1 if _rpa_row_has_positive_sold_evidence(row) else 0
         meta = row.get("metadata") if isinstance(row.get("metadata"), dict) else {}
         pass_label = str(meta.get("pass_label", "") or "").strip().lower()
         if pass_label.startswith("primary_new"):
@@ -430,7 +432,7 @@ def _load_rpa_json_entries(path: Path) -> Tuple[Dict[str, Dict[str, Any]], Dict[
         confidence = _to_float(row.get("confidence"), 0.0)
         fetched_at = str(row.get("fetched_at", "") or row.get("updated_at", "") or "")
         fetched_epoch = _iso_to_epoch(fetched_at)
-        return (sold_ok, pass_rank, sold_90d, confidence, fetched_epoch)
+        return (strict_ok, sold_ok, positive_evidence_ok, pass_rank, sold_90d, confidence, fetched_epoch)
 
     def _upsert_best(bucket: Dict[str, Dict[str, Any]], key: str, row: Dict[str, Any]) -> None:
         existing = bucket.get(key)
@@ -497,11 +499,13 @@ def _resolve_rpa_row(
     def _norm(text: str) -> str:
         return re.sub(r"[^A-Z0-9]+", "", str(text or "").upper())
 
-    def _rank_row(row: Dict[str, Any]) -> tuple[int, float, int]:
+    def _rank_row(row: Dict[str, Any]) -> tuple[int, int, int, float, int]:
+        strict_ok = 1 if _rpa_row_has_strict_sold_filters(row) else 0
         sold_ok = 1 if _to_int(row.get("sold_90d_count"), -1) >= 0 else 0
+        positive_evidence_ok = 1 if _rpa_row_has_positive_sold_evidence(row) else 0
         conf = _to_float(row.get("confidence"), 0.0)
         fetched = _iso_to_epoch(str(row.get("fetched_at", "") or row.get("updated_at", "") or ""))
-        return sold_ok, conf, fetched
+        return strict_ok, sold_ok, positive_evidence_ok, conf, fetched
 
     candidate_rows: list[Dict[str, Any]] = []
     seen_ids: set[int] = set()
@@ -625,18 +629,28 @@ def _rpa_row_has_strict_sold_filters(row: Dict[str, Any]) -> bool:
     # lookback=90days が明示され sold_90d_count=0 なら strict 扱いにする。
     if (not sold_tab_selected) and sold_90d_count == 0 and lookback_selected == "last 90 days":
         return True
-    if lookback_selected == "last 90 days":
-        url_raw = str(metadata.get("url", "") or "").strip()
-        if url_raw:
-            try:
-                parsed = urllib.parse.urlparse(url_raw)
-                params = urllib.parse.parse_qs(parsed.query or "")
-                tab_values = [str(v or "").strip().lower() for v in params.get("tabName", [])]
-                if any(v == "sold" for v in tab_values):
-                    return True
-            except Exception:
-                pass
+    if lookback_selected == "last 90 days" and _rpa_row_url_confirms_sold_last90(metadata):
+        return True
     return sold_tab_selected and lookback_selected == "last 90 days"
+
+
+def _rpa_row_url_confirms_sold_last90(metadata: Dict[str, Any]) -> bool:
+    if not isinstance(metadata, dict):
+        return False
+    filter_state = metadata.get("filter_state") if isinstance(metadata.get("filter_state"), dict) else {}
+    lookback_selected = str(filter_state.get("lookback_selected", "") or "").strip().lower()
+    if lookback_selected != "last 90 days":
+        return False
+    url_raw = str(metadata.get("url", "") or "").strip()
+    if not url_raw:
+        return False
+    try:
+        parsed = urllib.parse.urlparse(url_raw)
+        params = urllib.parse.parse_qs(parsed.query or "")
+        tab_values = [str(v or "").strip().lower() for v in params.get("tabName", [])]
+        return any(v == "sold" for v in tab_values)
+    except Exception:
+        return False
 
 
 def _has_signal_sold_sample_reference(metadata: Dict[str, Any]) -> bool:
@@ -646,6 +660,22 @@ def _has_signal_sold_sample_reference(metadata: Dict[str, Any]) -> bool:
     item_url = str(sold_sample.get("item_url", "") or "").strip()
     sold_price = _to_float(sold_sample.get("sold_price"), _to_float(sold_sample.get("sold_price_usd"), -1.0))
     return bool(item_url and sold_price > 0)
+
+
+def _rpa_row_has_positive_sold_evidence(row: Dict[str, Any]) -> bool:
+    if not isinstance(row, dict):
+        return False
+    sold_90d_count = _to_int(row.get("sold_90d_count"), -1)
+    if sold_90d_count <= 0:
+        return True
+    metadata = row.get("metadata") if isinstance(row.get("metadata"), dict) else {}
+    if _to_int(metadata.get("filtered_row_count"), -1) > 0:
+        return True
+    if _has_signal_sold_sample_reference(metadata):
+        return True
+    if bool(metadata.get("accepted_without_filtered_rows")):
+        return True
+    return _rpa_row_url_confirms_sold_last90(metadata)
 
 
 def _sanitize_unreliable_rpa_signal(signal: Dict[str, Any]) -> Dict[str, Any]:
@@ -670,15 +700,7 @@ def _sanitize_unreliable_rpa_signal(signal: Dict[str, Any]) -> Dict[str, Any]:
     lookback_selected = str(filter_state.get("lookback_selected", "") or "").strip().lower()
     strict_ok = sold_tab_selected and lookback_selected == "last 90 days"
     if (not strict_ok) and lookback_selected == "last 90 days":
-        url_raw = str(metadata.get("url", "") or "").strip()
-        if url_raw:
-            try:
-                parsed = urllib.parse.urlparse(url_raw)
-                params = urllib.parse.parse_qs(parsed.query or "")
-                tab_values = [str(v or "").strip().lower() for v in params.get("tabName", [])]
-                strict_ok = any(v == "sold" for v in tab_values)
-            except Exception:
-                strict_ok = False
+        strict_ok = _rpa_row_url_confirms_sold_last90(metadata)
     filtered_row_count = _to_int(metadata.get("filtered_row_count"), -1)
     has_sample = _has_signal_sold_sample_reference(metadata)
     accepted_without_filtered_rows = bool(metadata.get("accepted_without_filtered_rows"))

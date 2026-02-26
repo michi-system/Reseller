@@ -215,11 +215,37 @@ button:disabled {
   font-size: 18px;
 }
 
+.overlay-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .options-grid {
   margin-top: 10px;
   display: grid;
   grid-template-columns: repeat(2, minmax(140px, 1fr));
   gap: 8px;
+}
+
+.settings-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.settings-stage {
+  border: 1px solid #e6ebef;
+  background: #fafcfe;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.settings-stage h3 {
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-weight: 800;
+  color: #2a3a48;
 }
 
 .options-grid label {
@@ -232,6 +258,14 @@ button:disabled {
 }
 
 .options-grid input[type="number"] {
+  width: 100%;
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 8px;
+  padding: 6px 8px;
+}
+
+.options-grid select {
   width: 100%;
   border: 1px solid var(--line);
   background: #fff;

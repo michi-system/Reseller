@@ -5981,7 +5981,7 @@ def fetch_live_miner_candidates(
         "reason": "not_started",
         "queries": [],
     }
-    liquidity_min_sold_90d = max(0, _env_int("LIQUIDITY_MIN_SOLD_90D", 3))
+    liquidity_min_sold_90d = max(0, _env_int("LIQUIDITY_MIN_SOLD_90D", 10))
     liquidity_min_sell_through_90d = max(0.0, min(1.0, _env_float("LIQUIDITY_MIN_SELL_THROUGH_90D", 0.15)))
     est_intl_shipping = _to_float(os.getenv("EST_INTL_SHIPPING_USD"), 18.0)
     est_customs = _to_float(os.getenv("EST_CUSTOMS_USD"), 0.0)
