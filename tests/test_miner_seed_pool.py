@@ -1,3 +1,4 @@
+import json
 import os
 import subprocess
 import tempfile
@@ -149,6 +150,24 @@ class MinerSeedPoolTests(unittest.TestCase):
                 stage1_query="CASIO GW-M5610U-1JF",
             ),
             "GW-M5610U-1JF",
+        )
+
+    def test_stage1_seed_only_strict_queries_uses_exact_and_code_only(self) -> None:
+        self.assertEqual(
+            miner_seed_pool._stage1_seed_only_strict_queries(
+                seed_query="GBD200-1",
+                stage1_query="CASIO GBD-200-1JF",
+                seed_source_title="Casio G-Shock G-Squad GBD-200-1JF",
+            ),
+            ["CASIO GBD-200-1JF", "GBD-200-1JF"],
+        )
+        self.assertEqual(
+            miner_seed_pool._stage1_seed_only_strict_queries(
+                seed_query="DWN-5600-9JR",
+                stage1_query="CASIO DWN-5600-9JR",
+                seed_source_title="CASIO DWN-5600-9JR",
+            ),
+            ["DWN-5600-9JR"],
         )
 
     def test_model_codes_equivalent_allows_numeric_prefixed_vendor_code(self) -> None:
@@ -2154,6 +2173,98 @@ class MinerSeedPoolTests(unittest.TestCase):
             self.assertEqual(str(rows[0].get("seed_query")), "DD1391-100")
             self.assertEqual(int(skipped), 0)
             self.assertEqual(len(remaining), 1)
+
+    def test_take_seeds_for_run_deprioritizes_stage1_zero_hit_seed(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            db_path = Path(tmp) / "seed_pool_zero_hit_sort.db"
+            settings = _dummy_settings(db_path)
+            now_ts = 1_700_000_000
+            with patch.dict("os.environ", {"DB_BACKEND": "sqlite"}, clear=False):
+                with connect(settings.db_path) as conn:
+                    init_db(conn)
+                    inserted = miner_seed_pool._insert_seed_rows(
+                        conn,
+                        category_key="watch",
+                        rows=[
+                            {
+                                "seed_query": "CASIO GW-M5610U-1JF",
+                                "source_title": "seed a",
+                                "source_item_url": "",
+                                "source_rank": 1,
+                                "metadata": {"stage1_zero_hit_count": 2},
+                            },
+                            {
+                                "seed_query": "CASIO GW-5000U-1JF",
+                                "source_title": "seed b",
+                                "source_item_url": "",
+                                "source_rank": 2,
+                                "metadata": {"stage1_zero_hit_count": 0},
+                            },
+                        ],
+                        ttl_days=7,
+                    )
+                    self.assertEqual(inserted, 2)
+                    rows, skipped = miner_seed_pool._take_seeds_for_run(
+                        conn,
+                        category_key="watch",
+                        take_count=1,
+                        now_ts=now_ts,
+                    )
+
+            self.assertEqual(int(skipped), 0)
+            self.assertEqual(len(rows), 1)
+            self.assertEqual(str(rows[0].get("seed_query")), "CASIO GW-5000U-1JF")
+
+    def test_apply_stage1_seed_feedback_increments_and_resets_zero_hit_count(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            db_path = Path(tmp) / "seed_pool_zero_hit_feedback.db"
+            settings = _dummy_settings(db_path)
+            with patch.dict("os.environ", {"DB_BACKEND": "sqlite"}, clear=False):
+                with connect(settings.db_path) as conn:
+                    init_db(conn)
+                    inserted = miner_seed_pool._insert_seed_rows(
+                        conn,
+                        category_key="watch",
+                        rows=[
+                            {
+                                "seed_query": "CASIO GW-M5610U-1JF",
+                                "source_title": "seed a",
+                                "source_item_url": "",
+                                "source_rank": 1,
+                                "metadata": {"stage1_zero_hit_count": 1},
+                            },
+                            {
+                                "seed_query": "CASIO GW-5000U-1JF",
+                                "source_title": "seed b",
+                                "source_item_url": "",
+                                "source_rank": 2,
+                                "metadata": {"stage1_zero_hit_count": 2},
+                            },
+                        ],
+                        ttl_days=7,
+                    )
+                    self.assertEqual(inserted, 2)
+                    ids = conn.execute(
+                        "SELECT id, seed_query FROM miner_seed_pool WHERE category_key = ? ORDER BY id ASC",
+                        ("watch",),
+                    ).fetchall()
+                    updated = miner_seed_pool._apply_stage1_seed_feedback(
+                        conn,
+                        rows=[
+                            {"seed_id": int(ids[0]["id"]), "had_raw_results": False, "had_stage1_candidates": False},
+                            {"seed_id": int(ids[1]["id"]), "had_raw_results": True, "had_stage1_candidates": False},
+                        ],
+                    )
+                    self.assertEqual(updated, 2)
+                    rows = conn.execute(
+                        "SELECT seed_query, metadata_json FROM miner_seed_pool WHERE category_key = ? ORDER BY id ASC",
+                        ("watch",),
+                    ).fetchall()
+
+            metadata_1 = json.loads(str(rows[0]["metadata_json"] or "{}"))
+            metadata_2 = json.loads(str(rows[1]["metadata_json"] or "{}"))
+            self.assertEqual(int(metadata_1.get("stage1_zero_hit_count", 0)), 2)
+            self.assertEqual(int(metadata_2.get("stage1_zero_hit_count", 0)), 0)
 
     def test_take_seeds_skips_active_low_liquidity_cooldown_seed(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

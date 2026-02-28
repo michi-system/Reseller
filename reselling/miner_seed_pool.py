@@ -757,6 +757,12 @@ def _seed_candidates_have_model_or_gtin(seed_candidates: Sequence[str]) -> bool:
     return any(_seed_query_is_model_or_gtin(v) for v in seed_candidates)
 
 
+def _seed_stage1_zero_hit_count(metadata: Dict[str, Any]) -> int:
+    if not isinstance(metadata, dict):
+        return 0
+    return max(0, to_int(metadata.get("stage1_zero_hit_count"), 0))
+
+
 def _to_bool(value: Any) -> Optional[bool]:
     if isinstance(value, bool):
         return value
@@ -2110,13 +2116,23 @@ def _take_seeds_for_run(
         """,
         (category_key,),
     ).fetchall()
-    def _sort_key(row: Dict[str, Any]) -> Tuple[int, int, int, int]:
+    def _sort_key(row: Dict[str, Any]) -> Tuple[int, int, int, int, int]:
         created_ts = iso_to_epoch(str(row.get("created_at", "") or ""))
         source_rank = max(0, to_int(row.get("source_rank"), 0))
         sid = max(0, to_int(row.get("id"), 0))
         use_count = max(0, to_int(row.get("use_count"), 0))
+        metadata_raw = str(row.get("metadata_json", "") or "").strip()
+        metadata: Dict[str, Any] = {}
+        if metadata_raw:
+            try:
+                parsed = json.loads(metadata_raw)
+                if isinstance(parsed, dict):
+                    metadata = parsed
+            except Exception:
+                metadata = {}
+        stage1_zero_hit_count = _seed_stage1_zero_hit_count(metadata)
         # 同じseed群に張り付くのを防ぐため、未使用seedを優先した上で古い順で処理する。
-        return (use_count, created_ts if created_ts > 0 else (10**12), source_rank, sid)
+        return (use_count, stage1_zero_hit_count, created_ts if created_ts > 0 else (10**12), source_rank, sid)
 
     ordered_rows = sorted([dict(v) for v in rows], key=_sort_key)
     out: List[Dict[str, Any]] = []
@@ -2161,6 +2177,7 @@ def _take_seeds_for_run(
                 "source_rank": to_int(row["source_rank"], 0),
                 "source_title": str(row["source_title"] or "").strip(),
                 "seed_quality_score": to_int(metadata.get("seed_quality_score"), 0),
+                "stage1_zero_hit_count": _seed_stage1_zero_hit_count(metadata),
                 "seed_collected_sold_price_min_usd": to_float(metadata.get("seed_collected_sold_price_min_usd"), -1.0),
                 "seed_collected_sold_90d_count": to_int(metadata.get("seed_collected_sold_90d_count"), -1),
             }
@@ -2186,12 +2203,22 @@ def _preview_seeds_for_run(
         (category_key,),
     ).fetchall()
 
-    def _sort_key(row: Dict[str, Any]) -> Tuple[int, int, int, int]:
+    def _sort_key(row: Dict[str, Any]) -> Tuple[int, int, int, int, int]:
         created_ts = iso_to_epoch(str(row.get("created_at", "") or ""))
         source_rank = max(0, to_int(row.get("source_rank"), 0))
         sid = max(0, to_int(row.get("id"), 0))
         use_count = max(0, to_int(row.get("use_count"), 0))
-        return (use_count, created_ts if created_ts > 0 else (10**12), source_rank, sid)
+        metadata_raw = str(row.get("metadata_json", "") or "").strip()
+        metadata: Dict[str, Any] = {}
+        if metadata_raw:
+            try:
+                parsed = json.loads(metadata_raw)
+                if isinstance(parsed, dict):
+                    metadata = parsed
+            except Exception:
+                metadata = {}
+        stage1_zero_hit_count = _seed_stage1_zero_hit_count(metadata)
+        return (use_count, stage1_zero_hit_count, created_ts if created_ts > 0 else (10**12), source_rank, sid)
 
     ordered_rows = sorted([dict(v) for v in rows], key=_sort_key)
     selected_count = 0
@@ -2208,6 +2235,47 @@ def _preview_seeds_for_run(
             continue
         selected_count += 1
     return int(selected_count), int(skipped_cooldown_count)
+
+
+def _apply_stage1_seed_feedback(
+    conn: Any,
+    *,
+    rows: Sequence[Dict[str, Any]],
+) -> int:
+    updated = 0
+    for raw in rows:
+        if not isinstance(raw, dict):
+            continue
+        seed_id = max(0, to_int(raw.get("seed_id"), 0))
+        if seed_id <= 0:
+            continue
+        row = conn.execute(
+            "SELECT metadata_json FROM miner_seed_pool WHERE id = ?",
+            (seed_id,),
+        ).fetchone()
+        metadata: Dict[str, Any] = {}
+        if row:
+            metadata_raw = str(row["metadata_json"] or "").strip()
+            if metadata_raw:
+                try:
+                    parsed = json.loads(metadata_raw)
+                    if isinstance(parsed, dict):
+                        metadata = parsed
+                except Exception:
+                    metadata = {}
+        prev_zero_hit_count = _seed_stage1_zero_hit_count(metadata)
+        had_raw_results = bool(raw.get("had_raw_results"))
+        had_stage1_candidates = bool(raw.get("had_stage1_candidates"))
+        next_zero_hit_count = 0 if (had_raw_results or had_stage1_candidates) else prev_zero_hit_count + 1
+        if next_zero_hit_count == prev_zero_hit_count:
+            continue
+        metadata["stage1_zero_hit_count"] = int(next_zero_hit_count)
+        conn.execute(
+            "UPDATE miner_seed_pool SET metadata_json = ? WHERE id = ?",
+            (json.dumps(metadata, ensure_ascii=False), seed_id),
+        )
+        updated += 1
+    return int(updated)
 
 
 def get_seed_pool_status(
@@ -3895,6 +3963,35 @@ def _prefer_stage1_query_for_seed_only(*, seed_query: str, stage1_query: str) ->
     return seed_text
 
 
+def _stage1_seed_only_strict_queries(
+    *,
+    seed_query: str,
+    stage1_query: str,
+    seed_source_title: str,
+) -> List[str]:
+    out: List[str] = []
+    seen: Set[str] = set()
+
+    def _push(raw: str) -> None:
+        text = _normalize_query_text(raw)
+        if not text:
+            return
+        key = text.lower()
+        if key in seen:
+            return
+        seen.add(key)
+        out.append(text)
+
+    preferred = _prefer_stage1_query_for_seed_only(seed_query=seed_query, stage1_query=stage1_query)
+    _push(preferred)
+    for text in (preferred, stage1_query, seed_query, seed_source_title):
+        for raw_code in _extract_codes(text):
+            _push(raw_code)
+            if len(out) >= 2:
+                return out
+    return out[:2]
+
+
 def _phase_c_best_model_code(
     *,
     seed_query: str,
@@ -5012,6 +5109,9 @@ def run_seeded_fetch(
     stage1_query_mode = stage1_query_mode_raw if stage1_query_mode_raw in {"seed_only", "auto"} else ""
     if not stage1_query_mode:
         stage1_query_mode = "seed_only" if _category_requires_strict_model_seed(category_key, category_row) else "auto"
+    stage1_seed_only_effective_queries_per_site = 2 if (
+        stage1_query_mode == "seed_only" and _category_requires_strict_model_seed(category_key, category_row)
+    ) else 1
 
     stage1_limit_per_site = max(5, min(100, env_int("MINER_STAGE1_LIMIT_PER_SITE", max(20, int(limit_per_site)))))
     stage1_max_queries_default = 1 if stage1_query_mode == "seed_only" else 2
@@ -5040,7 +5140,16 @@ def run_seeded_fetch(
             0,
             env_int(
                 "MINER_STAGE1_API_MAX_CALLS_PER_RUN",
-                max(4, len(selected_seeds) * max(1, len(source_fetchers)) * stage1_max_queries_per_site),
+                max(
+                    4,
+                    len(selected_seeds)
+                    * max(1, len(source_fetchers))
+                    * (
+                        stage1_seed_only_effective_queries_per_site
+                        if stage1_query_mode == "seed_only"
+                        else stage1_max_queries_per_site
+                    ),
+                ),
             ),
         )
     else:
@@ -5097,6 +5206,7 @@ def run_seeded_fetch(
     stage2_liquidity_retry_queries_seen: Set[str] = set()
     stage2_liquidity_refresh_runs: List[Dict[str, Any]] = []
     stage2_low_liquidity_cooldown_rows: List[Dict[str, Any]] = []
+    stage1_seed_feedback_rows: List[Dict[str, Any]] = []
     stage2_liquidity_query_fallback_max = max(0, env_int("MINER_STAGE2_LIQUIDITY_QUERY_FALLBACK_MAX", 3))
     stage2_retry_missing_active_enabled = bool(
         stage2_liquidity_refresh_enabled and env_bool("MINER_STAGE2_RETRY_MISSING_ACTIVE_ENABLED", False)
@@ -5325,6 +5435,7 @@ def run_seeded_fetch(
         stage1_seen: Set[str] = set()
         stage1_site_logs: List[Dict[str, Any]] = []
         stage1_baseline_reject = 0
+        stage1_raw_item_count = 0
         for site_key, fetcher in source_fetchers:
             if stage1_api_max_calls > 0 and stage1_api_calls >= stage1_api_max_calls:
                 _inc_skip(stage1_skip_counts, "skipped_stage1_api_budget", 1)
@@ -5344,20 +5455,17 @@ def run_seeded_fetch(
             selected_for_site = 0
             site_query_logs: List[Dict[str, Any]] = []
             if stage1_query_mode == "seed_only":
-                primary_query = _prefer_stage1_query_for_seed_only(
-                    seed_query=seed_query,
-                    stage1_query=stage1_query,
-                )
                 if _category_requires_strict_model_seed(category_key, category_row):
-                    fallback_seed_query = primary_query or stage1_query or seed_query
-                    site_queries = _stage1_site_queries(
-                        seed_query=fallback_seed_query,
-                        stage1_query=primary_query,
+                    site_queries = _stage1_seed_only_strict_queries(
+                        seed_query=seed_query,
+                        stage1_query=stage1_query,
                         seed_source_title=seed_source_title,
-                        site=site_key,
-                        max_queries=2,
                     )
                 else:
+                    primary_query = _prefer_stage1_query_for_seed_only(
+                        seed_query=seed_query,
+                        stage1_query=stage1_query,
+                    )
                     site_queries = [primary_query] if primary_query else []
             else:
                 site_queries = _stage1_site_queries(
@@ -5414,6 +5522,7 @@ def run_seeded_fetch(
                 slot["calls_made"] = int(slot.get("calls_made", 0)) + 1
                 slot["network_calls"] = int(slot.get("network_calls", 0)) + 1
                 slot["count"] = int(slot.get("count", 0)) + len(items)
+                stage1_raw_item_count += len(items)
                 if bool((fetch_info or {}).get("cache_hit")):
                     slot["cache_hits"] = int(slot.get("cache_hits", 0)) + 1
 
@@ -5617,6 +5726,13 @@ def run_seeded_fetch(
                 }
             )
         stage1_count = len(selected_stage1)
+        stage1_seed_feedback_rows.append(
+            {
+                "seed_id": int(to_int(seed.get("id"), 0)),
+                "had_raw_results": bool(stage1_raw_item_count > 0),
+                "had_stage1_candidates": bool(stage1_count > 0),
+            }
+        )
         stage1_seed_baseline_reject_total += int(stage1_baseline_reject)
         stage1_pass_total += stage1_count
 
@@ -6282,6 +6398,19 @@ def run_seeded_fetch(
             hints.append(f"低流動性cooldown保存でエラー: {type(err).__name__}")
     if stage2_low_liquidity_cooldown_saved > 0:
         hints.append(f"C段階で低流動性seedをcooldown登録: {stage2_low_liquidity_cooldown_saved}件")
+    stage1_seed_feedback_updated = 0
+    if stage1_seed_feedback_rows:
+        try:
+            with connect(settings.db_path) as feedback_conn:
+                init_db(feedback_conn)
+                stage1_seed_feedback_updated = _apply_stage1_seed_feedback(
+                    feedback_conn,
+                    rows=stage1_seed_feedback_rows,
+                )
+        except Exception as err:
+            hints.append(f"B段階seedフィードバック保存でエラー: {type(err).__name__}")
+    if stage1_seed_feedback_updated > 0:
+        hints.append(f"B段階 no-hit seed フィードバック更新: {stage1_seed_feedback_updated}件")
 
     if len(created_ids) <= 0 and stage1_skip_counts:
         top_stage1 = sorted(stage1_skip_counts.items(), key=lambda kv: kv[1], reverse=True)[0]
