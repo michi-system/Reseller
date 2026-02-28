@@ -93,6 +93,8 @@ _HEADER_ERROR_KEYS = (_HEADER_ERROR_KEY, _HEADER_LEGACY_ERROR_KEY)
 _HEADER_CACHE_HIT_KEYS = (_HEADER_CACHE_HIT_KEY, _HEADER_LEGACY_CACHE_HIT_KEY)
 _HEADER_CACHE_AGE_SEC_KEYS = (_HEADER_CACHE_AGE_SEC_KEY, _HEADER_LEGACY_CACHE_AGE_SEC_KEY)
 _HEADER_BUDGET_REMAINING_KEYS = (_HEADER_BUDGET_REMAINING_KEY, _HEADER_LEGACY_BUDGET_REMAINING_KEY)
+_RAKUTEN_CLIENT_IP_BLOCK_STATE: Dict[str, Any] = {"streak": 0, "until_ts": 0.0}
+_RAKUTEN_CLIENT_IP_BLOCK_LOCK = threading.Lock()
 
 _STOPWORDS = {
     "THE",
@@ -288,6 +290,8 @@ _FORCE_ACCESSORY_TERMS = {
     "カバー",
     "レンズフィルター",
     "保護フィルム",
+    "CRYSTAL SHIELD",
+    "PERFECT SHIELD",
     "イヤーピース",
     "イヤチップ",
     "EARTIP",
@@ -2105,6 +2109,14 @@ def _search_ebay(
 def _search_rakuten(
     query: str, limit: int, timeout: int, page: int = 1, require_in_stock: bool = True
 ) -> Tuple[List[MarketItem], Dict[str, Any]]:
+    circuit_enabled = _env_bool("RAKUTEN_CLIENT_IP_BLOCK_CIRCUIT_ENABLED", True)
+    if circuit_enabled:
+        now_ts = time.time()
+        with _RAKUTEN_CLIENT_IP_BLOCK_LOCK:
+            until_ts = float(_RAKUTEN_CLIENT_IP_BLOCK_STATE.get("until_ts", 0.0) or 0.0)
+        if until_ts > now_ts:
+            retry_after_sec = int(max(1.0, round(until_ts - now_ts)))
+            raise ValueError(f"楽天検索失敗: client_ip_block_circuit_open retry_after_sec={retry_after_sec}")
     app_id = _first_env("RAKUTEN_APPLICATION_ID")
     if not app_id:
         raise ValueError("RAKUTEN_APPLICATION_ID が未設定です")
@@ -2354,7 +2366,29 @@ def _search_rakuten(
         allow_web_fallback = _env_bool("RAKUTEN_WEB_FALLBACK_ENABLED", True)
         fallback_blocked_errors = {"daily_budget_exhausted", "cache_miss"}
         error_code = str(payload.get("error", "") or "").strip().lower() if isinstance(payload, dict) else ""
-        if allow_web_fallback and error_code not in fallback_blocked_errors:
+        detail_upper = str(detail or "").upper()
+        is_client_ip_block = int(status) == 403 and "CLIENT_IP_NOT_ALLOWED" in detail_upper
+        client_ip_block_streak = 0
+        if circuit_enabled:
+            block_threshold = max(1, _env_int("RAKUTEN_CLIENT_IP_BLOCK_STREAK_THRESHOLD", 3))
+            hold_sec = max(60, _env_int("RAKUTEN_CLIENT_IP_BLOCK_HOLD_SECONDS", 1800))
+            with _RAKUTEN_CLIENT_IP_BLOCK_LOCK:
+                if is_client_ip_block:
+                    next_streak = int(_RAKUTEN_CLIENT_IP_BLOCK_STATE.get("streak", 0) or 0) + 1
+                    _RAKUTEN_CLIENT_IP_BLOCK_STATE["streak"] = next_streak
+                    client_ip_block_streak = next_streak
+                    if next_streak >= block_threshold:
+                        _RAKUTEN_CLIENT_IP_BLOCK_STATE["until_ts"] = max(
+                            float(_RAKUTEN_CLIENT_IP_BLOCK_STATE.get("until_ts", 0.0) or 0.0),
+                            time.time() + float(hold_sec),
+                        )
+                else:
+                    _RAKUTEN_CLIENT_IP_BLOCK_STATE["streak"] = 0
+                    client_ip_block_streak = 0
+        client_ip_fallback_allowed = (not is_client_ip_block) or (
+            client_ip_block_streak < max(1, _env_int("RAKUTEN_CLIENT_IP_BLOCK_STREAK_THRESHOLD", 3))
+        )
+        if allow_web_fallback and error_code not in fallback_blocked_errors and client_ip_fallback_allowed:
             web_items, web_info = _search_rakuten_web_fallback(
                 query_text=used_query,
                 page_no=safe_page,
@@ -2368,9 +2402,16 @@ def _search_rakuten(
             web_info["fallback_from_http"] = int(status)
             if detail:
                 web_info["fallback_from_error"] = detail
+            if is_client_ip_block:
+                web_info["fallback_client_ip_block_streak"] = int(client_ip_block_streak)
             return web_items, web_info
         suffix = f" ({detail})" if detail else ""
+        if is_client_ip_block:
+            suffix = f"{suffix} [web_fallback_disabled=client_ip_block]"
         raise ValueError(f"楽天検索失敗: http={status}{suffix}")
+    if circuit_enabled:
+        with _RAKUTEN_CLIENT_IP_BLOCK_LOCK:
+            _RAKUTEN_CLIENT_IP_BLOCK_STATE["streak"] = 0
 
     items: List[MarketItem] = []
     raw_items = payload.get("Items", []) or []
@@ -3528,12 +3569,12 @@ def _site_fetch_profile(site: str, cap_site: int) -> SiteFetchProfile:
             sleep_sec,
         )
     if site == "rakuten":
-        max_calls = max(1, min(5, _env_int("RAKUTEN_FETCH_MAX_CALLS", 2)))
+        max_calls = max(1, min(5, _env_int("RAKUTEN_FETCH_MAX_CALLS", 1)))
         per_call_limit = max(1, min(30, _env_int("RAKUTEN_FETCH_PER_CALL_LIMIT", max(cap_site, 30))))
         target_items = max(4, min(90, _env_int("RAKUTEN_FETCH_TARGET_ITEMS", max(10, cap_site))))
         min_new_items = max(0, min(6, _env_int("RAKUTEN_FETCH_MIN_NEW_ITEMS", 1)))
-        max_pages_per_query = max(1, min(5, _env_int("RAKUTEN_FETCH_MAX_PAGES_PER_QUERY", 2)))
-        sleep_sec = max(0.0, min(3.0, _env_float("RAKUTEN_FETCH_SLEEP_SEC", 1.0)))
+        max_pages_per_query = max(1, min(5, _env_int("RAKUTEN_FETCH_MAX_PAGES_PER_QUERY", 1)))
+        sleep_sec = max(0.0, min(3.0, _env_float("RAKUTEN_FETCH_SLEEP_SEC", 0.2)))
         return SiteFetchProfile(
             site,
             max_calls,
@@ -3543,12 +3584,12 @@ def _site_fetch_profile(site: str, cap_site: int) -> SiteFetchProfile:
             max_pages_per_query,
             sleep_sec,
         )
-    max_calls = max(1, min(5, _env_int("YAHOO_FETCH_MAX_CALLS", 3)))
+    max_calls = max(1, min(5, _env_int("YAHOO_FETCH_MAX_CALLS", 2)))
     per_call_limit = max(1, min(100, _env_int("YAHOO_FETCH_PER_CALL_LIMIT", max(cap_site, 80))))
     target_items = max(4, min(90, _env_int("YAHOO_FETCH_TARGET_ITEMS", max(10, cap_site))))
     min_new_items = max(0, min(6, _env_int("YAHOO_FETCH_MIN_NEW_ITEMS", 1)))
-    max_pages_per_query = max(1, min(5, _env_int("YAHOO_FETCH_MAX_PAGES_PER_QUERY", 2)))
-    sleep_sec = max(0.0, min(3.0, _env_float("YAHOO_FETCH_SLEEP_SEC", 0.8)))
+    max_pages_per_query = max(1, min(5, _env_int("YAHOO_FETCH_MAX_PAGES_PER_QUERY", 1)))
+    sleep_sec = max(0.0, min(3.0, _env_float("YAHOO_FETCH_SLEEP_SEC", 0.3)))
     return SiteFetchProfile(
         site,
         max_calls,
@@ -4629,6 +4670,12 @@ def _is_accessory_title(title: str) -> bool:
     upper = str(title or "").upper()
     jp = str(title or "")
     compact_jp = re.sub(r"\s+", "", jp)
+    # 例: 「GBD-200用 バンド」「DWE-5600用 フィルム」などの付属品表現は
+    # 本体語が混在していてもアクセサリとして優先除外する。
+    if re.search(r"(?:バンド|ベルト|ブレス|コマ|パーツ|カバー|ケース|フィルム).{0,3}用", compact_jp):
+        return True
+    if ("純正品" in jp or "純正" in jp) and re.search(r"(?:バンド|ベルト|ブレス|コマ|パーツ)", compact_jp):
+        return True
     has_case_dimension = ("ケース幅" in jp) or ("CASE WIDTH" in upper) or ("CASE SIZE" in upper)
     for term in _FORCE_ACCESSORY_TERMS:
         if term in {"ケース", "CASE"} and has_case_dimension:

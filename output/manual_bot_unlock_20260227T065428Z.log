@@ -1,0 +1,12 @@
+[progress] {"phase": "startup", "message": "Product Research 取得を開始します", "progress_percent": 0.5, "query": "", "query_index": 0, "total_queries": 1, "at": "2026-02-27T06:54:28Z", "extra": {"headless": false}}
+[progress] {"phase": "login_url_loaded", "message": "Product Research画面へ遷移しました", "progress_percent": 1.5, "query": "", "query_index": 0, "total_queries": 1, "at": "2026-02-27T06:54:39Z"}
+[login] waiting 1800s. Complete sign-in + 2FA if needed.
+[progress] {"phase": "login_pause_completed", "message": "ログイン待機が完了しました", "progress_percent": 2.0, "query": "", "query_index": 0, "total_queries": 1, "at": "2026-02-27T07:24:39Z"}
+[1/1] query=G-SHOCK
+[progress] {"phase": "query_start", "message": "検索語を処理中: G-SHOCK", "progress_percent": 5.0, "query": "G-SHOCK", "query_index": 1, "total_queries": 1, "at": "2026-02-27T07:24:40Z"}
+[progress] {"phase": "search_done", "message": "検索結果を読み込みました", "progress_percent": 34.0, "query": "G-SHOCK", "query_index": 1, "total_queries": 1, "at": "2026-02-27T07:24:46Z", "extra": {"search_wait_sec": 5.9803}}
+[bot_challenge] stage=after_search query=G-SHOCK url=https://www.ebay.com/splashui/distil?ap=2&appName=orch&page=block&iid=6300236a-ed5e-45e8-861f-6f34d6de6433&iim=TMTE5LjT&iia=bdEwNi42Is&iiz=SGJMS42MQ**HXP
+[progress] {"phase": "bot_challenge_detected", "message": "eBay bot challenge を検知したため停止します", "progress_percent": 100.0, "query": "G-SHOCK", "query_index": 1, "total_queries": 1, "at": "2026-02-27T07:24:46Z", "extra": {"stage": "after_search", "url": "https://www.ebay.com/splashui/distil?ap=2&appName=orch&page=block&iid=6300236a-ed5e-45e8-861f-6f34d6de6433&iim=TMTE5LjT&iia=bdEwNi42Is&iiz=SGJMS42MQ**HXP"}}
+saved 0 rows -> /Users/tadamichikimura/Downloads/dev-HQ/Reseller/output/manual_bot_unlock_20260227T065428Z.jsonl
+[progress] {"phase": "completed", "message": "Product Research取得が完了しました", "progress_percent": 100.0, "query": "", "query_index": 0, "total_queries": 1, "at": "2026-02-27T07:24:46Z", "extra": {"saved_rows": 0}}
+[bot_challenge] halted at stage=after_search

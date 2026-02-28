@@ -36,6 +36,19 @@ def _policy_enabled(env_req: Dict[str, Any], key: str, default: bool = True) -> 
     return _to_bool(env_req.get(key, default), default)
 
 
+def _env_bool_with_legacy(key: str, default: bool = False) -> bool:
+    raw = (os.getenv(key, "") or "").strip()
+    if not raw and key.startswith("AUTO_MINER_"):
+        legacy_key = f"AUTO_REVIEW_{key[len('AUTO_MINER_'):]}"
+        raw = (os.getenv(legacy_key, "") or "").strip()
+    elif not raw and key.startswith("MINER_"):
+        legacy_key = f"REVIEW_{key[len('MINER_'):]}"
+        raw = (os.getenv(legacy_key, "") or "").strip()
+    if not raw:
+        return default
+    return _to_bool(raw, default)
+
+
 def _flag(enabled: bool, name: str) -> list[str]:
     return [name] if bool(enabled) else []
 
@@ -193,11 +206,11 @@ def _validate_operation_policy(
         errors.append(f"ITEM_CONDITION={actual_condition} (expected {expected_condition})")
 
     require_liquidity = _policy_enabled(env_req, "LIQUIDITY_REQUIRE_SIGNAL", True)
-    if require_liquidity and not _env_bool("LIQUIDITY_REQUIRE_SIGNAL", False):
+    if require_liquidity and not _env_bool_with_legacy("LIQUIDITY_REQUIRE_SIGNAL", False):
         errors.append("LIQUIDITY_REQUIRE_SIGNAL must be enabled by policy")
 
     require_auto_liquidity = _policy_enabled(env_req, "AUTO_MINER_REQUIRE_LIQUIDITY_SIGNAL", True)
-    if require_auto_liquidity and not _env_bool("AUTO_MINER_REQUIRE_LIQUIDITY_SIGNAL", False):
+    if require_auto_liquidity and not _env_bool_with_legacy("AUTO_MINER_REQUIRE_LIQUIDITY_SIGNAL", False):
         errors.append("AUTO_MINER_REQUIRE_LIQUIDITY_SIGNAL must be enabled by policy")
 
     allowed_provider_modes = env_req.get("LIQUIDITY_PROVIDER_MODE_allowed", [])

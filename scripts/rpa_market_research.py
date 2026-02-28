@@ -47,7 +47,7 @@ _RE_HTML_ROW = re.compile(
     re.IGNORECASE,
 )
 _RE_HTML_ROW_PRICE = re.compile(
-    r"research-table-row__avgSoldPrice.*?<div[^>]*>\$?([0-9][0-9,]{0,9}(?:\.[0-9]{1,2})?)</div>",
+    r"research-table-row__(?:avgSoldPrice|listingPrice).*?<div[^>]*>\$?([0-9][0-9,]{0,9}(?:\.[0-9]{1,2})?)</div>",
     re.IGNORECASE | re.DOTALL,
 )
 _RE_HTML_ROW_DATE = re.compile(
@@ -75,6 +75,14 @@ _RE_DAILY_LIMIT_PHRASES = (
     re.compile(r"exceeded\s+the\s+number\s+of\s+requests\s+allowed\s+in\s+one\s+day", re.IGNORECASE),
     re.compile(r"please\s+try\s+again\s+tomorrow", re.IGNORECASE),
     re.compile(r"number\s+of\s+requests\s+allowed\s+in\s+one\s+day", re.IGNORECASE),
+)
+_RE_BOT_CHALLENGE_PHRASES = (
+    re.compile(r"pardon\s+our\s+interruption", re.IGNORECASE),
+    re.compile(r"think\s+you\s+were\s+a\s+bot", re.IGNORECASE),
+    re.compile(r"browser\s+made\s+us\s+think\s+you\s+were\s+a\s+bot", re.IGNORECASE),
+    re.compile(r"super-?human\s+speed", re.IGNORECASE),
+    re.compile(r"disabled\s+javascript", re.IGNORECASE),
+    re.compile(r"third-?party\s+browser\s+plugin", re.IGNORECASE),
 )
 _RE_NO_SOLD_PHRASES = (
     re.compile(r"\bno\s+sold\s+(?:items?|results?|found)\b", re.IGNORECASE),
@@ -582,6 +590,36 @@ def _page_has_daily_limit_message(page: Any) -> bool:
     try:
         html_text = page.content()
         if _contains_daily_limit_message(html_text):
+            return True
+    except Exception:
+        pass
+    return False
+
+
+def _contains_bot_challenge_message(text: str) -> bool:
+    haystack = str(text or "")
+    if not haystack:
+        return False
+    matched = 0
+    for pattern in _RE_BOT_CHALLENGE_PHRASES:
+        if pattern.search(haystack):
+            matched += 1
+    # 固有文言 or 複合一致で判定し、誤検出を抑える。
+    if matched >= 2:
+        return True
+    return bool(re.search(r"pardon\s+our\s+interruption", haystack, re.IGNORECASE))
+
+
+def _page_has_bot_challenge_message(page: Any) -> bool:
+    try:
+        body_text = page.inner_text("body")
+        if _contains_bot_challenge_message(body_text):
+            return True
+    except Exception:
+        pass
+    try:
+        html_text = page.content()
+        if _contains_bot_challenge_message(html_text):
             return True
     except Exception:
         pass
@@ -1424,8 +1462,15 @@ def _resolve_filters_html_path(template: str, query: str, query_index: int) -> P
 
 def _normalize_sold_sort(raw_sort: str) -> str:
     text = str(raw_sort or "").strip().lower().replace("-", "_").replace(" ", "_")
+    compact = re.sub(r"[^a-z0-9]+", "", str(raw_sort or "").strip().lower())
     if text in {"", "default", "top_rated", "toprated", "best_match"}:
         return "default"
+    if text in {"price_plus_shipping_asc", "price_plus_shipping_desc"}:
+        return "price_asc" if text.endswith("_asc") else "price_desc"
+    if compact in {"priceplusshippingasc", "priceplusshippingdesc"}:
+        return "price_asc" if compact.endswith("asc") else "price_desc"
+    if compact in {"datelastsold", "datelastsolddesc"}:
+        return "recently_sold"
     if text in {"recently_sold", "recent", "most_recent", "newest", "newest_first", "latest"}:
         return "recently_sold"
     if text in {"price_desc", "price_high", "highest_price"}:
@@ -1445,6 +1490,117 @@ def _sold_sort_url_params(sold_sort: str) -> Dict[str, str]:
     if mode == "price_asc":
         return {"sort": "PRICE_PLUS_SHIPPING_ASC"}
     return {}
+
+
+def _detect_listing_price_metric_selected(page: Any) -> bool:
+    try:
+        return bool(
+            page.evaluate(
+                """() => {
+                  const visible = (el) => {
+                    if (!el) return false;
+                    const st = window.getComputedStyle(el);
+                    if (st.display === "none" || st.visibility === "hidden") return false;
+                    const r = el.getBoundingClientRect();
+                    return r.width > 1 && r.height > 1;
+                  };
+                  const rows = [...document.querySelectorAll("tr.research-table-row, div.research-table-row")];
+                  if (rows.length <= 0) return false;
+                  for (const row of rows.slice(0, 8)) {
+                    if (!visible(row)) continue;
+                    if (row.querySelector("[class*='listingPrice']")) return true;
+                  }
+                  return false;
+                }"""
+            )
+        )
+    except Exception:
+        return False
+
+
+def _is_listing_price_metric_available(page: Any) -> bool:
+    try:
+        return bool(
+            page.evaluate(
+                """() => {
+                  const visible = (el) => {
+                    if (!el) return false;
+                    const st = window.getComputedStyle(el);
+                    if (st.display === "none" || st.visibility === "hidden") return false;
+                    const r = el.getBoundingClientRect();
+                    return r.width > 1 && r.height > 1;
+                  };
+                  const selectors = [
+                    "th.research-table-header__listing-price",
+                    "th.active-listing-table-header__listingPrice",
+                    "th[class*='listing-price']",
+                    "th[class*='listingPrice']",
+                    "[role='columnheader'][class*='listing-price']",
+                    "[role='columnheader'][class*='listingPrice']",
+                  ];
+                  for (const sel of selectors) {
+                    const node = document.querySelector(sel);
+                    if (visible(node)) return true;
+                  }
+                  const labels = [...document.querySelectorAll("button, [role='button'], th, [role='columnheader'], span, div")];
+                  for (const el of labels) {
+                    if (!visible(el)) continue;
+                    const txt = (el.textContent || "").replace(/\\s+/g, " ").trim().toLowerCase();
+                    if (!txt || txt.length > 120) continue;
+                    if (txt.includes("listing price")) return true;
+                  }
+                  return false;
+                }"""
+            )
+        )
+    except Exception:
+        return False
+
+
+def _set_listing_price_metric(page: Any) -> Dict[str, Any]:
+    state: Dict[str, Any] = {
+        "price_metric_target": "listing_price",
+        "price_metric_selected": False,
+        "price_metric_selection_source": "",
+        "price_metric_available": False,
+    }
+    state["price_metric_available"] = _is_listing_price_metric_available(page)
+    if not bool(state.get("price_metric_available")):
+        state["price_metric_selection_source"] = "not_available"
+        return state
+    if _detect_listing_price_metric_selected(page):
+        state["price_metric_selected"] = True
+        state["price_metric_selection_source"] = "detected_before"
+        return state
+    clicked = _click_first(
+        page,
+        [
+            "th.active-listing-table-header__listingPrice:visible",
+            "th.active-listing-table-header__listingPrice .active-listing-table-header__inner-item:visible",
+            "th.research-table-header__listing-price:visible",
+            "th.research-table-header__listing-price .research-table-header__inner-item:visible",
+            "th[class*='listingPrice']:visible",
+            "th[class*='listing-price']:visible",
+            "[role='columnheader'][class*='listingPrice']:visible",
+            "[role='columnheader'][class*='listing-price']:visible",
+            "button:visible:has-text('Listing price')",
+            "[role='button']:visible:has-text('Listing price')",
+            "th:visible:has-text('Listing price')",
+            "[role='columnheader']:visible:has-text('Listing price')",
+            "button:visible:has-text('Listing')",
+            "[role='button']:visible:has-text('Listing')",
+        ],
+    )
+    if not clicked:
+        clicked = _click_button_by_text_tokens(page, ["listing price", "listing"])
+    if not clicked:
+        return state
+    _wait_for_research_ready(page, 2)
+    page.wait_for_timeout(max(40, _to_int(os.getenv("LIQUIDITY_RPA_FILTER_SETTLE_MS", "45"), 45)))
+    if _detect_listing_price_metric_selected(page):
+        state["price_metric_selected"] = True
+        state["price_metric_selection_source"] = "ui"
+    return state
 
 
 def _search_and_wait(
@@ -2479,6 +2635,70 @@ def _get_sold_date_order_state(page: Any) -> Dict[str, Any]:
     return out
 
 
+def _get_sold_price_order_state(page: Any) -> Dict[str, Any]:
+    out: Dict[str, Any] = {
+        "row_prices": [],
+        "first_price": -1.0,
+        "last_price": -1.0,
+        "is_asc": False,
+        "is_desc": False,
+    }
+    try:
+        result = page.evaluate(
+            r"""() => {
+              const visible = (el) => {
+                if (!el) return false;
+                const st = window.getComputedStyle(el);
+                if (st.display === "none" || st.visibility === "hidden") return false;
+                const r = el.getBoundingClientRect();
+                return r.width > 1 && r.height > 1;
+              };
+              const parsePrice = (txt) => {
+                const raw = String(txt || "").replace(/\s+/g, " ").trim();
+                if (!raw) return -1;
+                const m = raw.match(/([0-9][0-9,]*(?:\.[0-9]{1,2})?)/);
+                if (!m) return -1;
+                const n = Number(String(m[1] || "").replace(/,/g, ""));
+                return Number.isFinite(n) ? n : -1;
+              };
+              const out = [];
+              const rows = document.querySelectorAll("tr.research-table-row, div.research-table-row");
+              for (const row of rows) {
+                if (!visible(row)) continue;
+                const node =
+                  row.querySelector(".research-table-row__avgSoldPrice div") ||
+                  row.querySelector(".research-table-row__avgSoldPrice") ||
+                  row.querySelector(".research-table-row__listingPrice div") ||
+                  row.querySelector(".research-table-row__listingPrice") ||
+                  row.querySelector("[class*='avgSoldPrice']") ||
+                  row.querySelector("[class*='listingPrice']");
+                const value = parsePrice(node?.textContent || "");
+                if (value > 0) out.push(value);
+                if (out.length >= 20) break;
+              }
+              return { rowPrices: out };
+            }"""
+        )
+        if isinstance(result, dict):
+            values = []
+            for raw in (result.get("rowPrices") or []):
+                value = _to_float(raw, -1.0)
+                if value > 0:
+                    values.append(round(value, 4))
+            out["row_prices"] = values[:20]
+    except Exception:
+        return out
+
+    prices = [float(v) for v in out["row_prices"] if _to_float(v, -1.0) > 0]
+    if len(prices) >= 2:
+        out["first_price"] = float(prices[0])
+        out["last_price"] = float(prices[-1])
+        eps = 0.001
+        out["is_asc"] = all(prices[i] <= (prices[i + 1] + eps) for i in range(len(prices) - 1))
+        out["is_desc"] = all(prices[i] >= (prices[i + 1] - eps) for i in range(len(prices) - 1))
+    return out
+
+
 def _click_date_last_sold_header(page: Any) -> bool:
     clicked = _click_first(
         page,
@@ -2503,10 +2723,48 @@ def _click_date_last_sold_header(page: Any) -> bool:
     return bool(clicked)
 
 
+def _click_avg_sold_price_header(page: Any) -> bool:
+    clicked = _click_first(
+        page,
+        [
+            "th.research-table-header__avg-sold-price:visible",
+            "th.research-table-header__avg-sold-price .research-table-header__inner-item:visible",
+            "th[class*='avg-sold-price']:visible",
+            "[role='columnheader'][class*='avg-sold-price']:visible",
+            "th:visible:has-text('Avg sold price')",
+            "[role='columnheader']:visible:has-text('Avg sold price')",
+            "button:visible:has-text('Avg sold price')",
+            "[role='button']:visible:has-text('Avg sold price')",
+            "th:visible:has-text('平均売却価格')",
+            "[role='columnheader']:visible:has-text('平均売却価格')",
+        ],
+    )
+    if not clicked:
+        clicked = _click_button_by_text_tokens(page, ["avg sold price", "sold price", "平均売却価格"])
+    return bool(clicked)
+
+
 def _detect_sold_sort_selected(page: Any, sold_sort: str) -> Tuple[bool, str]:
     mode = _normalize_sold_sort(sold_sort)
     if mode == "default":
         return True, "default"
+    if mode in {"price_asc", "price_desc"}:
+        price_state = _get_sold_price_order_state(page)
+        is_target = bool(price_state.get("is_asc")) if mode == "price_asc" else bool(price_state.get("is_desc"))
+        if is_target:
+            first_price = _to_float(price_state.get("first_price"), -1.0)
+            label = f"avg_sold_price_{mode}"
+            if first_price > 0:
+                label = f"{label}:{first_price:.2f}"
+            return True, label
+        try:
+            url_state = _detect_sold_filters_from_url(page)
+            if str(url_state.get("sold_sort", "default") or "default") == mode:
+                raw = str(url_state.get("sold_sort_raw", "") or "").strip()
+                return True, raw or "url_sort"
+        except Exception:
+            pass
+        return False, ""
     if mode == "recently_sold":
         order_state = _get_sold_date_order_state(page)
         if bool(order_state.get("is_newest_first")):
@@ -2567,6 +2825,33 @@ def _set_sold_sort(page: Any, sold_sort: str) -> Dict[str, Any]:
         "sort_visible_options": [],
     }
     if mode == "default":
+        return state
+    if mode in {"price_asc", "price_desc"}:
+        before_price_state = _get_sold_price_order_state(page)
+        state["sort_order_state"] = before_price_state
+        if (mode == "price_asc" and bool(before_price_state.get("is_asc"))) or (
+            mode == "price_desc" and bool(before_price_state.get("is_desc"))
+        ):
+            state["sort_selected"] = True
+            state["sort_option_label"] = f"avg_sold_price_{mode}_before"
+            state["sort_selection_source"] = "avg_sold_price_detect_before"
+            return state
+        for attempt in range(4):
+            clicked = _click_avg_sold_price_header(page)
+            if not clicked:
+                continue
+            state["sort_filter_panel_opened"] = True
+            page.wait_for_timeout(max(40, _to_int(os.getenv("LIQUIDITY_RPA_FILTER_SETTLE_MS", "45"), 45)))
+            _wait_for_research_ready(page, 2)
+            after_price_state = _get_sold_price_order_state(page)
+            state["sort_order_state"] = after_price_state
+            if (mode == "price_asc" and bool(after_price_state.get("is_asc"))) or (
+                mode == "price_desc" and bool(after_price_state.get("is_desc"))
+            ):
+                state["sort_selected"] = True
+                state["sort_option_label"] = f"avg_sold_price_{mode}"
+                state["sort_selection_source"] = f"avg_sold_price_click_{attempt + 1}"
+                return state
         return state
     if mode == "recently_sold":
         before_header_state = _get_date_last_sold_header_state(page)
@@ -2918,6 +3203,11 @@ def _apply_ui_filters(
         "sort_selection_source": "default" if sort_target == "default" else "",
         "sort_order_state": {},
         "sort_visible_options": [],
+        "price_metric_target": "listing_price",
+        "price_metric_selected": False,
+        "price_metric_selection_source": "",
+        "price_metric_available": False,
+        "price_metric_ui_enabled": bool(_to_int(os.getenv("LIQUIDITY_RPA_ENABLE_LISTING_PRICE_METRIC_UI", "1"), 1)),
         "min_price_target_usd": round(max(0.0, _to_float(min_price_usd, 0.0)), 2),
         "min_price_ui_enabled": bool(_to_int(os.getenv("LIQUIDITY_RPA_ENABLE_MIN_PRICE_FILTER_UI", "1"), 1)),
         "min_price_input_applied": False,
@@ -2977,6 +3267,22 @@ def _apply_ui_filters(
             ):
                 if key in sort_state:
                     state[key] = sort_state.get(key)
+
+    if sort_target in {"price_asc", "price_desc"}:
+        state["price_metric_available"] = bool(_is_listing_price_metric_available(page))
+    if (
+        bool(state.get("price_metric_ui_enabled"))
+        and sort_target in {"price_asc", "price_desc"}
+        and bool(state.get("price_metric_available"))
+    ):
+        metric_state = _set_listing_price_metric(page)
+        for key in ("price_metric_target", "price_metric_selected", "price_metric_selection_source", "price_metric_available"):
+            if key in metric_state:
+                state[key] = metric_state.get(key)
+        if bool(state.get("price_metric_selected")):
+            page.wait_for_timeout(filter_settle_ms)
+    elif sort_target in {"price_asc", "price_desc"} and not bool(state.get("price_metric_available")):
+        state["price_metric_selection_source"] = "not_available"
 
     if fixed_price_only:
         url_state = _detect_sold_filters_from_url(page)
@@ -3127,6 +3433,7 @@ def _finalize_filter_state_two_stage(
     target_min_price = max(0.0, _to_float(min_price_usd, 0.0))
     require_min_price = bool(_to_int(os.getenv("LIQUIDITY_RPA_REQUIRE_MIN_PRICE_FILTER", "0"), 0))
     require_sort = bool(_to_int(os.getenv("LIQUIDITY_RPA_REQUIRE_SOLD_SORT", "0"), 0))
+    require_listing_price_metric = bool(_to_int(os.getenv("LIQUIDITY_RPA_REQUIRE_LISTING_PRICE_METRIC", "0"), 0))
     require_lock = bool(_to_int(os.getenv("LIQUIDITY_RPA_REQUIRE_LOCK_SELECTED_FILTERS", "0"), 0))
 
     confirm: Dict[str, Any] = {}
@@ -3189,6 +3496,20 @@ def _finalize_filter_state_two_stage(
         "confirmed": bool(sort_target == "default" or sort_ui or sort_url),
     }
 
+    listing_price_required_mode = sort_target in {"price_asc", "price_desc"}
+    listing_price_available = bool(_is_listing_price_metric_available(page)) if listing_price_required_mode else False
+    listing_price_ui = (
+        bool(_detect_listing_price_metric_selected(page))
+        if (listing_price_required_mode and listing_price_available)
+        else False
+    )
+    confirm["listing_price_metric"] = {
+        "target": "listing_price",
+        "available": listing_price_available,
+        "ui": listing_price_ui,
+        "confirmed": bool((not listing_price_required_mode) or (not listing_price_available) or listing_price_ui),
+    }
+
     lock_ui = bool(_detect_lock_selected_filters_enabled(page))
     confirm["lock_selected_filters"] = {
         "ui": lock_ui,
@@ -3201,6 +3522,8 @@ def _finalize_filter_state_two_stage(
         state["format_fixed_price_selected"] = bool(confirm["format_fixed_price"]["confirmed"])
     if target_min_price > 0:
         state["min_price_selected"] = bool(confirm["min_price"]["confirmed"])
+    state["price_metric_available"] = bool(confirm["listing_price_metric"].get("available"))
+    state["price_metric_selected"] = bool(confirm["listing_price_metric"]["ui"])
     if condition_mode == "new":
         if not condition_selected and bool(confirm["condition"]["url"]):
             state["condition_selected"] = ["New(url_prefill)"]
@@ -3217,6 +3540,13 @@ def _finalize_filter_state_two_stage(
         failure_reason = "min_price_filter_not_confirmed"
     elif sort_target != "default" and require_sort and not bool(confirm["sold_sort"]["confirmed"]):
         failure_reason = "sold_sort_not_confirmed"
+    elif (
+        listing_price_required_mode
+        and require_listing_price_metric
+        and bool(confirm["listing_price_metric"].get("available"))
+        and not bool(confirm["listing_price_metric"]["confirmed"])
+    ):
+        failure_reason = "listing_price_metric_not_confirmed"
     elif require_lock and not bool(confirm["lock_selected_filters"]["confirmed"]):
         failure_reason = "lock_selected_filters_not_confirmed"
 
@@ -3227,6 +3557,7 @@ def _finalize_filter_state_two_stage(
         "fixed_price_filter_not_confirmed",
         "min_price_filter_not_confirmed",
         "sold_sort_not_confirmed",
+        "listing_price_metric_not_confirmed",
         "lock_selected_filters_not_confirmed",
     }
     current_reason = str(state.get("strict_reason", "") or "").strip()
@@ -3468,6 +3799,27 @@ def run(args: argparse.Namespace) -> int:
             )
 
         daily_limit_reached = False
+        bot_challenge_detected = False
+        bot_challenge_stage = ""
+
+        def _mark_bot_challenge(stage: str, *, query: str = "", query_index: int = 0) -> None:
+            nonlocal bot_challenge_detected, bot_challenge_stage
+            bot_challenge_detected = True
+            bot_challenge_stage = str(stage or "").strip() or "unknown"
+            print(
+                f"[bot_challenge] stage={bot_challenge_stage} query={str(query or '').strip()} url={str(page.url or '')}",
+                flush=True,
+            )
+            _emit_progress(
+                phase="bot_challenge_detected",
+                message="eBay bot challenge を検知したため停止します",
+                progress_percent=_query_progress_percent(max(1, int(query_index or 1)), len(queries), 1.0),
+                query=str(query or "").strip(),
+                query_index=max(0, int(query_index or 0)),
+                total_queries=len(queries),
+                extra={"stage": bot_challenge_stage, "url": str(page.url or "")},
+            )
+
         if _page_has_daily_limit_message(page):
             print("[daily_limit] Product Research daily request limit reached before query loop.", flush=True)
             _emit_progress(
@@ -3477,9 +3829,11 @@ def run(args: argparse.Namespace) -> int:
                 total_queries=len(queries),
             )
             daily_limit_reached = True
+        if _page_has_bot_challenge_message(page):
+            _mark_bot_challenge("before_query_loop")
 
         for index, query in enumerate(queries, start=1):
-            if daily_limit_reached:
+            if daily_limit_reached or bot_challenge_detected:
                 break
             print(f"[{index}/{len(queries)}] query={query}", flush=True)
             _emit_progress(
@@ -3553,6 +3907,10 @@ def run(args: argparse.Namespace) -> int:
                         total_queries=len(queries),
                     )
                     daily_limit_reached = True
+                    query_halted = True
+                    continue
+                if _page_has_bot_challenge_message(page):
+                    _mark_bot_challenge("after_search", query=query, query_index=index)
                     query_halted = True
                     continue
                 current_lookback = ""
@@ -3634,6 +3992,10 @@ def run(args: argparse.Namespace) -> int:
                         )
                         filter_state = retry_state
                 timings["filter_apply_sec"] = round(max(0.0, time.perf_counter() - t_filters), 4)
+                if _page_has_bot_challenge_message(page):
+                    _mark_bot_challenge("after_filters", query=query, query_index=index)
+                    query_halted = True
+                    continue
                 desired_offset = max(0, int(args.result_offset))
                 if (not short_circuit_no_sold) and desired_offset > 0:
                     t_offset = time.perf_counter()
@@ -3768,6 +4130,10 @@ def run(args: argparse.Namespace) -> int:
                             daily_limit_reached = True
                             query_halted = True
                             continue
+                        if _contains_bot_challenge_message(html_text):
+                            _mark_bot_challenge("html_content", query=query, query_index=index)
+                            query_halted = True
+                            continue
                     except Exception:
                         pass
                     # DOM全文の走査は重いので、HTML解析で十分な場合はスキップして高速化する。
@@ -3840,6 +4206,9 @@ def run(args: argparse.Namespace) -> int:
             finally:
                 page.remove_listener("response", on_response)
             if query_halted:
+                continue
+            if _page_has_bot_challenge_message(page):
+                _mark_bot_challenge("before_metrics_finalize", query=query, query_index=index)
                 continue
 
             metrics = acc.finalize()
@@ -4038,6 +4407,9 @@ def run(args: argparse.Namespace) -> int:
             )
             if args.inter_query_sleep > 0 and index < len(queries):
                 time.sleep(args.inter_query_sleep)
+            if _page_has_bot_challenge_message(page):
+                _mark_bot_challenge("after_query_done", query=query, query_index=index)
+                break
 
         pause_before_close_sec = max(0, int(getattr(args, "pause_before_close", 0)))
         if (not bool(args.headless)) and pause_before_close_sec > 0:
@@ -4062,6 +4434,9 @@ def run(args: argparse.Namespace) -> int:
     )
     if daily_limit_reached:
         return 75
+    if bot_challenge_detected:
+        print(f"[bot_challenge] halted at stage={bot_challenge_stage}", flush=True)
+        return 76
     return 0
 
 

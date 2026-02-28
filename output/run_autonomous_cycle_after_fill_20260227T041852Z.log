@@ -1,0 +1,27 @@
+[rpa] mode=rpa_json ran=True missing primary=6 fallback=6 model_backfill=6
+[rpa] primary rc=0 queries=23 condition=new
+[rpa] fallback rc=0 queries=6 condition=any
+[rpa] model_backfill rc=0 queries=8 condition=any
+
+Saved report: /Users/tadamichikimura/Downloads/dev-HQ/Reseller/docs/miner_cycle_report_latest.json
+Saved active cycle manifest: /Users/tadamichikimura/Downloads/dev-HQ/Reseller/docs/miner_cycle_active.json
+reviewable pending: initial=27 final=27 delta=0 target=24
+cycle_id=cycle-20260227-042659 batch_size=24 cycle_ready=True
+[backfill] updated=False touched=0 added=0 total=33
+Saved auto miner report: /Users/tadamichikimura/Downloads/dev-HQ/Reseller/docs/miner_cycle_auto_miner_latest.json
+cycle=cycle-20260227-042659 approve=0 reject=24 skipped=0
+Saved close report: /Users/tadamichikimura/Downloads/dev-HQ/Reseller/docs/miner_cycle_close_report_latest.json
+cycle=cycle-20260227-042659 reviewed=24/24 unresolved=0 rejected=24 ready_for_tuning=True ready_for_light_tuning=True
+Applied cycle improvements: cycle=cycle-20260227-042659 added_blocked_pairs=5 skipped_no_issue_target=0 total_blocked_pairs=147
+blocklist=/Users/tadamichikimura/Downloads/dev-HQ/Reseller/data/miner_blocklist.json
+synced rejected candidates: rows=25 added=0 total_blocked_pairs=147
+blocklist=/Users/tadamichikimura/Downloads/dev-HQ/Reseller/data/miner_blocklist.json
+[cycle-summary] policy_file=/Users/tadamichikimura/Downloads/dev-HQ/Reseller/docs/OPERATION_POLICY.json ok=True
+$ python3 scripts/run_miner_cycle.py --target-count 24 --hard-cap 30 --min-profit-usd 0.01 --min-margin-rate 0.03 --min-match-score 0.75 --max-rounds 1 --sleep-seconds 0.8 --max-zero-gain-strikes 2 --historical-min-attempts 3 --historical-min-network-calls 6 --historical-min-gain-per-network-call 0.05 --historical-retry-every-runs 4 --duplicate-heavy-ratio-threshold 0.7 --duplicate-heavy-min-evaluated 12 --duplicate-heavy-min-duplicates 8
+$ python3 scripts/auto_miner_cycle.py --min-profit-usd 0.01 --min-margin-rate 0.03 --min-ev90-usd 0.0 --min-match-score 0.75 --min-auto-approve-score 0.9 --min-token-jaccard 0.62 --max-score-drift 0.25 --output /Users/tadamichikimura/Downloads/dev-HQ/Reseller/docs/miner_cycle_auto_miner_latest.json
+$ python3 scripts/close_miner_cycle.py --reject-floor 10 --min-reviewed-ratio 1.0 --min-reject-rate 0.1 --min-reject-with-issue-count 1 --auto-miner-report /Users/tadamichikimura/Downloads/dev-HQ/Reseller/docs/miner_cycle_auto_miner_latest.json --output /Users/tadamichikimura/Downloads/dev-HQ/Reseller/docs/miner_cycle_close_report_latest.json
+[cycle-summary] batch_size=24 cycle_ready=True auto(approve=0, reject=24, reject_rate=1.000) close_ready=True close_ready_light=True
+[cycle-summary] validation_report=/Users/tadamichikimura/Downloads/dev-HQ/Reseller/docs/miner_cycle_validation_latest.json ok=True
+[cycle-warning] reject_rate is very high: 1.000
+$ python3 scripts/apply_cycle_improvements.py
+$ python3 scripts/sync_rejected_blocklist.py

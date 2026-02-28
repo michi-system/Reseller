@@ -1,0 +1,38 @@
+[rpa] mode=rpa_json ran=True missing primary=1 fallback=1 model_backfill=1
+[rpa] primary rc=0 queries=8 condition=new
+[rpa] fallback rc=0 queries=1 condition=any
+[rpa] model_backfill rc=0 queries=8 condition=any
+[round 1] citizen nb1050 watch -> created=0 queue+=0 now=0 api(network/cache)=2/4
+[round 1] g-shock gw9400 watch -> created=0 queue+=0 now=0 api(network/cache)=0/8
+[round 1] casio gmw-b5000 watch -> created=0 queue+=0 now=0 api(network/cache)=0/7
+[round 1] casio mtg-b2000 watch -> created=0 queue+=0 now=0 api(network/cache)=0/4
+[round 1] seiko spb121 watch -> created=0 queue+=0 now=0 api(network/cache)=1/6
+[round 1] citizen cb0261 watch -> created=0 queue+=0 now=0 api(network/cache)=0/5
+[round 1] casio ocw-t200 watch -> created=0 queue+=0 now=0 api(network/cache)=0/5
+[round 1] seiko ssc813 watch -> created=0 queue+=0 now=0 api(network/cache)=1/9
+[round 2] citizen nb1050 watch -> created=0 queue+=0 now=0 api(network/cache)=2/4
+[round 2] g-shock gw9400 watch -> created=0 queue+=0 now=0 api(network/cache)=0/8
+[round 2] casio gmw-b5000 watch -> created=0 queue+=0 now=0 api(network/cache)=0/7
+[round 2] casio mtg-b2000 watch -> created=0 queue+=0 now=0 api(network/cache)=0/4
+[round 2] seiko spb121 watch -> created=0 queue+=0 now=0 api(network/cache)=1/6
+[round 2] citizen cb0261 watch -> created=0 queue+=0 now=0 api(network/cache)=0/5
+[round 2] casio ocw-t200 watch -> created=0 queue+=0 now=0 api(network/cache)=0/5
+[round 2] seiko ssc813 watch -> created=0 queue+=0 now=0 api(network/cache)=1/9
+
+Saved report: /Users/tadamichikimura/Downloads/dev-HQ/Reseller/docs/miner_cycle_report_latest.json
+Saved active cycle manifest: /Users/tadamichikimura/Downloads/dev-HQ/Reseller/docs/miner_cycle_active.json
+reviewable pending: initial=0 final=0 delta=0 target=24
+cycle_id=cycle-20260227-005709 batch_size=0 cycle_ready=False
+[backfill] updated=True touched=2 added=0 total=33
+Saved auto miner report: /Users/tadamichikimura/Downloads/dev-HQ/Reseller/docs/miner_cycle_auto_miner_latest.json
+cycle=cycle-20260227-005709 approve=0 reject=0 skipped=0 (empty batch)
+Saved close report: /Users/tadamichikimura/Downloads/dev-HQ/Reseller/docs/miner_cycle_close_report_latest.json
+cycle=cycle-20260227-005709 reviewed=0/0 unresolved=0 rejected=0 ready_for_tuning=False ready_for_light_tuning=False
+[cycle-summary] policy_file=/Users/tadamichikimura/Downloads/dev-HQ/Reseller/docs/OPERATION_POLICY.json ok=True
+$ python3 scripts/run_miner_cycle.py --target-count 24 --hard-cap 30 --min-profit-usd 0.01 --min-margin-rate 0.03 --min-match-score 0.75 --max-rounds 2 --sleep-seconds 0.8 --max-zero-gain-strikes 999 --historical-min-attempts 3 --historical-min-network-calls 6 --historical-min-gain-per-network-call 0.0 --historical-retry-every-runs 1 --duplicate-heavy-ratio-threshold 0.7 --duplicate-heavy-min-evaluated 12 --duplicate-heavy-min-duplicates 8 --queries 'citizen nb1050 watch,g-shock gw9400 watch,casio gmw-b5000 watch,casio mtg-b2000 watch,seiko spb121 watch,seiko ssc813 watch,citizen cb0261 watch,casio ocw-t200 watch'
+$ python3 scripts/auto_miner_cycle.py --min-profit-usd 0.01 --min-margin-rate 0.03 --min-ev90-usd 0.0 --min-match-score 0.75 --min-auto-approve-score 0.9 --min-token-jaccard 0.62 --max-score-drift 0.25 --output /Users/tadamichikimura/Downloads/dev-HQ/Reseller/docs/miner_cycle_auto_miner_latest.json
+$ python3 scripts/close_miner_cycle.py --reject-floor 10 --min-reviewed-ratio 1.0 --min-reject-rate 0.1 --min-reject-with-issue-count 1 --auto-miner-report /Users/tadamichikimura/Downloads/dev-HQ/Reseller/docs/miner_cycle_auto_miner_latest.json --output /Users/tadamichikimura/Downloads/dev-HQ/Reseller/docs/miner_cycle_close_report_latest.json
+[cycle-summary] batch_size=0 cycle_ready=False auto(approve=0, reject=0, reject_rate=0.000) close_ready=False close_ready_light=False
+[cycle-summary] validation_report=/Users/tadamichikimura/Downloads/dev-HQ/Reseller/docs/miner_cycle_validation_latest.json ok=True
+[cycle-warning] batch_size=0 (no review candidates were processed)
+[cycle-error] require-progress enabled but this cycle made no actionable progress

@@ -162,10 +162,28 @@
             <button id="tabReviewed" class="tab" type="button" role="tab" aria-selected="false">
               レビュー済み <span id="countReviewed">0</span>
             </button>
+            <button id="tabDebug" class="tab" type="button" role="tab" aria-selected="false">
+              デバッグ用 <span id="countDebug">0</span>
+            </button>
           </div>
+          <section id="debugFilterBar" class="debug-filter-bar" hidden>
+            <div class="debug-filter-head">
+              <h3>理由フィルタ</h3>
+              <p class="hint">デバッグ用で落ちた候補を理由別に絞り込みます。</p>
+            </div>
+            <p id="debugThresholdSummary" class="debug-filter-summary"></p>
+            <div id="debugFilterChips" class="debug-filter-chips"></div>
+          </section>
           <p id="currentCandidateLabel" class="current-label">候補を選択してください</p>
           <ul id="reviewList" class="review-list"></ul>
           <p id="reviewListEmpty" class="empty">候補がありません。</p>
+          <section id="debugPanel" class="debug-panel" hidden>
+            <div class="debug-panel-head">
+              <h3>最新探索デバッグ</h3>
+              <p class="hint">直近の A→B→C 実行結果から、B段階の低一致例と C段階の低流動性例を表示します。</p>
+            </div>
+            <div id="debugPanelBody" class="debug-panel-body"></div>
+          </section>
         </section>
       </section>
 

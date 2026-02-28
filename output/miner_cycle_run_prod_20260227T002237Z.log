@@ -1,0 +1,10 @@
+[rpa] mode=rpa_json ran=True missing primary=4 fallback=4 model_backfill=4
+[rpa] primary rc=0 queries=23 condition=new
+[rpa] fallback rc=0 queries=4 condition=any
+[rpa] model_backfill rc=0 queries=8 condition=any
+
+Saved report: output/miner_cycle_report_prod_20260227T002237Z.json
+Saved active cycle manifest: output/miner_cycle_active_prod_20260227T002237Z.json
+reviewable pending: initial=2 final=2 delta=0 target=24
+cycle_id=cycle-20260227-002547 batch_size=2 cycle_ready=False
+[backfill] updated=False touched=0 added=0 total=33

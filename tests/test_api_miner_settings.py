@@ -7,6 +7,16 @@ from reselling import api_server
 
 
 class ApiMinerSettingsTests(unittest.TestCase):
+    def test_resolve_requested_stage_c_min_sold_90d_uses_watch_default_when_omitted(self) -> None:
+        self.assertEqual(api_server._resolve_requested_stage_c_min_sold_90d("watch", {}), 3)
+        self.assertEqual(api_server._resolve_requested_stage_c_min_sold_90d("sneakers", {}), 10)
+
+    def test_resolve_requested_stage_c_min_sold_90d_keeps_explicit_value(self) -> None:
+        self.assertEqual(
+            api_server._resolve_requested_stage_c_min_sold_90d("watch", {"stage_c_min_sold_90d": 7}),
+            7,
+        )
+
     def test_load_defaults_when_not_saved(self) -> None:
         with tempfile.TemporaryDirectory() as td:
             db_path = Path(td) / "reseller.db"

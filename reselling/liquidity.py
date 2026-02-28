@@ -11,7 +11,7 @@ import time
 import urllib.parse
 import urllib.request
 from pathlib import Path
-from typing import Any, Dict, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from .coerce import env_bool as _env_bool
 from .coerce import env_float as _env_float
@@ -489,6 +489,37 @@ def _load_rpa_json_entries(path: Path) -> Tuple[Dict[str, Dict[str, Any]], Dict[
     return by_key, by_query
 
 
+def _load_rpa_json_rows(path: Path) -> List[Dict[str, Any]]:
+    if not path.exists():
+        return []
+    suffix = path.suffix.lower()
+    if suffix == ".json":
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except Exception:
+            return []
+        if isinstance(payload, list):
+            return [row for row in payload if isinstance(row, dict)]
+        if isinstance(payload, dict):
+            bucket = payload.get("signals")
+            if isinstance(bucket, list):
+                return [row for row in bucket if isinstance(row, dict)]
+            return [payload]
+        return []
+    rows: List[Dict[str, Any]] = []
+    for raw_line in path.read_text(encoding="utf-8").splitlines():
+        line = str(raw_line or "").strip()
+        if not line:
+            continue
+        try:
+            row = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(row, dict):
+            rows.append(row)
+    return rows
+
+
 def _resolve_rpa_row(
     *,
     entries_by_key: Dict[str, Dict[str, Any]],
@@ -616,6 +647,53 @@ def _specific_query_codes(text: str) -> set[str]:
     return out
 
 
+def _rpa_row_model_codes(row: Dict[str, Any]) -> set[str]:
+    out: set[str] = set()
+    if not isinstance(row, dict):
+        return out
+    out |= _specific_query_codes(str(row.get("query", "") or ""))
+    out |= _specific_query_codes(str(row.get("signal_key", "") or ""))
+    metadata = row.get("metadata") if isinstance(row.get("metadata"), dict) else {}
+    for key in ("rpa_query", "query", "signal_key", "source_title", "market_title", "target_model_code"):
+        out |= _specific_query_codes(str(metadata.get(key, "") or ""))
+    return out
+
+
+def _find_rpa_strict_fallback_row(
+    *,
+    path: Path,
+    query: str,
+    signal_key: str,
+) -> Optional[Dict[str, Any]]:
+    def _rank(row: Dict[str, Any]) -> tuple[int, int, int, int, float, int]:
+        sold_90d = _to_int(row.get("sold_90d_count"), -1)
+        sold_ok = 1 if sold_90d >= 0 else 0
+        positive_evidence_ok = 1 if _rpa_row_has_positive_sold_evidence(row) else 0
+        conf = _to_float(row.get("confidence"), 0.0)
+        fetched = _iso_to_epoch(str(row.get("fetched_at", "") or row.get("updated_at", "") or ""))
+        return sold_ok, positive_evidence_ok, max(-1, sold_90d), len(_rpa_row_model_codes(row)), conf, fetched
+
+    requested_codes = _specific_query_codes(query) | _specific_query_codes(signal_key)
+    normalized_query = _compact_query(query).lower()
+    candidates: List[Dict[str, Any]] = []
+    for row in _load_rpa_json_rows(path):
+        if not _rpa_row_has_strict_sold_filters(row):
+            continue
+        row_codes = _rpa_row_model_codes(row)
+        if requested_codes:
+            if not row_codes or requested_codes.isdisjoint(row_codes):
+                continue
+        elif normalized_query:
+            row_query = _compact_query(str(row.get("query", "") or "")).lower()
+            if row_query and row_query != normalized_query:
+                continue
+        candidates.append(row)
+    if not candidates:
+        return None
+    candidates.sort(key=_rank, reverse=True)
+    return candidates[0]
+
+
 def _rpa_row_has_strict_sold_filters(row: Dict[str, Any]) -> bool:
     metadata = row.get("metadata") if isinstance(row.get("metadata"), dict) else {}
     filter_state = metadata.get("filter_state") if isinstance(metadata.get("filter_state"), dict) else {}
@@ -705,7 +783,18 @@ def _sanitize_unreliable_rpa_signal(signal: Dict[str, Any]) -> Dict[str, Any]:
     has_sample = _has_signal_sold_sample_reference(metadata)
     accepted_without_filtered_rows = bool(metadata.get("accepted_without_filtered_rows"))
 
-    if strict_ok and (filtered_row_count > 0 or has_sample or accepted_without_filtered_rows):
+    require_filtered_rows_for_positive = _env_bool("LIQUIDITY_RPA_REQUIRE_FILTERED_ROWS_FOR_POSITIVE_SOLD", True)
+    if strict_ok and (
+        filtered_row_count > 0
+        or has_sample
+        or accepted_without_filtered_rows
+        or (not require_filtered_rows_for_positive)
+    ):
+        if strict_ok and (filtered_row_count <= 0 and not has_sample and not accepted_without_filtered_rows):
+            metadata_next = dict(metadata)
+            metadata_next["accepted_without_filtered_rows"] = True
+            metadata_next["accepted_without_filtered_rows_reason"] = "config_relaxed"
+            signal["metadata"] = metadata_next
         return signal
 
     reason = "rpa_signal_not_strict_sold_last90"
@@ -756,8 +845,30 @@ def _provider_rpa_json(
         return None, "rpa_json_no_match"
 
     require_strict_filters = _env_bool("LIQUIDITY_RPA_REQUIRE_STRICT_FILTERS", True)
+    strict_fallback_used = False
     if require_strict_filters and (not _rpa_row_has_strict_sold_filters(row)):
-        return None, "rpa_json_not_strict_sold_filters"
+        fallback_row = _find_rpa_strict_fallback_row(
+            path=path,
+            query=query,
+            signal_key=signal_key,
+        )
+        if isinstance(fallback_row, dict):
+            row = fallback_row
+            strict_fallback_used = True
+        else:
+            return None, "rpa_json_not_strict_sold_filters"
+
+    sold_probe_initial = _to_int(row.get("sold_90d_count"), -1)
+    if sold_probe_initial < 0:
+        fallback_row = _find_rpa_strict_fallback_row(
+            path=path,
+            query=query,
+            signal_key=signal_key,
+        )
+        fallback_sold = _to_int(fallback_row.get("sold_90d_count"), -1) if isinstance(fallback_row, dict) else -1
+        if fallback_sold >= 0:
+            row = fallback_row
+            strict_fallback_used = True
 
     require_filtered_rows_for_positive = _env_bool("LIQUIDITY_RPA_REQUIRE_FILTERED_ROWS_FOR_POSITIVE_SOLD", True)
     accepted_without_filtered_rows = False
@@ -824,6 +935,9 @@ def _provider_rpa_json(
         "rpa_json_path": str(path),
         "rpa_query": str(row.get("query", "") or ""),
     }
+    if strict_fallback_used:
+        metadata["strict_fallback_used"] = True
+        metadata["strict_fallback_signal_key"] = str(row.get("signal_key", "") or "")
     if sold_price_min_raw > 0:
         metadata["sold_price_min_raw"] = round(sold_price_min_raw, 4)
     if sold_price_min_ratio > 0:
@@ -1063,7 +1177,10 @@ def get_liquidity_signal(
 
     # rpa_json は収集ファイル更新を優先し、DBキャッシュによる古い判定を避ける。
     if _env_bool("LIQUIDITY_CACHE_ENABLED", True) and mode not in {"rpa_json", "rpa"}:
-        cached = _load_cached_signal(settings, signal_key)
+        try:
+            cached = _load_cached_signal(settings, signal_key)
+        except Exception:
+            cached = None
         if cached is not None:
             return _sanitize_unreliable_rpa_signal(cached)
 
@@ -1136,7 +1253,14 @@ def get_liquidity_signal(
         )
 
     signal = _sanitize_unreliable_rpa_signal(signal)
-    _save_signal(settings, signal)
+    try:
+        _save_signal(settings, signal)
+    except Exception as err:
+        if not _env_bool("LIQUIDITY_SAVE_SIGNAL_FAIL_SOFT", True):
+            raise
+        metadata = signal.get("metadata") if isinstance(signal.get("metadata"), dict) else {}
+        metadata["save_signal_warning"] = str(err)
+        signal["metadata"] = metadata
     return signal
 
 

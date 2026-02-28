@@ -1,0 +1,473 @@
+{
+  "query": "watch",
+  "market_site": "ebay",
+  "source_sites": [
+    "rakuten",
+    "yahoo"
+  ],
+  "fetched": {},
+  "created_count": 0,
+  "created_ids": [],
+  "created": [],
+  "errors": [],
+  "hints": [
+    "腕時計の上位50件まで確認しました。2026-03-06T06:30:47Z 以降に再実行してください。",
+    "A段階のカテゴリ最低価格フィルタ: $100.00 を適用しました。",
+    "A段階チューニング提案: A段階で90日売却フィルタ確認に失敗したページがあります。ログイン状態とフィルタロック動作を確認し、traceを有効化して再実行してください。",
+    "A段階チューニング提案: A段階で有効seedが増えていません。暫定でカテゴリ知識bootstrapを有効化し、B段階の消化を維持してください。",
+    "有効なseedがありません。カテゴリを変更するか、後で再実行してください。"
+  ],
+  "search_scope_done": false,
+  "applied_filters": {},
+  "query_cache_skip": false,
+  "query_cache_ttl_sec": 0,
+  "rpa_daily_limit_reached": false,
+  "seed_pool": {
+    "category_key": "watch",
+    "category_label": "腕時計",
+    "seed_count": 0,
+    "selected_seed_count": 0,
+    "available_after_refill": 0,
+    "skipped_low_quality_count": 0,
+    "skipped_cooldown_count": 0,
+    "cooldown_active_count": 0,
+    "strict_model_seed": true,
+    "cleaned_expired_count": 0,
+    "normalized_seed_count": 0,
+    "deduped_seed_count": 0,
+    "deleted_invalid_seed_count": 0,
+    "select_min_seed_score": 0,
+    "refill": {
+      "ran": true,
+      "available_before": 0,
+      "available_after": 0,
+      "pre_refill_pruned_non_model_seed_count": 0,
+      "added_count": 0,
+      "bootstrap_added_count": 0,
+      "skipped_fresh_pages": 0,
+      "page_runs": [
+        {
+          "query": "G-SHOCK",
+          "page": 1,
+          "offset": 0,
+          "new_seed_count": 0,
+          "raw_result_count": 0,
+          "daily_limit_reached": false,
+          "reason": "ok"
+        },
+        {
+          "query": "Prospex",
+          "page": 1,
+          "offset": 0,
+          "new_seed_count": 0,
+          "raw_result_count": 0,
+          "daily_limit_reached": false,
+          "reason": "ok"
+        },
+        {
+          "query": "Seiko 5 Sports",
+          "page": 1,
+          "offset": 0,
+          "new_seed_count": 0,
+          "raw_result_count": 0,
+          "daily_limit_reached": false,
+          "reason": "ok"
+        },
+        {
+          "query": "Speedtimer",
+          "page": 1,
+          "offset": 0,
+          "new_seed_count": 0,
+          "raw_result_count": 0,
+          "daily_limit_reached": false,
+          "reason": "ok"
+        },
+        {
+          "query": "Astron",
+          "page": 1,
+          "offset": 0,
+          "new_seed_count": 0,
+          "raw_result_count": 0,
+          "daily_limit_reached": false,
+          "reason": "ok"
+        },
+        {
+          "query": "Attesa",
+          "page": 1,
+          "offset": 0,
+          "new_seed_count": 0,
+          "raw_result_count": 0,
+          "daily_limit_reached": false,
+          "reason": "ok"
+        },
+        {
+          "query": "Orient Star",
+          "page": 1,
+          "offset": 0,
+          "new_seed_count": 0,
+          "raw_result_count": 0,
+          "daily_limit_reached": false,
+          "reason": "ok"
+        },
+        {
+          "query": "Tsuyosa",
+          "page": 1,
+          "offset": 0,
+          "new_seed_count": 0,
+          "raw_result_count": 0,
+          "daily_limit_reached": false,
+          "reason": "ok"
+        }
+      ],
+      "reason": "rank_limit_cooldown",
+      "daily_limit_reached": false,
+      "cooldown_until": "2026-03-06T06:30:47Z",
+      "cooldown_active_count": 0,
+      "cooldown_blocked_count": 0,
+      "query": "G-SHOCK",
+      "queries": [
+        "G-SHOCK",
+        "Prospex",
+        "Seiko 5 Sports",
+        "Speedtimer",
+        "Astron",
+        "Attesa",
+        "Orient Star",
+        "Tsuyosa"
+      ],
+      "big_word_limit": 0,
+      "big_word_count": 8,
+      "big_word_total_count": 8,
+      "big_word_scale_ratio": 1.0,
+      "target_count": 300,
+      "target_count_base": 300,
+      "timebox_sec": 900,
+      "timebox_base_sec": 900,
+      "trace_path": "",
+      "trace_session": "",
+      "minimize_transitions": false,
+      "transition_page_size": 0,
+      "transition_max_pages_per_query": 0,
+      "query_page_unlock_enabled": true,
+      "query_page_unlock_default_hours": 24.0,
+      "query_page_unlock_min_pages": 1,
+      "query_page_unlock_category_overrides_count": 8,
+      "query_page_unlock_overrides_count": 0,
+      "pr_category_id": 31387,
+      "pr_category_slug": "wristwatches",
+      "pr_category_filter_enabled": true,
+      "min_seed_sold_price_usd": 100.0,
+      "min_price_filtered_count": 0,
+      "strict_model_seed": true,
+      "query_page_unlock_initial_pages": 1,
+      "last_rank_checked": 0,
+      "query_runs": [
+        {
+          "query": "G-SHOCK",
+          "added_count": 0,
+          "fetched_pages": 1,
+          "skipped_fresh_pages": 0,
+          "last_rank_checked": 0,
+          "stop_reason": "empty_result_page",
+          "page_unlock": {
+            "enabled": true,
+            "hours_per_page": 24.0,
+            "hours_source": "category_row_query",
+            "elapsed_sec": 0,
+            "latest_fetched_at": "",
+            "fetch_quota_pages": 1,
+            "remaining_quota_pages": 0,
+            "blocked_pages": 0,
+            "next_unlock_at": ""
+          }
+        },
+        {
+          "query": "Prospex",
+          "added_count": 0,
+          "fetched_pages": 1,
+          "skipped_fresh_pages": 0,
+          "last_rank_checked": 0,
+          "stop_reason": "empty_result_page",
+          "page_unlock": {
+            "enabled": true,
+            "hours_per_page": 27.0,
+            "hours_source": "category_row_query",
+            "elapsed_sec": 0,
+            "latest_fetched_at": "",
+            "fetch_quota_pages": 1,
+            "remaining_quota_pages": 0,
+            "blocked_pages": 0,
+            "next_unlock_at": ""
+          }
+        },
+        {
+          "query": "Seiko 5 Sports",
+          "added_count": 0,
+          "fetched_pages": 1,
+          "skipped_fresh_pages": 0,
+          "last_rank_checked": 0,
+          "stop_reason": "empty_result_page",
+          "page_unlock": {
+            "enabled": true,
+            "hours_per_page": 26.0,
+            "hours_source": "category_row_query",
+            "elapsed_sec": 0,
+            "latest_fetched_at": "",
+            "fetch_quota_pages": 1,
+            "remaining_quota_pages": 0,
+            "blocked_pages": 0,
+            "next_unlock_at": ""
+          }
+        },
+        {
+          "query": "Speedtimer",
+          "added_count": 0,
+          "fetched_pages": 1,
+          "skipped_fresh_pages": 0,
+          "last_rank_checked": 0,
+          "stop_reason": "empty_result_page",
+          "page_unlock": {
+            "enabled": true,
+            "hours_per_page": 24.0,
+            "hours_source": "category_row_query",
+            "elapsed_sec": 0,
+            "latest_fetched_at": "",
+            "fetch_quota_pages": 1,
+            "remaining_quota_pages": 0,
+            "blocked_pages": 0,
+            "next_unlock_at": ""
+          }
+        },
+        {
+          "query": "Astron",
+          "added_count": 0,
+          "fetched_pages": 1,
+          "skipped_fresh_pages": 0,
+          "last_rank_checked": 0,
+          "stop_reason": "empty_result_page",
+          "page_unlock": {
+            "enabled": true,
+            "hours_per_page": 24.0,
+            "hours_source": "category_row_query",
+            "elapsed_sec": 0,
+            "latest_fetched_at": "",
+            "fetch_quota_pages": 1,
+            "remaining_quota_pages": 0,
+            "blocked_pages": 0,
+            "next_unlock_at": ""
+          }
+        },
+        {
+          "query": "Attesa",
+          "added_count": 0,
+          "fetched_pages": 1,
+          "skipped_fresh_pages": 0,
+          "last_rank_checked": 0,
+          "stop_reason": "empty_result_page",
+          "page_unlock": {
+            "enabled": true,
+            "hours_per_page": 24.0,
+            "hours_source": "category_row_query",
+            "elapsed_sec": 0,
+            "latest_fetched_at": "",
+            "fetch_quota_pages": 1,
+            "remaining_quota_pages": 0,
+            "blocked_pages": 0,
+            "next_unlock_at": ""
+          }
+        },
+        {
+          "query": "Orient Star",
+          "added_count": 0,
+          "fetched_pages": 1,
+          "skipped_fresh_pages": 0,
+          "last_rank_checked": 0,
+          "stop_reason": "empty_result_page",
+          "page_unlock": {
+            "enabled": true,
+            "hours_per_page": 24.0,
+            "hours_source": "category_row_query",
+            "elapsed_sec": 0,
+            "latest_fetched_at": "",
+            "fetch_quota_pages": 1,
+            "remaining_quota_pages": 0,
+            "blocked_pages": 0,
+            "next_unlock_at": ""
+          }
+        },
+        {
+          "query": "Tsuyosa",
+          "added_count": 0,
+          "fetched_pages": 1,
+          "skipped_fresh_pages": 0,
+          "last_rank_checked": 0,
+          "stop_reason": "empty_result_page",
+          "page_unlock": {
+            "enabled": true,
+            "hours_per_page": 24.0,
+            "hours_source": "category_row_query",
+            "elapsed_sec": 0,
+            "latest_fetched_at": "",
+            "fetch_quota_pages": 1,
+            "remaining_quota_pages": 0,
+            "blocked_pages": 0,
+            "next_unlock_at": ""
+          }
+        }
+      ],
+      "low_yield_stop_query_count": 0,
+      "accessory_filtered_count": 0,
+      "fetched_pages": 8,
+      "rpa_timeout_pages": 0,
+      "diagnostics": {
+        "rpa_failed_pages": 0,
+        "rpa_timeout_pages": 0,
+        "daily_limit_pages": 0,
+        "empty_result_pages": 8,
+        "non_empty_result_pages": 0,
+        "strict_filter_blocked_pages": 8,
+        "sold_tab_unconfirmed_pages": 8,
+        "lookback_unconfirmed_pages": 0,
+        "page_unlock_enabled": true,
+        "page_unlock_limited_queries": 0,
+        "page_unlock_blocked_pages": 0,
+        "page_reason_counts": {
+          "ok": 8
+        },
+        "failure_samples": [
+          {
+            "query": "G-SHOCK",
+            "page": 1,
+            "offset": 0,
+            "reason": "ok",
+            "returncode": 0,
+            "daily_limit_reached": false,
+            "raw_result_count": 0,
+            "filtered_result_count": 0,
+            "sold_tab_selected": false,
+            "lookback_selected": "",
+            "strict_blocked": true,
+            "strict_filter_reason": "condition_filter_not_confirmed",
+            "stdout_tail": [
+              "[progress] {\"phase\": \"query_done\", \"message\": \"検索語の処理が完了しました: G-SHOCK\", \"progress_percent\": 100.0, \"query\": \"G-SHOCK\", \"query_index\": 1, \"total_queries\": 1, \"at\": \"2026-02-27T06:31:05Z\", \"extra\": {\"sold_90d_count\": -1, \"sold_price_min\": -1.0, \"active_count\": -1, \"active_price_min\": -1.0, \"sold_price_median\": -1.0}}",
+              "saved 1 rows -> /Users/tadamichikimura/Downloads/dev-HQ/Reseller/data/miner_seed_page_sm4bmik3.jsonl",
+              "[progress] {\"phase\": \"completed\", \"message\": \"Product Research取得が完了しました\", \"progress_percent\": 100.0, \"query\": \"\", \"query_index\": 0, \"total_queries\": 1, \"at\": \"2026-02-27T06:31:06Z\", \"extra\": {\"saved_rows\": 1}}"
+            ],
+            "stderr_tail": []
+          },
+          {
+            "query": "Prospex",
+            "page": 1,
+            "offset": 0,
+            "reason": "ok",
+            "returncode": 0,
+            "daily_limit_reached": false,
+            "raw_result_count": 0,
+            "filtered_result_count": 0,
+            "sold_tab_selected": false,
+            "lookback_selected": "",
+            "strict_blocked": true,
+            "strict_filter_reason": "condition_filter_not_confirmed",
+            "stdout_tail": [
+              "[progress] {\"phase\": \"query_done\", \"message\": \"検索語の処理が完了しました: Prospex\", \"progress_percent\": 100.0, \"query\": \"Prospex\", \"query_index\": 1, \"total_queries\": 1, \"at\": \"2026-02-27T06:31:24Z\", \"extra\": {\"sold_90d_count\": -1, \"sold_price_min\": -1.0, \"active_count\": -1, \"active_price_min\": -1.0, \"sold_price_median\": -1.0}}",
+              "saved 1 rows -> /Users/tadamichikimura/Downloads/dev-HQ/Reseller/data/miner_seed_page_fedysnel.jsonl",
+              "[progress] {\"phase\": \"completed\", \"message\": \"Product Research取得が完了しました\", \"progress_percent\": 100.0, \"query\": \"\", \"query_index\": 0, \"total_queries\": 1, \"at\": \"2026-02-27T06:31:24Z\", \"extra\": {\"saved_rows\": 1}}"
+            ],
+            "stderr_tail": []
+          },
+          {
+            "query": "Seiko 5 Sports",
+            "page": 1,
+            "offset": 0,
+            "reason": "ok",
+            "returncode": 0,
+            "daily_limit_reached": false,
+            "raw_result_count": 0,
+            "filtered_result_count": 0,
+            "sold_tab_selected": false,
+            "lookback_selected": "",
+            "strict_blocked": true,
+            "strict_filter_reason": "condition_filter_not_confirmed",
+            "stdout_tail": [
+              "[progress] {\"phase\": \"query_done\", \"message\": \"検索語の処理が完了しました: Seiko 5 Sports\", \"progress_percent\": 100.0, \"query\": \"Seiko 5 Sports\", \"query_index\": 1, \"total_queries\": 1, \"at\": \"2026-02-27T06:31:43Z\", \"extra\": {\"sold_90d_count\": -1, \"sold_price_min\": -1.0, \"active_count\": -1, \"active_price_min\": -1.0, \"sold_price_median\": -1.0}}",
+              "saved 1 rows -> /Users/tadamichikimura/Downloads/dev-HQ/Reseller/data/miner_seed_page_xz2tfwa5.jsonl",
+              "[progress] {\"phase\": \"completed\", \"message\": \"Product Research取得が完了しました\", \"progress_percent\": 100.0, \"query\": \"\", \"query_index\": 0, \"total_queries\": 1, \"at\": \"2026-02-27T06:31:43Z\", \"extra\": {\"saved_rows\": 1}}"
+            ],
+            "stderr_tail": []
+          },
+          {
+            "query": "Speedtimer",
+            "page": 1,
+            "offset": 0,
+            "reason": "ok",
+            "returncode": 0,
+            "daily_limit_reached": false,
+            "raw_result_count": 0,
+            "filtered_result_count": 0,
+            "sold_tab_selected": false,
+            "lookback_selected": "",
+            "strict_blocked": true,
+            "strict_filter_reason": "condition_filter_not_confirmed",
+            "stdout_tail": [
+              "[progress] {\"phase\": \"query_done\", \"message\": \"検索語の処理が完了しました: Speedtimer\", \"progress_percent\": 100.0, \"query\": \"Speedtimer\", \"query_index\": 1, \"total_queries\": 1, \"at\": \"2026-02-27T06:32:01Z\", \"extra\": {\"sold_90d_count\": -1, \"sold_price_min\": -1.0, \"active_count\": -1, \"active_price_min\": -1.0, \"sold_price_median\": -1.0}}",
+              "saved 1 rows -> /Users/tadamichikimura/Downloads/dev-HQ/Reseller/data/miner_seed_page_7pyx_w8t.jsonl",
+              "[progress] {\"phase\": \"completed\", \"message\": \"Product Research取得が完了しました\", \"progress_percent\": 100.0, \"query\": \"\", \"query_index\": 0, \"total_queries\": 1, \"at\": \"2026-02-27T06:32:01Z\", \"extra\": {\"saved_rows\": 1}}"
+            ],
+            "stderr_tail": []
+          }
+        ]
+      },
+      "refill_elapsed_sec": 142.835,
+      "seed_api_backfill": {
+        "attempts": 0,
+        "api_calls": 0,
+        "hits": 0,
+        "budget_skips": 0
+      },
+      "rank_ceiling": 50,
+      "tuning_recommendations": [
+        {
+          "code": "verify_pr_filter_lock",
+          "message": "A段階で90日売却フィルタ確認に失敗したページがあります。ログイン状態とフィルタロック動作を確認し、traceを有効化して再実行してください。",
+          "priority": "high",
+          "env_overrides": {
+            "MINER_SEED_POOL_TRACE_ENABLED": 1,
+            "LIQUIDITY_RPA_ENABLE_LOCK_SELECTED_FILTERS": 1
+          }
+        },
+        {
+          "code": "temporary_bootstrap_seed",
+          "message": "A段階で有効seedが増えていません。暫定でカテゴリ知識bootstrapを有効化し、B段階の消化を維持してください。",
+          "priority": "low",
+          "env_overrides": {
+            "MINER_SEED_POOL_BOOTSTRAP_ENABLED": 1,
+            "MINER_SEED_POOL_BOOTSTRAP_TARGET": 60
+          }
+        }
+      ],
+      "fallback_on_page_unlock_wait_enabled": true,
+      "fallback_target_new_seeds": 300,
+      "fallback_total_added_count": 0,
+      "fallback_refill_runs": [],
+      "phase_a_completed_with_fallback": false
+    }
+  },
+  "stage_b": {
+    "rows_count": 0,
+    "rows": [],
+    "api_calls": 0,
+    "api_max_calls_per_run": 0
+  },
+  "timed_fetch": {
+    "enabled": true,
+    "min_target_candidates": 24,
+    "timebox_sec": 900,
+    "max_passes": 1,
+    "continue_after_target": false,
+    "passes_run": 0,
+    "stop_reason": "seed_pool_empty",
+    "elapsed_sec": 151.579,
+    "reached_min_target": false,
+    "passes": []
+  }
+}

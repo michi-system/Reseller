@@ -1,0 +1,145 @@
+{
+  "started_at": "2026-02-27T03:42:41Z",
+  "ended_at": "2026-02-27T04:18:23Z",
+  "total_elapsed_sec": 2141.78,
+  "initial_reviewable_pending": 3,
+  "final_reviewable_pending": 27,
+  "iterations": 7,
+  "status_counts": {
+    "pending": 29,
+    "approved": 1,
+    "rejected": 1
+  },
+  "rows": [
+    {
+      "iter": 1,
+      "elapsed_sec": 428.564,
+      "created_count": 6,
+      "reviewable_before": 3,
+      "reviewable_after": 9,
+      "reviewable_gain": 6,
+      "stage2_skip_counts": {
+        "skipped_unprofitable": 13,
+        "skipped_duplicates": 11
+      },
+      "stop_reason": "seed_batch_completed",
+      "hints_head": [
+        "低流動性cooldown中のseedを 15 件スキップしました。",
+        "低流動性cooldownで待機中のseed: 15件",
+        "A段階のカテゴリ最低価格フィルタ: $100.00 を適用しました。",
+        "B段階でseed B行を生成: 19件"
+      ]
+    },
+    {
+      "iter": 2,
+      "elapsed_sec": 186.471,
+      "created_count": 0,
+      "reviewable_before": 9,
+      "reviewable_after": 9,
+      "reviewable_gain": 0,
+      "stage2_skip_counts": {
+        "skipped_unprofitable": 3,
+        "skipped_duplicates": 3
+      },
+      "stop_reason": "seed_batch_completed",
+      "hints_head": [
+        "低流動性cooldown中のseedを 15 件スキップしました。",
+        "低流動性cooldownで待機中のseed: 15件",
+        "A段階のカテゴリ最低価格フィルタ: $100.00 を適用しました。",
+        "B段階の主な除外理由: skipped_source_variant_unresolved (10件)"
+      ]
+    },
+    {
+      "iter": 3,
+      "elapsed_sec": 415.094,
+      "created_count": 6,
+      "reviewable_before": 9,
+      "reviewable_after": 15,
+      "reviewable_gain": 6,
+      "stage2_skip_counts": {
+        "skipped_duplicates": 14,
+        "skipped_unprofitable": 13
+      },
+      "stop_reason": "seed_batch_completed",
+      "hints_head": [
+        "低流動性cooldown中のseedを 15 件スキップしました。",
+        "低流動性cooldownで待機中のseed: 15件",
+        "A段階のカテゴリ最低価格フィルタ: $100.00 を適用しました。",
+        "B段階でseed B行を生成: 19件"
+      ]
+    },
+    {
+      "iter": 4,
+      "elapsed_sec": 115.453,
+      "created_count": 0,
+      "reviewable_before": 15,
+      "reviewable_after": 15,
+      "reviewable_gain": 0,
+      "stage2_skip_counts": {},
+      "stop_reason": "seed_batch_completed",
+      "hints_head": [
+        "低流動性cooldown中のseedを 15 件スキップしました。",
+        "低流動性cooldownで待機中のseed: 15件",
+        "A段階のカテゴリ最低価格フィルタ: $100.00 を適用しました。",
+        "B段階の主な除外理由: skipped_source_variant_unresolved (10件)"
+      ]
+    },
+    {
+      "iter": 5,
+      "elapsed_sec": 450.159,
+      "created_count": 6,
+      "reviewable_before": 15,
+      "reviewable_after": 21,
+      "reviewable_gain": 6,
+      "stage2_skip_counts": {
+        "skipped_unprofitable": 13,
+        "skipped_duplicates": 14
+      },
+      "stop_reason": "seed_batch_completed",
+      "hints_head": [
+        "低流動性cooldown中のseedを 15 件スキップしました。",
+        "低流動性cooldownで待機中のseed: 15件",
+        "A段階のカテゴリ最低価格フィルタ: $100.00 を適用しました。",
+        "B段階でseed B行を生成: 19件"
+      ]
+    },
+    {
+      "iter": 6,
+      "elapsed_sec": 111.022,
+      "created_count": 0,
+      "reviewable_before": 21,
+      "reviewable_after": 21,
+      "reviewable_gain": 0,
+      "stage2_skip_counts": {
+        "skipped_unprofitable": 3,
+        "skipped_duplicates": 3
+      },
+      "stop_reason": "seed_batch_completed",
+      "hints_head": [
+        "低流動性cooldown中のseedを 15 件スキップしました。",
+        "低流動性cooldownで待機中のseed: 15件",
+        "A段階のカテゴリ最低価格フィルタ: $100.00 を適用しました。",
+        "B段階の主な除外理由: skipped_low_match (12件)"
+      ]
+    },
+    {
+      "iter": 7,
+      "elapsed_sec": 418.337,
+      "created_count": 6,
+      "reviewable_before": 21,
+      "reviewable_after": 27,
+      "reviewable_gain": 6,
+      "stage2_skip_counts": {
+        "skipped_unprofitable": 10,
+        "skipped_duplicates": 11
+      },
+      "stop_reason": "seed_batch_completed",
+      "hints_head": [
+        "低流動性cooldown中のseedを 15 件スキップしました。",
+        "低流動性cooldownで待機中のseed: 15件",
+        "A段階のカテゴリ最低価格フィルタ: $100.00 を適用しました。",
+        "B段階でseed B行を生成: 16件"
+      ]
+    }
+  ]
+}

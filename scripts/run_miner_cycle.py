@@ -60,6 +60,8 @@ DEFAULT_QUERIES = [
     "casio ocw-t200 watch",
 ]
 
+DEFAULT_QUERY_LIMIT = 12
+
 
 
 def _default_query_stat() -> Dict[str, Any]:
@@ -82,6 +84,110 @@ def _query_efficiency(stat: Dict[str, Any]) -> float:
     if network_calls <= 0:
         return 9999.0 if int(stat.get("attempts", 0) or 0) <= 0 else 0.0
     return queue_gain / max(1, network_calls)
+
+
+def _last_attempt_run_seq(stats_rows: Dict[str, Any], query: str) -> int:
+    row = stats_rows.get(str(query), {})
+    if not isinstance(row, dict):
+        return 0
+    return max(0, int(row.get("last_attempt_run_seq", 0) or 0))
+
+
+def _select_default_queries_oldest_first(
+    *,
+    stats_rows: Dict[str, Any],
+    limit: int = DEFAULT_QUERY_LIMIT,
+) -> List[str]:
+    safe_limit = max(0, int(limit))
+    if safe_limit <= 0:
+        return []
+    ranked = sorted(
+        enumerate(DEFAULT_QUERIES),
+        key=lambda pair: (
+            _last_attempt_run_seq(stats_rows, pair[1]),
+            pair[0],
+        ),
+    )
+    return [query for _, query in ranked[:safe_limit]]
+
+
+def _resolve_run_queries(
+    *,
+    cli_queries: str,
+    disable_query_reorder: bool,
+    stats_rows: Dict[str, Any],
+) -> Dict[str, Any]:
+    explicit = [q.strip() for q in str(cli_queries or "").split(",") if q.strip()]
+    if explicit:
+        raw_queries = list(explicit)
+        if bool(disable_query_reorder):
+            queries = list(raw_queries)
+        else:
+            queries = sorted(
+                raw_queries,
+                key=lambda q: (
+                    -_query_efficiency(stats_rows.get(q, {})),
+                    int(stats_rows.get(q, {}).get("attempts", 0) or 0),
+                ),
+            )
+        return {
+            "raw_queries": raw_queries,
+            "queries": queries,
+            "query_selection_mode": "explicit_queries",
+            "query_reordered": queries != raw_queries,
+        }
+
+    queries = _select_default_queries_oldest_first(
+        stats_rows=stats_rows,
+        limit=DEFAULT_QUERY_LIMIT,
+    )
+    return {
+        "raw_queries": list(queries),
+        "queries": list(queries),
+        "query_selection_mode": "default_oldest_first_12",
+        "query_reordered": False,
+    }
+
+
+def _query_skip_reason(
+    *,
+    stat_row: Dict[str, Any],
+    run_seq: int,
+    historical_min_attempts: int,
+    historical_min_network_calls: int,
+    historical_min_gain_per_network_call: float,
+    historical_retry_every_runs: int,
+    max_zero_gain_strikes: int,
+) -> Dict[str, Any]:
+    attempts_hist = int(stat_row.get("attempts", 0) or 0)
+    network_calls_hist = int(stat_row.get("network_calls", 0) or 0)
+    last_attempt_run_seq = int(stat_row.get("last_attempt_run_seq", 0) or 0)
+    runs_since_last_attempt = max(0, run_seq - last_attempt_run_seq)
+    gain_per_network_call_hist = _query_efficiency(stat_row)
+    zero_gain_hist = int(stat_row.get("zero_gain_streak", 0) or 0)
+
+    skip_reason = ""
+    if (
+        attempts_hist >= historical_min_attempts
+        and network_calls_hist >= historical_min_network_calls
+        and gain_per_network_call_hist < historical_min_gain_per_network_call
+        and runs_since_last_attempt < historical_retry_every_runs
+    ):
+        skip_reason = "historical_low_efficiency"
+    elif (
+        zero_gain_hist >= max_zero_gain_strikes
+        and runs_since_last_attempt < historical_retry_every_runs
+    ):
+        skip_reason = "zero_gain_cooldown"
+
+    return {
+        "skip_reason": skip_reason,
+        "attempts_hist": attempts_hist,
+        "network_calls_hist": network_calls_hist,
+        "runs_since_last_attempt": runs_since_last_attempt,
+        "gain_per_network_call_hist": gain_per_network_call_hist,
+        "zero_gain_hist": zero_gain_hist,
+    }
 
 
 def count_reviewable_pending(
@@ -186,6 +292,39 @@ def collect_api_efficiency(result: Dict[str, Any]) -> Dict[str, Any]:
         "network_calls": network_calls,
         "by_site": out_by_site,
     }
+
+
+def _is_rakuten_client_ip_block(result: Dict[str, Any]) -> bool:
+    payload = result if isinstance(result, dict) else {}
+    errors = payload.get("errors", [])
+    if isinstance(errors, list):
+        for err in errors:
+            if not isinstance(err, dict):
+                continue
+            if str(err.get("site", "") or "").strip().lower() != "rakuten":
+                continue
+            text = f"{err.get('message', '')} {err.get('error', '')}".upper()
+            if "CLIENT_IP_NOT_ALLOWED" in text or "CLIENT_IP_BLOCK_CIRCUIT_OPEN" in text:
+                return True
+    fetched = payload.get("fetched", {})
+    if not isinstance(fetched, dict):
+        return False
+    rakuten = fetched.get("rakuten", {})
+    if not isinstance(rakuten, dict):
+        return False
+    queries = rakuten.get("queries", [])
+    if not isinstance(queries, list):
+        return False
+    for row in queries:
+        if not isinstance(row, dict):
+            continue
+        info = row.get("info", {})
+        if not isinstance(info, dict):
+            continue
+        msg = f"{info.get('fallback_from_error', '')} {row.get('error', '')}".upper()
+        if "CLIENT_IP_NOT_ALLOWED" in msg or "CLIENT_IP_BLOCK_CIRCUIT_OPEN" in msg:
+            return True
+    return False
 
 def _load_rpa_rows(path: Path) -> list[Dict[str, Any]]:
     if not path.exists():
@@ -604,7 +743,7 @@ def main() -> int:
     parser.add_argument(
         "--max-zero-gain-strikes",
         type=int,
-        default=2,
+        default=max(1, int((os.getenv("MINER_CYCLE_MAX_ZERO_GAIN_STRIKES", "1") or "1"))),
         help="Skip query when no queue gain repeats N times.",
     )
     parser.add_argument(
@@ -696,6 +835,7 @@ def main() -> int:
     args = parser.parse_args()
 
     load_dotenv(ENV_PATH)
+    cycle_started_perf = time.perf_counter()
     if args.cache_only:
         os.environ["MINER_FETCH_CACHE_ONLY"] = "1"
     if int(args.cache_ttl_seconds) >= 0:
@@ -707,24 +847,22 @@ def main() -> int:
     if int(args.daily_budget_yahoo) >= 0:
         os.environ["MINER_FETCH_DAILY_CALL_BUDGET_YAHOO"] = str(int(args.daily_budget_yahoo))
 
-    raw_queries = [q.strip() for q in args.queries.split(",") if q.strip()] if args.queries else list(DEFAULT_QUERIES)
     stats_payload = _load_json(QUERY_STATS_PATH)
     stats_meta = stats_payload.get("meta", {}) if isinstance(stats_payload.get("meta"), dict) else {}
     stats_rows = stats_payload.get("queries", {}) if isinstance(stats_payload.get("queries"), dict) else {}
     run_seq = int(stats_meta.get("run_seq", 0) or 0) + 1
+    query_plan = _resolve_run_queries(
+        cli_queries=str(args.queries or ""),
+        disable_query_reorder=bool(args.disable_query_reorder),
+        stats_rows=stats_rows,
+    )
+    raw_queries = list(query_plan.get("raw_queries", []))
+    queries = list(query_plan.get("queries", []))
+    query_selection_mode = str(query_plan.get("query_selection_mode", "explicit_queries") or "explicit_queries")
+    query_reordered = bool(query_plan.get("query_reordered"))
     for query in raw_queries:
         if query not in stats_rows or not isinstance(stats_rows.get(query), dict):
             stats_rows[query] = _default_query_stat()
-    if bool(args.disable_query_reorder):
-        queries = list(raw_queries)
-    else:
-        queries = sorted(
-            raw_queries,
-            key=lambda q: (
-                -_query_efficiency(stats_rows.get(q, {})),
-                int(stats_rows.get(q, {}).get("attempts", 0) or 0),
-            ),
-        )
     target = max(1, int(args.target_count))
     hard_cap = max(target, int(args.hard_cap))
     min_match = float(args.min_match_score)
@@ -741,15 +879,47 @@ def main() -> int:
     duplicate_heavy_min_evaluated = max(1, int(args.duplicate_heavy_min_evaluated))
     duplicate_heavy_min_duplicates = max(1, int(args.duplicate_heavy_min_duplicates))
     duplicate_heavy_cooldown_enabled = not bool(args.disable_duplicate_heavy_cooldown)
+    rpa_refresh_queries = list(queries)
+    if _env_bool("MINER_CYCLE_RPA_REFRESH_SKIP_COOLDOWN_QUERIES", True):
+        planned_queries: list[str] = []
+        for query in queries:
+            stat_row = stats_rows.get(query, {})
+            if not isinstance(stat_row, dict):
+                stat_row = _default_query_stat()
+            skip_probe = _query_skip_reason(
+                stat_row=stat_row,
+                run_seq=run_seq,
+                historical_min_attempts=historical_min_attempts,
+                historical_min_network_calls=historical_min_network_calls,
+                historical_min_gain_per_network_call=historical_min_gain_per_network_call,
+                historical_retry_every_runs=historical_retry_every_runs,
+                max_zero_gain_strikes=max_zero_gain_strikes,
+            )
+            if str(skip_probe.get("skip_reason", "")).strip():
+                continue
+            planned_queries.append(query)
+        if planned_queries:
+            rpa_refresh_queries = planned_queries
+    rpa_refresh_max_queries = max(0, int((os.getenv("MINER_CYCLE_RPA_REFRESH_MAX_QUERIES", "0") or "0")))
+    if rpa_refresh_max_queries > 0:
+        rpa_refresh_queries = rpa_refresh_queries[:rpa_refresh_max_queries]
+    if not rpa_refresh_queries and queries:
+        # 0件更新で液動性シグナルが完全に古くなることを避けるため、最低1件だけ更新する。
+        rpa_refresh_queries = [queries[0]]
+
     unavailable_reason_model_codes = _target_reason_model_codes(
-        queries,
+        rpa_refresh_queries,
         reason="liquidity_unavailable_required",
     )
+    rpa_refresh_started_at = _now_iso()
+    rpa_refresh_started_perf = time.perf_counter()
     rpa_refresh_summary = maybe_refresh_rpa_liquidity(
-        queries,
+        rpa_refresh_queries,
         cache_only=bool(args.cache_only),
         unavailable_reason_model_codes=unavailable_reason_model_codes,
     )
+    rpa_refresh_elapsed_sec = max(0.0, time.perf_counter() - rpa_refresh_started_perf)
+    rpa_refresh_ended_at = _now_iso()
     if bool(rpa_refresh_summary.get("enabled")):
         print(
             "[rpa] mode={mode} ran={ran} missing primary={mp} fallback={mf} model_backfill={mm}".format(
@@ -790,6 +960,9 @@ def main() -> int:
 
     runs: List[Dict[str, Any]] = []
     stopped_reason = "completed_rounds"
+    fetch_live_total_sec = 0.0
+    queue_count_total_sec = 0.0
+    sleep_total_sec = 0.0
     query_zero_gain_streak: Dict[str, int] = {
         str(query): int((stats_rows.get(query) or {}).get("zero_gain_streak", 0) or 0)
         for query in queries
@@ -800,6 +973,8 @@ def main() -> int:
     api_cache_hits = 0
     api_network_calls = 0
     api_by_site_totals: Dict[str, Dict[str, int]] = {}
+    source_sites_default = ["rakuten", "yahoo"]
+    rakuten_disabled_for_cycle = False
     budget_exhausted = False
     unavailable_codes_by_query: Dict[str, Dict[str, int]] = {}
     for round_idx in range(max_rounds):
@@ -812,19 +987,24 @@ def main() -> int:
                 stopped_reason = "target_reached"
                 break
             stat_row = stats_rows.setdefault(query, _default_query_stat())
-            attempts_hist = int(stat_row.get("attempts", 0) or 0)
-            network_calls_hist = int(stat_row.get("network_calls", 0) or 0)
-            last_attempt_run_seq = int(stat_row.get("last_attempt_run_seq", 0) or 0)
-            runs_since_last_attempt = max(0, run_seq - last_attempt_run_seq)
-            gain_per_network_call_hist = _query_efficiency(stat_row)
-            zero_gain_hist = int(query_zero_gain_streak.get(query, 0) or 0)
+            stat_row["zero_gain_streak"] = int(query_zero_gain_streak.get(query, 0) or 0)
+            skip_probe = _query_skip_reason(
+                stat_row=stat_row,
+                run_seq=run_seq,
+                historical_min_attempts=historical_min_attempts,
+                historical_min_network_calls=historical_min_network_calls,
+                historical_min_gain_per_network_call=historical_min_gain_per_network_call,
+                historical_retry_every_runs=historical_retry_every_runs,
+                max_zero_gain_strikes=max_zero_gain_strikes,
+            )
+            attempts_hist = int(skip_probe.get("attempts_hist", 0) or 0)
+            network_calls_hist = int(skip_probe.get("network_calls_hist", 0) or 0)
+            runs_since_last_attempt = int(skip_probe.get("runs_since_last_attempt", 0) or 0)
+            gain_per_network_call_hist = float(skip_probe.get("gain_per_network_call_hist", 0.0) or 0.0)
+            zero_gain_hist = int(skip_probe.get("zero_gain_hist", 0) or 0)
+            skip_reason = str(skip_probe.get("skip_reason", "") or "")
 
-            if (
-                attempts_hist >= historical_min_attempts
-                and network_calls_hist >= historical_min_network_calls
-                and gain_per_network_call_hist < historical_min_gain_per_network_call
-                and runs_since_last_attempt < historical_retry_every_runs
-            ):
+            if skip_reason == "historical_low_efficiency":
                 query_skipped_count += 1
                 stat_row["skip_count"] = int(stat_row.get("skip_count", 0) or 0) + 1
                 runs.append(
@@ -843,10 +1023,7 @@ def main() -> int:
                 )
                 continue
 
-            if (
-                zero_gain_hist >= max_zero_gain_strikes
-                and runs_since_last_attempt < historical_retry_every_runs
-            ):
+            if skip_reason == "zero_gain_cooldown":
                 query_skipped_count += 1
                 stat_row["skip_count"] = int(stat_row.get("skip_count", 0) or 0) + 1
                 runs.append(
@@ -865,9 +1042,13 @@ def main() -> int:
 
             round_had_fetch = True
             before_count = current_count
+            query_started_at = _now_iso()
+            query_started_perf = time.perf_counter()
+            fetch_live_started_perf = time.perf_counter()
+            source_sites = ["yahoo"] if rakuten_disabled_for_cycle else list(source_sites_default)
             result = fetch_live_miner_candidates(
                 query=query,
-                source_sites=["rakuten", "yahoo"],
+                source_sites=source_sites,
                 market_site="ebay",
                 limit_per_site=int(args.limit_per_site),
                 max_candidates=int(args.max_candidates_per_query),
@@ -876,6 +1057,8 @@ def main() -> int:
                 min_margin_rate=min_margin,
                 timeout=int(args.timeout),
             )
+            fetch_live_elapsed_sec = max(0.0, time.perf_counter() - fetch_live_started_perf)
+            fetch_live_total_sec += fetch_live_elapsed_sec
             api_eff = collect_api_efficiency(result)
             api_total_calls += int(api_eff["total_calls"])
             api_cache_hits += int(api_eff["cache_hits"])
@@ -892,12 +1075,17 @@ def main() -> int:
                 if br >= 0:
                     slot["budget_remaining"] = br
 
+            queue_count_started_perf = time.perf_counter()
             current_count = count_reviewable_pending(
                 min_profit_usd=min_profit,
                 min_margin_rate=min_margin,
                 min_match_score=min_match,
                 condition="new",
             )
+            queue_count_elapsed_sec = max(0.0, time.perf_counter() - queue_count_started_perf)
+            queue_count_total_sec += queue_count_elapsed_sec
+            query_total_elapsed_sec = max(0.0, time.perf_counter() - query_started_perf)
+            query_ended_at = _now_iso()
             added_to_queue = max(0, current_count - before_count)
             run_row = {
                 "round": round_idx + 1,
@@ -928,6 +1116,15 @@ def main() -> int:
                 else [],
                 "hints": result.get("hints", []) if isinstance(result.get("hints"), list) else [],
                 "api_efficiency": api_eff,
+                "source_sites_used": list(source_sites),
+                "query_started_at": query_started_at,
+                "query_ended_at": query_ended_at,
+                "timings": {
+                    "fetch_live_sec": round(fetch_live_elapsed_sec, 4),
+                    "queue_count_sec": round(queue_count_elapsed_sec, 4),
+                    "total_query_sec": round(query_total_elapsed_sec, 4),
+                    "sleep_sec": round(sleep_seconds, 4) if sleep_seconds > 0 else 0.0,
+                },
             }
             evaluated_candidate_count = (
                 int(run_row.get("created_count", 0) or 0)
@@ -948,6 +1145,10 @@ def main() -> int:
             )
             run_row["evaluated_candidate_count"] = int(evaluated_candidate_count)
             run_row["duplicate_ratio"] = round(float(duplicate_ratio), 4)
+            if (not rakuten_disabled_for_cycle) and _is_rakuten_client_ip_block(result):
+                rakuten_disabled_for_cycle = True
+                run_row["rakuten_disabled_after"] = True
+                print("[cycle] rakuten disabled for remaining queries (client ip block)")
             runs.append(run_row)
             if int(run_row.get("skipped_liquidity_unavailable", 0) or 0) > 0:
                 bucket = unavailable_codes_by_query.setdefault(str(query or "").strip().lower(), {})
@@ -1015,19 +1216,23 @@ def main() -> int:
                 break
             if sleep_seconds > 0:
                 time.sleep(sleep_seconds)
+                sleep_total_sec += sleep_seconds
         if budget_exhausted:
             break
         if not round_had_fetch:
             stopped_reason = "low_yield_cooldown"
             break
 
+    final_count_started_perf = time.perf_counter()
     final_count = count_reviewable_pending(
         min_profit_usd=min_profit,
         min_margin_rate=min_margin,
         min_match_score=min_match,
         condition="new",
     )
+    final_count_elapsed_sec = max(0.0, time.perf_counter() - final_count_started_perf)
     batch_size = min(final_count, target, hard_cap)
+    select_ids_started_perf = time.perf_counter()
     selected_candidate_ids = select_reviewable_pending_ids(
         min_profit_usd=min_profit,
         min_margin_rate=min_margin,
@@ -1035,16 +1240,21 @@ def main() -> int:
         condition="new",
         limit=batch_size,
     )
+    select_ids_elapsed_sec = max(0.0, time.perf_counter() - select_ids_started_perf)
     cycle_id = make_cycle_id()
 
     cycle_ready = batch_size >= target
+    backfill_started_perf = time.perf_counter()
     backfill_update_summary = _update_liquidity_backfill_targets(unavailable_codes_by_query)
+    backfill_elapsed_sec = max(0.0, time.perf_counter() - backfill_started_perf)
     stats_payload["meta"] = {
         "run_seq": run_seq,
         "updated_at": _now_iso(),
     }
     stats_payload["queries"] = stats_rows
+    stats_save_started_perf = time.perf_counter()
     _save_json(QUERY_STATS_PATH, stats_payload)
+    stats_save_elapsed_sec = max(0.0, time.perf_counter() - stats_save_started_perf)
 
     ranked_queries = sorted(
         [
@@ -1081,7 +1291,10 @@ def main() -> int:
         "stopped_reason": stopped_reason,
         "selected_candidate_ids": selected_candidate_ids,
         "cache_only": bool(args.cache_only),
-        "query_reordered": not bool(args.disable_query_reorder),
+        "query_reordered": bool(query_reordered),
+        "query_selection_mode": query_selection_mode,
+        "query_limit_default": int(DEFAULT_QUERY_LIMIT),
+        "query_count_planned": len(queries),
         "query_order": queries,
         "max_zero_gain_strikes": max_zero_gain_strikes,
         "historical_min_attempts": historical_min_attempts,
@@ -1092,6 +1305,8 @@ def main() -> int:
         "duplicate_heavy_ratio_threshold": float(duplicate_heavy_ratio_threshold),
         "duplicate_heavy_min_evaluated": int(duplicate_heavy_min_evaluated),
         "duplicate_heavy_min_duplicates": int(duplicate_heavy_min_duplicates),
+        "rpa_refresh_query_count": len(rpa_refresh_queries),
+        "rpa_refresh_queries": rpa_refresh_queries,
         "rpa_refresh": rpa_refresh_summary,
         "liquidity_backfill": backfill_update_summary,
         "query_skipped_count": query_skipped_count,
@@ -1103,6 +1318,21 @@ def main() -> int:
             "network_calls": api_network_calls,
             "by_site": api_by_site_totals,
             "cache_hit_rate": round((api_cache_hits / api_total_calls), 4) if api_total_calls > 0 else 0.0,
+        },
+        "source_sites_default": source_sites_default,
+        "rakuten_disabled_for_cycle": bool(rakuten_disabled_for_cycle),
+        "timings": {
+            "cycle_total_sec": round(max(0.0, time.perf_counter() - cycle_started_perf), 4),
+            "rpa_refresh_started_at": rpa_refresh_started_at,
+            "rpa_refresh_ended_at": rpa_refresh_ended_at,
+            "rpa_refresh_sec": round(rpa_refresh_elapsed_sec, 4),
+            "fetch_live_total_sec": round(fetch_live_total_sec, 4),
+            "queue_count_total_sec": round(queue_count_total_sec, 4),
+            "sleep_total_sec": round(sleep_total_sec, 4),
+            "final_count_sec": round(final_count_elapsed_sec, 4),
+            "select_ids_sec": round(select_ids_elapsed_sec, 4),
+            "backfill_update_sec": round(backfill_elapsed_sec, 4),
+            "query_stats_save_sec": round(stats_save_elapsed_sec, 4),
         },
         "runs": runs,
     }

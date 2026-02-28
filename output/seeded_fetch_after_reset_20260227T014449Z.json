@@ -1,0 +1,32 @@
+{
+  "elapsed_sec": 603.958,
+  "created_count": 0,
+  "stop_reason": "timebox_reached",
+  "seed_selected": 40,
+  "available_after_refill": 142,
+  "refill_reason": "target_reached",
+  "refill_added": 142,
+  "stage1_pass_total": 35,
+  "stage2_runs": 19,
+  "stage1_skip_counts": {
+    "skipped_source_variant_unresolved": 9,
+    "skipped_low_match": 30
+  },
+  "stage2_skip_counts": {
+    "skipped_low_liquidity": 12,
+    "skipped_duplicates": 16,
+    "skipped_liquidity_unavailable": 7
+  },
+  "hints": [
+    "A段階のカテゴリ最低価格フィルタ: $100.00 を適用しました。",
+    "seed API補完: 試行 1 件 / 補完成功 1 件",
+    "C段階で低流動性seedをcooldown登録: 4件",
+    "B段階の主な除外理由: skipped_low_match (30件)",
+    "B段階の一致不足主因: model_code_mismatch (22件)",
+    "B段階でseed B行を生成: 19件",
+    "C段階の主な除外理由: skipped_duplicates (16件)",
+    "C段階の詳細理由: rpa_json_positive_sold_without_filtered_rows (7件)",
+    "C段階の流動性RPA更新: 実行9回 / miss再試行9回 / sample再試行0回 / active再試行0回",
+    "探索の時間上限に達したため、30件で停止しました（最低保証20件は実行）。"
+  ]
+}

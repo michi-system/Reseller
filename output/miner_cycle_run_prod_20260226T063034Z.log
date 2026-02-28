@@ -1,0 +1,29 @@
+[2026-02-26T06:30:34.224233+00:00] START cmd=python3 -u scripts/run_miner_cycle.py --output /Users/tadamichikimura/Downloads/dev-HQ/Reseller/output/miner_cycle_report_prod_20260226T063034Z.json --active-manifest /Users/tadamichikimura/Downloads/dev-HQ/Reseller/output/miner_cycle_active_prod_20260226T063034Z.json
+[2026-02-26T06:39:18.076812+00:00] [rpa] mode=rpa_json ran=True missing primary=3 fallback=3 model_backfill=3
+[2026-02-26T06:39:18.077937+00:00] [rpa] primary rc=1 queries=23 condition=new
+[2026-02-26T06:39:18.077963+00:00] [rpa] fallback rc=1 queries=3 condition=any
+[2026-02-26T06:39:18.077973+00:00] [rpa] model_backfill rc=1 queries=6 condition=any
+[2026-02-26T06:39:18.193912+00:00] Traceback (most recent call last):
+[2026-02-26T06:39:18.194318+00:00]   File "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/scripts/run_miner_cycle.py", line 1202, in <module>
+[2026-02-26T06:39:18.194328+00:00]     raise SystemExit(main())
+[2026-02-26T06:39:18.194335+00:00]                      ~~~~^^
+[2026-02-26T06:39:18.194349+00:00]   File "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/scripts/run_miner_cycle.py", line 788, in main
+[2026-02-26T06:39:18.194356+00:00]     initial_count = count_reviewable_pending(
+[2026-02-26T06:39:18.194362+00:00]         min_profit_usd=min_profit,
+[2026-02-26T06:39:18.194368+00:00]     ...<2 lines>...
+[2026-02-26T06:39:18.194374+00:00]         condition="new",
+[2026-02-26T06:39:18.194380+00:00]     )
+[2026-02-26T06:39:18.194385+00:00]   File "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/scripts/run_miner_cycle.py", line 95, in count_reviewable_pending
+[2026-02-26T06:39:18.194391+00:00]     with connect(settings.db_path) as conn:
+[2026-02-26T06:39:18.194397+00:00]          ~~~~~~~^^^^^^^^^^^^^^^^^^
+[2026-02-26T06:39:18.194402+00:00]   File "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/reselling/models.py", line 14, in connect
+[2026-02-26T06:39:18.194408+00:00]     return connect_db(db_path)
+[2026-02-26T06:39:18.194413+00:00]   File "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/reselling/db_runtime.py", line 178, in connect_db
+[2026-02-26T06:39:18.194419+00:00]     return DbConnection(psycopg.connect(url), backend="postgres")
+[2026-02-26T06:39:18.194424+00:00]                         ~~~~~~~~~~~~~~~^^^^^
+[2026-02-26T06:39:18.194430+00:00]   File "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/.venv/lib/python3.13/site-packages/psycopg/connection.py", line 100, in connect
+[2026-02-26T06:39:18.194435+00:00]     attempts = conninfo_attempts(params)
+[2026-02-26T06:39:18.194441+00:00]   File "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/.venv/lib/python3.13/site-packages/psycopg/_conninfo_attempts.py", line 55, in conninfo_attempts
+[2026-02-26T06:39:18.194462+00:00]     raise last_exc
+[2026-02-26T06:39:18.194468+00:00] psycopg.OperationalError: failed to resolve host 'aws-1-ap-south-1.pooler.supabase.com': [Errno 8] nodename nor servname provided, or not known
+[2026-02-26T06:39:18.216355+00:00] END rc=1 elapsed_sec=523.992

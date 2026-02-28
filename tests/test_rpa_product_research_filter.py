@@ -53,6 +53,29 @@ class RpaProductResearchFilterTests(unittest.TestCase):
         self.assertEqual(sorted(prices), [148.0, 150.0])
         self.assertTrue(isinstance(sold_sample, dict))
 
+    def test_normalize_sold_sort_accepts_price_plus_shipping_tokens(self) -> None:
+        self.assertEqual(self.mod._normalize_sold_sort("PRICE_PLUS_SHIPPING_ASC"), "price_asc")
+        self.assertEqual(self.mod._normalize_sold_sort("PRICE_PLUS_SHIPPING_DESC"), "price_desc")
+
+    def test_extract_filtered_rows_accepts_listing_price_column(self) -> None:
+        html = """
+        <tr class="research-table-row">
+          <td class="research-table-row__product-info"><a href="/itm/123456789012">CASIO GMA-P2100PC-1AJF</a></td>
+          <td class="research-table-row__listingPrice"><div>$120.00</div></td>
+          <td class="research-table-row__dateLastSold"><div>Feb 25, 2026</div></td>
+        </tr>
+        """
+        codes = self.mod._extract_query_codes("GMA-P2100PC-1AJF")
+        tokens = self.mod._extract_query_tokens("GMA-P2100PC-1AJF", codes)
+        prices, sold_count, sold_sample = self.mod._extract_filtered_rows_from_html(
+            html,
+            query_codes=codes,
+            query_tokens=tokens,
+        )
+        self.assertEqual(prices, [120.0])
+        self.assertEqual(sold_count, 1)
+        self.assertAlmostEqual(float(sold_sample.get("sold_price", -1.0)), 120.0)
+
     def test_metric_accumulator_prefers_filtered_prices(self) -> None:
         html = """
         <div class="research-table-row">
@@ -209,6 +232,18 @@ class RpaProductResearchFilterTests(unittest.TestCase):
     def test_detects_no_sold_message(self) -> None:
         text = "No sold items found for this search in Last 90 days."
         self.assertTrue(self.mod._contains_no_sold_message(text))
+
+    def test_detects_bot_challenge_message(self) -> None:
+        text = (
+            "Pardon Our Interruption... As you were browsing eBay, something about your browser "
+            "made us think you were a bot. You're a power user moving through this website with "
+            "super-human speed."
+        )
+        self.assertTrue(self.mod._contains_bot_challenge_message(text))
+
+    def test_ignores_non_challenge_copy(self) -> None:
+        text = "Research products page loaded successfully with sold metrics."
+        self.assertFalse(self.mod._contains_bot_challenge_message(text))
 
     def test_short_circuit_no_sold_only_for_model_query_on_90d(self) -> None:
         self.assertTrue(
@@ -654,6 +689,43 @@ class RpaProductResearchFilterTests(unittest.TestCase):
         self.assertEqual(str(state.get("sort_selection_source", "")), "date_last_sold_click_1")
         self.assertEqual(str(state.get("sort_option_label", "")), "date_last_sold_header_desc")
 
+    def test_set_sold_sort_price_asc_clicks_avg_sold_header(self) -> None:
+        class DummyPage:
+            def wait_for_timeout(self, _ms: int) -> None:
+                return None
+
+        with patch.object(
+            self.mod,
+            "_get_sold_price_order_state",
+            side_effect=[
+                {"is_asc": False, "is_desc": True, "first_price": 240.0},
+                {"is_asc": True, "is_desc": False, "first_price": 100.0},
+            ],
+        ), patch.object(
+            self.mod, "_click_avg_sold_price_header", return_value=True
+        ) as click_mock, patch.object(
+            self.mod, "_wait_for_research_ready", return_value=True
+        ):
+            state = self.mod._set_sold_sort(DummyPage(), "price_asc")
+
+        click_mock.assert_called_once()
+        self.assertTrue(bool(state.get("sort_selected")))
+        self.assertEqual(str(state.get("sort_selection_source", "")), "avg_sold_price_click_1")
+
+    def test_detect_sold_sort_selected_price_asc_uses_price_order_state(self) -> None:
+        class DummyPage:
+            pass
+
+        with patch.object(
+            self.mod,
+            "_get_sold_price_order_state",
+            return_value={"is_asc": True, "is_desc": False, "first_price": 100.0},
+        ):
+            selected, label = self.mod._detect_sold_sort_selected(DummyPage(), "price_asc")
+
+        self.assertTrue(selected)
+        self.assertIn("avg_sold_price_price_asc", str(label))
+
     def test_finalize_filter_state_two_stage_accepts_url_confirmation(self) -> None:
         class DummyPage:
             pass
@@ -770,6 +842,62 @@ class RpaProductResearchFilterTests(unittest.TestCase):
 
         self.assertTrue(bool(state.get("strict_blocked")))
         self.assertEqual(str(state.get("strict_reason", "")), "condition_filter_not_confirmed")
+
+    def test_finalize_filter_state_two_stage_does_not_block_when_listing_metric_unavailable(self) -> None:
+        class DummyPage:
+            pass
+
+        with patch.object(
+            self.mod,
+            "_detect_sold_filters_from_url",
+            return_value={
+                "tab_sold": True,
+                "fixed_price": True,
+                "condition_new": True,
+                "min_price": 100.0,
+                "sold_sort": "default",
+                "sold_sort_raw": "",
+            },
+        ), patch.object(
+            self.mod, "_detect_sold_tab_selected", return_value=True
+        ), patch.object(
+            self.mod, "_detect_fixed_price_selected", return_value=True
+        ), patch.object(
+            self.mod, "_detect_min_price_filter_selected", return_value=True
+        ), patch.object(
+            self.mod, "_detect_sold_sort_selected", return_value=(True, "avg_sold_price_price_asc")
+        ), patch.object(
+            self.mod, "_is_listing_price_metric_available", return_value=False
+        ), patch.object(
+            self.mod, "_detect_listing_price_metric_selected", return_value=False
+        ), patch.object(
+            self.mod, "_detect_lock_selected_filters_enabled", return_value=True
+        ):
+            with patch.dict(
+                "os.environ",
+                {
+                    "LIQUIDITY_RPA_REQUIRE_MIN_PRICE_FILTER": "1",
+                    "LIQUIDITY_RPA_REQUIRE_SOLD_SORT": "1",
+                    "LIQUIDITY_RPA_REQUIRE_LISTING_PRICE_METRIC": "1",
+                    "LIQUIDITY_RPA_REQUIRE_LOCK_SELECTED_FILTERS": "1",
+                },
+                clear=False,
+            ):
+                state = self.mod._finalize_filter_state_two_stage(
+                    DummyPage(),
+                    {"condition_selected": ["New(url_prefill)"], "strict_blocked": False, "strict_reason": ""},
+                    condition="new",
+                    strict_condition=True,
+                    fixed_price_only=True,
+                    min_price_usd=100.0,
+                    sold_sort="price_asc",
+                )
+
+        self.assertFalse(bool(state.get("strict_blocked")))
+        confirm = state.get("confirmations") if isinstance(state.get("confirmations"), dict) else {}
+        listing = confirm.get("listing_price_metric") if isinstance(confirm.get("listing_price_metric"), dict) else {}
+        self.assertFalse(bool(listing.get("available")))
+        self.assertTrue(bool(listing.get("confirmed")))
 
     def test_should_retry_filter_application_once_when_confirmations_missing(self) -> None:
         state = {

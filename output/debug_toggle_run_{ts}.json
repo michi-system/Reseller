@@ -1,0 +1,1711 @@
+[
+  {
+    "signal_key": "query:G-SHOCK",
+    "query": "G-SHOCK",
+    "sold_90d_count": -1,
+    "active_count": -1,
+    "sold_price_min": -1.0,
+    "sold_price_median": -1.0,
+    "sold_price_currency": "USD",
+    "confidence": 0.1,
+    "source": "ebay_product_research_rpa",
+    "fetched_at": "2026-02-26T05:01:31Z",
+    "metadata": {
+      "url": "https://www.ebay.com/sh/research?marketplace=EBAY-US&keywords=G-SHOCK&categoryId=31387&conditionId=1000&format=FIXED_PRICE&minPrice=100&offset=0&limit=50&tabName=ACTIVE&tz=Asia%2FTokyo",
+      "response_count": 20,
+      "json_response_count": 1,
+      "wait_seconds": 6,
+      "headless": false,
+      "pass_label": "debug_toggle",
+      "collect_active_tab": true,
+      "filter_state": {
+        "sold_tab_selected": true,
+        "lookback_selected": "Last 90 days",
+        "lookback_default_kept": true,
+        "condition_target": "new",
+        "condition_selected": [
+          "New(url_prefill)"
+        ],
+        "condition_missing": false,
+        "format_fixed_price_before": true,
+        "format_fixed_price_selected": true,
+        "format_filter_panel_opened": false,
+        "format_option_label": "",
+        "format_selection_source": "before",
+        "format_visible_options": [],
+        "sort_target": "price_asc",
+        "sort_filter_panel_opened": true,
+        "sort_selected": false,
+        "sort_option_label": "",
+        "sort_selection_source": "",
+        "sort_order_state": {},
+        "sort_visible_options": [
+          "Exclude top rated listings(8082)",
+          "(8082)",
+          "Show only top rated listings(1982)",
+          "(1982)"
+        ],
+        "price_metric_target": "listing_price",
+        "price_metric_selected": false,
+        "price_metric_selection_source": "",
+        "price_metric_ui_enabled": true,
+        "min_price_target_usd": 100.0,
+        "min_price_ui_enabled": true,
+        "min_price_input_applied": false,
+        "min_price_selected": true,
+        "price_filter_panel_opened": false,
+        "min_price_option_label": "",
+        "min_price_selection_source": "url_prefill",
+        "lock_selected_filters": "already_on",
+        "strict_blocked": true,
+        "strict_reason": "sold_sort_not_confirmed",
+        "filter_apply_retry_attempted": true,
+        "filter_apply_retry_wait_sec": 6,
+        "filter_apply_retry_from_reason": "",
+        "confirmations": {
+          "sold_tab": {
+            "ui": true,
+            "url": true,
+            "confirmed": true
+          },
+          "format_fixed_price": {
+            "ui": true,
+            "url": true,
+            "confirmed": true
+          },
+          "min_price": {
+            "target": 100.0,
+            "ui": true,
+            "url": true,
+            "confirmed": true
+          },
+          "condition": {
+            "target": "new",
+            "ui": false,
+            "url": true,
+            "confirmed": true
+          },
+          "sold_sort": {
+            "target": "price_asc",
+            "ui": false,
+            "url": false,
+            "confirmed": false
+          },
+          "listing_price_metric": {
+            "target": "listing_price",
+            "ui": false,
+            "confirmed": false
+          },
+          "lock_selected_filters": {
+            "ui": true,
+            "confirmed": true
+          }
+        },
+        "rows_before_screenshot": 50,
+        "no_sold_before_screenshot": false,
+        "busy_before_screenshot": true
+      },
+      "filtered_row_count": 44,
+      "raw_row_count": 50,
+      "result_offset": 0,
+      "result_limit": 50,
+      "category_id": 31387,
+      "category_slug": "wristwatches",
+      "min_price_usd_target": 100.0,
+      "sold_sort_target": "price_asc",
+      "timings": {
+        "search_wait_sec": 1.4161,
+        "filter_apply_sec": 14.5381,
+        "total_query_sec": 40.7569
+      },
+      "filters_screenshot_path": "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/output/debug_toggle_filters_20260226T140113.png",
+      "filters_html_path": "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/output/debug_toggle_filters_20260226T140114.html",
+      "active_tab_state": {
+        "active_tab_attempted": true,
+        "active_tab_selected": true,
+        "active_tab_selection_source": "url",
+        "active_tab_url_attempted": true,
+        "active_tab_url_target": "https://www.ebay.com/sh/research?marketplace=EBAY-US&keywords=G-SHOCK&categoryId=31387&conditionId=1000&format=FIXED_PRICE&minPrice=100&offset=0&limit=50&tabName=ACTIVE&tz=Asia%2FTokyo",
+        "active_tab_ui_attempted": false,
+        "active_tab_ui_clicked": false,
+        "active_tab_url_before": "https://www.ebay.com/sh/research?marketplace=EBAY-US&keywords=G-SHOCK&categoryId=31387&conditionId=1000&format=FIXED_PRICE&minPrice=100&offset=0&limit=50&tabName=SOLD&tz=Asia%2FTokyo",
+        "active_tab_url_after": "https://www.ebay.com/sh/research?marketplace=EBAY-US&keywords=G-SHOCK&categoryId=31387&conditionId=1000&format=FIXED_PRICE&minPrice=100&offset=0&limit=50&tabName=ACTIVE&tz=Asia%2FTokyo",
+        "active_tab_rows": 50,
+        "active_tab_no_sold_message": false,
+        "active_tab_busy": true,
+        "active_tab_count_label": -1
+      },
+      "active_price_min": 104.99,
+      "active_price_median": 138.77,
+      "active_sample": {
+        "title": "New Casio G-Shock GA2100-7A7 Analog Digital White Watch - Authorized Dealer",
+        "item_url": "https://www.ebay.com/itm/287150795467?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+        "item_id": "v1|287150795467|0",
+        "image_url": "https://i.ebayimg.com/images/g/KkoAAOSwfjRlzmlF/s-l64.jpg",
+        "active_price": 104.99
+      },
+      "active_result_rows": [
+        {
+          "title": "CASIOAK SANDBLAST BLACK DIAL G-SHOCK MOD GA2100 GA-2100 MENâS WATCH",
+          "item_url": "https://www.ebay.com/itm/306272452101?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|306272452101|0",
+          "image_url": "https://i.ebayimg.com/images/g/vL4AAeSwWfppMRdf/s-l64.jpg",
+          "rank": 1,
+          "sold_price": 184.99,
+          "active_price": 184.99
+        },
+        {
+          "title": "Casio G-SHOCK GA-2300-8A Analog Digital Men's Watch Limited Gray GA23008A",
+          "item_url": "https://www.ebay.com/itm/406480783204?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|406480783204|0",
+          "image_url": "https://i.ebayimg.com/images/g/4loAAOSwxTtn2-f0/s-l64.jpg",
+          "rank": 2,
+          "sold_price": 137.55,
+          "active_price": 137.55
+        },
+        {
+          "title": "G-Shock GAB2100-1A Analog-Digital Watch",
+          "item_url": "https://www.ebay.com/itm/116969313187?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|116969313187|0",
+          "image_url": "https://i.ebayimg.com/images/g/PNYAAeSwZUFpjQWQ/s-l64.jpg",
+          "rank": 3,
+          "sold_price": 124.95,
+          "active_price": 124.95
+        },
+        {
+          "title": "G-Shock GBD-200-1",
+          "item_url": "https://www.ebay.com/itm/127608128935?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|127608128935|0",
+          "image_url": "https://i.ebayimg.com/images/g/M-YAAeSw2lNpjQZc/s-l64.jpg",
+          "rank": 4,
+          "sold_price": 129.95,
+          "active_price": 129.95
+        },
+        {
+          "title": "CASIO GW6900-1 Tough Solar Atomic G-Shock Digital Chrono 200M Sport Watch $155",
+          "item_url": "https://www.ebay.com/itm/277622751326?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|277622751326|0",
+          "image_url": "https://i.ebayimg.com/images/g/BFYAAeSwiNNok2NJ/s-l64.jpg",
+          "rank": 6,
+          "sold_price": 109.98,
+          "active_price": 109.98
+        },
+        {
+          "title": "CASIO G-SHOCK GBX-100-2A G-LIDE BLUETOOTH BLUE DIGITAL WATCH",
+          "item_url": "https://www.ebay.com/itm/306412157688?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|306412157688|0",
+          "image_url": "https://i.ebayimg.com/images/g/RYcAAeSwkTdofwab/s-l64.jpg",
+          "rank": 8,
+          "sold_price": 108.69,
+          "active_price": 108.69
+        },
+        {
+          "title": "New Casio G-Shock GA2100 BLACKOUT Custom MOD All Black Color Stainless Steel",
+          "item_url": "https://www.ebay.com/itm/145708148261?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|145708148261|0",
+          "image_url": "https://i.ebayimg.com/images/g/g98AAOSwV3tmTH5w/s-l64.jpg",
+          "rank": 9,
+          "sold_price": 250.0,
+          "active_price": 250.0
+        },
+        {
+          "title": "CASIOAK ROSE GOLD G-SHOCK MOD GMA-S2100 WOMENâS / MID-SIZE WATCH",
+          "item_url": "https://www.ebay.com/itm/306385829342?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|306385829342|0",
+          "image_url": "https://i.ebayimg.com/images/g/X8sAAeSwBYJpMRdh/s-l64.jpg",
+          "rank": 10,
+          "sold_price": 199.99,
+          "active_price": 199.99
+        },
+        {
+          "title": "New Casio G-Shock 2100 Series Analog Digital Blue Dial Resin Watch GA2100BM-7A2",
+          "item_url": "https://www.ebay.com/itm/277737299715?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|277737299715|0",
+          "image_url": "https://i.ebayimg.com/images/g/~fUAAOSwmjVoB6US/s-l64.jpg",
+          "rank": 12,
+          "sold_price": 119.99,
+          "active_price": 119.99
+        },
+        {
+          "title": "Casio G-Shock GG-1000-1A3 Mudmaster Analog-Digital Men's Watch",
+          "item_url": "https://www.ebay.com/itm/286824205422?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|286824205422|0",
+          "image_url": "https://i.ebayimg.com/images/g/pXAAAeSwa2NoycKm/s-l64.jpg",
+          "rank": 13,
+          "sold_price": 249.99,
+          "active_price": 249.99
+        },
+        {
+          "title": "CASIO G-Shock GWX-5600-1JF Black G-Lide Tough Solar Radio Men's Watch New in Box",
+          "item_url": "https://www.ebay.com/itm/314029545650?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|314029545650|0",
+          "image_url": "https://i.ebayimg.com/images/g/2e8AAOSwxTRn0RnZ/s-l64.jpg",
+          "rank": 14,
+          "sold_price": 147.5,
+          "active_price": 147.5
+        },
+        {
+          "title": "CASIO G-SHOCK GBX-100-8 G-LIDE BLUETOOTH GRAY / TAN DIGITAL WATCH",
+          "item_url": "https://www.ebay.com/itm/306551968648?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|306551968648|0",
+          "image_url": "https://i.ebayimg.com/images/g/gfAAAeSwRG1o8Gss/s-l64.jpg",
+          "rank": 15,
+          "sold_price": 129.89,
+          "active_price": 129.89
+        },
+        {
+          "title": "Authentic Casio G-Shock DW6900 Custom Medley CZ Iced Out Watch Silver",
+          "item_url": "https://www.ebay.com/itm/326821199075?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|326821199075|0",
+          "image_url": "https://i.ebayimg.com/images/g/KjwAAeSwFoZo8XXi/s-l64.jpg",
+          "rank": 16,
+          "sold_price": 260.0,
+          "active_price": 260.0
+        },
+        {
+          "title": "G-Shock Custom Ap Mod - Silver &amp; Black Dial",
+          "item_url": "https://www.ebay.com/itm/336428023374?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|336428023374|0",
+          "image_url": "https://i.ebayimg.com/images/g/mr4AAeSwHzNpig1v/s-l64.jpg",
+          "rank": 17,
+          "sold_price": 199.0,
+          "active_price": 199.0
+        },
+        {
+          "title": "CASIO G-SHOCK GBX-100NS-1 G-LIDE Bluetooth Tide Graph Moon Data Watch 46mm",
+          "item_url": "https://www.ebay.com/itm/286071814032?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|286071814032|0",
+          "image_url": "https://i.ebayimg.com/images/g/jZ8AAOSw5w9m7uar/s-l64.jpg",
+          "rank": 19,
+          "sold_price": 159.99,
+          "active_price": 159.99
+        },
+        {
+          "title": "CASIO G-SHOCK 5600 Series Tough Solar Men's Black Watch G-5600UE-1DR",
+          "item_url": "https://www.ebay.com/itm/168169787780?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|168169787780|0",
+          "image_url": "https://i.ebayimg.com/images/g/DEcAAeSwTLlplkpl/s-l64.jpg",
+          "rank": 20,
+          "sold_price": 108.95,
+          "active_price": 108.95
+        },
+        {
+          "title": "Casio Men's G-Shock Analog &amp; Digital Black Quartz Watch - GA-1000-1ADR NEW",
+          "item_url": "https://www.ebay.com/itm/286301532833?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|286301532833|0",
+          "image_url": "https://i.ebayimg.com/images/g/fHsAAOSwUDdnonbv/s-l64.jpg",
+          "rank": 21,
+          "sold_price": 144.0,
+          "active_price": 144.0
+        },
+        {
+          "title": "CASIO G-SHOCK GM-5600CL-3 GM5600CL-3 GOLD / GREEN DIGITAL WATCH",
+          "item_url": "https://www.ebay.com/itm/306605195006?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|306605195006|0",
+          "image_url": "https://i.ebayimg.com/images/g/NKUAAeSwSdxpGUCo/s-l64.jpg",
+          "rank": 22,
+          "sold_price": 108.69,
+          "active_price": 108.69
+        },
+        {
+          "title": "New Casio G-Shock GA2100-7A7 Analog Digital White Watch - Authorized Dealer",
+          "item_url": "https://www.ebay.com/itm/287150795467?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|287150795467|0",
+          "image_url": "https://i.ebayimg.com/images/g/KkoAAOSwfjRlzmlF/s-l64.jpg",
+          "rank": 23,
+          "sold_price": 104.99,
+          "active_price": 104.99
+        },
+        {
+          "title": "Casio G-Shock Analog Digital Bio-Based Black Dial Quartz GA-2100RL-1A Mens Watch",
+          "item_url": "https://www.ebay.com/itm/277704566151?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|277704566151|0",
+          "image_url": "https://i.ebayimg.com/images/g/FY0AAeSwUMRphY65/s-l64.jpg",
+          "rank": 25,
+          "sold_price": 113.73,
+          "active_price": 113.73
+        },
+        {
+          "title": "NEW Casio G-Shock Beach Time Lapse Translucent Grey Digital Watch DW-5600TLS-8",
+          "item_url": "https://www.ebay.com/itm/235776380155?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|235776380155|0",
+          "image_url": "https://i.ebayimg.com/images/g/KV4AAOSwYTpnBFha/s-l64.jpg",
+          "rank": 27,
+          "sold_price": 115.0,
+          "active_price": 115.0
+        },
+        {
+          "title": "Casio G-Shock G-Squad Digital Connected Black Fitness Watch GBD200-1",
+          "item_url": "https://www.ebay.com/itm/257372102640?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|257372102640|0",
+          "image_url": "https://i.ebayimg.com/images/g/z4AAAeSwYfNpW0Vk/s-l64.jpg",
+          "rank": 29,
+          "sold_price": 130.0,
+          "active_price": 130.0
+        },
+        {
+          "title": "Casio G-Shock 2100 Series Orange Dial Stainless Steel Watch GM2110D-4A",
+          "item_url": "https://www.ebay.com/itm/198050003717?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|198050003717|0",
+          "image_url": "https://i.ebayimg.com/images/g/Lg4AAeSwrbto1X5X/s-l64.jpg",
+          "rank": 30,
+          "sold_price": 263.0,
+          "active_price": 263.0
+        },
+        {
+          "title": "New UNDEFEATED x G-SHOCK - DWE5600 Watch",
+          "item_url": "https://www.ebay.com/itm/257357625882?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|257357625882|0",
+          "image_url": "https://i.ebayimg.com/images/g/cscAAeSw-fVpjljV/s-l64.jpg",
+          "rank": 31,
+          "sold_price": 199.0,
+          "active_price": 199.0
+        },
+        {
+          "title": "G-Shock GAB2100DF-1A Charles Darwin Foundation Galapagos Albatross Edition",
+          "item_url": "https://www.ebay.com/itm/267577158905?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|267577158905|0",
+          "image_url": "https://i.ebayimg.com/images/g/sPQAAeSwkf1pkgrm/s-l64.jpg",
+          "rank": 32,
+          "sold_price": 154.0,
+          "active_price": 154.0
+        },
+        {
+          "title": "Casio G Shock Men's GG-1000-1A3CR Analog-Digital Display Quartz Green",
+          "item_url": "https://www.ebay.com/itm/146981234482?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|146981234482|0",
+          "image_url": "https://i.ebayimg.com/images/g/LUcAAeSw5FVpIety/s-l64.jpg",
+          "rank": 33,
+          "sold_price": 199.0,
+          "active_price": 199.0
+        },
+        {
+          "title": "Casio G-Shock GBD200-9 Digital Bluetooth Mobile Sport Digital Men's Watch New",
+          "item_url": "https://www.ebay.com/itm/226841739407?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|226841739407|0",
+          "image_url": "https://i.ebayimg.com/images/g/NhUAAeSwdy5oYql~/s-l64.jpg",
+          "rank": 34,
+          "sold_price": 134.5,
+          "active_price": 134.5
+        },
+        {
+          "title": "Casio G-SHOCK Black And Gold Alarm World Time Timer GA-2100GB-1A 200M Mens Watch",
+          "item_url": "https://www.ebay.com/itm/277668515771?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|277668515771|0",
+          "image_url": "https://i.ebayimg.com/images/g/ElkAAeSwhwxpcyCo/s-l64.jpg",
+          "rank": 35,
+          "sold_price": 126.45,
+          "active_price": 126.45
+        },
+        {
+          "title": "Casio G-SHOCK GW-BX5600-1A Men Watch Bluetooth Digital Tough Solar Quartz",
+          "item_url": "https://www.ebay.com/itm/323628099231?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|323628099231|0",
+          "image_url": "https://i.ebayimg.com/images/g/f7wAAeSwashpddy2/s-l64.jpg",
+          "rank": 36,
+          "sold_price": 239.99,
+          "active_price": 239.99
+        },
+        {
+          "title": "G-Shock GBA800-9A Yellow One Size",
+          "item_url": "https://www.ebay.com/itm/143834332957?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|143834332957|0",
+          "image_url": "https://i.ebayimg.com/images/g/EJoAAOSwrDxfqsnY/s-l64.jpg",
+          "rank": 38,
+          "sold_price": 130.0,
+          "active_price": 130.0
+        },
+        {
+          "title": "BRAND NEW Casio G-Shock Limited Edition SNOW CAMOUFLAGE Watch GA2200GC-7A",
+          "item_url": "https://www.ebay.com/itm/235777698726?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|235777698726|0",
+          "image_url": "https://i.ebayimg.com/images/g/-18AAOSwAhBnBZyB/s-l64.jpg",
+          "rank": 39,
+          "sold_price": 135.0,
+          "active_price": 135.0
+        },
+        {
+          "title": "Casio G-Shock GW7900-1 Men's Solar Digital Watch",
+          "item_url": "https://www.ebay.com/itm/389579010222?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|389579010222|0",
+          "image_url": "https://i.ebayimg.com/images/g/LdAAAeSwumNpg8Ex/s-l64.jpg",
+          "rank": 40,
+          "sold_price": 109.99,
+          "active_price": 109.99
+        },
+        {
+          "title": "New Casio G-Shock G-steel Tough Solar Bluetooth Green Dial Watch GBM2100A-1A3",
+          "item_url": "https://www.ebay.com/itm/168133206218?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|168133206218|0",
+          "image_url": "https://i.ebayimg.com/images/g/Uo8AAeSw1u1pgoGV/s-l64.jpg",
+          "rank": 41,
+          "sold_price": 198.0,
+          "active_price": 198.0
+        },
+        {
+          "title": "Casio GW-5000HS-7 Men's G-Shock - Classic Utility",
+          "item_url": "https://www.ebay.com/itm/227183284972?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|227183284972|0",
+          "image_url": "https://i.ebayimg.com/images/g/KAMAAeSw1GppcOA1/s-l64.jpg",
+          "rank": 42,
+          "sold_price": 254.9,
+          "active_price": 254.9
+        },
+        {
+          "title": "Casio G-Shock CASIOAK Bluetooth Tough Solar AnaDigi Mens Sports Watch GAB2100-2A",
+          "item_url": "https://www.ebay.com/itm/236604254741?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|236604254741|0",
+          "image_url": "https://i.ebayimg.com/images/g/SKcAAeSw7YBpn1rN/s-l64.jpg",
+          "rank": 43,
+          "sold_price": 150.0,
+          "active_price": 150.0
+        },
+        {
+          "title": "Casio G-Shock GA-100A-9ADR GA100A-9ADR Velocity Indicator Alarm Men's Watch",
+          "item_url": "https://www.ebay.com/itm/277325239222?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|277325239222|0",
+          "image_url": "https://i.ebayimg.com/images/g/qTgAAeSwx5VonaZn/s-l64.jpg",
+          "rank": 44,
+          "sold_price": 130.82,
+          "active_price": 130.82
+        },
+        {
+          "title": "New Casio G-Shock Digital 5000 Series Black Watch DW5000R-1A",
+          "item_url": "https://www.ebay.com/itm/137038849942?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|137038849942|0",
+          "image_url": "https://i.ebayimg.com/images/g/8TgAAOSw56ZnYIbq/s-l64.jpg",
+          "rank": 45,
+          "sold_price": 189.95,
+          "active_price": 189.95
+        },
+        {
+          "title": "Casio G-SHOCK GA-2300-8A Analog Digital Men's Watch Limited Gray GA23008A",
+          "item_url": "https://www.ebay.com/itm/376777979360?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|376777979360|0",
+          "image_url": "https://i.ebayimg.com/images/g/4loAAOSwxTtn2-f0/s-l64.jpg",
+          "rank": 46,
+          "sold_price": 137.0,
+          "active_price": 137.0
+        },
+        {
+          "title": "Casio G-Shock Overseas Model Solar Digital GX-56BBR-1 %7c GX-56 SERIES",
+          "item_url": "https://www.ebay.com/itm/286852719447?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|286852719447|0",
+          "image_url": "https://i.ebayimg.com/images/g/zTMAAeSwKe1o3d1O/s-l64.jpg",
+          "rank": 47,
+          "sold_price": 139.99,
+          "active_price": 139.99
+        },
+        {
+          "title": "New Casio G-Shock GM2100-1A Carbon Square Silver Metal Black Limited Watch",
+          "item_url": "https://www.ebay.com/itm/287150601831?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|287150601831|0",
+          "image_url": "https://i.ebayimg.com/images/g/OpcAAOSwUmhie9iH/s-l64.jpg",
+          "rank": 49,
+          "sold_price": 164.5,
+          "active_price": 164.5
+        }
+      ],
+      "raw_active_result_rows": [
+        {
+          "title": "CASIOAK SANDBLAST BLACK DIAL G-SHOCK MOD GA2100 GA-2100 MENâS WATCH",
+          "item_url": "https://www.ebay.com/itm/306272452101?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|306272452101|0",
+          "image_url": "https://i.ebayimg.com/images/g/vL4AAeSwWfppMRdf/s-l64.jpg",
+          "rank": 1,
+          "sold_price": 184.99,
+          "active_price": 184.99
+        },
+        {
+          "title": "Casio G-SHOCK GA-2300-8A Analog Digital Men's Watch Limited Gray GA23008A",
+          "item_url": "https://www.ebay.com/itm/406480783204?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|406480783204|0",
+          "image_url": "https://i.ebayimg.com/images/g/4loAAOSwxTtn2-f0/s-l64.jpg",
+          "rank": 2,
+          "sold_price": 137.55,
+          "active_price": 137.55
+        },
+        {
+          "title": "G-Shock GAB2100-1A Analog-Digital Watch",
+          "item_url": "https://www.ebay.com/itm/116969313187?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|116969313187|0",
+          "image_url": "https://i.ebayimg.com/images/g/PNYAAeSwZUFpjQWQ/s-l64.jpg",
+          "rank": 3,
+          "sold_price": 124.95,
+          "active_price": 124.95
+        },
+        {
+          "title": "G-Shock GBD-200-1",
+          "item_url": "https://www.ebay.com/itm/127608128935?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|127608128935|0",
+          "image_url": "https://i.ebayimg.com/images/g/M-YAAeSw2lNpjQZc/s-l64.jpg",
+          "rank": 4,
+          "sold_price": 129.95,
+          "active_price": 129.95
+        },
+        {
+          "title": "Casio G-Shock GW-M5610U Tough Solar Men's Watch Atomic Multiband 6 GW-M5610U-1",
+          "item_url": "https://www.ebay.com/itm/277620640046?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|277620640046|0",
+          "image_url": "https://i.ebayimg.com/images/g/SrQAAeSwHOFpVrv3/s-l64.jpg",
+          "rank": 5,
+          "sold_price": 104.98,
+          "active_price": 104.98
+        },
+        {
+          "title": "CASIO GW6900-1 Tough Solar Atomic G-Shock Digital Chrono 200M Sport Watch $155",
+          "item_url": "https://www.ebay.com/itm/277622751326?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|277622751326|0",
+          "image_url": "https://i.ebayimg.com/images/g/BFYAAeSwiNNok2NJ/s-l64.jpg",
+          "rank": 6,
+          "sold_price": 109.98,
+          "active_price": 109.98
+        },
+        {
+          "title": "New Casio G-Shock GM2100-1A G-Steel Menâs Metal Silver Black Rubber Strap Watch",
+          "item_url": "https://www.ebay.com/itm/168160298011?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|168160298011|0",
+          "image_url": "https://i.ebayimg.com/images/g/ChEAAeSwBAhpkWt7/s-l64.jpg",
+          "rank": 7,
+          "sold_price": 144.95,
+          "active_price": 144.95
+        },
+        {
+          "title": "CASIO G-SHOCK GBX-100-2A G-LIDE BLUETOOTH BLUE DIGITAL WATCH",
+          "item_url": "https://www.ebay.com/itm/306412157688?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|306412157688|0",
+          "image_url": "https://i.ebayimg.com/images/g/RYcAAeSwkTdofwab/s-l64.jpg",
+          "rank": 8,
+          "sold_price": 108.69,
+          "active_price": 108.69
+        },
+        {
+          "title": "New Casio G-Shock GA2100 BLACKOUT Custom MOD All Black Color Stainless Steel",
+          "item_url": "https://www.ebay.com/itm/145708148261?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|145708148261|0",
+          "image_url": "https://i.ebayimg.com/images/g/g98AAOSwV3tmTH5w/s-l64.jpg",
+          "rank": 9,
+          "sold_price": 250.0,
+          "active_price": 250.0
+        },
+        {
+          "title": "CASIOAK ROSE GOLD G-SHOCK MOD GMA-S2100 WOMENâS / MID-SIZE WATCH",
+          "item_url": "https://www.ebay.com/itm/306385829342?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|306385829342|0",
+          "image_url": "https://i.ebayimg.com/images/g/X8sAAeSwBYJpMRdh/s-l64.jpg",
+          "rank": 10,
+          "sold_price": 199.99,
+          "active_price": 199.99
+        },
+        {
+          "title": "NEW! Casio G-Shock GW-M5610U Solar Men's Watch Atomic Multiband 6 GW-M5610U-1",
+          "item_url": "https://www.ebay.com/itm/177857877925?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|177857877925|0",
+          "image_url": "https://i.ebayimg.com/images/g/lY0AAeSwM0tpk23B/s-l64.jpg",
+          "rank": 11,
+          "sold_price": 119.98,
+          "active_price": 119.98
+        },
+        {
+          "title": "New Casio G-Shock 2100 Series Analog Digital Blue Dial Resin Watch GA2100BM-7A2",
+          "item_url": "https://www.ebay.com/itm/277737299715?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|277737299715|0",
+          "image_url": "https://i.ebayimg.com/images/g/~fUAAOSwmjVoB6US/s-l64.jpg",
+          "rank": 12,
+          "sold_price": 119.99,
+          "active_price": 119.99
+        },
+        {
+          "title": "Casio G-Shock GG-1000-1A3 Mudmaster Analog-Digital Men's Watch",
+          "item_url": "https://www.ebay.com/itm/286824205422?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|286824205422|0",
+          "image_url": "https://i.ebayimg.com/images/g/pXAAAeSwa2NoycKm/s-l64.jpg",
+          "rank": 13,
+          "sold_price": 249.99,
+          "active_price": 249.99
+        },
+        {
+          "title": "CASIO G-Shock GWX-5600-1JF Black G-Lide Tough Solar Radio Men's Watch New in Box",
+          "item_url": "https://www.ebay.com/itm/314029545650?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|314029545650|0",
+          "image_url": "https://i.ebayimg.com/images/g/2e8AAOSwxTRn0RnZ/s-l64.jpg",
+          "rank": 14,
+          "sold_price": 147.5,
+          "active_price": 147.5
+        },
+        {
+          "title": "CASIO G-SHOCK GBX-100-8 G-LIDE BLUETOOTH GRAY / TAN DIGITAL WATCH",
+          "item_url": "https://www.ebay.com/itm/306551968648?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|306551968648|0",
+          "image_url": "https://i.ebayimg.com/images/g/gfAAAeSwRG1o8Gss/s-l64.jpg",
+          "rank": 15,
+          "sold_price": 129.89,
+          "active_price": 129.89
+        },
+        {
+          "title": "Authentic Casio G-Shock DW6900 Custom Medley CZ Iced Out Watch Silver",
+          "item_url": "https://www.ebay.com/itm/326821199075?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|326821199075|0",
+          "image_url": "https://i.ebayimg.com/images/g/KjwAAeSwFoZo8XXi/s-l64.jpg",
+          "rank": 16,
+          "sold_price": 260.0,
+          "active_price": 260.0
+        },
+        {
+          "title": "G-Shock Custom Ap Mod - Silver &amp; Black Dial",
+          "item_url": "https://www.ebay.com/itm/336428023374?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|336428023374|0",
+          "image_url": "https://i.ebayimg.com/images/g/mr4AAeSwHzNpig1v/s-l64.jpg",
+          "rank": 17,
+          "sold_price": 199.0,
+          "active_price": 199.0
+        },
+        {
+          "title": "Casio GW9400-1 G-Shock Rangeman Black Red Digital Dial Resin Band Men Watch NEW",
+          "item_url": "https://www.ebay.com/itm/305776982161?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|305776982161|0",
+          "image_url": "https://i.ebayimg.com/images/g/XeMAAOSwW41m4aG3/s-l64.jpg",
+          "rank": 18,
+          "sold_price": 233.99,
+          "active_price": 233.99
+        },
+        {
+          "title": "CASIO G-SHOCK GBX-100NS-1 G-LIDE Bluetooth Tide Graph Moon Data Watch 46mm",
+          "item_url": "https://www.ebay.com/itm/286071814032?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|286071814032|0",
+          "image_url": "https://i.ebayimg.com/images/g/jZ8AAOSw5w9m7uar/s-l64.jpg",
+          "rank": 19,
+          "sold_price": 159.99,
+          "active_price": 159.99
+        },
+        {
+          "title": "CASIO G-SHOCK 5600 Series Tough Solar Men's Black Watch G-5600UE-1DR",
+          "item_url": "https://www.ebay.com/itm/168169787780?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|168169787780|0",
+          "image_url": "https://i.ebayimg.com/images/g/DEcAAeSwTLlplkpl/s-l64.jpg",
+          "rank": 20,
+          "sold_price": 108.95,
+          "active_price": 108.95
+        },
+        {
+          "title": "Casio Men's G-Shock Analog &amp; Digital Black Quartz Watch - GA-1000-1ADR NEW",
+          "item_url": "https://www.ebay.com/itm/286301532833?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|286301532833|0",
+          "image_url": "https://i.ebayimg.com/images/g/fHsAAOSwUDdnonbv/s-l64.jpg",
+          "rank": 21,
+          "sold_price": 144.0,
+          "active_price": 144.0
+        },
+        {
+          "title": "CASIO G-SHOCK GM-5600CL-3 GM5600CL-3 GOLD / GREEN DIGITAL WATCH",
+          "item_url": "https://www.ebay.com/itm/306605195006?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|306605195006|0",
+          "image_url": "https://i.ebayimg.com/images/g/NKUAAeSwSdxpGUCo/s-l64.jpg",
+          "rank": 22,
+          "sold_price": 108.69,
+          "active_price": 108.69
+        },
+        {
+          "title": "New Casio G-Shock GA2100-7A7 Analog Digital White Watch - Authorized Dealer",
+          "item_url": "https://www.ebay.com/itm/287150795467?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|287150795467|0",
+          "image_url": "https://i.ebayimg.com/images/g/KkoAAOSwfjRlzmlF/s-l64.jpg",
+          "rank": 23,
+          "sold_price": 104.99,
+          "active_price": 104.99
+        },
+        {
+          "title": "Casio G-Shock Quartz Sports Black Dial Resin Strap GBD-200-2 200M Men's Watch",
+          "item_url": "https://www.ebay.com/itm/277722581349?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|277722581349|0",
+          "image_url": "https://i.ebayimg.com/images/g/tQ8AAeSwjFppjpIM/s-l64.jpg",
+          "rank": 24,
+          "sold_price": 151.54,
+          "active_price": 151.54
+        },
+        {
+          "title": "Casio G-Shock Analog Digital Bio-Based Black Dial Quartz GA-2100RL-1A Mens Watch",
+          "item_url": "https://www.ebay.com/itm/277704566151?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|277704566151|0",
+          "image_url": "https://i.ebayimg.com/images/g/FY0AAeSwUMRphY65/s-l64.jpg",
+          "rank": 25,
+          "sold_price": 113.73,
+          "active_price": 113.73
+        },
+        {
+          "title": "Casio G-Shock Blue Mobile Link Bluetooth Digital Sport Watch GBD-200 GBD200-2",
+          "item_url": "https://www.ebay.com/itm/135777517338?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|135777517338|0",
+          "image_url": "https://i.ebayimg.com/images/g/ZmEAAOSw~SxoGryc/s-l64.jpg",
+          "rank": 26,
+          "sold_price": 152.25,
+          "active_price": 152.25
+        },
+        {
+          "title": "NEW Casio G-Shock Beach Time Lapse Translucent Grey Digital Watch DW-5600TLS-8",
+          "item_url": "https://www.ebay.com/itm/235776380155?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|235776380155|0",
+          "image_url": "https://i.ebayimg.com/images/g/KV4AAOSwYTpnBFha/s-l64.jpg",
+          "rank": 27,
+          "sold_price": 115.0,
+          "active_price": 115.0
+        },
+        {
+          "title": "New Casio G-shock GMAS110MP-4A1 Analog-Digital Light Pink Strap Watch",
+          "item_url": "https://www.ebay.com/itm/287150601828?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|287150601828|0",
+          "image_url": "https://i.ebayimg.com/images/g/bfUAAOSwGWBiB9pp/s-l64.jpg",
+          "rank": 28,
+          "sold_price": 134.99,
+          "active_price": 134.99
+        },
+        {
+          "title": "Casio G-Shock G-Squad Digital Connected Black Fitness Watch GBD200-1",
+          "item_url": "https://www.ebay.com/itm/257372102640?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|257372102640|0",
+          "image_url": "https://i.ebayimg.com/images/g/z4AAAeSwYfNpW0Vk/s-l64.jpg",
+          "rank": 29,
+          "sold_price": 130.0,
+          "active_price": 130.0
+        },
+        {
+          "title": "Casio G-Shock 2100 Series Orange Dial Stainless Steel Watch GM2110D-4A",
+          "item_url": "https://www.ebay.com/itm/198050003717?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|198050003717|0",
+          "image_url": "https://i.ebayimg.com/images/g/Lg4AAeSwrbto1X5X/s-l64.jpg",
+          "rank": 30,
+          "sold_price": 263.0,
+          "active_price": 263.0
+        },
+        {
+          "title": "New UNDEFEATED x G-SHOCK - DWE5600 Watch",
+          "item_url": "https://www.ebay.com/itm/257357625882?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|257357625882|0",
+          "image_url": "https://i.ebayimg.com/images/g/cscAAeSw-fVpjljV/s-l64.jpg",
+          "rank": 31,
+          "sold_price": 199.0,
+          "active_price": 199.0
+        },
+        {
+          "title": "G-Shock GAB2100DF-1A Charles Darwin Foundation Galapagos Albatross Edition",
+          "item_url": "https://www.ebay.com/itm/267577158905?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|267577158905|0",
+          "image_url": "https://i.ebayimg.com/images/g/sPQAAeSwkf1pkgrm/s-l64.jpg",
+          "rank": 32,
+          "sold_price": 154.0,
+          "active_price": 154.0
+        },
+        {
+          "title": "Casio G Shock Men's GG-1000-1A3CR Analog-Digital Display Quartz Green",
+          "item_url": "https://www.ebay.com/itm/146981234482?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|146981234482|0",
+          "image_url": "https://i.ebayimg.com/images/g/LUcAAeSw5FVpIety/s-l64.jpg",
+          "rank": 33,
+          "sold_price": 199.0,
+          "active_price": 199.0
+        },
+        {
+          "title": "Casio G-Shock GBD200-9 Digital Bluetooth Mobile Sport Digital Men's Watch New",
+          "item_url": "https://www.ebay.com/itm/226841739407?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|226841739407|0",
+          "image_url": "https://i.ebayimg.com/images/g/NhUAAeSwdy5oYql~/s-l64.jpg",
+          "rank": 34,
+          "sold_price": 134.5,
+          "active_price": 134.5
+        },
+        {
+          "title": "Casio G-SHOCK Black And Gold Alarm World Time Timer GA-2100GB-1A 200M Mens Watch",
+          "item_url": "https://www.ebay.com/itm/277668515771?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|277668515771|0",
+          "image_url": "https://i.ebayimg.com/images/g/ElkAAeSwhwxpcyCo/s-l64.jpg",
+          "rank": 35,
+          "sold_price": 126.45,
+          "active_price": 126.45
+        },
+        {
+          "title": "Casio G-SHOCK GW-BX5600-1A Men Watch Bluetooth Digital Tough Solar Quartz",
+          "item_url": "https://www.ebay.com/itm/323628099231?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|323628099231|0",
+          "image_url": "https://i.ebayimg.com/images/g/f7wAAeSwashpddy2/s-l64.jpg",
+          "rank": 36,
+          "sold_price": 239.99,
+          "active_price": 239.99
+        },
+        {
+          "title": "New Casio G-Shock GA2100 added Stainless steel Bracelet GOLD SILVER Black White",
+          "item_url": "https://www.ebay.com/itm/136270275799?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|136270275799|0",
+          "image_url": "https://i.ebayimg.com/images/g/Ao0AAOSwe4NnNZB5/s-l64.jpg",
+          "rank": 37,
+          "sold_price": 199.0,
+          "active_price": 199.0
+        },
+        {
+          "title": "G-Shock GBA800-9A Yellow One Size",
+          "item_url": "https://www.ebay.com/itm/143834332957?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|143834332957|0",
+          "image_url": "https://i.ebayimg.com/images/g/EJoAAOSwrDxfqsnY/s-l64.jpg",
+          "rank": 38,
+          "sold_price": 130.0,
+          "active_price": 130.0
+        },
+        {
+          "title": "BRAND NEW Casio G-Shock Limited Edition SNOW CAMOUFLAGE Watch GA2200GC-7A",
+          "item_url": "https://www.ebay.com/itm/235777698726?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|235777698726|0",
+          "image_url": "https://i.ebayimg.com/images/g/-18AAOSwAhBnBZyB/s-l64.jpg",
+          "rank": 39,
+          "sold_price": 135.0,
+          "active_price": 135.0
+        },
+        {
+          "title": "Casio G-Shock GW7900-1 Men's Solar Digital Watch",
+          "item_url": "https://www.ebay.com/itm/389579010222?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|389579010222|0",
+          "image_url": "https://i.ebayimg.com/images/g/LdAAAeSwumNpg8Ex/s-l64.jpg",
+          "rank": 40,
+          "sold_price": 109.99,
+          "active_price": 109.99
+        },
+        {
+          "title": "New Casio G-Shock G-steel Tough Solar Bluetooth Green Dial Watch GBM2100A-1A3",
+          "item_url": "https://www.ebay.com/itm/168133206218?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|168133206218|0",
+          "image_url": "https://i.ebayimg.com/images/g/Uo8AAeSw1u1pgoGV/s-l64.jpg",
+          "rank": 41,
+          "sold_price": 198.0,
+          "active_price": 198.0
+        },
+        {
+          "title": "Casio GW-5000HS-7 Men's G-Shock - Classic Utility",
+          "item_url": "https://www.ebay.com/itm/227183284972?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|227183284972|0",
+          "image_url": "https://i.ebayimg.com/images/g/KAMAAeSw1GppcOA1/s-l64.jpg",
+          "rank": 42,
+          "sold_price": 254.9,
+          "active_price": 254.9
+        },
+        {
+          "title": "Casio G-Shock CASIOAK Bluetooth Tough Solar AnaDigi Mens Sports Watch GAB2100-2A",
+          "item_url": "https://www.ebay.com/itm/236604254741?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|236604254741|0",
+          "image_url": "https://i.ebayimg.com/images/g/SKcAAeSw7YBpn1rN/s-l64.jpg",
+          "rank": 43,
+          "sold_price": 150.0,
+          "active_price": 150.0
+        },
+        {
+          "title": "Casio G-Shock GA-100A-9ADR GA100A-9ADR Velocity Indicator Alarm Men's Watch",
+          "item_url": "https://www.ebay.com/itm/277325239222?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|277325239222|0",
+          "image_url": "https://i.ebayimg.com/images/g/qTgAAeSwx5VonaZn/s-l64.jpg",
+          "rank": 44,
+          "sold_price": 130.82,
+          "active_price": 130.82
+        },
+        {
+          "title": "New Casio G-Shock Digital 5000 Series Black Watch DW5000R-1A",
+          "item_url": "https://www.ebay.com/itm/137038849942?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|137038849942|0",
+          "image_url": "https://i.ebayimg.com/images/g/8TgAAOSw56ZnYIbq/s-l64.jpg",
+          "rank": 45,
+          "sold_price": 189.95,
+          "active_price": 189.95
+        },
+        {
+          "title": "Casio G-SHOCK GA-2300-8A Analog Digital Men's Watch Limited Gray GA23008A",
+          "item_url": "https://www.ebay.com/itm/376777979360?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|376777979360|0",
+          "image_url": "https://i.ebayimg.com/images/g/4loAAOSwxTtn2-f0/s-l64.jpg",
+          "rank": 46,
+          "sold_price": 137.0,
+          "active_price": 137.0
+        },
+        {
+          "title": "Casio G-Shock Overseas Model Solar Digital GX-56BBR-1 %7c GX-56 SERIES",
+          "item_url": "https://www.ebay.com/itm/286852719447?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|286852719447|0",
+          "image_url": "https://i.ebayimg.com/images/g/zTMAAeSwKe1o3d1O/s-l64.jpg",
+          "rank": 47,
+          "sold_price": 139.99,
+          "active_price": 139.99
+        },
+        {
+          "title": "Casio G-Shock GW-A1000 GRAVITYMASTER Solar Multiband Brown GW-A1000FC-5A New",
+          "item_url": "https://www.ebay.com/itm/277151692412?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|277151692412|0",
+          "image_url": "https://i.ebayimg.com/images/g/KS4AAeSwOqRoOHqv/s-l64.jpg",
+          "rank": 48,
+          "sold_price": 289.95,
+          "active_price": 289.95
+        },
+        {
+          "title": "New Casio G-Shock GM2100-1A Carbon Square Silver Metal Black Limited Watch",
+          "item_url": "https://www.ebay.com/itm/287150601831?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|287150601831|0",
+          "image_url": "https://i.ebayimg.com/images/g/OpcAAOSwUmhie9iH/s-l64.jpg",
+          "rank": 49,
+          "sold_price": 164.5,
+          "active_price": 164.5
+        }
+      ],
+      "active_screenshot_path": "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/output/debug_toggle_active_20260226T140131.png",
+      "active_html_path": "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/output/debug_toggle_active_20260226T140131.html",
+      "sold_sample": {
+        "title": "CASIO G-SHOCK GA-2100BM-7A8 \"CASIOAK\" SILVER DIAL TRANSPARENT MEN'S WATCH",
+        "sold_price": 106.95,
+        "item_url": "https://www.ebay.com/itm/306652836055?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+        "item_id": "v1|306652836055|0",
+        "image_url": "https://i.ebayimg.com/images/g/LiMAAeSwlfxpOlW3/s-l1200.png",
+        "sold_date_count_detected": 19
+      },
+      "filtered_result_rows": [
+        {
+          "title": "CASIO G-SHOCK GW-B5600 2WAY MIP GW-BX5600-1JF Bluetooth Black 2025 NEW Genuine",
+          "item_url": "https://www.ebay.com/itm/297766179882?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|297766179882|0",
+          "image_url": "https://i.ebayimg.com/images/g/5XIAAeSwumFpGcuH/s-l1200.jpg",
+          "rank": 1,
+          "sold_price": 264.0
+        },
+        {
+          "title": "CASIO G-SHOCK GBD-200SM-1A5 BLUETOOTH ORANGE / GRAY DIGITAL WATCH",
+          "item_url": "https://www.ebay.com/itm/306368381151?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|306368381151|0",
+          "image_url": "https://i.ebayimg.com/images/g/VKwAAOSwY0hoWTMm/s-l1200.jpg",
+          "rank": 2,
+          "sold_price": 114.7
+        },
+        {
+          "title": "CASIO G-SHOCK GW-B5600 2WAY MIP GW-BX5600-1A1JF Bluetooth 2025 New W/Box Genuine",
+          "item_url": "https://www.ebay.com/itm/297816933828?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|297816933828|0",
+          "image_url": "https://i.ebayimg.com/images/g/FY0AAeSwW4JpMU1f/s-l1200.jpg",
+          "rank": 3,
+          "sold_price": 275.77
+        },
+        {
+          "title": "CASIO GW6900-1 Tough Solar Atomic G-Shock Digital Chrono 200M Sport Watch $155",
+          "item_url": "https://www.ebay.com/itm/277622751326?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|277622751326|0",
+          "image_url": "https://i.ebayimg.com/images/g/BFYAAeSwiNNok2NJ/s-l1200.jpg",
+          "rank": 4,
+          "sold_price": 109.98
+        },
+        {
+          "title": "CASIO G-SHOCK GBX-100NS-1 G-LIDE Bluetooth Tide Graph Moon Data Watch 46mm",
+          "item_url": "https://www.ebay.com/itm/286071814032?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|286071814032|0",
+          "image_url": "https://i.ebayimg.com/images/g/jZ8AAOSw5w9m7uar/s-l1200.jpg",
+          "rank": 5,
+          "sold_price": 151.17
+        },
+        {
+          "title": "Custom GA2100 Watch – “Casioak” Style Full Gold Tone | G-Shock Base Model",
+          "item_url": "https://www.ebay.com/itm/306551846121?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|306551846121|0",
+          "image_url": "https://i.ebayimg.com/images/g/2pIAAeSwi7ppMRic/s-l1200.jpg",
+          "rank": 6,
+          "sold_price": 199.99
+        },
+        {
+          "title": "CASIO G-SHOCK GBM2100A-1A2 BLUE \"CASIOAK\" SOLAR BLUETOOTH G-STEEL WATCH",
+          "item_url": "https://www.ebay.com/itm/306710930420?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|306710930420|0",
+          "image_url": "https://i.ebayimg.com/images/g/Zu4AAeSwcmFpY~uP/s-l1200.jpg",
+          "rank": 7,
+          "sold_price": 188.21
+        },
+        {
+          "title": "CASIO G-SHOCK GBD-200-2 G-SQUAD BLUETOOTH BLUE DIGITAL WATCH",
+          "item_url": "https://www.ebay.com/itm/306402109906?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|306402109906|0",
+          "image_url": "https://i.ebayimg.com/images/g/oa0AAeSw4ehoeX6b/s-l1200.jpg",
+          "rank": 10,
+          "sold_price": 119.02
+        },
+        {
+          "title": "CASIO G-SHOCK GM-5600CL-3 GM5600CL-3 GOLD / GREEN DIGITAL WATCH",
+          "item_url": "https://www.ebay.com/itm/306605195006?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|306605195006|0",
+          "image_url": "https://i.ebayimg.com/images/g/NKUAAeSwSdxpGUCo/s-l1200.png",
+          "rank": 11,
+          "sold_price": 108.69
+        },
+        {
+          "title": "CASIO G-SHOCK GA-B2100-1A \"CASIOAK\" SOLAR BLUETOOTH A/D WATCH",
+          "item_url": "https://www.ebay.com/itm/306720809611?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|306720809611|0",
+          "image_url": "https://i.ebayimg.com/images/g/d1kAAeSw7x5pazz2/s-l1200.jpg",
+          "rank": 12,
+          "sold_price": 136.95
+        },
+        {
+          "title": "Casio G-SHOCK GW-BX5600-1A Men Watch Bluetooth Digital Tough Solar Quartz",
+          "item_url": "https://www.ebay.com/itm/323628099231?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|323628099231|0",
+          "image_url": "https://i.ebayimg.com/images/g/f7wAAeSwashpddy2/s-l1200.webp",
+          "rank": 13,
+          "sold_price": 239.99
+        },
+        {
+          "title": "Casio G-SHOCK GW-BX5600-1JF Tough Watch NEW Japan",
+          "item_url": "https://www.ebay.com/itm/116899042071?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|116899042071|0",
+          "image_url": "https://i.ebayimg.com/images/g/qygAAeSwl1JpSbi0/s-l1200.jpg",
+          "rank": 14,
+          "sold_price": 299.99
+        },
+        {
+          "title": "CASIO G-SHOCK GBX-100-2A G-LIDE BLUETOOTH BLUE DIGITAL WATCH",
+          "item_url": "https://www.ebay.com/itm/306412157688?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|306412157688|0",
+          "image_url": "https://i.ebayimg.com/images/g/RYcAAeSwkTdofwab/s-l1200.png",
+          "rank": 15,
+          "sold_price": 108.69
+        },
+        {
+          "title": "New Casio G-Shock Analog-Digital 2100Series Men's White Watch GA2100HDS-7A",
+          "item_url": "https://www.ebay.com/itm/277249069544?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|277249069544|0",
+          "image_url": "https://i.ebayimg.com/images/g/CVoAAeSwmqJoZmoF/s-l1200.jpg",
+          "rank": 16,
+          "sold_price": 114.29
+        },
+        {
+          "title": "CASIOAK SANDBLAST BLACK DIAL G-SHOCK MOD GA2100 GA-2100 MEN’S WATCH",
+          "item_url": "https://www.ebay.com/itm/306272452101?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|306272452101|0",
+          "image_url": "https://i.ebayimg.com/images/g/vL4AAeSwWfppMRdf/s-l1200.jpg",
+          "rank": 17,
+          "sold_price": 182.47
+        },
+        {
+          "title": "Casio G-SHOCK Evangelion GA-110EVA30-7AJR 110 30th Anniversary Limited 2025 JP",
+          "item_url": "https://www.ebay.com/itm/187684621515?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|187684621515|0",
+          "image_url": "https://i.ebayimg.com/images/g/W5gAAeSwSrho~dJw/s-l1200.jpg",
+          "rank": 18,
+          "sold_price": 255.27
+        },
+        {
+          "title": "Authentic Silver 13.5 CTW Casio G-Shock DW6900 Iced Out Watch",
+          "item_url": "https://www.ebay.com/itm/365766423203?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|365766423203|0",
+          "image_url": "https://i.ebayimg.com/images/g/F-0AAeSw8jRoiVBs/s-l1200.jpg",
+          "rank": 19,
+          "sold_price": 220.0
+        },
+        {
+          "title": "G-SHOCK DW-6900RGM-5JR Origami White Limited Japan Genuine Casio Watch New",
+          "item_url": "https://www.ebay.com/itm/177634638885?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|177634638885|0",
+          "image_url": "https://i.ebayimg.com/images/g/zEYAAeSwDphpLZ5R/s-l1200.png",
+          "rank": 20,
+          "sold_price": 183.32
+        },
+        {
+          "title": "Casio G-Shock GWG-B1000-1A Master of G-Land MUDMASTER Flagship Triple Sensor",
+          "item_url": "https://www.ebay.com/itm/177680991128?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|177680991128|0",
+          "image_url": "https://i.ebayimg.com/images/g/JJsAAeSwSIRpQfD1/s-l1200.jpg",
+          "rank": 21,
+          "sold_price": 639.99
+        },
+        {
+          "title": "CASIO G-SHOCK GW-6900-1JF Black Tough Solar Atomic Radio Men Digital Watch NEW",
+          "item_url": "https://www.ebay.com/itm/293763786596?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|293763786596|0",
+          "image_url": "https://i.ebayimg.com/images/g/-KMAAOSwm3Rne2gl/s-l1200.jpg",
+          "rank": 22,
+          "sold_price": 134.49
+        },
+        {
+          "title": "CASIO G-SHOCK GBX-100S-2 G-LIDE BLUETOOTH BLUE / PURPLE DIGITAL WATCH",
+          "item_url": "https://www.ebay.com/itm/306410702224?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|306410702224|0",
+          "image_url": "https://i.ebayimg.com/images/g/ocMAAOSwiutoXEOI/s-l1200.jpg",
+          "rank": 24,
+          "sold_price": 143.54
+        },
+        {
+          "title": "CASIO G-SHOCK DW-5600STT-1 \"STRANGER THINGS\" COLLABORATION DIGITAL WATCH",
+          "item_url": "https://www.ebay.com/itm/306715407740?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|306715407740|0",
+          "image_url": "https://i.ebayimg.com/images/g/zqEAAeSwSoJpawl3/s-l1200.png",
+          "rank": 25,
+          "sold_price": 184.78
+        },
+        {
+          "title": "G-Shock GAB2100-1A Analog-Digital Watch",
+          "item_url": "https://www.ebay.com/itm/116969313187?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|116969313187|0",
+          "image_url": "https://i.ebayimg.com/images/g/PNYAAeSwZUFpjQWQ/s-l1200.jpg",
+          "rank": 26,
+          "sold_price": 124.95
+        },
+        {
+          "title": "Casio G-Shock Master Of G Land Chronograph GMT Quartz Digital Black Dial Men's",
+          "item_url": "https://www.ebay.com/itm/187945082742?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|187945082742|0",
+          "image_url": "https://i.ebayimg.com/images/g/EtcAAeSweiRpncBD/s-l1200.jpg",
+          "rank": 27,
+          "sold_price": 231.76
+        },
+        {
+          "title": "New CASIO G-SHOCK GBD-200-1A1 Silicone Black Sub 200mt Bluetooth",
+          "item_url": "https://www.ebay.com/itm/277532876744?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|277532876744|0",
+          "image_url": "https://i.ebayimg.com/images/g/kjwAAeSwDANpJccJ/s-l1200.jpg",
+          "rank": 28,
+          "sold_price": 131.25
+        },
+        {
+          "title": "CASIO G-SHOCK GBD-200SM-1A6 G-SQUAD BLUETOOTH PURPLE / BLACK DIGITAL WATCH",
+          "item_url": "https://www.ebay.com/itm/306411767894?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|306411767894|0",
+          "image_url": "https://i.ebayimg.com/images/g/hxQAAeSwQCFoe~jU/s-l1200.jpg",
+          "rank": 29,
+          "sold_price": 135.86
+        },
+        {
+          "title": "CASIO G-SHOCK GBX-100-8 G-LIDE BLUETOOTH GRAY / TAN DIGITAL WATCH",
+          "item_url": "https://www.ebay.com/itm/306551968648?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|306551968648|0",
+          "image_url": "https://i.ebayimg.com/images/g/gfAAAeSwRG1o8Gss/s-l1200.png",
+          "rank": 30,
+          "sold_price": 120.15
+        },
+        {
+          "title": "CASIO G-SHOCK MASTER OF G Rangeman GPR-H1000-1JR Black Men's Watch New in Box",
+          "item_url": "https://www.ebay.com/itm/315122393745?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|315122393745|0",
+          "image_url": "https://i.ebayimg.com/images/g/xdIAAOSwZPVmggsc/s-l1200.png",
+          "rank": 31,
+          "sold_price": 426.39
+        },
+        {
+          "title": "Casio GWM5610-1, G-Shock 200 Meter WR Solar Atomic Watch, Black Resin, 5 Alarms",
+          "item_url": "https://www.ebay.com/itm/236407378802?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|236407378802|0",
+          "image_url": "https://i.ebayimg.com/images/g/2akAAeSw1T9o-Srb/s-l1200.png",
+          "rank": 32,
+          "sold_price": 115.0
+        },
+        {
+          "title": "CASIO G-SHOCK GM-2100N-2A BLUE/GRAY \"CASIOAK\" METAL BEZEL A/D WATCH",
+          "item_url": "https://www.ebay.com/itm/306412157665?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|306412157665|0",
+          "image_url": "https://i.ebayimg.com/images/g/JLkAAeSwIQ9ogMN8/s-l1200.jpg",
+          "rank": 33,
+          "sold_price": 156.52
+        },
+        {
+          "title": "CASIO G-SHOCK GG-1000-1A MUDMASTER TWIN SENSOR BLACK MEN'S WATCH",
+          "item_url": "https://www.ebay.com/itm/306503897248?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|306503897248|0",
+          "image_url": "https://i.ebayimg.com/images/g/EQkAAeSw7KZoy2mk/s-l1200.png",
+          "rank": 34,
+          "sold_price": 206.52
+        },
+        {
+          "title": "CASIO G-SHOCK GA-2100BM-7A8 \"CASIOAK\" SILVER DIAL TRANSPARENT MEN'S WATCH",
+          "item_url": "https://www.ebay.com/itm/306652836055?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|306652836055|0",
+          "image_url": "https://i.ebayimg.com/images/g/LiMAAeSwlfxpOlW3/s-l1200.png",
+          "rank": 35,
+          "sold_price": 106.95
+        },
+        {
+          "title": "Casio GWM5610-1, G-Shock Chronograph Watch, Solar Atomic, 5 Alarms, 200 Meter WR",
+          "item_url": "https://www.ebay.com/itm/365766125221?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|365766125221|0",
+          "image_url": "https://i.ebayimg.com/images/g/FWEAAeSwjgRoiRyU/s-l1200.png",
+          "rank": 36,
+          "sold_price": 115.0
+        },
+        {
+          "title": "CASIO G-SHOCK DW-6900RGM-5DR Origami 2D Design 50mm Limited Watch",
+          "item_url": "https://www.ebay.com/itm/376798814754?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|376798814754|0",
+          "image_url": "https://i.ebayimg.com/images/g/h7MAAeSw4YFpSsGU/s-l1200.jpg",
+          "rank": 37,
+          "sold_price": 170.71
+        },
+        {
+          "title": "G-Shock GBD-200-1",
+          "item_url": "https://www.ebay.com/itm/127608128935?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|127608128935|0",
+          "image_url": "https://i.ebayimg.com/images/g/M-YAAeSw2lNpjQZc/s-l1200.jpg",
+          "rank": 39,
+          "sold_price": 123.3
+        },
+        {
+          "title": "Casio GWM5610U-1 Men's G-Shock Black Resin Digital Alarm Watch",
+          "item_url": "https://www.ebay.com/itm/134747368346?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|134747368346|0",
+          "image_url": "https://i.ebayimg.com/images/g/A3YAAOSwnWRoC5cT/s-l1200.jpg",
+          "rank": 40,
+          "sold_price": 122.82
+        },
+        {
+          "title": "New Casio G-Shock Full Metal 5000 Series Men's Watch GMWBZ5000BD-1",
+          "item_url": "https://www.ebay.com/itm/136844406931?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|136844406931|0",
+          "image_url": "https://i.ebayimg.com/images/g/QeQAAeSw34ppRKwZ/s-l1200.png",
+          "rank": 41,
+          "sold_price": 700.0
+        },
+        {
+          "title": "Casio G Shock Men's GG-1000-1A3CR Analog-Digital Display Quartz Green",
+          "item_url": "https://www.ebay.com/itm/146981234482?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|146981234482|0",
+          "image_url": "https://i.ebayimg.com/images/g/LUcAAeSw5FVpIety/s-l1200.jpg",
+          "rank": 42,
+          "sold_price": 189.05
+        },
+        {
+          "title": "G-Shock Full Metal 5000 Series 43.6mm Digital/Grey Dial Men's Watch GMWBZ5000D-1",
+          "item_url": "https://www.ebay.com/itm/187894737890?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|187894737890|0",
+          "image_url": "https://i.ebayimg.com/images/g/FxMAAeSwGY9pUz4d/s-l1200.jpg",
+          "rank": 44,
+          "sold_price": 518.0
+        },
+        {
+          "title": "Casio G-SHOCK GM-2100 Black Resin Stainless Steel Analog Digital Watch",
+          "item_url": "https://www.ebay.com/itm/206040782097?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|206040782097|0",
+          "image_url": "https://i.ebayimg.com/images/g/rlkAAeSwxYtpfqbo/s-l1200.jpg",
+          "rank": 45,
+          "sold_price": 113.81
+        },
+        {
+          "title": "NEW Casio G-Shock HIDDEN GLOW SERIES Ana-Digi White/Blue Mens Watch DW6900HDS-7",
+          "item_url": "https://www.ebay.com/itm/236225091894?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|236225091894|0",
+          "image_url": "https://i.ebayimg.com/images/g/0-MAAeSwyeRogkWv/s-l1200.png",
+          "rank": 46,
+          "sold_price": 118.29
+        },
+        {
+          "title": "Casio G-Shock x SYNA - Central Cee Limited Edition 6900-Series DW-6900CC25-4ER",
+          "item_url": "https://www.ebay.com/itm/236594684371?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|236594684371|0",
+          "image_url": "https://i.ebayimg.com/images/g/fFgAAeSwkTFpjemk/s-l1200.jpg",
+          "rank": 47,
+          "sold_price": 175.0
+        },
+        {
+          "title": "Casio G-Shock 2100 Series Analog Digital Silver Dial Resin Watch GA2100BM-7A8",
+          "item_url": "https://www.ebay.com/itm/277056381168?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|277056381168|0",
+          "image_url": "https://i.ebayimg.com/images/g/8CQAAOSweCloB6YO/s-l1200.jpg",
+          "rank": 48,
+          "sold_price": 119.9
+        },
+        {
+          "title": "Casio Men's G-Shock Analog &amp; Digital Black Quartz Watch - GA-1000-1ADR NEW",
+          "item_url": "https://www.ebay.com/itm/286301532833?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|286301532833|0",
+          "image_url": "https://i.ebayimg.com/images/g/fHsAAOSwUDdnonbv/s-l1200.jpg",
+          "rank": 49,
+          "sold_price": 144.0
+        }
+      ],
+      "raw_result_rows": [
+        {
+          "title": "CASIO G-SHOCK GW-B5600 2WAY MIP GW-BX5600-1JF Bluetooth Black 2025 NEW Genuine",
+          "item_url": "https://www.ebay.com/itm/297766179882?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|297766179882|0",
+          "image_url": "https://i.ebayimg.com/images/g/5XIAAeSwumFpGcuH/s-l1200.jpg",
+          "rank": 1,
+          "sold_price": 264.0
+        },
+        {
+          "title": "CASIO G-SHOCK GBD-200SM-1A5 BLUETOOTH ORANGE / GRAY DIGITAL WATCH",
+          "item_url": "https://www.ebay.com/itm/306368381151?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|306368381151|0",
+          "image_url": "https://i.ebayimg.com/images/g/VKwAAOSwY0hoWTMm/s-l1200.jpg",
+          "rank": 2,
+          "sold_price": 114.7
+        },
+        {
+          "title": "CASIO G-SHOCK GW-B5600 2WAY MIP GW-BX5600-1A1JF Bluetooth 2025 New W/Box Genuine",
+          "item_url": "https://www.ebay.com/itm/297816933828?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|297816933828|0",
+          "image_url": "https://i.ebayimg.com/images/g/FY0AAeSwW4JpMU1f/s-l1200.jpg",
+          "rank": 3,
+          "sold_price": 275.77
+        },
+        {
+          "title": "CASIO GW6900-1 Tough Solar Atomic G-Shock Digital Chrono 200M Sport Watch $155",
+          "item_url": "https://www.ebay.com/itm/277622751326?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|277622751326|0",
+          "image_url": "https://i.ebayimg.com/images/g/BFYAAeSwiNNok2NJ/s-l1200.jpg",
+          "rank": 4,
+          "sold_price": 109.98
+        },
+        {
+          "title": "CASIO G-SHOCK GBX-100NS-1 G-LIDE Bluetooth Tide Graph Moon Data Watch 46mm",
+          "item_url": "https://www.ebay.com/itm/286071814032?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|286071814032|0",
+          "image_url": "https://i.ebayimg.com/images/g/jZ8AAOSw5w9m7uar/s-l1200.jpg",
+          "rank": 5,
+          "sold_price": 151.17
+        },
+        {
+          "title": "Custom GA2100 Watch – “Casioak” Style Full Gold Tone | G-Shock Base Model",
+          "item_url": "https://www.ebay.com/itm/306551846121?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|306551846121|0",
+          "image_url": "https://i.ebayimg.com/images/g/2pIAAeSwi7ppMRic/s-l1200.jpg",
+          "rank": 6,
+          "sold_price": 199.99
+        },
+        {
+          "title": "CASIO G-SHOCK GBM2100A-1A2 BLUE \"CASIOAK\" SOLAR BLUETOOTH G-STEEL WATCH",
+          "item_url": "https://www.ebay.com/itm/306710930420?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|306710930420|0",
+          "image_url": "https://i.ebayimg.com/images/g/Zu4AAeSwcmFpY~uP/s-l1200.jpg",
+          "rank": 7,
+          "sold_price": 188.21
+        },
+        {
+          "title": "New Casio G-shock GMAS110MP-4A1 Analog-Digital Light Pink Strap Watch",
+          "item_url": "https://www.ebay.com/itm/276240083321?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|276240083321|0",
+          "image_url": "https://i.ebayimg.com/images/g/bfUAAOSwGWBiB9pp/s-l1200.jpg",
+          "rank": 8,
+          "sold_price": 133.6
+        },
+        {
+          "title": "Item ID 176934039899",
+          "item_url": "https://www.ebay.com/itm/176934039899?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|176934039899|0",
+          "rank": 9,
+          "sold_price": 129.45
+        },
+        {
+          "title": "CASIO G-SHOCK GBD-200-2 G-SQUAD BLUETOOTH BLUE DIGITAL WATCH",
+          "item_url": "https://www.ebay.com/itm/306402109906?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|306402109906|0",
+          "image_url": "https://i.ebayimg.com/images/g/oa0AAeSw4ehoeX6b/s-l1200.jpg",
+          "rank": 10,
+          "sold_price": 119.02
+        },
+        {
+          "title": "CASIO G-SHOCK GM-5600CL-3 GM5600CL-3 GOLD / GREEN DIGITAL WATCH",
+          "item_url": "https://www.ebay.com/itm/306605195006?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|306605195006|0",
+          "image_url": "https://i.ebayimg.com/images/g/NKUAAeSwSdxpGUCo/s-l1200.png",
+          "rank": 11,
+          "sold_price": 108.69
+        },
+        {
+          "title": "CASIO G-SHOCK GA-B2100-1A \"CASIOAK\" SOLAR BLUETOOTH A/D WATCH",
+          "item_url": "https://www.ebay.com/itm/306720809611?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|306720809611|0",
+          "image_url": "https://i.ebayimg.com/images/g/d1kAAeSw7x5pazz2/s-l1200.jpg",
+          "rank": 12,
+          "sold_price": 136.95
+        },
+        {
+          "title": "Casio G-SHOCK GW-BX5600-1A Men Watch Bluetooth Digital Tough Solar Quartz",
+          "item_url": "https://www.ebay.com/itm/323628099231?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|323628099231|0",
+          "image_url": "https://i.ebayimg.com/images/g/f7wAAeSwashpddy2/s-l1200.webp",
+          "rank": 13,
+          "sold_price": 239.99
+        },
+        {
+          "title": "Casio G-SHOCK GW-BX5600-1JF Tough Watch NEW Japan",
+          "item_url": "https://www.ebay.com/itm/116899042071?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|116899042071|0",
+          "image_url": "https://i.ebayimg.com/images/g/qygAAeSwl1JpSbi0/s-l1200.jpg",
+          "rank": 14,
+          "sold_price": 299.99
+        },
+        {
+          "title": "CASIO G-SHOCK GBX-100-2A G-LIDE BLUETOOTH BLUE DIGITAL WATCH",
+          "item_url": "https://www.ebay.com/itm/306412157688?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|306412157688|0",
+          "image_url": "https://i.ebayimg.com/images/g/RYcAAeSwkTdofwab/s-l1200.png",
+          "rank": 15,
+          "sold_price": 108.69
+        },
+        {
+          "title": "New Casio G-Shock Analog-Digital 2100Series Men's White Watch GA2100HDS-7A",
+          "item_url": "https://www.ebay.com/itm/277249069544?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|277249069544|0",
+          "image_url": "https://i.ebayimg.com/images/g/CVoAAeSwmqJoZmoF/s-l1200.jpg",
+          "rank": 16,
+          "sold_price": 114.29
+        },
+        {
+          "title": "CASIOAK SANDBLAST BLACK DIAL G-SHOCK MOD GA2100 GA-2100 MEN’S WATCH",
+          "item_url": "https://www.ebay.com/itm/306272452101?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|306272452101|0",
+          "image_url": "https://i.ebayimg.com/images/g/vL4AAeSwWfppMRdf/s-l1200.jpg",
+          "rank": 17,
+          "sold_price": 182.47
+        },
+        {
+          "title": "Casio G-SHOCK Evangelion GA-110EVA30-7AJR 110 30th Anniversary Limited 2025 JP",
+          "item_url": "https://www.ebay.com/itm/187684621515?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|187684621515|0",
+          "image_url": "https://i.ebayimg.com/images/g/W5gAAeSwSrho~dJw/s-l1200.jpg",
+          "rank": 18,
+          "sold_price": 255.27
+        },
+        {
+          "title": "Authentic Silver 13.5 CTW Casio G-Shock DW6900 Iced Out Watch",
+          "item_url": "https://www.ebay.com/itm/365766423203?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|365766423203|0",
+          "image_url": "https://i.ebayimg.com/images/g/F-0AAeSw8jRoiVBs/s-l1200.jpg",
+          "rank": 19,
+          "sold_price": 220.0
+        },
+        {
+          "title": "G-SHOCK DW-6900RGM-5JR Origami White Limited Japan Genuine Casio Watch New",
+          "item_url": "https://www.ebay.com/itm/177634638885?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|177634638885|0",
+          "image_url": "https://i.ebayimg.com/images/g/zEYAAeSwDphpLZ5R/s-l1200.png",
+          "rank": 20,
+          "sold_price": 183.32
+        },
+        {
+          "title": "Casio G-Shock GWG-B1000-1A Master of G-Land MUDMASTER Flagship Triple Sensor",
+          "item_url": "https://www.ebay.com/itm/177680991128?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|177680991128|0",
+          "image_url": "https://i.ebayimg.com/images/g/JJsAAeSwSIRpQfD1/s-l1200.jpg",
+          "rank": 21,
+          "sold_price": 639.99
+        },
+        {
+          "title": "CASIO G-SHOCK GW-6900-1JF Black Tough Solar Atomic Radio Men Digital Watch NEW",
+          "item_url": "https://www.ebay.com/itm/293763786596?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|293763786596|0",
+          "image_url": "https://i.ebayimg.com/images/g/-KMAAOSwm3Rne2gl/s-l1200.jpg",
+          "rank": 22,
+          "sold_price": 134.49
+        },
+        {
+          "title": "CASIO G-SHOCK GW-5000HS-7 GW5000 SOLAR / MULTIBAND 6 DIGITAL WATCH",
+          "item_url": "https://www.ebay.com/itm/306410701573?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|306410701573|0",
+          "image_url": "https://i.ebayimg.com/images/g/bEQAAeSwiI9of32B/s-l1200.jpg",
+          "rank": 23,
+          "sold_price": 225.0
+        },
+        {
+          "title": "CASIO G-SHOCK GBX-100S-2 G-LIDE BLUETOOTH BLUE / PURPLE DIGITAL WATCH",
+          "item_url": "https://www.ebay.com/itm/306410702224?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|306410702224|0",
+          "image_url": "https://i.ebayimg.com/images/g/ocMAAOSwiutoXEOI/s-l1200.jpg",
+          "rank": 24,
+          "sold_price": 143.54
+        },
+        {
+          "title": "CASIO G-SHOCK DW-5600STT-1 \"STRANGER THINGS\" COLLABORATION DIGITAL WATCH",
+          "item_url": "https://www.ebay.com/itm/306715407740?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|306715407740|0",
+          "image_url": "https://i.ebayimg.com/images/g/zqEAAeSwSoJpawl3/s-l1200.png",
+          "rank": 25,
+          "sold_price": 184.78
+        },
+        {
+          "title": "G-Shock GAB2100-1A Analog-Digital Watch",
+          "item_url": "https://www.ebay.com/itm/116969313187?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|116969313187|0",
+          "image_url": "https://i.ebayimg.com/images/g/PNYAAeSwZUFpjQWQ/s-l1200.jpg",
+          "rank": 26,
+          "sold_price": 124.95
+        },
+        {
+          "title": "Casio G-Shock Master Of G Land Chronograph GMT Quartz Digital Black Dial Men's",
+          "item_url": "https://www.ebay.com/itm/187945082742?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|187945082742|0",
+          "image_url": "https://i.ebayimg.com/images/g/EtcAAeSweiRpncBD/s-l1200.jpg",
+          "rank": 27,
+          "sold_price": 231.76
+        },
+        {
+          "title": "New CASIO G-SHOCK GBD-200-1A1 Silicone Black Sub 200mt Bluetooth",
+          "item_url": "https://www.ebay.com/itm/277532876744?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|277532876744|0",
+          "image_url": "https://i.ebayimg.com/images/g/kjwAAeSwDANpJccJ/s-l1200.jpg",
+          "rank": 28,
+          "sold_price": 131.25
+        },
+        {
+          "title": "CASIO G-SHOCK GBD-200SM-1A6 G-SQUAD BLUETOOTH PURPLE / BLACK DIGITAL WATCH",
+          "item_url": "https://www.ebay.com/itm/306411767894?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|306411767894|0",
+          "image_url": "https://i.ebayimg.com/images/g/hxQAAeSwQCFoe~jU/s-l1200.jpg",
+          "rank": 29,
+          "sold_price": 135.86
+        },
+        {
+          "title": "CASIO G-SHOCK GBX-100-8 G-LIDE BLUETOOTH GRAY / TAN DIGITAL WATCH",
+          "item_url": "https://www.ebay.com/itm/306551968648?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|306551968648|0",
+          "image_url": "https://i.ebayimg.com/images/g/gfAAAeSwRG1o8Gss/s-l1200.png",
+          "rank": 30,
+          "sold_price": 120.15
+        },
+        {
+          "title": "CASIO G-SHOCK MASTER OF G Rangeman GPR-H1000-1JR Black Men's Watch New in Box",
+          "item_url": "https://www.ebay.com/itm/315122393745?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|315122393745|0",
+          "image_url": "https://i.ebayimg.com/images/g/xdIAAOSwZPVmggsc/s-l1200.png",
+          "rank": 31,
+          "sold_price": 426.39
+        },
+        {
+          "title": "Casio GWM5610-1, G-Shock 200 Meter WR Solar Atomic Watch, Black Resin, 5 Alarms",
+          "item_url": "https://www.ebay.com/itm/236407378802?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|236407378802|0",
+          "image_url": "https://i.ebayimg.com/images/g/2akAAeSw1T9o-Srb/s-l1200.png",
+          "rank": 32,
+          "sold_price": 115.0
+        },
+        {
+          "title": "CASIO G-SHOCK GM-2100N-2A BLUE/GRAY \"CASIOAK\" METAL BEZEL A/D WATCH",
+          "item_url": "https://www.ebay.com/itm/306412157665?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|306412157665|0",
+          "image_url": "https://i.ebayimg.com/images/g/JLkAAeSwIQ9ogMN8/s-l1200.jpg",
+          "rank": 33,
+          "sold_price": 156.52
+        },
+        {
+          "title": "CASIO G-SHOCK GG-1000-1A MUDMASTER TWIN SENSOR BLACK MEN'S WATCH",
+          "item_url": "https://www.ebay.com/itm/306503897248?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|306503897248|0",
+          "image_url": "https://i.ebayimg.com/images/g/EQkAAeSw7KZoy2mk/s-l1200.png",
+          "rank": 34,
+          "sold_price": 206.52
+        },
+        {
+          "title": "CASIO G-SHOCK GA-2100BM-7A8 \"CASIOAK\" SILVER DIAL TRANSPARENT MEN'S WATCH",
+          "item_url": "https://www.ebay.com/itm/306652836055?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|306652836055|0",
+          "image_url": "https://i.ebayimg.com/images/g/LiMAAeSwlfxpOlW3/s-l1200.png",
+          "rank": 35,
+          "sold_price": 106.95
+        },
+        {
+          "title": "Casio GWM5610-1, G-Shock Chronograph Watch, Solar Atomic, 5 Alarms, 200 Meter WR",
+          "item_url": "https://www.ebay.com/itm/365766125221?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|365766125221|0",
+          "image_url": "https://i.ebayimg.com/images/g/FWEAAeSwjgRoiRyU/s-l1200.png",
+          "rank": 36,
+          "sold_price": 115.0
+        },
+        {
+          "title": "CASIO G-SHOCK DW-6900RGM-5DR Origami 2D Design 50mm Limited Watch",
+          "item_url": "https://www.ebay.com/itm/376798814754?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|376798814754|0",
+          "image_url": "https://i.ebayimg.com/images/g/h7MAAeSw4YFpSsGU/s-l1200.jpg",
+          "rank": 37,
+          "sold_price": 170.71
+        },
+        {
+          "title": "Casio G-Shock Rangeman Multi-Band 6 A-c Timekeeping Digital Dial Men's Watch",
+          "item_url": "https://www.ebay.com/itm/385294315143?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|385294315143|0",
+          "image_url": "https://i.ebayimg.com/images/g/RNAAAeSwtMZpligW/s-l1200.jpg",
+          "rank": 38,
+          "sold_price": 226.84
+        },
+        {
+          "title": "G-Shock GBD-200-1",
+          "item_url": "https://www.ebay.com/itm/127608128935?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|127608128935|0",
+          "image_url": "https://i.ebayimg.com/images/g/M-YAAeSw2lNpjQZc/s-l1200.jpg",
+          "rank": 39,
+          "sold_price": 123.3
+        },
+        {
+          "title": "Casio GWM5610U-1 Men's G-Shock Black Resin Digital Alarm Watch",
+          "item_url": "https://www.ebay.com/itm/134747368346?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|134747368346|0",
+          "image_url": "https://i.ebayimg.com/images/g/A3YAAOSwnWRoC5cT/s-l1200.jpg",
+          "rank": 40,
+          "sold_price": 122.82
+        },
+        {
+          "title": "New Casio G-Shock Full Metal 5000 Series Men's Watch GMWBZ5000BD-1",
+          "item_url": "https://www.ebay.com/itm/136844406931?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|136844406931|0",
+          "image_url": "https://i.ebayimg.com/images/g/QeQAAeSw34ppRKwZ/s-l1200.png",
+          "rank": 41,
+          "sold_price": 700.0
+        },
+        {
+          "title": "Casio G Shock Men's GG-1000-1A3CR Analog-Digital Display Quartz Green",
+          "item_url": "https://www.ebay.com/itm/146981234482?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|146981234482|0",
+          "image_url": "https://i.ebayimg.com/images/g/LUcAAeSw5FVpIety/s-l1200.jpg",
+          "rank": 42,
+          "sold_price": 189.05
+        },
+        {
+          "title": "Item ID 176934028971",
+          "item_url": "https://www.ebay.com/itm/176934028971?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|176934028971|0",
+          "rank": 43,
+          "sold_price": 128.1
+        },
+        {
+          "title": "G-Shock Full Metal 5000 Series 43.6mm Digital/Grey Dial Men's Watch GMWBZ5000D-1",
+          "item_url": "https://www.ebay.com/itm/187894737890?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|187894737890|0",
+          "image_url": "https://i.ebayimg.com/images/g/FxMAAeSwGY9pUz4d/s-l1200.jpg",
+          "rank": 44,
+          "sold_price": 518.0
+        },
+        {
+          "title": "Casio G-SHOCK GM-2100 Black Resin Stainless Steel Analog Digital Watch",
+          "item_url": "https://www.ebay.com/itm/206040782097?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|206040782097|0",
+          "image_url": "https://i.ebayimg.com/images/g/rlkAAeSwxYtpfqbo/s-l1200.jpg",
+          "rank": 45,
+          "sold_price": 113.81
+        },
+        {
+          "title": "NEW Casio G-Shock HIDDEN GLOW SERIES Ana-Digi White/Blue Mens Watch DW6900HDS-7",
+          "item_url": "https://www.ebay.com/itm/236225091894?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|236225091894|0",
+          "image_url": "https://i.ebayimg.com/images/g/0-MAAeSwyeRogkWv/s-l1200.png",
+          "rank": 46,
+          "sold_price": 118.29
+        },
+        {
+          "title": "Casio G-Shock x SYNA - Central Cee Limited Edition 6900-Series DW-6900CC25-4ER",
+          "item_url": "https://www.ebay.com/itm/236594684371?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|236594684371|0",
+          "image_url": "https://i.ebayimg.com/images/g/fFgAAeSwkTFpjemk/s-l1200.jpg",
+          "rank": 47,
+          "sold_price": 175.0
+        },
+        {
+          "title": "Casio G-Shock 2100 Series Analog Digital Silver Dial Resin Watch GA2100BM-7A8",
+          "item_url": "https://www.ebay.com/itm/277056381168?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|277056381168|0",
+          "image_url": "https://i.ebayimg.com/images/g/8CQAAOSweCloB6YO/s-l1200.jpg",
+          "rank": 48,
+          "sold_price": 119.9
+        },
+        {
+          "title": "Casio Men's G-Shock Analog &amp; Digital Black Quartz Watch - GA-1000-1ADR NEW",
+          "item_url": "https://www.ebay.com/itm/286301532833?nordt=true&amp;orig_cvip=true&amp;rt=nc",
+          "item_id": "v1|286301532833|0",
+          "image_url": "https://i.ebayimg.com/images/g/fHsAAOSwUDdnonbv/s-l1200.jpg",
+          "rank": 49,
+          "sold_price": 144.0
+        }
+      ],
+      "strict_filter_reason": "sold_sort_not_confirmed"
+    }
+  }
+]

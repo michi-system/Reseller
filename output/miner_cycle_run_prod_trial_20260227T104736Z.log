@@ -1,0 +1,19 @@
+[rpa] mode=rpa_json ran=True missing primary=3 fallback=3 model_backfill=3
+[rpa] primary rc=1 queries=8 condition=new
+[rpa] fallback rc=1 queries=3 condition=any
+[rpa] model_backfill rc=0 queries=8 condition=any
+[cycle] rakuten disabled for remaining queries (client ip block)
+[round 1] citizen nb1050 watch -> created=0 queue+=0 now=0 api(network/cache)=5/0
+[round 1] g-shock gw9400 watch -> created=0 queue+=0 now=0 api(network/cache)=3/0
+[round 1] casio gmw-b5000 watch -> created=0 queue+=0 now=0 api(network/cache)=2/0
+[round 1] casio mtg-b2000 watch -> created=0 queue+=0 now=0 api(network/cache)=3/0
+[round 1] seiko spb121 watch -> created=0 queue+=0 now=0 api(network/cache)=3/0
+[round 1] citizen cb0261 watch -> created=0 queue+=0 now=0 api(network/cache)=3/0
+[round 1] casio ocw-t200 watch -> created=0 queue+=0 now=0 api(network/cache)=3/0
+[round 1] seiko ssc813 watch -> created=0 queue+=0 now=0 api(network/cache)=2/0
+
+Saved report: output/miner_cycle_report_prod_trial_20260227T104736Z.json
+Saved active cycle manifest: /Users/tadamichikimura/Downloads/dev-HQ/Reseller/docs/miner_cycle_active.json
+reviewable pending: initial=0 final=0 delta=0 target=24
+cycle_id=cycle-20260227-105512 batch_size=0 cycle_ready=False
+[backfill] updated=True touched=1 added=0 total=43

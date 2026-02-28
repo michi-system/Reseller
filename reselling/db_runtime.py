@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 import sqlite3
 import sys
+import time
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -175,7 +176,27 @@ def connect_db(db_path: Path) -> DbConnection:
                 raise RuntimeError(
                     "psycopg is required for postgres backend: install with `.venv/bin/python -m pip install \"psycopg[binary]\"`"
                 ) from re_exc
-        return DbConnection(psycopg.connect(url), backend="postgres")
+        retries = max(1, int((os.getenv("POSTGRES_CONNECT_RETRIES", "6") or "6")))
+        base_sleep = max(0.1, float((os.getenv("POSTGRES_CONNECT_RETRY_BASE_SEC", "0.6") or "0.6")))
+        last_exc: Exception | None = None
+        for attempt in range(1, retries + 1):
+            try:
+                return DbConnection(psycopg.connect(url), backend="postgres")
+            except Exception as exc:  # pragma: no cover - depends on network/DNS condition
+                last_exc = exc
+                message = str(exc).lower()
+                retriable = (
+                    "failed to resolve host" in message
+                    or "temporary failure in name resolution" in message
+                    or "could not translate host name" in message
+                    or "name or service not known" in message
+                    or "nodename nor servname provided" in message
+                )
+                if (not retriable) or attempt >= retries:
+                    raise
+                time.sleep(base_sleep * float(attempt))
+        if last_exc is not None:
+            raise last_exc
 
     db_path.parent.mkdir(parents=True, exist_ok=True)
     sqlite_conn = sqlite3.connect(str(db_path))

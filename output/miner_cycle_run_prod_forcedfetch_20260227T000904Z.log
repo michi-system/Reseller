@@ -1,0 +1,35 @@
+[2026-02-27T00:09:04.236978+00:00] START cmd=python3 -u scripts/run_miner_cycle.py --max-rounds 1 --historical-min-attempts 9999 --max-zero-gain-strikes 99 --output /Users/tadamichikimura/Downloads/dev-HQ/Reseller/output/miner_cycle_report_prod_forcedfetch_20260227T000904Z.json --active-manifest /Users/tadamichikimura/Downloads/dev-HQ/Reseller/output/miner_cycle_active_prod_forcedfetch_20260227T000904Z.json
+[2026-02-27T00:12:10.304124+00:00] [rpa] mode=rpa_json ran=True missing primary=5 fallback=4 model_backfill=4
+[2026-02-27T00:12:10.306163+00:00] [rpa] primary rc=0 queries=23 condition=new
+[2026-02-27T00:12:10.306193+00:00] [rpa] fallback rc=0 queries=5 condition=any
+[2026-02-27T00:12:10.306203+00:00] [rpa] model_backfill rc=0 queries=8 condition=any
+[2026-02-27T00:12:20.019034+00:00] [round 1] citizen nb1050 watch -> created=0 queue+=0 now=2 api(network/cache)=6/0
+[2026-02-27T00:12:22.153150+00:00] [round 1] g-shock gw9400 watch -> created=0 queue+=0 now=2 api(network/cache)=8/0
+[2026-02-27T00:12:24.658406+00:00] [round 1] casio gmw-b5000 watch -> created=0 queue+=0 now=2 api(network/cache)=7/0
+[2026-02-27T00:12:27.262420+00:00] [round 1] casio mtg-b2000 watch -> created=0 queue+=0 now=2 api(network/cache)=4/0
+[2026-02-27T00:12:29.767717+00:00] [round 1] seiko spb121 watch -> created=0 queue+=0 now=2 api(network/cache)=6/0
+[2026-02-27T00:12:32.121201+00:00] [round 1] seiko snxs79 watch -> created=0 queue+=0 now=2 api(network/cache)=8/0
+[2026-02-27T00:12:34.236200+00:00] [round 1] citizen at8185 watch -> created=0 queue+=0 now=2 api(network/cache)=6/0
+[2026-02-27T00:12:36.369201+00:00] [round 1] citizen cb0261 watch -> created=0 queue+=0 now=2 api(network/cache)=5/0
+[2026-02-27T00:12:38.515687+00:00] [round 1] citizen bn0156 watch -> created=0 queue+=0 now=2 api(network/cache)=5/0
+[2026-02-27T00:12:40.677924+00:00] [round 1] citizen tsuyosa nj015 watch -> created=0 queue+=0 now=2 api(network/cache)=4/0
+[2026-02-27T00:12:42.852269+00:00] [round 1] hamilton h70455533 watch -> created=0 queue+=0 now=2 api(network/cache)=5/0
+[2026-02-27T00:12:45.196779+00:00] [round 1] casio ocw-t200 watch -> created=0 queue+=0 now=2 api(network/cache)=5/0
+[2026-02-27T00:12:47.488312+00:00] [round 1] casio gw-5000u-1jf watch -> created=0 queue+=0 now=2 api(network/cache)=5/0
+[2026-02-27T00:12:49.897792+00:00] [round 1] orient ra-aa0810n watch -> created=0 queue+=0 now=2 api(network/cache)=6/0
+[2026-02-27T00:12:52.204199+00:00] [round 1] tissot prx t137407 watch -> created=0 queue+=0 now=2 api(network/cache)=6/0
+[2026-02-27T00:12:54.344071+00:00] [round 1] casio gwm5610-1jf watch -> created=0 queue+=0 now=2 api(network/cache)=6/0
+[2026-02-27T00:12:56.478858+00:00] [round 1] casio ga-b2100 watch -> created=0 queue+=0 now=2 api(network/cache)=4/0
+[2026-02-27T00:12:58.624554+00:00] [round 1] seiko sbga211 watch -> created=0 queue+=0 now=2 api(network/cache)=6/0
+[2026-02-27T00:13:00.769070+00:00] [round 1] seiko ssc813 watch -> created=0 queue+=0 now=2 api(network/cache)=7/1
+[2026-02-27T00:13:02.907142+00:00] [round 1] orient rn-aa0001b watch -> created=0 queue+=0 now=2 api(network/cache)=6/0
+[2026-02-27T00:13:05.392528+00:00] [round 1] seiko spb143 watch -> created=0 queue+=0 now=2 api(network/cache)=7/1
+[2026-02-27T00:13:07.793986+00:00] [round 1] orient fac00009n watch -> created=0 queue+=0 now=2 api(network/cache)=8/0
+[2026-02-27T00:13:10.266941+00:00] [round 1] seiko sbdc101 watch -> created=0 queue+=0 now=2 api(network/cache)=7/2
+[2026-02-27T00:13:13.832230+00:00] 
+[2026-02-27T00:13:13.832274+00:00] Saved report: /Users/tadamichikimura/Downloads/dev-HQ/Reseller/output/miner_cycle_report_prod_forcedfetch_20260227T000904Z.json
+[2026-02-27T00:13:13.833280+00:00] Saved active cycle manifest: /Users/tadamichikimura/Downloads/dev-HQ/Reseller/output/miner_cycle_active_prod_forcedfetch_20260227T000904Z.json
+[2026-02-27T00:13:13.833326+00:00] reviewable pending: initial=2 final=2 delta=0 target=24
+[2026-02-27T00:13:13.833352+00:00] cycle_id=cycle-20260227-001313 batch_size=2 cycle_ready=False
+[2026-02-27T00:13:13.833383+00:00] [backfill] updated=True touched=15 added=0 total=33
+[2026-02-27T00:13:13.893476+00:00] END rc=0 elapsed_sec=249.656

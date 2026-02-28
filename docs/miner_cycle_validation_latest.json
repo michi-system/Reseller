@@ -5,9 +5,9 @@
     "batch_size=0 (no review candidates were processed)"
   ],
   "metrics": {
-    "cycle_id": "cycle-20260220-031359",
+    "cycle_id": "cycle-20260227-061432",
     "batch_size": 0,
-    "target_count": 1,
+    "target_count": 24,
     "cycle_ready": false,
     "auto_approve": 0,
     "auto_reject": 0,

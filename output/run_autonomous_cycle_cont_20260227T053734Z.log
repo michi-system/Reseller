@@ -1,0 +1,44 @@
+[rpa] mode=rpa_json ran=True missing primary=6 fallback=6 model_backfill=6
+[rpa] primary rc=0 queries=23 condition=new
+[rpa] fallback rc=0 queries=6 condition=any
+[rpa] model_backfill rc=0 queries=8 condition=any
+[round 1] seiko snxs79 watch -> created=0 queue+=0 now=0 api(network/cache)=1/10
+[round 1] citizen at8185 watch -> created=0 queue+=0 now=0 api(network/cache)=0/6
+[round 1] citizen bn0156 watch -> created=0 queue+=0 now=0 api(network/cache)=0/5
+[round 1] citizen tsuyosa nj015 watch -> created=0 queue+=0 now=0 api(network/cache)=1/4
+[round 1] hamilton h70455533 watch -> created=0 queue+=0 now=0 api(network/cache)=4/0
+[round 1] casio gw-5000u-1jf watch -> created=0 queue+=0 now=0 api(network/cache)=0/5
+[round 1] orient ra-aa0810n watch -> created=0 queue+=0 now=0 api(network/cache)=1/7
+[round 1] tissot prx t137407 watch -> created=0 queue+=0 now=0 api(network/cache)=3/2
+[round 1] casio gwm5610-1jf watch -> created=0 queue+=0 now=0 api(network/cache)=1/6
+[round 1] casio ga-b2100 watch -> created=0 queue+=0 now=0 api(network/cache)=2/1
+[round 1] seiko sbga211 watch -> created=0 queue+=0 now=0 api(network/cache)=6/1
+[round 1] orient rn-aa0001b watch -> created=0 queue+=0 now=0 api(network/cache)=2/4
+[round 1] seiko spb143 watch -> created=0 queue+=0 now=0 api(network/cache)=2/4
+[round 1] orient fac00009n watch -> created=0 queue+=0 now=0 api(network/cache)=2/5
+[round 1] seiko sbdc101 watch -> created=0 queue+=0 now=0 api(network/cache)=2/4
+
+Saved report: /Users/tadamichikimura/Downloads/dev-HQ/Reseller/docs/miner_cycle_report_latest.json
+Saved active cycle manifest: /Users/tadamichikimura/Downloads/dev-HQ/Reseller/docs/miner_cycle_active.json
+reviewable pending: initial=0 final=0 delta=0 target=24
+cycle_id=cycle-20260227-060046 batch_size=0 cycle_ready=False
+[backfill] updated=True touched=17 added=11 total=43
+[cycle-summary] policy_file=/Users/tadamichikimura/Downloads/dev-HQ/Reseller/docs/OPERATION_POLICY.json ok=True
+$ python3 scripts/run_miner_cycle.py --target-count 24 --hard-cap 30 --min-profit-usd 0.01 --min-margin-rate 0.03 --min-match-score 0.75 --max-rounds 4 --sleep-seconds 0.8 --max-zero-gain-strikes 2 --historical-min-attempts 3 --historical-min-network-calls 6 --historical-min-gain-per-network-call 0.05 --historical-retry-every-runs 4 --duplicate-heavy-ratio-threshold 0.7 --duplicate-heavy-min-evaluated 12 --duplicate-heavy-min-duplicates 8 --require-full-batch
+Traceback (most recent call last):
+  File "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/scripts/run_autonomous_cycle.py", line 505, in <module>
+    raise SystemExit(main())
+                     ~~~~^^
+  File "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/scripts/run_autonomous_cycle.py", line 447, in main
+    run_cmd(_build_run_miner_cycle_args(args))
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/scripts/run_autonomous_cycle.py", line 32, in run_cmd
+    subprocess.run(args, cwd=str(ROOT_DIR), check=True)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.13/3.13.1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/subprocess.py", line 577, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['python3', 'scripts/run_miner_cycle.py', '--target-count', '24', '--hard-cap', '30', '--min-profit-usd', '0.01', '--min-margin-rate', '0.03', '--min-match-score', '0.75', '--max-rounds', '4', '--sleep-seconds', '0.8', '--max-zero-gain-strikes', '2', '--historical-min-attempts', '3', '--historical-min-network-calls', '6', '--historical-min-gain-per-network-call', '0.05', '--historical-retry-every-runs', '4', '--duplicate-heavy-ratio-threshold', '0.7', '--duplicate-heavy-min-evaluated', '12', '--duplicate-heavy-min-duplicates', '8', '--require-full-batch']' returned non-zero exit status 2.
+real 1391.89
+user 111.39
+sys 27.27

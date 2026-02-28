@@ -1,6 +1,6 @@
 # Miner Runbook (Unified)
 
-最終更新: 2026-02-26
+最終更新: 2026-02-27
 
 この文書は Miner 実運用の手順書です。A/B/C 実行、UI設定、確認コマンドを最新実装に合わせています。
 
@@ -90,6 +90,10 @@ curl -sS -X POST http://127.0.0.1:8000/v1/miner/fetch \
     "min_margin_rate": 0.03
   }'
 ```
+
+補足（`scripts/run_miner_cycle.py`）:
+- 引数なし実行時のデフォルトクエリは、`query_efficiency_stats.json` の `last_attempt_run_seq` が古い順で最大12件を選定
+- `--queries` を指定した場合は指定クエリをそのまま使い、12件上限は適用しない
 
 ## 5. 実行中の確認
 進捗:

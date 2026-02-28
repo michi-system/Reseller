@@ -254,6 +254,46 @@ class LiquidityRpaGuardTests(unittest.TestCase):
         self.assertIsInstance(signal, dict)
         self.assertEqual(int(signal.get("sold_90d_count", -1)), 4)
 
+    def test_recovers_with_strict_fallback_row_when_exact_row_is_non_strict(self) -> None:
+        non_strict_row = _row(
+            signal_key="model:BC0420-61A",
+            query="BC0420-61A",
+            sold_90d_count=11,
+            sold_price_min=166.0,
+            sold_price_median=220.0,
+            sold_tab_selected=False,
+            lookback_selected="Last 90 days",
+            filtered_row_count=2,
+            sold_sample={
+                "item_url": "https://www.ebay.com/itm/223456789012",
+                "sold_price": 166.0,
+            },
+        )
+        strict_alt_row = _row(
+            signal_key="model:CITIZEN-BC0420-61A",
+            query="Citizen BC0420-61A",
+            sold_90d_count=4,
+            sold_price_min=188.0,
+            sold_price_median=201.0,
+            sold_tab_selected=True,
+            lookback_selected="Last 90 days",
+            filtered_row_count=2,
+            sold_sample={
+                "item_url": "https://www.ebay.com/itm/123456789012",
+                "sold_price": 188.0,
+            },
+        )
+        signal, reason = self._call_provider(
+            [non_strict_row, strict_alt_row],
+            query="BC0420-61A",
+            signal_key="model:BC0420-61A",
+        )
+        self.assertEqual(reason, "")
+        self.assertIsInstance(signal, dict)
+        self.assertEqual(int(signal.get("sold_90d_count", -1)), 4)
+        metadata = signal.get("metadata") if isinstance(signal.get("metadata"), dict) else {}
+        self.assertTrue(bool(metadata.get("strict_fallback_used")))
+
     def test_accepts_mpn_key_by_aliasing_to_model_key(self) -> None:
         signal, reason = self._call_provider(
             [

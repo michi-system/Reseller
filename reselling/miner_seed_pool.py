@@ -185,6 +185,10 @@ _CATEGORY_SEED_MIN_SOLD_PRICE_USD_DEFAULTS: Dict[str, float] = {
     "camera_lenses": 25.0,
 }
 
+_CATEGORY_STAGE_C_MIN_SOLD_90D_DEFAULTS: Dict[str, int] = {
+    "watch": 3,
+}
+
 _EBAY_PR_CATEGORY_DEFAULTS: Dict[str, Dict[str, Any]] = {
     "watch": {"id": 31387, "slug": "wristwatches"},
     "sneakers": {"id": 15709, "slug": "mens-sneakers"},
@@ -465,6 +469,30 @@ def _category_seed_min_sold_price_usd(category_key: str, category_row: Dict[str,
         return float(default_value)
 
     return max(0.0, to_float(os.getenv("MINER_SEED_POOL_MIN_SOLD_PRICE_USD_DEFAULT", ""), 0.0))
+
+
+def _category_stage_c_min_sold_90d(category_key: str, category_row: Dict[str, Any]) -> int:
+    key = _normalize_category_key(category_key)
+    env_suffix = re.sub(r"[^A-Z0-9_]+", "_", key.upper())
+    env_value = env_int(f"MINER_STAGE_C_MIN_SOLD_90D_{env_suffix}", -1)
+    if env_value >= 0:
+        return int(env_value)
+
+    if isinstance(category_row, dict):
+        for value_key in (
+            "stage_c_min_sold_90d",
+            "liquidity_min_sold_90d",
+            "min_sold_90d_count",
+        ):
+            value = to_int(category_row.get(value_key), -1)
+            if value >= 0:
+                return int(value)
+
+    default_value = to_int(_CATEGORY_STAGE_C_MIN_SOLD_90D_DEFAULTS.get(key), -1)
+    if default_value >= 0:
+        return int(default_value)
+
+    return max(0, env_int("LIQUIDITY_MIN_SOLD_90D", 10))
 
 
 def _resolve_ebay_pr_category_filter(category_key: str, category_row: Dict[str, Any]) -> Dict[str, Any]:
@@ -1364,11 +1392,33 @@ def _run_rpa_page(
         except Exception:
             pass
     elapsed_sec = round(max(0.0, time.perf_counter() - started_perf), 4)
-    daily_limit = bool(return_code == 75 or "requests allowed in one day" in stdout.lower() or "requests allowed in one day" in stderr.lower())
+    stdout_lower = stdout.lower()
+    stderr_lower = stderr.lower()
+    daily_limit = bool(
+        return_code == 75
+        or "requests allowed in one day" in stdout_lower
+        or "requests allowed in one day" in stderr_lower
+    )
+    bot_challenge = bool(
+        return_code == 76
+        or "pardon our interruption" in stdout_lower
+        or "think you were a bot" in stdout_lower
+        or "pardon our interruption" in stderr_lower
+        or "think you were a bot" in stderr_lower
+    )
+    if daily_limit:
+        reason_text = "daily_limit_reached"
+    elif bot_challenge:
+        reason_text = "bot_challenge_detected"
+    elif return_code == 0:
+        reason_text = "ok"
+    else:
+        reason_text = "rpa_failed"
     return {
         "ok": return_code == 0,
         "daily_limit_reached": daily_limit,
-        "reason": "daily_limit_reached" if daily_limit else ("ok" if return_code == 0 else "rpa_failed"),
+        "bot_challenge_detected": bot_challenge,
+        "reason": reason_text,
         "rows": rows,
         "returncode": return_code,
         "category_id": safe_category_id,
@@ -2064,8 +2114,9 @@ def _take_seeds_for_run(
         created_ts = iso_to_epoch(str(row.get("created_at", "") or ""))
         source_rank = max(0, to_int(row.get("source_rank"), 0))
         sid = max(0, to_int(row.get("id"), 0))
-        # 実行は「古い順20件」を優先する。
-        return (created_ts if created_ts > 0 else (10**12), source_rank, sid, max(0, to_int(row.get("use_count"), 0)))
+        use_count = max(0, to_int(row.get("use_count"), 0))
+        # 同じseed群に張り付くのを防ぐため、未使用seedを優先した上で古い順で処理する。
+        return (use_count, created_ts if created_ts > 0 else (10**12), source_rank, sid)
 
     ordered_rows = sorted([dict(v) for v in rows], key=_sort_key)
     out: List[Dict[str, Any]] = []
@@ -2139,7 +2190,8 @@ def _preview_seeds_for_run(
         created_ts = iso_to_epoch(str(row.get("created_at", "") or ""))
         source_rank = max(0, to_int(row.get("source_rank"), 0))
         sid = max(0, to_int(row.get("id"), 0))
-        return (created_ts if created_ts > 0 else (10**12), source_rank, sid, max(0, to_int(row.get("use_count"), 0)))
+        use_count = max(0, to_int(row.get("use_count"), 0))
+        return (use_count, created_ts if created_ts > 0 else (10**12), source_rank, sid)
 
     ordered_rows = sorted([dict(v) for v in rows], key=_sort_key)
     selected_count = 0
@@ -2473,6 +2525,7 @@ def _build_stage_a_tuning_recommendations(refill_summary: Dict[str, Any]) -> Lis
     timebox_sec = max(0, to_int(refill_summary.get("timebox_sec"), 0))
     diagnostics = refill_summary.get("diagnostics", {}) if isinstance(refill_summary.get("diagnostics"), dict) else {}
     rpa_failed_pages = max(0, to_int(diagnostics.get("rpa_failed_pages"), 0))
+    bot_challenge_pages = max(0, to_int(diagnostics.get("bot_challenge_pages"), 0))
     empty_result_pages = max(0, to_int(diagnostics.get("empty_result_pages"), 0))
     non_empty_result_pages = max(0, to_int(diagnostics.get("non_empty_result_pages"), 0))
     strict_filter_blocked_pages = max(0, to_int(diagnostics.get("strict_filter_blocked_pages"), 0))
@@ -2515,6 +2568,23 @@ def _build_stage_a_tuning_recommendations(refill_summary: Dict[str, Any]) -> Lis
                 "MINER_SEED_POOL_RPA_WAIT_SECONDS": max(
                     8,
                     min(20, env_int("MINER_SEED_POOL_RPA_WAIT_SECONDS", 8) + 2),
+                ),
+            },
+        )
+
+    if bot_challenge_pages > 0:
+        _append(
+            code="resolve_ebay_bot_challenge",
+            message=(
+                f"A段階でeBay bot challengeが {bot_challenge_pages} ページ発生。"
+                "手動ログイン済みの同一profileでchallenge解除後に再実行してください。"
+            ),
+            priority="high",
+            env_overrides={
+                "LIQUIDITY_RPA_FORCE_HEADLESS": 0,
+                "LIQUIDITY_RPA_PAUSE_FOR_LOGIN_SECONDS": max(
+                    60,
+                    env_int("LIQUIDITY_RPA_PAUSE_FOR_LOGIN_SECONDS", 180),
                 ),
             },
         )
@@ -3006,6 +3076,7 @@ def _refill_seed_pool(
     min_price_filtered_count = 0
     rpa_timeout_pages = 0
     rpa_failed_pages = 0
+    bot_challenge_pages = 0
     daily_limit_pages = 0
     empty_result_pages = 0
     non_empty_result_pages = 0
@@ -3146,6 +3217,8 @@ def _refill_seed_pool(
             page_reason_counts[page_reason] = int(page_reason_counts.get(page_reason, 0)) + 1
             if page_reason == "rpa_failed":
                 rpa_failed_pages += 1
+            if page_reason == "bot_challenge_detected":
+                bot_challenge_pages += 1
             if bool(result.get("daily_limit_reached")):
                 daily_limit_pages += 1
             if len(entries) <= 0:
@@ -3455,6 +3528,10 @@ def _refill_seed_pool(
                 summary["reason"] = "daily_limit_reached"
                 word_stop_reason = "daily_limit_reached"
                 break
+            if page_reason == "bot_challenge_detected":
+                summary["reason"] = "bot_challenge_detected"
+                word_stop_reason = "bot_challenge_detected"
+                break
             if to_int(result.get("returncode"), 0) == -9:
                 rpa_timeout_pages += 1
                 word_stop_reason = "rpa_timeout"
@@ -3505,7 +3582,7 @@ def _refill_seed_pool(
         )
         if bool(summary.get("daily_limit_reached")):
             break
-        if str(summary.get("reason", "") or "") in {"refill_timebox_reached", "rpa_timeout_guard"}:
+        if str(summary.get("reason", "") or "") in {"refill_timebox_reached", "rpa_timeout_guard", "bot_challenge_detected"}:
             break
 
     available_after = _count_available(conn, category_key=category_key, now_ts=now_ts)
@@ -3523,6 +3600,7 @@ def _refill_seed_pool(
     summary["rpa_timeout_pages"] = int(rpa_timeout_pages)
     summary["diagnostics"] = {
         "rpa_failed_pages": int(rpa_failed_pages),
+        "bot_challenge_pages": int(bot_challenge_pages),
         "rpa_timeout_pages": int(rpa_timeout_pages),
         "daily_limit_pages": int(daily_limit_pages),
         "empty_result_pages": int(empty_result_pages),
@@ -3547,6 +3625,10 @@ def _refill_seed_pool(
     cooldown_text = ""
     if bool(summary.get("daily_limit_reached")):
         summary["reason"] = "daily_limit_reached"
+    elif reason_now == "bot_challenge_detected":
+        bot_cooldown_minutes = max(5, env_int("MINER_SEED_POOL_BOT_CHALLENGE_COOLDOWN_MINUTES", 30))
+        cooldown_text = utc_iso(now_ts + (bot_cooldown_minutes * 60))
+        summary["cooldown_until"] = cooldown_text
     elif reason_now == "rpa_timeout_guard":
         timeout_cooldown_hours = max(1, env_int("MINER_SEED_POOL_TIMEOUT_COOLDOWN_HOURS", 1))
         cooldown_text = utc_iso(now_ts + timeout_cooldown_hours * 3600)
@@ -3641,12 +3723,17 @@ def _model_codes_equivalent(seed_code: str, candidate_code: str) -> bool:
     shorter, longer = (seed, cand) if len(seed) <= len(cand) else (cand, seed)
     if len(shorter) < 6:
         return False
-    if not longer.startswith(shorter):
-        return False
-    suffix = longer[len(shorter) :]
-    if not suffix or len(suffix) > 3:
-        return False
-    return bool(re.fullmatch(r"[A-Z0-9]{1,3}", suffix))
+    if longer.startswith(shorter):
+        suffix = longer[len(shorter) :]
+        if suffix and len(suffix) <= 3 and bool(re.fullmatch(r"[A-Z0-9]{1,3}", suffix)):
+            return True
+
+    shorter, longer = (seed, cand) if len(seed) <= len(cand) else (cand, seed)
+    if len(shorter) >= 6 and longer.endswith(shorter):
+        prefix = longer[: len(longer) - len(shorter)]
+        if 1 <= len(prefix) <= 4 and re.fullmatch(r"[A-Z0-9]{1,4}", prefix) and any(ch.isdigit() for ch in prefix):
+            return True
+    return False
 
 
 def _query_tokens(text: str) -> List[str]:
@@ -3688,6 +3775,22 @@ def _seed_title_match_score(
     candidate_codes = _model_code_set(candidate_title)
     if seed_codes:
         if not candidate_codes:
+            allow_token_rescue = env_bool("MINER_STAGE1_ALLOW_TOKEN_RESCUE_WHEN_CANDIDATE_MODEL_MISSING", True)
+            if allow_token_rescue:
+                seed_token_source = str(seed_source_title or seed_query or "")
+                seed_tokens_raw = set(_query_tokens(seed_token_source))
+                candidate_tokens = set(_query_tokens(candidate_title))
+                seed_tokens = {
+                    token
+                    for token in seed_tokens_raw
+                    if token not in _SEED_STOPWORDS
+                    and not (any(ch.isdigit() for ch in token) and any("A" <= ch <= "Z" for ch in token))
+                }
+                common = seed_tokens.intersection(candidate_tokens)
+                long_common = sum(1 for token in common if len(token) >= 4)
+                if len(common) >= 2 and long_common >= 1:
+                    # 型番欠損タイトルのみを保守的に救済する。
+                    return 0.66, "candidate_model_missing_token_overlap"
             return 0.0, "candidate_model_missing"
         matched_seed_codes = {
             seed_code
@@ -3767,6 +3870,29 @@ def _pick_jp_seed_query(
         if _looks_specific_seed(row):
             return str(row).strip()
     return str(candidates[0]).strip()
+
+
+def _prefer_stage1_query_for_seed_only(*, seed_query: str, stage1_query: str) -> str:
+    seed_text = _normalize_query_text(seed_query)
+    stage1_text = _normalize_query_text(stage1_query)
+    if not seed_text:
+        return stage1_text
+    if not stage1_text:
+        return seed_text
+
+    seed_codes = _model_code_set(seed_text)
+    stage1_codes = _model_code_set(stage1_text)
+    if seed_codes and stage1_codes:
+        for seed_code in seed_codes:
+            for stage1_code in stage1_codes:
+                if stage1_code == seed_code:
+                    continue
+                if not stage1_code.startswith(seed_code):
+                    continue
+                suffix_len = len(stage1_code) - len(seed_code)
+                if 1 <= suffix_len <= 3:
+                    return stage1_text
+    return seed_text
 
 
 def _phase_c_best_model_code(
@@ -3872,6 +3998,38 @@ def _resolve_stage1_baseline_usd(
     if category_value > 0:
         return float(category_value), "category_min"
     return -1.0, "unavailable"
+
+
+def _seed_baseline_metric_pair(seed: Dict[str, Any]) -> Optional[Tuple[float, int]]:
+    if not isinstance(seed, dict):
+        return None
+    sold_min = round(float(to_float(seed.get("seed_collected_sold_price_min_usd"), -1.0)), 2)
+    sold_count = int(to_int(seed.get("seed_collected_sold_90d_count"), -1))
+    if sold_min <= 0 or sold_count < 0:
+        return None
+    return sold_min, sold_count
+
+
+def _build_seed_baseline_pair_counts(seeds: Sequence[Dict[str, Any]]) -> Dict[Tuple[float, int], int]:
+    counts: Dict[Tuple[float, int], int] = {}
+    for seed in seeds:
+        pair = _seed_baseline_metric_pair(seed)
+        if pair is None:
+            continue
+        counts[pair] = int(counts.get(pair, 0)) + 1
+    return counts
+
+
+def _seed_baseline_is_suspicious(
+    seed: Dict[str, Any],
+    *,
+    pair_counts: Dict[Tuple[float, int], int],
+) -> bool:
+    pair = _seed_baseline_metric_pair(seed)
+    if pair is None:
+        return False
+    threshold = max(2, env_int("MINER_STAGE1_BASELINE_PAIR_DUPLICATE_THRESHOLD", 6))
+    return int(pair_counts.get(pair, 0)) >= threshold
 
 
 def _stage1_site_queries(
@@ -4564,6 +4722,9 @@ def run_seeded_fetch(
     stage2_skip_counts: Dict[str, int] = {}
     stage1_low_match_reasons: Dict[str, int] = {}
     stage2_low_match_reasons: Dict[str, int] = {}
+    stage1_low_match_samples: List[Dict[str, Any]] = []
+    stage2_low_liquidity_examples: List[Dict[str, Any]] = []
+    stage2_liquidity_unavailable_examples: List[Dict[str, Any]] = []
     fetched_aggregate: Dict[str, Dict[str, Any]] = {}
     created_ids: List[int] = []
     created_seen: Set[int] = set()
@@ -4575,6 +4736,9 @@ def run_seeded_fetch(
     stop_reason = "seed_batch_completed"
     search_scope_done = True
     rpa_daily_limit_reached = False
+    stage1_low_match_sample_limit = max(0, env_int("MINER_STAGE1_LOW_MATCH_SAMPLE_LIMIT", 0))
+    stage2_low_liquidity_example_limit = max(0, env_int("MINER_STAGE2_LOW_LIQUIDITY_EXAMPLE_LIMIT", 0))
+    stage2_liquidity_unavailable_example_limit = max(0, env_int("MINER_STAGE2_LIQUIDITY_UNAVAILABLE_EXAMPLE_LIMIT", 0))
 
     def _inc_skip(dst: Dict[str, int], key: str, amount: int = 1) -> None:
         label = str(key or "").strip()
@@ -4888,7 +5052,7 @@ def run_seeded_fetch(
         0,
         int(stage_c_min_sold_90d)
         if stage_c_min_sold_90d is not None
-        else env_int("LIQUIDITY_MIN_SOLD_90D", 10),
+        else _category_stage_c_min_sold_90d(category_key, category_row),
     )
     fx_seed_rate = max(1.0, to_float(getattr(settings, "fx_usd_jpy_default", 150.0), 150.0))
     brand_hints = _brand_hints(category_row)
@@ -4933,6 +5097,7 @@ def run_seeded_fetch(
     stage2_liquidity_retry_queries_seen: Set[str] = set()
     stage2_liquidity_refresh_runs: List[Dict[str, Any]] = []
     stage2_low_liquidity_cooldown_rows: List[Dict[str, Any]] = []
+    stage2_liquidity_query_fallback_max = max(0, env_int("MINER_STAGE2_LIQUIDITY_QUERY_FALLBACK_MAX", 3))
     stage2_retry_missing_active_enabled = bool(
         stage2_liquidity_refresh_enabled and env_bool("MINER_STAGE2_RETRY_MISSING_ACTIVE_ENABLED", False)
     )
@@ -4953,6 +5118,7 @@ def run_seeded_fetch(
         if stage_c_ebay_item_detail_max_fetch_per_run is not None
         else env_int("MINER_STAGE2_EBAY_ITEM_DETAIL_MAX_FETCH_PER_RUN", 30),
     )
+    stage2_allow_seed_signal_fallback = env_bool("MINER_STAGE2_ALLOW_SEED_SIGNAL_FALLBACK", False)
     stage2_ebay_item_detail_fetched = 0
     stage2_ebay_item_detail_cache: Dict[str, Dict[str, Any]] = {}
     stage_c_rpa_json_path = str(
@@ -5011,9 +5177,11 @@ def run_seeded_fetch(
         "stage_c_liquidity_mode": liquidity_mode,
         "stage_c_liquidity_refresh_on_miss_enabled": bool(stage2_liquidity_refresh_enabled),
         "stage_c_liquidity_refresh_on_miss_budget": int(stage2_liquidity_retry_budget_total),
+        "stage_c_liquidity_query_fallback_max": int(stage2_liquidity_query_fallback_max),
         "stage_c_retry_missing_active_enabled": bool(stage2_retry_missing_active_enabled),
         "stage_c_liquidity_prefetch_max_queries": int(stage2_liquidity_prefetch_max_queries),
         "stage_c_allow_missing_sold_sample": bool(stage2_allow_missing_sold_sample),
+        "stage_c_allow_seed_signal_fallback": bool(stage2_allow_seed_signal_fallback),
         "stage_c_collect_active_tab": bool(stage2_liquidity_refresh_enabled),
         "stage_c_rpa_json_path": stage_c_rpa_json_path,
         "stage_c_ebay_item_detail_enabled": bool(stage2_ebay_item_detail_enabled),
@@ -5024,10 +5192,12 @@ def run_seeded_fetch(
     stage2_runs = 0
     stage2_seen_item_keys: Set[str] = set()
     stage1_seed_baseline_reject_total = 0
+    stage1_baseline_softened_seed_keys: Set[str] = set()
     min_stage1_attempts_before_timebox = min(
         len(selected_seeds),
         max(1, env_int("MINER_TIMED_FETCH_MIN_STAGE1_ATTEMPTS", 20)),
     )
+    stage1_baseline_pair_counts = _build_seed_baseline_pair_counts(selected_seeds)
     if stage2_liquidity_refresh_enabled and selected_seeds and stage2_liquidity_prefetch_max_queries > 0:
         prefetch_queries: List[str] = []
         for seed in selected_seeds:
@@ -5078,6 +5248,12 @@ def run_seeded_fetch(
             seed_collected_sold_price_min_usd=to_float(seed.get("seed_collected_sold_price_min_usd"), -1.0),
             category_min_seed_price_usd=min_seed_price_usd,
         )
+        baseline_suspicious = _seed_baseline_is_suspicious(
+            seed,
+            pair_counts=stage1_baseline_pair_counts,
+        )
+        if baseline_suspicious:
+            stage1_baseline_softened_seed_keys.add(seed_key_text)
         seed_max_price_jpy = int(max(0.0, baseline_usd * fx_seed_rate)) if baseline_usd > 0 else 0
         if bool(timed_mode) and elapsed >= max(10, int(timebox_sec)) and idx > min_stage1_attempts_before_timebox:
             stop_reason = "timebox_reached"
@@ -5168,8 +5344,21 @@ def run_seeded_fetch(
             selected_for_site = 0
             site_query_logs: List[Dict[str, Any]] = []
             if stage1_query_mode == "seed_only":
-                primary_query = _normalize_query_text(seed_query) or _normalize_query_text(stage1_query)
-                site_queries = [primary_query] if primary_query else []
+                primary_query = _prefer_stage1_query_for_seed_only(
+                    seed_query=seed_query,
+                    stage1_query=stage1_query,
+                )
+                if _category_requires_strict_model_seed(category_key, category_row):
+                    fallback_seed_query = primary_query or stage1_query or seed_query
+                    site_queries = _stage1_site_queries(
+                        seed_query=fallback_seed_query,
+                        stage1_query=primary_query,
+                        seed_source_title=seed_source_title,
+                        site=site_key,
+                        max_queries=2,
+                    )
+                else:
+                    site_queries = [primary_query] if primary_query else []
             else:
                 site_queries = _stage1_site_queries(
                     seed_query=seed_query,
@@ -5265,8 +5454,35 @@ def run_seeded_fetch(
                     if score < effective_min_match_score:
                         _inc_skip(stage1_skip_counts, "skipped_low_match", 1)
                         stage1_low_match_reasons[reason] = int(stage1_low_match_reasons.get(reason, 0)) + 1
+                        if stage1_low_match_sample_limit <= 0 or len(stage1_low_match_samples) < stage1_low_match_sample_limit:
+                            stage1_low_match_samples.append(
+                                {
+                                    "seed_query": str(seed_query),
+                                    "stage1_query": str(stage1_query),
+                                    "seed_source_title": str(seed_source_title),
+                                    "seed_source_item_url": str(seed.get("source_item_url", "") or ""),
+                                    "seed_baseline_usd": round(float(baseline_usd), 2),
+                                    "seed_baseline_source": str(baseline_source),
+                                    "seed_collected_sold_90d_count": int(
+                                        max(0, to_int(seed.get("seed_collected_sold_90d_count"), -1))
+                                    ),
+                                    "site": str(site_key),
+                                    "site_query": str(site_query),
+                                    "candidate_title": str(item.title or ""),
+                                    "candidate_item_id": str(item.item_id or ""),
+                                    "candidate_item_url": str(item.item_url or ""),
+                                    "candidate_image_url": str(item.image_url or ""),
+                                    "candidate_condition": str(item.condition or "new"),
+                                    "score": round(float(score), 4),
+                                    "min_required_score": round(float(effective_min_match_score), 4),
+                                    "reason": str(reason),
+                                    "source_price_jpy": round(float(source_price_jpy), 2),
+                                    "source_shipping_jpy": round(float(source_shipping_jpy), 2),
+                                    "source_total_jpy": round(float(source_total_jpy), 2),
+                                }
+                            )
                         continue
-                    if baseline_usd > 0:
+                    if baseline_usd > 0 and not baseline_suspicious:
                         source_total_usd = source_total_jpy / fx_seed_rate if fx_seed_rate > 0 else -1.0
                         if source_total_usd <= 0 or source_total_usd >= baseline_usd:
                             stage1_baseline_reject += 1
@@ -5412,6 +5628,7 @@ def run_seeded_fetch(
                 "stage1_candidate_count": int(stage1_count),
                 "stage2_created_count": int(stage2_created_count),
                 "stage1_seed_baseline_reject_count": int(stage1_baseline_reject),
+                "stage1_seed_baseline_softened": bool(baseline_suspicious),
                 "elapsed_sec": round(time.monotonic() - started, 3),
                 "min_match_score": effective_min_match_score,
                 "has_model_code": has_model_code,
@@ -5485,6 +5702,48 @@ def run_seeded_fetch(
             )
             query_key = re.sub(r"\s+", " ", str(liquidity_query or "").strip()).lower()
             signal = _get_stage2_liquidity_signal(item, liquidity_query)
+            sold_count_raw = to_int(signal.get("sold_90d_count"), -1)
+            if sold_count_raw < 0 and stage2_liquidity_query_fallback_max > 0:
+                fallback_queries = _liquidity_refresh_queries_for_seed(
+                    liquidity_query,
+                    max_count=max(2, stage2_liquidity_query_fallback_max + 2),
+                    source_title=f"{seed_source_title} {str(item.title or '')} {stage1_query}".strip(),
+                    brand_hints=brand_hints,
+                )
+                # まず seed query / stage1 query を優先候補として試す。
+                preferred_queries: List[str] = []
+                for candidate in (stage1_query, seed_query):
+                    text = re.sub(r"\s+", " ", str(candidate or "").strip())
+                    if text:
+                        preferred_queries.append(text)
+                for candidate in fallback_queries:
+                    text = re.sub(r"\s+", " ", str(candidate or "").strip())
+                    if text:
+                        preferred_queries.append(text)
+                seen_query_keys: Set[str] = set()
+                tried = 0
+                for candidate_query in preferred_queries:
+                    ckey = candidate_query.lower()
+                    if not ckey or ckey in seen_query_keys:
+                        continue
+                    seen_query_keys.add(ckey)
+                    if ckey == query_key:
+                        continue
+                    cand_signal = _get_stage2_liquidity_signal(item, candidate_query)
+                    if _is_rpa_daily_limit_signal(cand_signal):
+                        rpa_daily_limit_reached = True
+                        stop_reason = "rpa_daily_limit_reached"
+                        break
+                    cand_sold = to_int(cand_signal.get("sold_90d_count"), -1)
+                    tried += 1
+                    if cand_sold >= 0:
+                        signal = cand_signal
+                        sold_count_raw = cand_sold
+                        liquidity_query = candidate_query
+                        query_key = liquidity_query.lower()
+                        break
+                    if tried >= stage2_liquidity_query_fallback_max:
+                        break
             if _is_rpa_daily_limit_signal(signal):
                 rpa_daily_limit_reached = True
                 stop_reason = "rpa_daily_limit_reached"
@@ -5529,16 +5788,117 @@ def run_seeded_fetch(
                         stop_reason = "rpa_daily_limit_reached"
                         break
                     sold_count_raw = to_int(signal.get("sold_90d_count"), -1)
+            if (
+                sold_count_raw < 0
+                and bool(stage2_allow_seed_signal_fallback)
+                and bool(stage2_allow_missing_sold_sample)
+            ):
+                seed_fallback_sold_count = max(0, to_int(seed.get("seed_collected_sold_90d_count"), -1))
+                seed_fallback_sold_min = max(0.0, to_float(seed.get("seed_collected_sold_price_min_usd"), -1.0))
+                if seed_fallback_sold_count >= liquidity_min_sold_90d and seed_fallback_sold_min > 0:
+                    signal = {
+                        "sold_90d_count": int(seed_fallback_sold_count),
+                        "active_count": -1,
+                        "sold_price_min": float(seed_fallback_sold_min),
+                        "sold_price_median": float(seed_fallback_sold_min),
+                        "sold_price_currency": "USD",
+                        "source": "seed_collected_fallback",
+                        "confidence": 0.35,
+                        "unavailable_reason": "",
+                        "metadata": {
+                            "fallback_from_seed_pool": True,
+                            "fallback_reason": "liquidity_signal_unavailable",
+                            "seed_query": str(seed_query),
+                            "seed_key": str(seed_key_text),
+                            "seed_collected_sold_90d_count": int(seed_fallback_sold_count),
+                            "seed_collected_sold_price_min_usd": float(seed_fallback_sold_min),
+                            "sold_sample": {
+                                "title": str(liquidity_query or jp_seed_query or seed_query),
+                                "sold_price_usd": float(seed_fallback_sold_min),
+                                "sold_price": float(seed_fallback_sold_min),
+                                "item_url": "",
+                                "item_id": "",
+                                "image_url": "",
+                            },
+                        },
+                    }
+                    sold_count_raw = int(seed_fallback_sold_count)
             if sold_count_raw < 0:
                 _inc_skip(stage2_skip_counts, "skipped_liquidity_unavailable", 1)
                 unavailable_reason = str(signal.get("unavailable_reason", "") or "").strip() or "unknown"
                 stage2_low_match_reasons[unavailable_reason] = (
                     int(stage2_low_match_reasons.get(unavailable_reason, 0)) + 1
                 )
+                if (
+                    stage2_liquidity_unavailable_example_limit <= 0
+                    or len(stage2_liquidity_unavailable_examples) < stage2_liquidity_unavailable_example_limit
+                ):
+                    stage2_liquidity_unavailable_examples.append(
+                        {
+                            "seed_query": str(seed_query),
+                            "stage1_query": str(stage1_query),
+                            "seed_source_title": str(seed_source_title),
+                            "seed_source_item_url": str(seed.get("source_item_url", "") or ""),
+                            "seed_baseline_usd": round(float(baseline_usd), 2),
+                            "seed_baseline_source": str(baseline_source),
+                            "source_site": str(item.site or row.get("site") or ""),
+                            "source_title": str(item.title or ""),
+                            "source_item_id": str(item.item_id or ""),
+                            "source_item_url": str(item.item_url or ""),
+                            "source_image_url": str(item.image_url or ""),
+                            "source_condition": str(item.condition or "new"),
+                            "source_price_jpy": round(
+                                float(to_float(row.get("source_price_jpy"), to_float(item.price, 0.0))), 2
+                            ),
+                            "source_shipping_jpy": round(
+                                float(to_float(row.get("source_shipping_jpy"), to_float(item.shipping, 0.0))), 2
+                            ),
+                            "source_total_jpy": round(float(to_float(row.get("source_total_jpy"), 0.0)), 2),
+                            "liquidity_query": str(liquidity_query),
+                            "unavailable_reason": str(unavailable_reason),
+                            "stage1_match_score": round(float(to_float(row.get("score"), 0.0)), 4),
+                            "stage1_match_reason": str(row.get("reason", "") or ""),
+                        }
+                    )
                 continue
             sold_count_90d = max(0, sold_count_raw)
             if sold_count_90d < liquidity_min_sold_90d:
                 _inc_skip(stage2_skip_counts, "skipped_low_liquidity", 1)
+                if (
+                    stage2_low_liquidity_example_limit <= 0
+                    or len(stage2_low_liquidity_examples) < stage2_low_liquidity_example_limit
+                ):
+                    stage2_low_liquidity_examples.append(
+                        {
+                            "seed_query": str(seed_query),
+                            "stage1_query": str(stage1_query),
+                            "seed_source_title": str(seed_source_title),
+                            "seed_source_item_url": str(seed.get("source_item_url", "") or ""),
+                            "seed_baseline_usd": round(float(baseline_usd), 2),
+                            "seed_baseline_source": str(baseline_source),
+                            "source_site": str(item.site or row.get("site") or ""),
+                            "source_title": str(item.title or ""),
+                            "source_item_id": str(item.item_id or ""),
+                            "source_item_url": str(item.item_url or ""),
+                            "source_image_url": str(item.image_url or ""),
+                            "source_condition": str(item.condition or "new"),
+                            "source_price_jpy": round(
+                                float(to_float(row.get("source_price_jpy"), to_float(item.price, 0.0))), 2
+                            ),
+                            "source_shipping_jpy": round(
+                                float(to_float(row.get("source_shipping_jpy"), to_float(item.shipping, 0.0))), 2
+                            ),
+                            "source_total_jpy": round(float(to_float(row.get("source_total_jpy"), 0.0)), 2),
+                            "liquidity_query": str(liquidity_query),
+                            "sold_90d_count": int(sold_count_90d),
+                            "min_required": int(liquidity_min_sold_90d),
+                            "sold_price_min_usd": round(float(_liquidity_sold_min_usd(signal)), 2),
+                            "active_count": int(to_int(signal.get("active_count"), -1)),
+                            "active_price_min_usd": round(float(_liquidity_active_min_usd(signal)), 2),
+                            "stage1_match_score": round(float(to_float(row.get("score"), 0.0)), 4),
+                            "stage1_match_reason": str(row.get("reason", "") or ""),
+                        }
+                    )
                 if _seed_low_liquidity_cooldown_enabled():
                     stage2_low_liquidity_cooldown_rows.append(
                         {
@@ -5966,6 +6326,10 @@ def run_seeded_fetch(
         hints.append(
             f"C段階のeBay商品ページ補完: {stage2_ebay_item_detail_fetched}件取得"
         )
+    if stage1_baseline_softened_seed_keys:
+        hints.append(
+            f"B段階でseed baseline疑義のためCへ継続: {len(stage1_baseline_softened_seed_keys)}件"
+        )
     if len(created_ids) <= 0 and stage1_seed_baseline_reject_total > 0:
         hints.append(f"B段階でseed基準価格を満たさず除外: {stage1_seed_baseline_reject_total}件")
     if stop_reason == "timebox_reached":
@@ -6002,7 +6366,11 @@ def run_seeded_fetch(
         "stage2_skip_counts": stage2_skip_counts,
         "stage1_low_match_reason_counts": stage1_low_match_reasons,
         "stage2_low_match_reason_counts": stage2_low_match_reasons,
+        "stage1_low_match_samples": stage1_low_match_samples,
+        "stage2_low_liquidity_examples": stage2_low_liquidity_examples,
+        "stage2_liquidity_unavailable_examples": stage2_liquidity_unavailable_examples,
         "stage1_seed_baseline_reject_total": int(stage1_seed_baseline_reject_total),
+        "stage1_baseline_softened_seed_count": int(len(stage1_baseline_softened_seed_keys)),
         "stage2_liquidity_refresh": {
             "enabled": bool(stage2_liquidity_refresh_enabled),
             "retry_budget_total": int(stage2_liquidity_retry_budget_total),
@@ -6032,7 +6400,11 @@ def run_seeded_fetch(
             "stage2_skip_counts": stage2_skip_counts,
             "stage1_low_match_reason_counts": stage1_low_match_reasons,
             "stage2_low_match_reason_counts": stage2_low_match_reasons,
+            "stage1_low_match_samples": stage1_low_match_samples,
+            "stage2_low_liquidity_examples": stage2_low_liquidity_examples,
+            "stage2_liquidity_unavailable_examples": stage2_liquidity_unavailable_examples,
             "stage1_seed_baseline_reject_total": int(stage1_seed_baseline_reject_total),
+            "stage1_baseline_softened_seed_count": int(len(stage1_baseline_softened_seed_keys)),
             "stage2_liquidity_refresh": {
                 "enabled": bool(stage2_liquidity_refresh_enabled),
                 "retry_budget_total": int(stage2_liquidity_retry_budget_total),

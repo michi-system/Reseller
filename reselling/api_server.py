@@ -22,7 +22,12 @@ from .live_miner_fetch import (
     backfill_candidate_market_images,
     get_rpa_progress_snapshot,
 )
-from .miner_seed_pool import get_seed_pool_status, reset_seed_pool_category_state, run_seeded_fetch
+from .miner_seed_pool import (
+    _category_stage_c_min_sold_90d,
+    get_seed_pool_status,
+    reset_seed_pool_category_state,
+    run_seeded_fetch,
+)
 from .profit import ProfitInput, calculate_profit
 from .models import connect, init_db
 from .miner import (
@@ -341,6 +346,13 @@ def _sanitize_miner_ui_settings(raw: Any) -> Dict[str, Any]:
             ),
         ),
     }
+
+
+def _resolve_requested_stage_c_min_sold_90d(category_query: str, body: Dict[str, Any]) -> int:
+    category_default = max(0, _category_stage_c_min_sold_90d(category_query, {}))
+    if not isinstance(body, dict) or "stage_c_min_sold_90d" not in body:
+        return category_default
+    return max(0, min(1000, _to_int(body.get("stage_c_min_sold_90d", category_default), category_default)))
 
 
 def _load_miner_ui_settings(db_path: Path) -> Dict[str, Any]:
@@ -803,7 +815,7 @@ class ApiHandler(BaseHTTPRequestHandler):
         stage_b_max_queries_per_site = max(1, min(4, _to_int(body.get("stage_b_max_queries_per_site", 1), 1)))
         stage_b_top_matches_per_seed = max(1, min(5, _to_int(body.get("stage_b_top_matches_per_seed", 3), 3)))
         stage_b_api_max_calls_per_run = max(0, min(2000, _to_int(body.get("stage_b_api_max_calls_per_run", 0), 0)))
-        stage_c_min_sold_90d = max(0, min(1000, _to_int(body.get("stage_c_min_sold_90d", 10), 10)))
+        stage_c_min_sold_90d = _resolve_requested_stage_c_min_sold_90d(query_text, body)
         stage_c_liquidity_refresh_on_miss_enabled = _to_bool(
             body.get("stage_c_liquidity_refresh_on_miss_enabled", True), True
         )

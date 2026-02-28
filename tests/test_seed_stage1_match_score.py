@@ -31,6 +31,24 @@ class SeedStage1MatchScoreTests(unittest.TestCase):
         self.assertGreaterEqual(score, 0.82)
         self.assertEqual(reason, "model_code_match")
 
+    def test_specific_seed_rescues_missing_model_title_on_token_overlap(self) -> None:
+        score, reason = miner_seed_pool._seed_title_match_score(
+            seed_query="DW-5600RL-1A",
+            seed_source_title="CASIO G-SHOCK DW-5600RL-1A",
+            candidate_title="CASIO G-SHOCK 5600 SERIES メンズ 新品",
+        )
+        self.assertGreaterEqual(score, 0.66)
+        self.assertEqual(reason, "candidate_model_missing_token_overlap")
+
+    def test_specific_seed_keeps_missing_model_reject_when_token_overlap_is_weak(self) -> None:
+        score, reason = miner_seed_pool._seed_title_match_score(
+            seed_query="DW-5600RL-1A",
+            seed_source_title="CASIO G-SHOCK DW-5600RL-1A",
+            candidate_title="メンズ 腕時計 ブラック 新品",
+        )
+        self.assertEqual(score, 0.0)
+        self.assertEqual(reason, "candidate_model_missing")
+
     def test_broad_seed_with_overlap_has_minimum_floor(self) -> None:
         score, reason = miner_seed_pool._seed_title_match_score(
             seed_query="G-SHOCK",

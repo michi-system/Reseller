@@ -1,0 +1,5 @@
+[cycle-summary] policy_file=/Users/tadamichikimura/Downloads/dev-HQ/Reseller/docs/OPERATION_POLICY.json ok=False
+[cycle-error] AUTO_MINER_REQUIRE_LIQUIDITY_SIGNAL must be enabled by policy
+real 0.08
+user 0.03
+sys 0.01

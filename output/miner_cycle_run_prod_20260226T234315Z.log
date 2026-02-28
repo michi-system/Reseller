@@ -1,0 +1,12 @@
+[2026-02-26T23:43:15.490255+00:00] START cmd=python3 -u scripts/run_miner_cycle.py --output /Users/tadamichikimura/Downloads/dev-HQ/Reseller/output/miner_cycle_report_prod_20260226T234315Z.json --active-manifest /Users/tadamichikimura/Downloads/dev-HQ/Reseller/output/miner_cycle_active_prod_20260226T234315Z.json
+[2026-02-26T23:46:14.624913+00:00] [rpa] mode=rpa_json ran=True missing primary=3 fallback=3 model_backfill=3
+[2026-02-26T23:46:14.626798+00:00] [rpa] primary rc=0 queries=23 condition=new
+[2026-02-26T23:46:14.627120+00:00] [rpa] fallback rc=0 queries=3 condition=any
+[2026-02-26T23:46:14.627128+00:00] [rpa] model_backfill rc=0 queries=8 condition=any
+[2026-02-26T23:46:25.274168+00:00] 
+[2026-02-26T23:46:25.274679+00:00] Saved report: /Users/tadamichikimura/Downloads/dev-HQ/Reseller/output/miner_cycle_report_prod_20260226T234315Z.json
+[2026-02-26T23:46:25.274729+00:00] Saved active cycle manifest: /Users/tadamichikimura/Downloads/dev-HQ/Reseller/output/miner_cycle_active_prod_20260226T234315Z.json
+[2026-02-26T23:46:25.274808+00:00] reviewable pending: initial=2 final=2 delta=0 target=24
+[2026-02-26T23:46:25.274845+00:00] cycle_id=cycle-20260226-234625 batch_size=2 cycle_ready=False
+[2026-02-26T23:46:25.274883+00:00] [backfill] updated=False touched=0 added=0 total=29
+[2026-02-26T23:46:25.324870+00:00] END rc=0 elapsed_sec=189.835

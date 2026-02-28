@@ -1,0 +1,41 @@
+{
+  "captured_at_epoch": 1772080973,
+  "target_queries": [
+    "GMA-P2100PC-1AJF",
+    "CASIO GMA-P2100PC-1AJF",
+    "GMA-P2100PC-1A",
+    "CASIO GMA-P2100PC-1A",
+    "DW-5600WS-4",
+    "CASIO DW-5600WS-4"
+  ],
+  "rows_count": 3,
+  "rows": [
+    {
+      "query": "CASIO DW-5600WS-4",
+      "pass_label": "strict_backfill_targeted_20260226",
+      "sold_90d_count": -1,
+      "active_count": -1,
+      "strict_blocked": true,
+      "strict_reason": "condition_filter_not_confirmed",
+      "url": "https://www.ebay.com/splashui/captcha?ap=1&appName=orch&ru=https%3A%2F%2Fsignin.ebay.com%2Fws%2FeBayISAPI.dll%3FSignIn%26ru%3Dhttps%253A%252F%252Fwww.ebay.com%252Fsh%252Fresearch%253Fmarketplace%253DEBAY-US%2526keywords%253DCASIO%252BDW-5600WS-4%2526tabName%253DSOLD%2526categoryId%253D31387%2526category%253Dwristwatches%2526conditionId%253D1000%2526limit%253D50%26sgfl%3Dsm%26smuid%3D06ba8a60-12cd-11f1-9f27-bd247178cc64&iid=292a3d7f-c37e-4dec-bb60-d0aac9449cdc&iim=EMTMzLX&iia=HujIuMCHs&iiz=nEF42OA**dwF"
+    },
+    {
+      "query": "CASIO GMA-P2100PC-1A",
+      "pass_label": "strict_backfill_targeted_20260226",
+      "sold_90d_count": -1,
+      "active_count": -1,
+      "strict_blocked": true,
+      "strict_reason": "condition_filter_not_confirmed",
+      "url": "https://www.ebay.com/splashui/captcha?ap=1&appName=orch&ru=https%3A%2F%2Fsignin.ebay.com%2Fws%2FeBayISAPI.dll%3FSignIn%26ru%3Dhttps%253A%252F%252Fwww.ebay.com%252Fsh%252Fresearch%253Fmarketplace%253DEBAY-US%2526keywords%253DCASIO%252BGMA-P2100PC-1A%2526tabName%253DSOLD%2526categoryId%253D31387%2526category%253Dwristwatches%2526conditionId%253D1000%2526limit%253D50%26sgfl%3Dsm%26smuid%3Df70711c0-12cc-11f1-a0ff-676a1dce1a8f&iid=18baf410-17f5-47f4-84f9-a01589fb8638&iim=oMTMzLy&iia=mejIuMCXX&iiz=oqz42OA**bNP"
+    },
+    {
+      "query": "CASIO GMA-P2100PC-1AJF",
+      "pass_label": "strict_backfill_headed_probe_20260226",
+      "sold_90d_count": -1,
+      "active_count": -1,
+      "strict_blocked": true,
+      "strict_reason": "condition_filter_not_confirmed",
+      "url": "https://signin.ebay.com/ws/eBayISAPI.dll?SignIn&ru=https%3A%2F%2Fwww.ebay.com%2Fsh%2Fresearch%3Fmarketplace%3DEBAY-US%26keywords%3DCASIO%2BGMA-P2100PC-1AJF%26tabName%3DSOLD%26categoryId%3D31387%26category%3Dwristwatches%26conditionId%3D1000%26limit%3D50&sgfl=sm&smuid=7958953f-12cd-11f1-91ac-a93159a2c39f"
+    }
+  ]
+}

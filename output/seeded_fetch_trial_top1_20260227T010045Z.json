@@ -1,0 +1,99 @@
+{
+  "elapsed_sec": 39.966,
+  "created_count": 0,
+  "stop_reason": "seed_batch_completed",
+  "stage1_pass_total": 3,
+  "stage2_runs": 2,
+  "stage1_skip_counts": {
+    "skipped_low_match": 36,
+    "skipped_source_variant_unresolved": 2
+  },
+  "stage2_skip_counts": {
+    "skipped_low_liquidity": 1,
+    "skipped_liquidity_unavailable": 1,
+    "skipped_duplicates": 1
+  },
+  "hints_head": [
+    "低流動性cooldown中のseedを 1 件スキップしました。",
+    "低流動性cooldownで待機中のseed: 1件",
+    "A段階のカテゴリ最低価格フィルタ: $100.00 を適用しました。",
+    "C段階で低流動性seedをcooldown登録: 1件",
+    "B段階の主な除外理由: skipped_low_match (36件)",
+    "B段階の一致不足主因: candidate_model_missing (22件)",
+    "B段階でseed B行を生成: 2件",
+    "C段階の主な除外理由: skipped_low_liquidity (1件)",
+    "C段階の詳細理由: rpa_json_not_strict_sold_filters (1件)"
+  ],
+  "stage_b_rows_head": [
+    {
+      "seed_id": 218,
+      "stage1_rank": 1,
+      "seed_key": "GMAP2100PC1A",
+      "seed_query": "GMAP2100PC-1A",
+      "seed_source_title": "CASIO G-SHOCK GMAP2100PC-1A Black mid-size model Women Watch NEW",
+      "seed_baseline_source": "seed_collected",
+      "seed_baseline_usd": 100.0,
+      "stage1_query": "CASIO GMAP2100PC-1A",
+      "source_site": "rakuten",
+      "source_item_id": "urutoragion:10189943",
+      "source_item_url": "https://hb.afl.rakuten.co.jp/hgc/g00rgcgm.fsebm5c4.g00rgcgm.fsebne63/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Furutoragion%2Fgmap2100pc1ajf%2F&m=http%3A%2F%2Fm.rakuten.co.jp%2Furutoragion%2Fi%2F10189943%2F&rafcid=wsc_i_is_12003307-f58f-451d-b546-f5a380442850",
+      "source_title": "腕時計 GMA-P2100PC-1AJF G-SHOCK Gショック ジーショック カシオ CASIO Polarized Color Dial レディース 国内正規品 ブラック【/srm】",
+      "source_image_url": "https://thumbnail.image.rakuten.co.jp/@0_mall/urutoragion/cabinet/shopping276/gmap2100pc1ajf.jpg?_ex=128x128",
+      "source_currency": "JPY",
+      "source_condition": "new",
+      "source_price_jpy": 14025.0,
+      "source_shipping_jpy": 0.0,
+      "source_total_jpy": 14025.0,
+      "source_price_basis_type": "listing_price",
+      "source_variant_price_resolution": {
+        "site": "rakuten",
+        "applied": false,
+        "ambiguous_source_model_codes": [
+          "GMAP2100PC1AJF"
+        ],
+        "target_model_code": "",
+        "reason": "",
+        "is_low_stock": false,
+        "remaining": -1,
+        "stock_source_key": ""
+      },
+      "stage1_match_score": 0.94,
+      "stage1_match_reason": "model_code_match"
+    },
+    {
+      "seed_id": 225,
+      "stage1_rank": 1,
+      "seed_key": "CASIODW5600",
+      "seed_query": "CASIO DW-5600",
+      "seed_source_title": "Japan NEW Casio G-Shock Men's Watches DW-5600 Series Various Color Limited Color",
+      "seed_baseline_source": "seed_collected",
+      "seed_baseline_usd": 100.0,
+      "stage1_query": "CASIO DW-5600",
+      "source_site": "yahoo_shopping",
+      "source_item_id": "inst_dw-5600ws-4",
+      "source_item_url": "https://store.shopping.yahoo.co.jp/inst/dw-5600ws-4.html",
+      "source_title": "G-SHOCK Gショック ジーショック ORIGIN オリジン 5600 シリーズ カシオ CASIO デジタル 腕時計 オレンジ マーブル DW-5600WS-4 逆輸入海外モデル",
+      "source_image_url": "https://item-shopping.c.yimg.jp/i/c/inst_dw-5600ws-4",
+      "source_currency": "JPY",
+      "source_condition": "new",
+      "source_price_jpy": 9480.0,
+      "source_shipping_jpy": 0.0,
+      "source_total_jpy": 9480.0,
+      "source_price_basis_type": "listing_price",
+      "source_variant_price_resolution": {
+        "site": "yahoo_shopping",
+        "applied": false,
+        "ambiguous_source_model_codes": [
+          "DW5600WS4"
+        ],
+        "target_model_code": "",
+        "reason": "",
+        "is_low_stock": false,
+        "remaining": -1,
+        "stock_source_key": ""
+      },
+      "stage1_match_score": 0.94,
+      "stage1_match_reason": "model_code_match"
+    }
+  ]
+}

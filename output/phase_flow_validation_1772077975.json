@@ -1,0 +1,711 @@
+{
+  "validated_at_epoch": 1772077975,
+  "api_base": "http://127.0.0.1:18000",
+  "run_prod": {
+    "created_count": 0,
+    "timed_fetch": {
+      "enabled": true,
+      "min_target_candidates": 2,
+      "timebox_sec": 180,
+      "max_passes": 20,
+      "continue_after_target": false,
+      "passes_run": 20,
+      "stop_reason": "seed_batch_completed",
+      "elapsed_sec": 125.64,
+      "reached_min_target": false,
+      "stage1_pass_total": 12,
+      "stage2_runs": 6,
+      "stage1_skip_counts": {
+        "skipped_low_match": 34,
+        "skipped_source_variant_unresolved": 1
+      },
+      "stage2_skip_counts": {
+        "skipped_liquidity_unavailable": 5,
+        "skipped_duplicates": 6,
+        "skipped_unprofitable": 1
+      },
+      "stage1_low_match_reason_counts": {
+        "model_code_mismatch": 12,
+        "candidate_model_missing": 22
+      },
+      "stage2_low_match_reason_counts": {
+        "rpa_json_not_strict_sold_filters": 5
+      },
+      "stage1_seed_baseline_reject_total": 0,
+      "stage2_liquidity_refresh": {
+        "enabled": true,
+        "retry_budget_total": 6,
+        "retry_budget_used": 3,
+        "runs": [
+          {
+            "phase": "on_miss_retry",
+            "query": "GMA-P2100PC-1AJF",
+            "summary": {
+              "enabled": true,
+              "ran": true,
+              "reason": "ok",
+              "daily_limit_reached": false,
+              "returncode": 0,
+              "queries": [
+                "GMA-P2100PC-1AJF",
+                "CASIO GMA-P2100PC-1AJF"
+              ],
+              "query_count": 2,
+              "output_path": "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/data/liquidity_rpa_signals.jsonl",
+              "python_exec": "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/.venv/bin/python",
+              "started_at_epoch": 1772077667,
+              "ended_at_epoch": 1772077701,
+              "stdout_tail": [
+                "[progress] {\"phase\": \"search_done\", \"message\": \"検索結果を読み込みました\", \"progress_percent\": 17.0, \"query\": \"GMA-P2100PC-1AJF\", \"query_index\": 1, \"total_queries\": 2, \"at\": \"2026-02-26T03:48:00Z\", \"extra\": {\"search_wait_sec\": 6.7065}}",
+                "[progress] {\"phase\": \"filters_applying\", \"message\": \"フィルタを設定しています\", \"progress_percent\": 28.0, \"query\": \"GMA-P2100PC-1AJF\", \"query_index\": 1, \"total_queries\": 2, \"at\": \"2026-02-26T03:48:01Z\"}",
+                "[progress] {\"phase\": \"filters_done\", \"message\": \"フィルタ設定が完了しました\", \"progress_percent\": 36.0, \"query\": \"GMA-P2100PC-1AJF\", \"query_index\": 1, \"total_queries\": 2, \"at\": \"2026-02-26T03:48:06Z\", \"extra\": {\"filter_apply_sec\": 5.315}}",
+                "[progress] {\"phase\": \"active_tab_collecting\", \"message\": \"Activeタブ情報を取得しています\", \"progress_percent\": 43.0, \"query\": \"GMA-P2100PC-1AJF\", \"query_index\": 1, \"total_queries\": 2, \"at\": \"2026-02-26T03:48:07Z\"}",
+                "[progress] {\"phase\": \"active_tab_done\", \"message\": \"Activeタブ情報の取得が完了しました\", \"progress_percent\": 45.0, \"query\": \"GMA-P2100PC-1AJF\", \"query_index\": 1, \"total_queries\": 2, \"at\": \"2026-02-26T03:48:07Z\", \"extra\": {\"active_count\": -1, \"active_price_min\": -1.0}}",
+                "-> sold_90d=-1 min=-1.0 active=-1 active_min=-1.0 median=-1.0 ccy=USD conf=0.1",
+                "[progress] {\"phase\": \"query_done\", \"message\": \"検索語の処理が完了しました: GMA-P2100PC-1AJF\", \"progress_percent\": 50.0, \"query\": \"GMA-P2100PC-1AJF\", \"query_index\": 1, \"total_queries\": 2, \"at\": \"2026-02-26T03:48:07Z\", \"extra\": {\"sold_90d_count\": -1, \"sold_price_min\": -1.0, \"active_count\": -1, \"active_price_min\": -1.0, \"sold_price_median\": -1.0}}",
+                "[2/2] query=CASIO GMA-P2100PC-1AJF",
+                "[progress] {\"phase\": \"query_start\", \"message\": \"検索語を処理中: CASIO GMA-P2100PC-1AJF\", \"progress_percent\": 52.5, \"query\": \"CASIO GMA-P2100PC-1AJF\", \"query_index\": 2, \"total_queries\": 2, \"at\": \"2026-02-26T03:48:07Z\"}",
+                "[progress] {\"phase\": \"search_done\", \"message\": \"検索結果を読み込みました\", \"progress_percent\": 67.0, \"query\": \"CASIO GMA-P2100PC-1AJF\", \"query_index\": 2, \"total_queries\": 2, \"at\": \"2026-02-26T03:48:14Z\", \"extra\": {\"search_wait_sec\": 6.8322}}",
+                "[progress] {\"phase\": \"filters_applying\", \"message\": \"フィルタを設定しています\", \"progress_percent\": 78.0, \"query\": \"CASIO GMA-P2100PC-1AJF\", \"query_index\": 2, \"total_queries\": 2, \"at\": \"2026-02-26T03:48:14Z\"}",
+                "[progress] {\"phase\": \"filters_done\", \"message\": \"フィルタ設定が完了しました\", \"progress_percent\": 86.0, \"query\": \"CASIO GMA-P2100PC-1AJF\", \"query_index\": 2, \"total_queries\": 2, \"at\": \"2026-02-26T03:48:20Z\", \"extra\": {\"filter_apply_sec\": 5.3343}}",
+                "[progress] {\"phase\": \"active_tab_collecting\", \"message\": \"Activeタブ情報を取得しています\", \"progress_percent\": 93.0, \"query\": \"CASIO GMA-P2100PC-1AJF\", \"query_index\": 2, \"total_queries\": 2, \"at\": \"2026-02-26T03:48:21Z\"}",
+                "[progress] {\"phase\": \"active_tab_done\", \"message\": \"Activeタブ情報の取得が完了しました\", \"progress_percent\": 95.0, \"query\": \"CASIO GMA-P2100PC-1AJF\", \"query_index\": 2, \"total_queries\": 2, \"at\": \"2026-02-26T03:48:21Z\", \"extra\": {\"active_count\": -1, \"active_price_min\": -1.0}}",
+                "-> sold_90d=-1 min=-1.0 active=-1 active_min=-1.0 median=-1.0 ccy=USD conf=0.1",
+                "[progress] {\"phase\": \"query_done\", \"message\": \"検索語の処理が完了しました: CASIO GMA-P2100PC-1AJF\", \"progress_percent\": 100.0, \"query\": \"CASIO GMA-P2100PC-1AJF\", \"query_index\": 2, \"total_queries\": 2, \"at\": \"2026-02-26T03:48:21Z\", \"extra\": {\"sold_90d_count\": -1, \"sold_price_min\": -1.0, \"active_count\": -1, \"active_price_min\": -1.0, \"sold_price_median\": -1.0}}",
+                "saved 238 rows -> /Users/tadamichikimura/Downloads/dev-HQ/Reseller/data/liquidity_rpa_signals.jsonl",
+                "[progress] {\"phase\": \"completed\", \"message\": \"Product Research取得が完了しました\", \"progress_percent\": 100.0, \"query\": \"\", \"query_index\": 0, \"total_queries\": 2, \"at\": \"2026-02-26T03:48:21Z\", \"extra\": {\"saved_rows\": 238}}"
+              ],
+              "stderr_tail": [],
+              "run_id": "fetch-1772077667-97e3ba39",
+              "mode": "rpa_json",
+              "cooldown_sec": 300
+            }
+          },
+          {
+            "phase": "on_miss_retry",
+            "query": "GMA-P2100PC-1A",
+            "summary": {
+              "enabled": true,
+              "ran": true,
+              "reason": "ok",
+              "daily_limit_reached": false,
+              "returncode": 0,
+              "queries": [
+                "GMA-P2100PC-1A",
+                "CASIO GMA-P2100PC-1A"
+              ],
+              "query_count": 2,
+              "output_path": "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/data/liquidity_rpa_signals.jsonl",
+              "python_exec": "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/.venv/bin/python",
+              "started_at_epoch": 1772077706,
+              "ended_at_epoch": 1772077739,
+              "stdout_tail": [
+                "[progress] {\"phase\": \"search_done\", \"message\": \"検索結果を読み込みました\", \"progress_percent\": 17.0, \"query\": \"GMA-P2100PC-1A\", \"query_index\": 1, \"total_queries\": 2, \"at\": \"2026-02-26T03:48:38Z\", \"extra\": {\"search_wait_sec\": 6.7063}}",
+                "[progress] {\"phase\": \"filters_applying\", \"message\": \"フィルタを設定しています\", \"progress_percent\": 28.0, \"query\": \"GMA-P2100PC-1A\", \"query_index\": 1, \"total_queries\": 2, \"at\": \"2026-02-26T03:48:39Z\"}",
+                "[progress] {\"phase\": \"filters_done\", \"message\": \"フィルタ設定が完了しました\", \"progress_percent\": 36.0, \"query\": \"GMA-P2100PC-1A\", \"query_index\": 1, \"total_queries\": 2, \"at\": \"2026-02-26T03:48:44Z\", \"extra\": {\"filter_apply_sec\": 5.2939}}",
+                "[progress] {\"phase\": \"active_tab_collecting\", \"message\": \"Activeタブ情報を取得しています\", \"progress_percent\": 43.0, \"query\": \"GMA-P2100PC-1A\", \"query_index\": 1, \"total_queries\": 2, \"at\": \"2026-02-26T03:48:45Z\"}",
+                "[progress] {\"phase\": \"active_tab_done\", \"message\": \"Activeタブ情報の取得が完了しました\", \"progress_percent\": 45.0, \"query\": \"GMA-P2100PC-1A\", \"query_index\": 1, \"total_queries\": 2, \"at\": \"2026-02-26T03:48:45Z\", \"extra\": {\"active_count\": -1, \"active_price_min\": -1.0}}",
+                "-> sold_90d=-1 min=-1.0 active=-1 active_min=-1.0 median=-1.0 ccy=USD conf=0.1",
+                "[progress] {\"phase\": \"query_done\", \"message\": \"検索語の処理が完了しました: GMA-P2100PC-1A\", \"progress_percent\": 50.0, \"query\": \"GMA-P2100PC-1A\", \"query_index\": 1, \"total_queries\": 2, \"at\": \"2026-02-26T03:48:45Z\", \"extra\": {\"sold_90d_count\": -1, \"sold_price_min\": -1.0, \"active_count\": -1, \"active_price_min\": -1.0, \"sold_price_median\": -1.0}}",
+                "[2/2] query=CASIO GMA-P2100PC-1A",
+                "[progress] {\"phase\": \"query_start\", \"message\": \"検索語を処理中: CASIO GMA-P2100PC-1A\", \"progress_percent\": 52.5, \"query\": \"CASIO GMA-P2100PC-1A\", \"query_index\": 2, \"total_queries\": 2, \"at\": \"2026-02-26T03:48:45Z\"}",
+                "[progress] {\"phase\": \"search_done\", \"message\": \"検索結果を読み込みました\", \"progress_percent\": 67.0, \"query\": \"CASIO GMA-P2100PC-1A\", \"query_index\": 2, \"total_queries\": 2, \"at\": \"2026-02-26T03:48:52Z\", \"extra\": {\"search_wait_sec\": 6.7544}}",
+                "[progress] {\"phase\": \"filters_applying\", \"message\": \"フィルタを設定しています\", \"progress_percent\": 78.0, \"query\": \"CASIO GMA-P2100PC-1A\", \"query_index\": 2, \"total_queries\": 2, \"at\": \"2026-02-26T03:48:52Z\"}",
+                "[progress] {\"phase\": \"filters_done\", \"message\": \"フィルタ設定が完了しました\", \"progress_percent\": 86.0, \"query\": \"CASIO GMA-P2100PC-1A\", \"query_index\": 2, \"total_queries\": 2, \"at\": \"2026-02-26T03:48:58Z\", \"extra\": {\"filter_apply_sec\": 5.3473}}",
+                "[progress] {\"phase\": \"active_tab_collecting\", \"message\": \"Activeタブ情報を取得しています\", \"progress_percent\": 93.0, \"query\": \"CASIO GMA-P2100PC-1A\", \"query_index\": 2, \"total_queries\": 2, \"at\": \"2026-02-26T03:48:59Z\"}",
+                "[progress] {\"phase\": \"active_tab_done\", \"message\": \"Activeタブ情報の取得が完了しました\", \"progress_percent\": 95.0, \"query\": \"CASIO GMA-P2100PC-1A\", \"query_index\": 2, \"total_queries\": 2, \"at\": \"2026-02-26T03:48:59Z\", \"extra\": {\"active_count\": -1, \"active_price_min\": -1.0}}",
+                "-> sold_90d=-1 min=-1.0 active=-1 active_min=-1.0 median=-1.0 ccy=USD conf=0.1",
+                "[progress] {\"phase\": \"query_done\", \"message\": \"検索語の処理が完了しました: CASIO GMA-P2100PC-1A\", \"progress_percent\": 100.0, \"query\": \"CASIO GMA-P2100PC-1A\", \"query_index\": 2, \"total_queries\": 2, \"at\": \"2026-02-26T03:48:59Z\", \"extra\": {\"sold_90d_count\": -1, \"sold_price_min\": -1.0, \"active_count\": -1, \"active_price_min\": -1.0, \"sold_price_median\": -1.0}}",
+                "saved 238 rows -> /Users/tadamichikimura/Downloads/dev-HQ/Reseller/data/liquidity_rpa_signals.jsonl",
+                "[progress] {\"phase\": \"completed\", \"message\": \"Product Research取得が完了しました\", \"progress_percent\": 100.0, \"query\": \"\", \"query_index\": 0, \"total_queries\": 2, \"at\": \"2026-02-26T03:48:59Z\", \"extra\": {\"saved_rows\": 238}}"
+              ],
+              "stderr_tail": [],
+              "run_id": "fetch-1772077706-5977c1db",
+              "mode": "rpa_json",
+              "cooldown_sec": 300
+            }
+          },
+          {
+            "phase": "on_miss_retry",
+            "query": "DW-5600WS-4",
+            "summary": {
+              "enabled": true,
+              "ran": true,
+              "reason": "ok",
+              "daily_limit_reached": false,
+              "returncode": 0,
+              "queries": [
+                "DW-5600WS-4",
+                "CASIO DW-5600WS-4"
+              ],
+              "query_count": 2,
+              "output_path": "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/data/liquidity_rpa_signals.jsonl",
+              "python_exec": "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/.venv/bin/python",
+              "started_at_epoch": 1772077743,
+              "ended_at_epoch": 1772077778,
+              "stdout_tail": [
+                "[progress] {\"phase\": \"search_done\", \"message\": \"検索結果を読み込みました\", \"progress_percent\": 17.0, \"query\": \"DW-5600WS-4\", \"query_index\": 1, \"total_queries\": 2, \"at\": \"2026-02-26T03:49:16Z\", \"extra\": {\"search_wait_sec\": 7.0428}}",
+                "[progress] {\"phase\": \"filters_applying\", \"message\": \"フィルタを設定しています\", \"progress_percent\": 28.0, \"query\": \"DW-5600WS-4\", \"query_index\": 1, \"total_queries\": 2, \"at\": \"2026-02-26T03:49:17Z\"}",
+                "[progress] {\"phase\": \"filters_done\", \"message\": \"フィルタ設定が完了しました\", \"progress_percent\": 36.0, \"query\": \"DW-5600WS-4\", \"query_index\": 1, \"total_queries\": 2, \"at\": \"2026-02-26T03:49:22Z\", \"extra\": {\"filter_apply_sec\": 5.2925}}",
+                "[progress] {\"phase\": \"active_tab_collecting\", \"message\": \"Activeタブ情報を取得しています\", \"progress_percent\": 43.0, \"query\": \"DW-5600WS-4\", \"query_index\": 1, \"total_queries\": 2, \"at\": \"2026-02-26T03:49:23Z\"}",
+                "[progress] {\"phase\": \"active_tab_done\", \"message\": \"Activeタブ情報の取得が完了しました\", \"progress_percent\": 45.0, \"query\": \"DW-5600WS-4\", \"query_index\": 1, \"total_queries\": 2, \"at\": \"2026-02-26T03:49:23Z\", \"extra\": {\"active_count\": -1, \"active_price_min\": -1.0}}",
+                "-> sold_90d=-1 min=-1.0 active=-1 active_min=-1.0 median=-1.0 ccy=USD conf=0.1",
+                "[progress] {\"phase\": \"query_done\", \"message\": \"検索語の処理が完了しました: DW-5600WS-4\", \"progress_percent\": 50.0, \"query\": \"DW-5600WS-4\", \"query_index\": 1, \"total_queries\": 2, \"at\": \"2026-02-26T03:49:23Z\", \"extra\": {\"sold_90d_count\": -1, \"sold_price_min\": -1.0, \"active_count\": -1, \"active_price_min\": -1.0, \"sold_price_median\": -1.0}}",
+                "[2/2] query=CASIO DW-5600WS-4",
+                "[progress] {\"phase\": \"query_start\", \"message\": \"検索語を処理中: CASIO DW-5600WS-4\", \"progress_percent\": 52.5, \"query\": \"CASIO DW-5600WS-4\", \"query_index\": 2, \"total_queries\": 2, \"at\": \"2026-02-26T03:49:23Z\"}",
+                "[progress] {\"phase\": \"search_done\", \"message\": \"検索結果を読み込みました\", \"progress_percent\": 67.0, \"query\": \"CASIO DW-5600WS-4\", \"query_index\": 2, \"total_queries\": 2, \"at\": \"2026-02-26T03:49:31Z\", \"extra\": {\"search_wait_sec\": 7.6427}}",
+                "[progress] {\"phase\": \"filters_applying\", \"message\": \"フィルタを設定しています\", \"progress_percent\": 78.0, \"query\": \"CASIO DW-5600WS-4\", \"query_index\": 2, \"total_queries\": 2, \"at\": \"2026-02-26T03:49:31Z\"}",
+                "[progress] {\"phase\": \"filters_done\", \"message\": \"フィルタ設定が完了しました\", \"progress_percent\": 86.0, \"query\": \"CASIO DW-5600WS-4\", \"query_index\": 2, \"total_queries\": 2, \"at\": \"2026-02-26T03:49:36Z\", \"extra\": {\"filter_apply_sec\": 5.2837}}",
+                "[progress] {\"phase\": \"active_tab_collecting\", \"message\": \"Activeタブ情報を取得しています\", \"progress_percent\": 93.0, \"query\": \"CASIO DW-5600WS-4\", \"query_index\": 2, \"total_queries\": 2, \"at\": \"2026-02-26T03:49:38Z\"}",
+                "[progress] {\"phase\": \"active_tab_done\", \"message\": \"Activeタブ情報の取得が完了しました\", \"progress_percent\": 95.0, \"query\": \"CASIO DW-5600WS-4\", \"query_index\": 2, \"total_queries\": 2, \"at\": \"2026-02-26T03:49:38Z\", \"extra\": {\"active_count\": -1, \"active_price_min\": -1.0}}",
+                "-> sold_90d=-1 min=-1.0 active=-1 active_min=-1.0 median=-1.0 ccy=USD conf=0.1",
+                "[progress] {\"phase\": \"query_done\", \"message\": \"検索語の処理が完了しました: CASIO DW-5600WS-4\", \"progress_percent\": 100.0, \"query\": \"CASIO DW-5600WS-4\", \"query_index\": 2, \"total_queries\": 2, \"at\": \"2026-02-26T03:49:38Z\", \"extra\": {\"sold_90d_count\": -1, \"sold_price_min\": -1.0, \"active_count\": -1, \"active_price_min\": -1.0, \"sold_price_median\": -1.0}}",
+                "saved 238 rows -> /Users/tadamichikimura/Downloads/dev-HQ/Reseller/data/liquidity_rpa_signals.jsonl",
+                "[progress] {\"phase\": \"completed\", \"message\": \"Product Research取得が完了しました\", \"progress_percent\": 100.0, \"query\": \"\", \"query_index\": 0, \"total_queries\": 2, \"at\": \"2026-02-26T03:49:38Z\", \"extra\": {\"saved_rows\": 238}}"
+              ],
+              "stderr_tail": [],
+              "run_id": "fetch-1772077743-44302042",
+              "mode": "rpa_json",
+              "cooldown_sec": 300
+            }
+          }
+        ]
+      },
+      "stage2_ebay_item_detail": {
+        "enabled": true,
+        "fetched_count": 0,
+        "max_fetch_per_run": 10,
+        "timeout_sec": 8
+      },
+      "stage2_low_liquidity_cooldown_saved": 0,
+      "stage_b": {
+        "rows_count": 6,
+        "api_calls": 40,
+        "api_max_calls_per_run": 0
+      },
+      "passes": [
+        {
+          "pass": 1,
+          "seed_query": "CASIO GA-110EVA30-7AJR",
+          "stage1_query": "CASIO GA-110EVA30-7AJR",
+          "stage1_candidate_count": 0,
+          "stage2_created_count": 0,
+          "stage1_seed_baseline_reject_count": 0,
+          "elapsed_sec": 7.447,
+          "min_match_score": 0.72,
+          "has_model_code": true
+        },
+        {
+          "pass": 2,
+          "seed_query": "GA-110EVA30-7AJR",
+          "stage1_query": "CASIO GA-110EVA30-7AJR",
+          "stage1_candidate_count": 0,
+          "stage2_created_count": 0,
+          "stage1_seed_baseline_reject_count": 0,
+          "elapsed_sec": 7.448,
+          "min_match_score": 0.72,
+          "has_model_code": true
+        },
+        {
+          "pass": 3,
+          "seed_query": "CASIO GW-BX5600-1A1JF",
+          "stage1_query": "CASIO GW-BX5600-1A1JF",
+          "stage1_candidate_count": 0,
+          "stage2_created_count": 0,
+          "stage1_seed_baseline_reject_count": 0,
+          "elapsed_sec": 7.449,
+          "min_match_score": 0.72,
+          "has_model_code": true
+        },
+        {
+          "pass": 4,
+          "seed_query": "GW-BX5600-1A1JF",
+          "stage1_query": "CASIO GW-BX5600-1A1JF",
+          "stage1_candidate_count": 0,
+          "stage2_created_count": 0,
+          "stage1_seed_baseline_reject_count": 0,
+          "elapsed_sec": 7.45,
+          "min_match_score": 0.72,
+          "has_model_code": true
+        },
+        {
+          "pass": 5,
+          "seed_query": "CASIO GPR-H1000-1JR",
+          "stage1_query": "CASIO GPR-H1000-1JR",
+          "stage1_candidate_count": 0,
+          "stage2_created_count": 0,
+          "stage1_seed_baseline_reject_count": 0,
+          "elapsed_sec": 7.453,
+          "min_match_score": 0.72,
+          "has_model_code": true
+        },
+        {
+          "pass": 6,
+          "seed_query": "GPR-H1000-1JR",
+          "stage1_query": "CASIO GPR-H1000-1JR",
+          "stage1_candidate_count": 0,
+          "stage2_created_count": 0,
+          "stage1_seed_baseline_reject_count": 0,
+          "elapsed_sec": 7.455,
+          "min_match_score": 0.72,
+          "has_model_code": true
+        },
+        {
+          "pass": 7,
+          "seed_query": "CASIO GX-56MF-1",
+          "stage1_query": "CASIO GX-56MF-1",
+          "stage1_candidate_count": 0,
+          "stage2_created_count": 0,
+          "stage1_seed_baseline_reject_count": 0,
+          "elapsed_sec": 7.457,
+          "min_match_score": 0.72,
+          "has_model_code": true
+        },
+        {
+          "pass": 8,
+          "seed_query": "GX-56MF-1",
+          "stage1_query": "CASIO GX-56MF-1",
+          "stage1_candidate_count": 0,
+          "stage2_created_count": 0,
+          "stage1_seed_baseline_reject_count": 0,
+          "elapsed_sec": 7.458,
+          "min_match_score": 0.72,
+          "has_model_code": true
+        },
+        {
+          "pass": 9,
+          "seed_query": "CASIO GA-2300-8A",
+          "stage1_query": "CASIO GA-2300-8A",
+          "stage1_candidate_count": 0,
+          "stage2_created_count": 0,
+          "stage1_seed_baseline_reject_count": 0,
+          "elapsed_sec": 7.459,
+          "min_match_score": 0.72,
+          "has_model_code": true
+        },
+        {
+          "pass": 10,
+          "seed_query": "GA-2300-8A",
+          "stage1_query": "CASIO GA-2300-8A",
+          "stage1_candidate_count": 0,
+          "stage2_created_count": 0,
+          "stage1_seed_baseline_reject_count": 0,
+          "elapsed_sec": 7.461,
+          "min_match_score": 0.72,
+          "has_model_code": true
+        },
+        {
+          "pass": 11,
+          "seed_query": "CASIO GMAP2100PC-1A",
+          "stage1_query": "CASIO GMAP2100PC-1A",
+          "stage1_candidate_count": 3,
+          "stage2_created_count": 0,
+          "stage1_seed_baseline_reject_count": 0,
+          "elapsed_sec": 83.038,
+          "min_match_score": 0.72,
+          "has_model_code": true
+        },
+        {
+          "pass": 12,
+          "seed_query": "GMAP2100PC-1A",
+          "stage1_query": "CASIO GMAP2100PC-1A",
+          "stage1_candidate_count": 3,
+          "stage2_created_count": 0,
+          "stage1_seed_baseline_reject_count": 0,
+          "elapsed_sec": 83.05,
+          "min_match_score": 0.72,
+          "has_model_code": true
+        },
+        {
+          "pass": 13,
+          "seed_query": "CASIO GWF-A1000XC-1AJF",
+          "stage1_query": "CASIO GWF-A1000XC-1AJF",
+          "stage1_candidate_count": 0,
+          "stage2_created_count": 0,
+          "stage1_seed_baseline_reject_count": 0,
+          "elapsed_sec": 83.05,
+          "min_match_score": 0.72,
+          "has_model_code": true
+        },
+        {
+          "pass": 14,
+          "seed_query": "GWF-A1000XC-1AJF",
+          "stage1_query": "CASIO GWF-A1000XC-1AJF",
+          "stage1_candidate_count": 0,
+          "stage2_created_count": 0,
+          "stage1_seed_baseline_reject_count": 0,
+          "elapsed_sec": 83.051,
+          "min_match_score": 0.72,
+          "has_model_code": true
+        },
+        {
+          "pass": 15,
+          "seed_query": "CASIO GSTB100GB-1A9",
+          "stage1_query": "CASIO GSTB100GB-1A9",
+          "stage1_candidate_count": 0,
+          "stage2_created_count": 0,
+          "stage1_seed_baseline_reject_count": 0,
+          "elapsed_sec": 83.052,
+          "min_match_score": 0.72,
+          "has_model_code": true
+        },
+        {
+          "pass": 16,
+          "seed_query": "GSTB100GB-1A9",
+          "stage1_query": "CASIO GSTB100GB-1A9",
+          "stage1_candidate_count": 0,
+          "stage2_created_count": 0,
+          "stage1_seed_baseline_reject_count": 0,
+          "elapsed_sec": 83.052,
+          "min_match_score": 0.72,
+          "has_model_code": true
+        },
+        {
+          "pass": 17,
+          "seed_query": "CASIO GWG-B1000-1A4JF",
+          "stage1_query": "CASIO GWG-B1000-1A4JF",
+          "stage1_candidate_count": 0,
+          "stage2_created_count": 0,
+          "stage1_seed_baseline_reject_count": 0,
+          "elapsed_sec": 83.054,
+          "min_match_score": 0.72,
+          "has_model_code": true
+        },
+        {
+          "pass": 18,
+          "seed_query": "GWG-B1000-1A4JF",
+          "stage1_query": "CASIO GWG-B1000-1A4JF",
+          "stage1_candidate_count": 0,
+          "stage2_created_count": 0,
+          "stage1_seed_baseline_reject_count": 0,
+          "elapsed_sec": 83.055,
+          "min_match_score": 0.72,
+          "has_model_code": true
+        },
+        {
+          "pass": 19,
+          "seed_query": "CASIO DW-5600",
+          "stage1_query": "CASIO DW-5600",
+          "stage1_candidate_count": 3,
+          "stage2_created_count": 0,
+          "stage1_seed_baseline_reject_count": 0,
+          "elapsed_sec": 125.606,
+          "min_match_score": 0.72,
+          "has_model_code": true
+        },
+        {
+          "pass": 20,
+          "seed_query": "DW-5600",
+          "stage1_query": "CASIO DW-5600",
+          "stage1_candidate_count": 3,
+          "stage2_created_count": 0,
+          "stage1_seed_baseline_reject_count": 0,
+          "elapsed_sec": 125.64,
+          "min_match_score": 0.72,
+          "has_model_code": true
+        }
+      ]
+    },
+    "hints": [
+      "A段階のカテゴリ最低価格フィルタ: $100.00 を適用しました。",
+      "B段階の主な除外理由: skipped_low_match (34件)",
+      "B段階の一致不足主因: candidate_model_missing (22件)",
+      "B段階でseed B行を生成: 6件",
+      "C段階の主な除外理由: skipped_duplicates (6件)",
+      "C段階の詳細理由: rpa_json_not_strict_sold_filters (5件)",
+      "C段階の流動性RPA更新: 実行3回 / miss再試行3回 / sample再試行0回 / active再試行0回"
+    ],
+    "stage1_skip_counts": {
+      "skipped_low_match": 34,
+      "skipped_source_variant_unresolved": 1
+    },
+    "stage2_skip_counts": {
+      "skipped_liquidity_unavailable": 5,
+      "skipped_duplicates": 6,
+      "skipped_unprofitable": 1
+    },
+    "stage_b_rows_count": 6
+  },
+  "run_relaxed": {
+    "created_count": 0,
+    "timed_fetch": {
+      "enabled": true,
+      "min_target_candidates": 1,
+      "timebox_sec": 180,
+      "max_passes": 20,
+      "continue_after_target": false,
+      "passes_run": 20,
+      "stop_reason": "seed_batch_completed",
+      "elapsed_sec": 13.605,
+      "reached_min_target": false,
+      "stage1_pass_total": 6,
+      "stage2_runs": 3,
+      "stage1_skip_counts": {},
+      "stage2_skip_counts": {
+        "skipped_liquidity_unavailable": 3,
+        "skipped_duplicates": 3
+      },
+      "stage1_low_match_reason_counts": {},
+      "stage2_low_match_reason_counts": {
+        "rpa_json_not_strict_sold_filters": 3
+      },
+      "stage1_seed_baseline_reject_total": 0,
+      "stage2_liquidity_refresh": {
+        "enabled": false,
+        "retry_budget_total": 0,
+        "retry_budget_used": 0,
+        "runs": []
+      },
+      "stage2_ebay_item_detail": {
+        "enabled": false,
+        "fetched_count": 0,
+        "max_fetch_per_run": 0,
+        "timeout_sec": 8
+      },
+      "stage2_low_liquidity_cooldown_saved": 0,
+      "stage_b": {
+        "rows_count": 3,
+        "api_calls": 20,
+        "api_max_calls_per_run": 0
+      },
+      "passes": [
+        {
+          "pass": 1,
+          "seed_query": "CASIO GA-110EVA30-7AJR",
+          "stage1_query": "CASIO GA-110EVA30-7AJR",
+          "stage1_candidate_count": 0,
+          "stage2_created_count": 0,
+          "stage1_seed_baseline_reject_count": 0,
+          "elapsed_sec": 8.075,
+          "min_match_score": 0.6,
+          "has_model_code": true
+        },
+        {
+          "pass": 2,
+          "seed_query": "GA-110EVA30-7AJR",
+          "stage1_query": "CASIO GA-110EVA30-7AJR",
+          "stage1_candidate_count": 0,
+          "stage2_created_count": 0,
+          "stage1_seed_baseline_reject_count": 0,
+          "elapsed_sec": 8.076,
+          "min_match_score": 0.6,
+          "has_model_code": true
+        },
+        {
+          "pass": 3,
+          "seed_query": "CASIO GW-BX5600-1A1JF",
+          "stage1_query": "CASIO GW-BX5600-1A1JF",
+          "stage1_candidate_count": 0,
+          "stage2_created_count": 0,
+          "stage1_seed_baseline_reject_count": 0,
+          "elapsed_sec": 8.077,
+          "min_match_score": 0.6,
+          "has_model_code": true
+        },
+        {
+          "pass": 4,
+          "seed_query": "GW-BX5600-1A1JF",
+          "stage1_query": "CASIO GW-BX5600-1A1JF",
+          "stage1_candidate_count": 0,
+          "stage2_created_count": 0,
+          "stage1_seed_baseline_reject_count": 0,
+          "elapsed_sec": 8.078,
+          "min_match_score": 0.6,
+          "has_model_code": true
+        },
+        {
+          "pass": 5,
+          "seed_query": "CASIO GPR-H1000-1JR",
+          "stage1_query": "CASIO GPR-H1000-1JR",
+          "stage1_candidate_count": 0,
+          "stage2_created_count": 0,
+          "stage1_seed_baseline_reject_count": 0,
+          "elapsed_sec": 8.08,
+          "min_match_score": 0.6,
+          "has_model_code": true
+        },
+        {
+          "pass": 6,
+          "seed_query": "GPR-H1000-1JR",
+          "stage1_query": "CASIO GPR-H1000-1JR",
+          "stage1_candidate_count": 0,
+          "stage2_created_count": 0,
+          "stage1_seed_baseline_reject_count": 0,
+          "elapsed_sec": 8.083,
+          "min_match_score": 0.6,
+          "has_model_code": true
+        },
+        {
+          "pass": 7,
+          "seed_query": "CASIO GX-56MF-1",
+          "stage1_query": "CASIO GX-56MF-1",
+          "stage1_candidate_count": 0,
+          "stage2_created_count": 0,
+          "stage1_seed_baseline_reject_count": 0,
+          "elapsed_sec": 8.084,
+          "min_match_score": 0.6,
+          "has_model_code": true
+        },
+        {
+          "pass": 8,
+          "seed_query": "GX-56MF-1",
+          "stage1_query": "CASIO GX-56MF-1",
+          "stage1_candidate_count": 0,
+          "stage2_created_count": 0,
+          "stage1_seed_baseline_reject_count": 0,
+          "elapsed_sec": 8.085,
+          "min_match_score": 0.6,
+          "has_model_code": true
+        },
+        {
+          "pass": 9,
+          "seed_query": "CASIO GA-2300-8A",
+          "stage1_query": "CASIO GA-2300-8A",
+          "stage1_candidate_count": 0,
+          "stage2_created_count": 0,
+          "stage1_seed_baseline_reject_count": 0,
+          "elapsed_sec": 8.085,
+          "min_match_score": 0.6,
+          "has_model_code": true
+        },
+        {
+          "pass": 10,
+          "seed_query": "GA-2300-8A",
+          "stage1_query": "CASIO GA-2300-8A",
+          "stage1_candidate_count": 0,
+          "stage2_created_count": 0,
+          "stage1_seed_baseline_reject_count": 0,
+          "elapsed_sec": 8.086,
+          "min_match_score": 0.6,
+          "has_model_code": true
+        },
+        {
+          "pass": 11,
+          "seed_query": "CASIO GMAP2100PC-1A",
+          "stage1_query": "CASIO GMAP2100PC-1A",
+          "stage1_candidate_count": 3,
+          "stage2_created_count": 0,
+          "stage1_seed_baseline_reject_count": 0,
+          "elapsed_sec": 13.553,
+          "min_match_score": 0.6,
+          "has_model_code": true
+        },
+        {
+          "pass": 12,
+          "seed_query": "GMAP2100PC-1A",
+          "stage1_query": "CASIO GMAP2100PC-1A",
+          "stage1_candidate_count": 3,
+          "stage2_created_count": 0,
+          "stage1_seed_baseline_reject_count": 0,
+          "elapsed_sec": 13.566,
+          "min_match_score": 0.6,
+          "has_model_code": true
+        },
+        {
+          "pass": 13,
+          "seed_query": "CASIO GWF-A1000XC-1AJF",
+          "stage1_query": "CASIO GWF-A1000XC-1AJF",
+          "stage1_candidate_count": 0,
+          "stage2_created_count": 0,
+          "stage1_seed_baseline_reject_count": 0,
+          "elapsed_sec": 13.567,
+          "min_match_score": 0.6,
+          "has_model_code": true
+        },
+        {
+          "pass": 14,
+          "seed_query": "GWF-A1000XC-1AJF",
+          "stage1_query": "CASIO GWF-A1000XC-1AJF",
+          "stage1_candidate_count": 0,
+          "stage2_created_count": 0,
+          "stage1_seed_baseline_reject_count": 0,
+          "elapsed_sec": 13.568,
+          "min_match_score": 0.6,
+          "has_model_code": true
+        },
+        {
+          "pass": 15,
+          "seed_query": "CASIO GSTB100GB-1A9",
+          "stage1_query": "CASIO GSTB100GB-1A9",
+          "stage1_candidate_count": 0,
+          "stage2_created_count": 0,
+          "stage1_seed_baseline_reject_count": 0,
+          "elapsed_sec": 13.569,
+          "min_match_score": 0.6,
+          "has_model_code": true
+        },
+        {
+          "pass": 16,
+          "seed_query": "GSTB100GB-1A9",
+          "stage1_query": "CASIO GSTB100GB-1A9",
+          "stage1_candidate_count": 0,
+          "stage2_created_count": 0,
+          "stage1_seed_baseline_reject_count": 0,
+          "elapsed_sec": 13.57,
+          "min_match_score": 0.6,
+          "has_model_code": true
+        },
+        {
+          "pass": 17,
+          "seed_query": "CASIO GWG-B1000-1A4JF",
+          "stage1_query": "CASIO GWG-B1000-1A4JF",
+          "stage1_candidate_count": 0,
+          "stage2_created_count": 0,
+          "stage1_seed_baseline_reject_count": 0,
+          "elapsed_sec": 13.571,
+          "min_match_score": 0.6,
+          "has_model_code": true
+        },
+        {
+          "pass": 18,
+          "seed_query": "GWG-B1000-1A4JF",
+          "stage1_query": "CASIO GWG-B1000-1A4JF",
+          "stage1_candidate_count": 0,
+          "stage2_created_count": 0,
+          "stage1_seed_baseline_reject_count": 0,
+          "elapsed_sec": 13.572,
+          "min_match_score": 0.6,
+          "has_model_code": true
+        },
+        {
+          "pass": 19,
+          "seed_query": "CASIO DW-5600",
+          "stage1_query": "CASIO DW-5600",
+          "stage1_candidate_count": 0,
+          "stage2_created_count": 0,
+          "stage1_seed_baseline_reject_count": 0,
+          "elapsed_sec": 13.592,
+          "min_match_score": 0.6,
+          "has_model_code": true
+        },
+        {
+          "pass": 20,
+          "seed_query": "DW-5600",
+          "stage1_query": "CASIO DW-5600",
+          "stage1_candidate_count": 0,
+          "stage2_created_count": 0,
+          "stage1_seed_baseline_reject_count": 0,
+          "elapsed_sec": 13.604,
+          "min_match_score": 0.6,
+          "has_model_code": true
+        }
+      ]
+    },
+    "hints": [
+      "A段階のカテゴリ最低価格フィルタ: $100.00 を適用しました。",
+      "B段階でseed B行を生成: 3件",
+      "C段階の主な除外理由: skipped_liquidity_unavailable (3件)",
+      "C段階の詳細理由: rpa_json_not_strict_sold_filters (3件)"
+    ],
+    "stage1_skip_counts": {},
+    "stage2_skip_counts": {
+      "skipped_liquidity_unavailable": 3,
+      "skipped_duplicates": 3
+    },
+    "stage_b_rows_count": 3
+  },
+  "queue_after": {
+    "pending_total": 0,
+    "reviewed_total": 0
+  }
+}

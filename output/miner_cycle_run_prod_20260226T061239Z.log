@@ -1,0 +1,61 @@
+[2026-02-26T06:13:09.898945+00:00] START cmd=python3 scripts/run_miner_cycle.py --output /Users/tadamichikimura/Downloads/dev-HQ/Reseller/output/miner_cycle_report_prod_20260226T061239Z.json --active-manifest /Users/tadamichikimura/Downloads/dev-HQ/Reseller/output/miner_cycle_active_prod_20260226T061239Z.json
+[2026-02-26T06:25:23.046839+00:00] [rpa] mode=rpa_json ran=True missing primary=1 fallback=1 model_backfill=1
+[2026-02-26T06:25:23.047770+00:00] [rpa] primary rc=0 queries=23 condition=new
+[2026-02-26T06:25:23.047802+00:00] [rpa] fallback rc=0 queries=1 condition=any
+[2026-02-26T06:25:23.047812+00:00] [rpa] model_backfill rc=0 queries=6 condition=any
+[2026-02-26T06:25:23.047858+00:00] [round 1] citizen nb1050 watch -> created=0 queue+=0 now=1 api(network/cache)=6/0
+[2026-02-26T06:25:23.047940+00:00] [round 1] g-shock gw9400 watch -> created=0 queue+=0 now=1 api(network/cache)=6/0
+[2026-02-26T06:25:23.047966+00:00] [round 1] casio gmw-b5000 watch -> created=0 queue+=0 now=1 api(network/cache)=6/0
+[2026-02-26T06:25:23.047995+00:00] [round 1] casio mtg-b2000 watch -> created=0 queue+=0 now=1 api(network/cache)=4/0
+[2026-02-26T06:25:23.048016+00:00] [round 1] seiko spb121 watch -> created=0 queue+=0 now=1 api(network/cache)=8/0
+[2026-02-26T06:25:23.048037+00:00] [round 1] seiko snxs79 watch -> created=0 queue+=0 now=1 api(network/cache)=9/0
+[2026-02-26T06:25:23.048057+00:00] [round 1] citizen at8185 watch -> created=0 queue+=0 now=1 api(network/cache)=7/0
+[2026-02-26T06:25:23.048087+00:00] [round 1] citizen cb0261 watch -> created=0 queue+=0 now=1 api(network/cache)=6/0
+[2026-02-26T06:25:23.048107+00:00] [round 1] citizen bn0156 watch -> created=0 queue+=0 now=1 api(network/cache)=6/1
+[2026-02-26T06:25:23.048131+00:00] [round 1] citizen tsuyosa nj015 watch -> created=0 queue+=0 now=1 api(network/cache)=6/0
+[2026-02-26T06:25:23.048161+00:00] [round 1] hamilton h70455533 watch -> created=0 queue+=0 now=1 api(network/cache)=7/0
+[2026-02-26T06:25:23.048205+00:00] [round 1] casio ocw-t200 watch -> created=0 queue+=0 now=1 api(network/cache)=4/3
+[2026-02-26T06:25:23.048227+00:00] [round 1] casio gw-5000u-1jf watch -> created=1 queue+=1 now=2 api(network/cache)=4/3
+[2026-02-26T06:25:23.048236+00:00] [round 1] orient ra-aa0810n watch -> created=0 queue+=0 now=2 api(network/cache)=8/0
+[2026-02-26T06:25:23.048243+00:00] [round 1] tissot prx t137407 watch -> created=0 queue+=0 now=2 api(network/cache)=7/0
+[2026-02-26T06:25:23.048249+00:00] [round 1] casio gwm5610-1jf watch -> created=0 queue+=0 now=2 api(network/cache)=8/0
+[2026-02-26T06:25:23.048256+00:00] [round 1] casio ga-b2100 watch -> created=0 queue+=0 now=2 api(network/cache)=7/0
+[2026-02-26T06:25:23.058295+00:00] Traceback (most recent call last):
+[2026-02-26T06:25:23.059860+00:00]   File "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/scripts/run_miner_cycle.py", line 1202, in <module>
+[2026-02-26T06:25:23.059888+00:00]     raise SystemExit(main())
+[2026-02-26T06:25:23.059897+00:00]                      ~~~~^^
+[2026-02-26T06:25:23.059913+00:00]   File "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/scripts/run_miner_cycle.py", line 879, in main
+[2026-02-26T06:25:23.059920+00:00]     result = fetch_live_miner_candidates(
+[2026-02-26T06:25:23.059927+00:00]         query=query,
+[2026-02-26T06:25:23.059933+00:00]     ...<7 lines>...
+[2026-02-26T06:25:23.059940+00:00]         timeout=int(args.timeout),
+[2026-02-26T06:25:23.059957+00:00]     )
+[2026-02-26T06:25:23.059964+00:00]   File "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/reselling/live_miner_fetch.py", line 6351, in fetch_live_miner_candidates
+[2026-02-26T06:25:23.059975+00:00]     sold_first_plan = _build_ebay_sold_first_plan(
+[2026-02-26T06:25:23.059981+00:00]         query=text_query,
+[2026-02-26T06:25:23.059986+00:00]     ...<15 lines>...
+[2026-02-26T06:25:23.059992+00:00]         fixed_fee_usd=fixed_fee_usd,
+[2026-02-26T06:25:23.059997+00:00]     )
+[2026-02-26T06:25:23.060003+00:00]   File "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/reselling/live_miner_fetch.py", line 4025, in _build_ebay_sold_first_plan
+[2026-02-26T06:25:23.060021+00:00]     signal = get_liquidity_signal(
+[2026-02-26T06:25:23.060026+00:00]         query=code,
+[2026-02-26T06:25:23.060031+00:00]     ...<6 lines>...
+[2026-02-26T06:25:23.060040+00:00]         settings=settings,
+[2026-02-26T06:25:23.060045+00:00]     )
+[2026-02-26T06:25:23.060050+00:00]   File "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/reselling/liquidity.py", line 1242, in get_liquidity_signal
+[2026-02-26T06:25:23.060055+00:00]     _save_signal(settings, signal)
+[2026-02-26T06:25:23.060059+00:00]     ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+[2026-02-26T06:25:23.060064+00:00]   File "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/reselling/liquidity.py", line 306, in _save_signal
+[2026-02-26T06:25:23.060069+00:00]     with connect(settings.db_path) as conn:
+[2026-02-26T06:25:23.060073+00:00]          ~~~~~~~^^^^^^^^^^^^^^^^^^
+[2026-02-26T06:25:23.060078+00:00]   File "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/reselling/models.py", line 14, in connect
+[2026-02-26T06:25:23.060083+00:00]     return connect_db(db_path)
+[2026-02-26T06:25:23.060087+00:00]   File "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/reselling/db_runtime.py", line 178, in connect_db
+[2026-02-26T06:25:23.060092+00:00]     return DbConnection(psycopg.connect(url), backend="postgres")
+[2026-02-26T06:25:23.060430+00:00]                         ~~~~~~~~~~~~~~~^^^^^
+[2026-02-26T06:25:23.060463+00:00]   File "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/.venv/lib/python3.13/site-packages/psycopg/connection.py", line 100, in connect
+[2026-02-26T06:25:23.060472+00:00]     attempts = conninfo_attempts(params)
+[2026-02-26T06:25:23.060478+00:00]   File "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/.venv/lib/python3.13/site-packages/psycopg/_conninfo_attempts.py", line 55, in conninfo_attempts
+[2026-02-26T06:25:23.060495+00:00]     raise last_exc
+[2026-02-26T06:25:23.060501+00:00] psycopg.OperationalError: failed to resolve host 'aws-1-ap-south-1.pooler.supabase.com': [Errno 8] nodename nor servname provided, or not known
+[2026-02-26T06:25:23.140621+00:00] END rc=1 elapsed_sec=733.242

@@ -40,13 +40,21 @@ const DEFAULT_FETCH_SETTINGS = Object.freeze({
   minProfitUsd: 0.01,
   minMarginRate: 0.03,
 });
+const CATEGORY_FETCH_DEFAULTS = Object.freeze({
+  watch: Object.freeze({
+    stageCMinSold90d: 3,
+  }),
+});
 const TAB_COUNT_CAP = 9999;
+const LAST_FETCH_STORAGE_KEY = "miner_last_fetch_v1";
 
 const STATUS_LABELS = {
   pending: "未レビュー",
   rejected: "否認済み",
   listed: "承認済み（送信済み）",
   approved: "自動承認（要最終確認）",
+  debug_stage1_rejected: "B段階で除外",
+  debug_stage2_rejected: "C段階で除外",
 };
 
 const LISTING_STATE_LABELS = {
@@ -162,10 +170,17 @@ const refs = {
   reloadBtn: document.getElementById("reloadBtn"),
   tabPending: document.getElementById("tabPending"),
   tabReviewed: document.getElementById("tabReviewed"),
+  tabDebug: document.getElementById("tabDebug"),
   countPending: document.getElementById("countPending"),
   countReviewed: document.getElementById("countReviewed"),
+  countDebug: document.getElementById("countDebug"),
+  debugFilterBar: document.getElementById("debugFilterBar"),
+  debugThresholdSummary: document.getElementById("debugThresholdSummary"),
+  debugFilterChips: document.getElementById("debugFilterChips"),
   reviewList: document.getElementById("reviewList"),
   reviewListEmpty: document.getElementById("reviewListEmpty"),
+  debugPanel: document.getElementById("debugPanel"),
+  debugPanelBody: document.getElementById("debugPanelBody"),
   currentCandidateLabel: document.getElementById("currentCandidateLabel"),
   approveBtn: document.getElementById("approveBtn"),
   approveHint: document.getElementById("approveHint"),
@@ -235,6 +250,8 @@ const refs = {
   rawJson: document.getElementById("rawJson"),
 };
 
+const initialLastFetch = loadPersistedLastFetch();
+
 const state = {
   queues: {
     pending: [],
@@ -246,7 +263,9 @@ const state = {
   },
   activeTab: "pending",
   current: null,
-  lastFetch: null,
+  lastFetch: initialLastFetch,
+  debugItems: buildDebugItemsFromFetch(initialLastFetch),
+  debugFilter: "all",
   detailCache: new Map(),
   detailFetchSeq: 0,
   scrollSelectRaf: null,
@@ -262,7 +281,32 @@ const state = {
   seedPoolStatusSeq: 0,
   lastSeedPoolCategory: "",
   financeHeightRaf: null,
+  autoAppliedStageCMinSold90d: null,
 };
+
+function categoryFetchDefaults(category) {
+  const key = String(category || "").trim().toLowerCase();
+  const categoryDefaults = (key && CATEGORY_FETCH_DEFAULTS[key]) || null;
+  return categoryDefaults ? { ...DEFAULT_FETCH_SETTINGS, ...categoryDefaults } : DEFAULT_FETCH_SETTINGS;
+}
+
+function syncCategoryFetchDefaults({ force = false } = {}) {
+  if (!refs.stageCMinSold90d) return;
+  const defaults = categoryFetchDefaults(refs.fetchQuery?.value);
+  const nextValue = toNumber(defaults.stageCMinSold90d);
+  if (!Number.isFinite(nextValue)) return;
+  const currentValue = toNumber(refs.stageCMinSold90d.value);
+  const lastAutoValue = toNumber(state.autoAppliedStageCMinSold90d);
+  const globalDefault = toNumber(DEFAULT_FETCH_SETTINGS.stageCMinSold90d);
+  const shouldApply = force
+    || currentValue === null
+    || (lastAutoValue !== null && currentValue === lastAutoValue)
+    || currentValue === globalDefault;
+  state.autoAppliedStageCMinSold90d = nextValue;
+  if (shouldApply) {
+    refs.stageCMinSold90d.value = String(nextValue);
+  }
+}
 
 function openSettingsOverlay() {
   if (!refs.settingsOverlay) return;
@@ -459,6 +503,15 @@ function formatJpy(value) {
 function formatPercent(value) {
   if (!Number.isFinite(value)) return "-";
   return `${(value * 100).toFixed(1)}%`;
+}
+
+function formatNumber(value, { maximumFractionDigits = 0 } = {}) {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return "-";
+  return new Intl.NumberFormat("ja-JP", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits,
+  }).format(num);
 }
 
 function toJpyFromUsd(usd, fxRate) {
@@ -854,6 +907,7 @@ function skipReasonLabel(key) {
     skipped_fetch_error: "サイト取得エラー",
     skipped_accessory_title: "付属品タイトル",
     skipped_invalid_price: "価格データ不備",
+    skipped_source_variant_unresolved: "型番別価格未特定",
     skipped_duplicates: "重複",
   };
   return map[k] || k || "-";
@@ -1257,6 +1311,7 @@ function setDecisionSummary({ label = "-", sub = "候補を選択してくださ
 
 function buildDecisionSummary(candidate, normalized) {
   const status = String(candidate?.status || "").toLowerCase();
+  const meta = (candidate && typeof candidate.metadata === "object") ? candidate.metadata : {};
   const profitUsd = toNumber(normalized?.expectedProfitUsd);
   const margin = toNumber(normalized?.expectedMarginRate);
   const soldCount = toNumber(normalized?.ebay?.soldCount90d);
@@ -1264,6 +1319,21 @@ function buildDecisionSummary(candidate, normalized) {
   const hasLiquidity = hasSoldCount && soldCount > 0;
   const hasProfit = Number.isFinite(profitUsd) && profitUsd > 0;
   const hasMargin = Number.isFinite(margin) && margin >= 0.03;
+
+  if (status === "debug_stage1_rejected") {
+    return {
+      label: "B段階で除外",
+      sub: `${debugDropReasonLabel(meta.debug_drop_reason || meta.match_reason || "")} のため pending 前に除外されました。`,
+      tone: "warn",
+    };
+  }
+  if (status === "debug_stage2_rejected") {
+    return {
+      label: "C段階で除外",
+      sub: `${debugDropReasonLabel(meta.debug_drop_reason || meta.match_reason || "")} のため pending 前に除外されました。`,
+      tone: "warn",
+    };
+  }
 
   if (status === "listed") {
     return {
@@ -1318,6 +1388,7 @@ function buildDecisionSummary(candidate, normalized) {
 
 function buildDecisionReasons(candidate, normalized, colorRisk) {
   const reasons = [];
+  const meta = (candidate && typeof candidate.metadata === "object") ? candidate.metadata : {};
   const profitUsd = toNumber(normalized?.expectedProfitUsd);
   const marginRate = toNumber(normalized?.expectedMarginRate);
   const soldCount = toNumber(normalized?.ebay?.soldCount90d);
@@ -1361,6 +1432,21 @@ function buildDecisionReasons(candidate, normalized, colorRisk) {
   }
 
   const status = String(candidate?.status || "").toLowerCase();
+  if (isDebugStatus(status)) {
+    reasons.push({
+      text: `${meta.debug_drop_stage_label || labelForStatus(status)}: ${debugDropReasonLabel(meta.debug_drop_reason || meta.match_reason || "")}`,
+      tone: "warn",
+    });
+    const probe = debugLiquidityThresholdProbe(candidate);
+    if (probe) {
+      reasons.push({
+        text: probe.wouldPass
+          ? `90日売却 ${formatNumber(probe.soldCount)}件: 閾値${formatNumber(probe.probeMinSold90d)}なら仮通過`
+          : `90日売却 ${formatNumber(probe.soldCount)}件: 閾値${formatNumber(probe.probeMinSold90d)}でも不足`,
+        tone: probe.wouldPass ? "info" : "warn",
+      });
+    }
+  }
   if (status === "listed") reasons.push({ text: "送信済み", tone: "good" });
   if (status === "rejected") reasons.push({ text: "過去に否認済み", tone: "warn" });
 
@@ -1533,6 +1619,7 @@ async function loadMinerSettings() {
   } catch (_) {
     // 初回起動など未保存時はUI既定値をそのまま使う。
   }
+  syncCategoryFetchDefaults();
 }
 
 function toNumber(v) {
@@ -2159,6 +2246,8 @@ function renderFetchStats(payload) {
     renderSeedPoolSummary(null);
     refs.fetchStatsRows.innerHTML = "";
     hideRpaProgress();
+    renderDebugPanel();
+    if (state.activeTab === "debug") renderReviewList();
     return;
   }
   renderSeedPoolSummary(payload);
@@ -2246,6 +2335,8 @@ function renderFetchStats(payload) {
         <p class="fetch-note">この探索ではサイト別の取得データがありませんでした。</p>
       </div>
     `;
+    renderDebugPanel();
+    if (state.activeTab === "debug") renderReviewList();
     return;
   }
 
@@ -2290,6 +2381,8 @@ function renderFetchStats(payload) {
       </div>
     `;
   }).join("");
+  renderDebugPanel();
+  if (state.activeTab === "debug") renderReviewList();
 }
 
 async function refreshSeedPoolStatusForCurrentCategory({ updateHeadline = true, showLoading = true } = {}) {
@@ -2553,7 +2646,9 @@ function renderCandidate(candidate) {
   const latestRejection = getLatestRejection(candidate);
   const isAutoApproved = status === "approved" && Boolean(autoReview?.approved);
 
-  refs.currentCandidateLabel.textContent = `選択中: #${candidate.id} (${labelForStatus(candidate.status)})`;
+  refs.currentCandidateLabel.textContent = isDebugStatus(candidate.status)
+    ? `選択中: ${labelForStatus(candidate.status)}`
+    : `選択中: #${candidate.id} (${labelForStatus(candidate.status)})`;
   refs.ebaySiteTag.textContent = v.ebay.isSoldItemReference
     ? `${labelForSite(v.ebay.site || "ebay")}（売却済み）`
     : labelForSite(v.ebay.site || "ebay");
@@ -2773,7 +2868,10 @@ function renderCandidate(candidate) {
   if (isAutoApproved) riskBadges.push('<span class="risk-chip info">自動承認済み</span>');
   refs.riskFlags.innerHTML = riskBadges.join("");
 
-  if (status === "listed") {
+  if (isDebugStatus(status)) {
+    refs.approveHint.classList.add("warn");
+    setApproveHint("この項目は debug 用の除外サンプルです。承認・否認操作はできません。");
+  } else if (status === "listed") {
     refs.approveHint.classList.remove("warn");
     setApproveHint("この候補は既に送信済みです。");
   } else if (isAutoApproved) {
@@ -2955,6 +3053,333 @@ async function api(path, options = {}) {
   return data;
 }
 
+function loadPersistedLastFetch() {
+  try {
+    const raw = window.sessionStorage.getItem(LAST_FETCH_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : null;
+  } catch (_) {
+    return null;
+  }
+}
+
+function persistLastFetch(payload) {
+  try {
+    if (!payload || typeof payload !== "object") {
+      window.sessionStorage.removeItem(LAST_FETCH_STORAGE_KEY);
+      return;
+    }
+    window.sessionStorage.setItem(LAST_FETCH_STORAGE_KEY, JSON.stringify(payload));
+  } catch (_) {
+    // ignore storage failures
+  }
+}
+
+function isDebugStatus(status) {
+  const key = String(status || "").trim().toLowerCase();
+  return key === "debug_stage1_rejected" || key === "debug_stage2_rejected";
+}
+
+function debugDropReasonLabel(reason) {
+  const key = String(reason || "").trim().toLowerCase();
+  if (!key) return "理由未記録";
+  const map = {
+    model_code_mismatch: "型番不一致",
+    candidate_model_missing: "候補タイトルに型番なし",
+    candidate_model_missing_token_overlap: "候補型番欠落（語一致のみ）",
+    accessory_title: "付属品タイトル",
+    low_liquidity: "90日売却件数不足",
+    liquidity_unavailable: "流動性未取得",
+    rpa_json_positive_sold_without_filtered_rows: "売却行抽出失敗",
+  };
+  return map[key] || key;
+}
+
+function normalizeDebugFilter(reason) {
+  const key = String(reason || "").trim();
+  return key ? key : "all";
+}
+
+function debugReasonKeyForItem(item) {
+  const meta = (item && typeof item.metadata === "object") ? item.metadata : {};
+  return normalizeDebugFilter(meta.debug_drop_reason || meta.match_reason || "");
+}
+
+function buildDebugFilterOptions(items) {
+  const counts = new Map();
+  (Array.isArray(items) ? items : []).forEach((item) => {
+    const key = debugReasonKeyForItem(item);
+    if (key === "all") return;
+    counts.set(key, (counts.get(key) || 0) + 1);
+  });
+  const options = [{ key: "all", label: "すべて", count: Array.isArray(items) ? items.length : 0 }];
+  Array.from(counts.entries())
+    .sort((a, b) => {
+      if (b[1] !== a[1]) return b[1] - a[1];
+      return debugDropReasonLabel(a[0]).localeCompare(debugDropReasonLabel(b[0]), "ja");
+    })
+    .forEach(([key, count]) => {
+      options.push({ key, label: debugDropReasonLabel(key), count });
+    });
+  return options;
+}
+
+function filterDebugItems(items, filterKey = state.debugFilter) {
+  const normalized = normalizeDebugFilter(filterKey);
+  if (normalized === "all") return Array.isArray(items) ? items : [];
+  return (Array.isArray(items) ? items : []).filter((item) => debugReasonKeyForItem(item) === normalized);
+}
+
+function getDebugItemsForActiveFilter() {
+  return filterDebugItems(state.debugItems, state.debugFilter);
+}
+
+function debugLiquidityThresholdProbe(item, probeMinSold90d = 4) {
+  const meta = (item && typeof item.metadata === "object") ? item.metadata : {};
+  if (String(meta.debug_drop_reason || "") !== "low_liquidity") return null;
+  const liquidity = (meta.liquidity && typeof meta.liquidity === "object") ? meta.liquidity : {};
+  const soldCount = toNumber(liquidity.sold_90d_count);
+  if (!Number.isFinite(soldCount) || soldCount < 0) return null;
+  const currentMinSold90d = toNumber((state.lastFetch && state.lastFetch.applied_filters || {}).stage_c_min_sold_90d);
+  const threshold = Number.isFinite(currentMinSold90d) && currentMinSold90d > 0 ? currentMinSold90d : 10;
+  return {
+    currentMinSold90d: threshold,
+    probeMinSold90d,
+    soldCount,
+    wouldPass: soldCount >= probeMinSold90d,
+  };
+}
+
+function renderDebugThresholdSummary() {
+  if (!refs.debugThresholdSummary) return;
+  if (state.activeTab !== "debug") {
+    refs.debugThresholdSummary.textContent = "";
+    return;
+  }
+  const currentMinSold90d = toNumber((state.lastFetch && state.lastFetch.applied_filters || {}).stage_c_min_sold_90d);
+  const currentMin = Number.isFinite(currentMinSold90d) && currentMinSold90d > 0 ? currentMinSold90d : 10;
+  const probeMin = 4;
+  const probes = state.debugItems
+    .map((item) => debugLiquidityThresholdProbe(item, probeMin))
+    .filter(Boolean);
+  if (!probes.length) {
+    refs.debugThresholdSummary.textContent = `C段階の低流動性 0件 / 閾値${formatNumber(currentMin)} -> ${formatNumber(probeMin)} の仮判定対象はありません`;
+    return;
+  }
+  const total = probes.length;
+  const passCount = probes.filter((row) => row.wouldPass).length;
+  const failCount = total - passCount;
+  refs.debugThresholdSummary.textContent = `C段階の低流動性 ${formatNumber(total)}件 / 閾値${formatNumber(currentMin)} -> ${formatNumber(probeMin)} に下げると仮通過 ${formatNumber(passCount)}件 / まだ不足 ${formatNumber(failCount)}件`;
+}
+
+function ensureDebugFilter() {
+  const options = buildDebugFilterOptions(state.debugItems);
+  const exists = options.some((option) => option.key === state.debugFilter);
+  if (!exists) {
+    state.debugFilter = "all";
+  }
+  return buildDebugFilterOptions(state.debugItems);
+}
+
+function buildDebugItemsFromFetch(payload) {
+  if (!payload || typeof payload !== "object") return [];
+  const stage1Samples = Array.isArray(payload.stage1_low_match_samples) ? payload.stage1_low_match_samples : [];
+  const stage2LowLiquidity = Array.isArray(payload.stage2_low_liquidity_examples) ? payload.stage2_low_liquidity_examples : [];
+  const stage2Unavailable = Array.isArray(payload.stage2_liquidity_unavailable_examples)
+    ? payload.stage2_liquidity_unavailable_examples
+    : [];
+  const fxRate = 150;
+  const out = [];
+
+  const pushDebugCandidate = ({
+    id,
+    status,
+    marketTitle,
+    marketItemUrl = "",
+    marketImageUrl = "",
+    marketPriceUsd = null,
+    soldCount90d = null,
+    soldMin90d = null,
+    activeCount = null,
+    activeMinUsd = null,
+    sourceSite = "japan",
+    sourceTitle,
+    sourceItemId = "",
+    sourceItemUrl = "",
+    sourceImageUrl = "",
+    sourceCondition = "new",
+    sourcePriceJpy = null,
+    sourceShippingJpy = 0,
+    sourceStockStatus = "",
+    seedQuery = "",
+    stage1Query = "",
+    seedSourceTitle = "",
+    matchScore = null,
+    matchReason = "",
+    dropStageLabel,
+    dropReason,
+  }) => {
+    const liquidity = {
+      sold_90d_count: Number.isFinite(Number(soldCount90d)) ? Number(soldCount90d) : null,
+      active_count: Number.isFinite(Number(activeCount)) ? Number(activeCount) : null,
+      gate_passed: false,
+      gate_reason: status === "debug_stage1_rejected" ? "stage1_low_match" : String(dropReason || "debug_rejected"),
+      source: "debug_sample",
+      metadata: {
+        sold_price_min: Number.isFinite(Number(soldMin90d)) ? Number(soldMin90d) : null,
+        active_price_min: Number.isFinite(Number(activeMinUsd)) ? Number(activeMinUsd) : null,
+      },
+    };
+    out.push({
+      id,
+      status,
+      match_level: status,
+      match_score: Number.isFinite(Number(matchScore)) ? Number(matchScore) : null,
+      market_site: "ebay",
+      market_title: String(marketTitle || seedSourceTitle || seedQuery || "-"),
+      source_site: String(sourceSite || "japan"),
+      source_title: String(sourceTitle || "-"),
+      source_item_id: String(sourceItemId || ""),
+      expected_profit_usd: null,
+      expected_margin_rate: null,
+      fx_rate: fxRate,
+      fx_source: "debug_estimated",
+      created_at: "",
+      updated_at: "",
+      metadata: {
+        seed_query: String(seedQuery || ""),
+        stage1_query: String(stage1Query || seedQuery || ""),
+        seed_source_title: String(seedSourceTitle || ""),
+        match_reason: String(matchReason || ""),
+        market_item_url: String(marketItemUrl || ""),
+        market_image_url: String(marketImageUrl || ""),
+        market_price_basis_usd: Number.isFinite(Number(marketPriceUsd)) ? Number(marketPriceUsd) : null,
+        market_price_basis_type: "sold_price_min_90d",
+        source_item_url: String(sourceItemUrl || ""),
+        source_image_url: String(sourceImageUrl || ""),
+        source_condition: String(sourceCondition || "new"),
+        source_price_basis_jpy: Number.isFinite(Number(sourcePriceJpy)) ? Number(sourcePriceJpy) : null,
+        source_shipping_basis_jpy: Number.isFinite(Number(sourceShippingJpy)) ? Number(sourceShippingJpy) : 0,
+        source_stock_status: String(sourceStockStatus || `${dropStageLabel}で除外`),
+        liquidity,
+        debug_drop_stage_label: String(dropStageLabel || "除外"),
+        debug_drop_reason: String(dropReason || ""),
+        debug_drop_reason_label: debugDropReasonLabel(dropReason),
+      },
+    });
+  };
+
+  stage2LowLiquidity.forEach((row, index) => {
+    const sourcePriceJpy = toNumber(row.source_price_jpy);
+    const sourceShippingJpy = toNumber(row.source_shipping_jpy);
+    pushDebugCandidate({
+      id: -3000000 - index,
+      status: "debug_stage2_rejected",
+      marketTitle: row.seed_source_title || row.liquidity_query || row.seed_query,
+      marketItemUrl: row.seed_source_item_url || "",
+      marketPriceUsd: row.sold_price_min_usd ?? row.seed_baseline_usd,
+      soldCount90d: row.sold_90d_count,
+      soldMin90d: row.sold_price_min_usd ?? row.seed_baseline_usd,
+      activeCount: row.active_count,
+      activeMinUsd: row.active_price_min_usd,
+      sourceSite: row.source_site,
+      sourceTitle: row.source_title,
+      sourceItemId: row.source_item_id,
+      sourceItemUrl: row.source_item_url,
+      sourceImageUrl: row.source_image_url,
+      sourceCondition: row.source_condition,
+      sourcePriceJpy,
+      sourceShippingJpy,
+      sourceStockStatus: "C段階で除外",
+      seedQuery: row.seed_query,
+      stage1Query: row.stage1_query,
+      seedSourceTitle: row.seed_source_title,
+      matchScore: row.stage1_match_score,
+      matchReason: row.stage1_match_reason,
+      dropStageLabel: "C段階で除外",
+      dropReason: "low_liquidity",
+    });
+  });
+
+  stage2Unavailable.forEach((row, index) => {
+    const sourcePriceJpy = toNumber(row.source_price_jpy);
+    const sourceShippingJpy = toNumber(row.source_shipping_jpy);
+    pushDebugCandidate({
+      id: -3100000 - index,
+      status: "debug_stage2_rejected",
+      marketTitle: row.seed_source_title || row.liquidity_query || row.seed_query,
+      marketItemUrl: row.seed_source_item_url || "",
+      marketPriceUsd: row.seed_baseline_usd,
+      soldCount90d: null,
+      soldMin90d: row.seed_baseline_usd,
+      activeCount: null,
+      activeMinUsd: null,
+      sourceSite: row.source_site,
+      sourceTitle: row.source_title,
+      sourceItemId: row.source_item_id,
+      sourceItemUrl: row.source_item_url,
+      sourceImageUrl: row.source_image_url,
+      sourceCondition: row.source_condition,
+      sourcePriceJpy,
+      sourceShippingJpy,
+      sourceStockStatus: "C段階で除外",
+      seedQuery: row.seed_query,
+      stage1Query: row.stage1_query,
+      seedSourceTitle: row.seed_source_title,
+      matchScore: row.stage1_match_score,
+      matchReason: row.stage1_match_reason,
+      dropStageLabel: "C段階で除外",
+      dropReason: row.unavailable_reason || "liquidity_unavailable",
+    });
+  });
+
+  stage1Samples.forEach((row, index) => {
+    const sourcePriceJpy = toNumber(row.source_price_jpy ?? row.source_total_jpy);
+    const sourceShippingJpy = toNumber(row.source_shipping_jpy);
+    pushDebugCandidate({
+      id: -2000000 - index,
+      status: "debug_stage1_rejected",
+      marketTitle: row.seed_source_title || row.stage1_query || row.seed_query,
+      marketItemUrl: row.seed_source_item_url || "",
+      marketPriceUsd: row.seed_baseline_usd,
+      soldCount90d: row.seed_collected_sold_90d_count,
+      soldMin90d: row.seed_baseline_usd,
+      activeCount: null,
+      activeMinUsd: null,
+      sourceSite: row.site,
+      sourceTitle: row.candidate_title,
+      sourceItemId: row.candidate_item_id,
+      sourceItemUrl: row.candidate_item_url,
+      sourceImageUrl: row.candidate_image_url,
+      sourceCondition: row.candidate_condition,
+      sourcePriceJpy,
+      sourceShippingJpy,
+      sourceStockStatus: "B段階で除外",
+      seedQuery: row.seed_query,
+      stage1Query: row.stage1_query,
+      seedSourceTitle: row.seed_source_title,
+      matchScore: row.score,
+      matchReason: row.reason,
+      dropStageLabel: "B段階で除外",
+      dropReason: row.reason,
+    });
+  });
+
+  return out;
+}
+
+function setLastFetchPayload(payload) {
+  const next = (payload && typeof payload === "object") ? payload : null;
+  state.lastFetch = next;
+  state.debugItems = buildDebugItemsFromFetch(next);
+  ensureDebugFilter();
+  persistLastFetch(next);
+  if (refs.countDebug) {
+    renderTabState();
+  }
+}
+
 function queueForTab(tab) {
   return tab === "reviewed" ? state.queues.reviewed : state.queues.pending;
 }
@@ -2966,10 +3391,14 @@ function isReviewedStatus(status) {
 
 function renderTabState() {
   const isPending = state.activeTab === "pending";
+  const isReviewed = state.activeTab === "reviewed";
+  const isDebug = state.activeTab === "debug";
   refs.tabPending.classList.toggle("active", isPending);
-  refs.tabReviewed.classList.toggle("active", !isPending);
+  refs.tabReviewed.classList.toggle("active", isReviewed);
+  refs.tabDebug?.classList.toggle("active", isDebug);
   refs.tabPending.setAttribute("aria-selected", isPending ? "true" : "false");
-  refs.tabReviewed.setAttribute("aria-selected", isPending ? "false" : "true");
+  refs.tabReviewed.setAttribute("aria-selected", isReviewed ? "true" : "false");
+  refs.tabDebug?.setAttribute("aria-selected", isDebug ? "true" : "false");
   const pendingCount = Number.isFinite(Number(state.queueTotals.pending))
     ? Number(state.queueTotals.pending)
     : state.queues.pending.length;
@@ -2978,11 +3407,37 @@ function renderTabState() {
     : state.queues.reviewed.length;
   refs.countPending.textContent = formatTabCount(pendingCount);
   refs.countReviewed.textContent = formatTabCount(reviewedCount);
+  if (refs.countDebug) refs.countDebug.textContent = formatTabCount(state.debugItems.length);
+}
+
+function renderDebugFilterBar() {
+  if (!refs.debugFilterBar || !refs.debugFilterChips) return;
+  const isDebug = state.activeTab === "debug";
+  refs.debugFilterBar.hidden = !isDebug;
+  if (!isDebug) {
+    if (refs.debugThresholdSummary) refs.debugThresholdSummary.textContent = "";
+    refs.debugFilterChips.innerHTML = "";
+    return;
+  }
+  renderDebugThresholdSummary();
+  const options = ensureDebugFilter();
+  refs.debugFilterChips.innerHTML = options.map((option) => `
+    <button
+      type="button"
+      class="debug-filter-chip ${option.key === state.debugFilter ? "active" : ""}"
+      data-debug-filter="${escapeHtml(option.key)}"
+      aria-pressed="${option.key === state.debugFilter ? "true" : "false"}"
+    >${escapeHtml(option.label)} <span>${formatTabCount(option.count)}</span></button>
+  `).join("");
 }
 
 function formatTabCount(value) {
   const n = Math.max(0, Math.floor(Number(value || 0)));
   return n > TAB_COUNT_CAP ? `${TAB_COUNT_CAP}+` : String(n);
+}
+
+function renderDebugPanel() {
+  if (refs.debugPanel) refs.debugPanel.hidden = true;
 }
 
 function pickDominantCandidateIdInViewport() {
@@ -3015,7 +3470,7 @@ function markActiveCandidateInList(candidateId) {
   const id = Number(candidateId || 0);
   refs.reviewList.querySelectorAll("[data-candidate-id]").forEach((el) => {
     const cid = Number(el.getAttribute("data-candidate-id") || 0);
-    el.classList.toggle("active", Number.isFinite(id) && id > 0 && cid === id);
+    el.classList.toggle("active", Number.isFinite(id) && cid === id);
   });
 }
 
@@ -3165,6 +3620,7 @@ async function warmReviewedRejectionDetails(limit = 12) {
 }
 
 function scheduleScrollDrivenSelection() {
+  if (state.activeTab === "debug") return;
   if (!refs.reviewList) return;
   if (state.scrollSelectRaf) return;
   state.scrollSelectRaf = window.requestAnimationFrame(async () => {
@@ -3181,16 +3637,16 @@ function scheduleScrollDrivenSelection() {
   });
 }
 
-function renderReviewList() {
-  const items = queueForTab(state.activeTab);
-  const currentId = Number(state.current?.id || 0);
-  refs.reviewList.innerHTML = items.map((rawItem) => {
+function renderCandidateListMarkup(items, currentId) {
+  return items.map((rawItem) => {
     const id = Number(rawItem.id || 0);
     const cached = state.detailCache.get(id);
     const item = (cached && Number(cached.id) === id) ? cached : rawItem;
     const isActive = id === currentId;
     const colorRisk = getColorRiskInfo(item);
     const v = normalize(item);
+    const meta = (item && typeof item.metadata === "object") ? item.metadata : {};
+    const isDebugItem = isDebugStatus(item.status);
     const profitText = moneyDualInlineHtml({ jpy: v.expectedProfitJpy, usd: v.expectedProfitUsd, fxRate: v.fxRate });
     const score = toNumber(item.match_score);
     const soldCount = Number.isFinite(v.ebay.soldCount90d) && v.ebay.soldCount90d >= 0 ? `${v.ebay.soldCount90d}件` : "未取得";
@@ -3230,6 +3686,16 @@ function renderReviewList() {
     const warnChip = colorRisk.hasColorMissingRisk ? '<span class="pair-chip">色要確認</span>' : "";
     const rejectedChip = String(item.status || "").toLowerCase() === "rejected"
       ? `<span class="pair-chip reject">否認: ${escapeHtml(rejectionTargets || "詳細読込中")}${rejectionReason ? ` / ${escapeHtml(rejectionReason)}` : ""}</span>`
+      : "";
+    const debugStageChip = isDebugItem
+      ? `<span class="pair-chip strong">${escapeHtml(String(meta.debug_drop_stage_label || labelForStatus(item.status) || "除外"))}</span>`
+      : `<span class="pair-chip strong">利益 ${profitText}</span>`;
+    const debugReasonChip = isDebugItem
+      ? `<span class="pair-chip warn">${escapeHtml(String(meta.debug_drop_reason_label || debugDropReasonLabel(meta.debug_drop_reason || "")))}</span>`
+      : "";
+    const debugLiquidityProbe = isDebugItem ? debugLiquidityThresholdProbe(item) : null;
+    const debugLiquidityChip = debugLiquidityProbe
+      ? `<span class="pair-chip ${debugLiquidityProbe.wouldPass ? "info" : "muted"}">閾値${escapeHtml(String(debugLiquidityProbe.probeMinSold90d))}${debugLiquidityProbe.wouldPass ? "なら仮通過" : "でも不足"}</span>`
       : "";
     return `
       <li>
@@ -3275,11 +3741,13 @@ function renderReviewList() {
             </section>
           </div>
           <div class="pair-footer">
-            <span class="pair-chip strong">利益 ${profitText}</span>
+            ${debugStageChip}
             <span class="pair-chip">90日売却 ${escapeHtml(soldCount)}</span>
             <span class="pair-chip">90日最低 ${soldMin}</span>
             <span class="pair-chip ${soldRef.tone === "warn" ? "warn" : "info"}">${escapeHtml(soldRef.full)}</span>
             <span class="pair-chip muted">score ${Number.isFinite(score) ? score.toFixed(3) : "-"}</span>
+            ${debugReasonChip}
+            ${debugLiquidityChip}
             ${warnChip}
             ${rejectedChip}
           </div>
@@ -3287,9 +3755,43 @@ function renderReviewList() {
       </li>
     `;
   }).join("");
+}
+
+async function selectDebugCandidateById(candidateId, options = {}) {
+  const id = Number(candidateId);
+  if (!Number.isFinite(id)) return;
+  const selected = state.debugItems.find((item) => Number(item.id) === id) || null;
+  state.current = selected;
+  if (!selected) {
+    renderCandidate(null);
+    return;
+  }
+  if (!options.skipListRender) {
+    renderReviewList();
+  } else {
+    markActiveCandidateInList(id);
+  }
+  renderCandidate(selected);
+}
+
+function renderReviewList() {
+  if (refs.debugPanel) refs.debugPanel.hidden = true;
+  renderDebugFilterBar();
+  refs.reviewList.hidden = false;
+  refs.reviewListEmpty.hidden = false;
+  const items = state.activeTab === "debug" ? getDebugItemsForActiveFilter() : queueForTab(state.activeTab);
+  const currentId = Number(state.current?.id || 0);
+  refs.reviewList.innerHTML = renderCandidateListMarkup(items, currentId);
+  refs.reviewListEmpty.textContent = state.activeTab === "debug"
+    ? (state.debugFilter === "all"
+        ? "直近の探索で pending 前に落ちた候補はありません。"
+        : "この理由に一致する debug 候補はありません。")
+    : "候補がありません。";
   refs.reviewListEmpty.style.display = items.length ? "none" : "block";
   markActiveCandidateInList(currentId);
-  scheduleScrollDrivenSelection();
+  if (state.activeTab !== "debug") {
+    scheduleScrollDrivenSelection();
+  }
 }
 
 async function fetchPendingQueue() {
@@ -3395,6 +3897,25 @@ async function refreshQueues({ preserveSelection = true } = {}) {
 
   renderTabState();
 
+  if (state.activeTab === "debug") {
+    renderReviewList();
+    const currentId = Number(state.current?.id || 0);
+    const debugItems = getDebugItemsForActiveFilter();
+    const existsCurrent = debugItems.some((item) => Number(item.id) === currentId);
+    if (existsCurrent) {
+      renderCandidate(state.current);
+      return;
+    }
+    const firstDebugId = firstCandidateId(debugItems);
+    if (Number.isFinite(firstDebugId)) {
+      await selectDebugCandidateById(firstDebugId, { skipListRender: true });
+      return;
+    }
+    state.current = null;
+    renderCandidate(null);
+    return;
+  }
+
   let next = findCandidateInQueues(prevId);
   if (!next) {
     const activeItems = queueForTab(state.activeTab);
@@ -3424,14 +3945,34 @@ async function refreshQueues({ preserveSelection = true } = {}) {
 }
 
 async function setActiveTab(tab) {
-  const nextTab = tab === "reviewed" ? "reviewed" : "pending";
+  const nextTab = tab === "reviewed" ? "reviewed" : (tab === "debug" ? "debug" : "pending");
   if (state.activeTab === nextTab) {
     renderReviewList();
+    if (nextTab === "debug" && isDebugStatus(state.current?.status)) {
+      renderCandidate(state.current);
+    }
     return;
   }
   state.activeTab = nextTab;
   renderTabState();
   renderReviewList();
+  if (nextTab === "debug") {
+    const currentId = Number(state.current?.id || 0);
+    const debugItems = getDebugItemsForActiveFilter();
+    const existsCurrent = debugItems.some((item) => Number(item.id) === currentId);
+    if (existsCurrent) {
+      renderCandidate(state.current);
+      return;
+    }
+    const firstDebugId = firstCandidateId(debugItems);
+    if (Number.isFinite(firstDebugId)) {
+      await selectDebugCandidateById(firstDebugId, { skipListRender: true });
+    } else {
+      state.current = null;
+      renderCandidate(null);
+    }
+    return;
+  }
   if (nextTab === "reviewed") {
     void warmReviewedRejectionDetails();
   }
@@ -3578,7 +4119,7 @@ async function onFetchLiveCandidates() {
       }),
     });
 
-    state.lastFetch = payload;
+    setLastFetchPayload(payload);
     await pollRpaProgressOnce();
     renderRpaProgress(
       {
@@ -3722,9 +4263,14 @@ async function onResetSeedPoolCategory() {
       method: "POST",
       body: JSON.stringify({ category, clear_pool: true, clear_history: true }),
     });
-    state.lastFetch = null;
+    setLastFetchPayload(null);
     resetHeaderForCategorySelection({ loading: true });
     if (refs.fetchStatsRows) refs.fetchStatsRows.innerHTML = "";
+    renderDebugPanel();
+    if (state.activeTab === "debug") {
+      renderReviewList();
+      renderCandidate(null);
+    }
     await refreshSeedPoolStatusForCurrentCategory({ updateHeadline: true, showLoading: false });
 
     const lines = [
@@ -3752,9 +4298,15 @@ async function onResetSeedPoolCategory() {
 
 function bindEvents() {
   refs.fetchQuery.addEventListener("change", () => {
-    state.lastFetch = null;
+    syncCategoryFetchDefaults();
+    setLastFetchPayload(null);
     resetHeaderForCategorySelection({ loading: true });
     if (refs.fetchStatsRows) refs.fetchStatsRows.innerHTML = "";
+    renderDebugPanel();
+    if (state.activeTab === "debug") {
+      renderReviewList();
+      renderCandidate(null);
+    }
     void refreshSeedPoolStatusForCurrentCategory({ updateHeadline: true, showLoading: false });
   });
 
@@ -3785,6 +4337,7 @@ function bindEvents() {
 
   refs.resetSettingsBtn?.addEventListener("click", async () => {
     applyFetchConfigToInputs(DEFAULT_FETCH_SETTINGS);
+    syncCategoryFetchDefaults({ force: true });
     const saved = await saveMinerSettings({ silent: false });
     if (saved) showToast("詳細設定をデフォルトに戻しました。");
   });
@@ -3839,8 +4392,42 @@ function bindEvents() {
     }
   });
 
+  refs.tabDebug?.addEventListener("click", async () => {
+    try {
+      await setActiveTab("debug");
+    } catch (err) {
+      showToast(`タブ切替エラー: ${err.message}`);
+    }
+  });
+
+  refs.debugFilterChips?.addEventListener("click", async (event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    const button = target.closest("[data-debug-filter]");
+    if (!(button instanceof HTMLElement)) return;
+    const nextFilter = normalizeDebugFilter(button.dataset.debugFilter || "all");
+    if (state.debugFilter === nextFilter) return;
+    state.debugFilter = nextFilter;
+    renderReviewList();
+    if (state.activeTab !== "debug") return;
+    const currentId = Number(state.current?.id || 0);
+    const debugItems = getDebugItemsForActiveFilter();
+    const existsCurrent = debugItems.some((item) => Number(item.id) === currentId);
+    if (existsCurrent && isDebugStatus(state.current?.status)) {
+      renderCandidate(state.current);
+      return;
+    }
+    const firstDebugId = firstCandidateId(debugItems);
+    if (Number.isFinite(firstDebugId)) {
+      await selectDebugCandidateById(firstDebugId, { skipListRender: true });
+      return;
+    }
+    state.current = null;
+    renderCandidate(null);
+  });
+
   refs.reviewList.addEventListener("scroll", () => {
-    if (!state.selectingFromScroll) {
+    if (state.activeTab !== "debug" && !state.selectingFromScroll) {
       scheduleScrollDrivenSelection();
     }
   }, { passive: true });
@@ -3853,7 +4440,11 @@ function bindEvents() {
     const id = Number(card.dataset.candidateId || "");
     if (!Number.isFinite(id)) return;
     try {
-      await selectCandidateById(id, { fetchDetail: true, skipListRender: true });
+      if (state.activeTab === "debug") {
+        await selectDebugCandidateById(id, { skipListRender: true });
+      } else {
+        await selectCandidateById(id, { fetchDetail: true, skipListRender: true });
+      }
     } catch (err) {
       showToast(`候補取得エラー: ${err.message}`);
     }
@@ -3869,7 +4460,11 @@ function bindEvents() {
     const id = Number(card.dataset.candidateId || "");
     if (!Number.isFinite(id)) return;
     try {
-      await selectCandidateById(id, { fetchDetail: true, skipListRender: true });
+      if (state.activeTab === "debug") {
+        await selectDebugCandidateById(id, { skipListRender: true });
+      } else {
+        await selectCandidateById(id, { fetchDetail: true, skipListRender: true });
+      }
     } catch (err) {
       showToast(`候補取得エラー: ${err.message}`);
     }

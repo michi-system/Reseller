@@ -1,0 +1,78 @@
+[2026-02-26T06:57:21.782890+00:00] START cmd=python3 -u scripts/run_miner_cycle.py --output /Users/tadamichikimura/Downloads/dev-HQ/Reseller/output/miner_cycle_report_prod_20260226T065721Z.json --active-manifest /Users/tadamichikimura/Downloads/dev-HQ/Reseller/output/miner_cycle_active_prod_20260226T065721Z.json
+[2026-02-26T07:00:13.884548+00:00] [rpa] mode=rpa_json ran=True missing primary=2 fallback=2 model_backfill=2
+[2026-02-26T07:00:13.885551+00:00] [rpa] primary rc=0 queries=23 condition=new
+[2026-02-26T07:00:13.885577+00:00] [rpa] fallback rc=0 queries=2 condition=any
+[2026-02-26T07:00:13.885586+00:00] [rpa] model_backfill rc=0 queries=6 condition=any
+[2026-02-26T07:01:57.760155+00:00] [round 1] citizen nb1050 watch -> created=0 queue+=0 now=2 api(network/cache)=5/1
+[2026-02-26T07:21:14.376694+00:00] Traceback (most recent call last):
+[2026-02-26T07:21:14.391984+00:00]   File "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/reselling/liquidity.py", line 308, in _save_signal
+[2026-02-26T07:21:14.392031+00:00]     conn.execute(
+[2026-02-26T07:21:14.392046+00:00]     ~~~~~~~~~~~~^
+[2026-02-26T07:21:14.392053+00:00]         """
+[2026-02-26T07:21:14.392059+00:00]         ^^^
+[2026-02-26T07:21:14.392065+00:00]     ...<32 lines>...
+[2026-02-26T07:21:14.392071+00:00]         ),
+[2026-02-26T07:21:14.392077+00:00]         ^^
+[2026-02-26T07:21:14.392082+00:00]     )
+[2026-02-26T07:21:14.392088+00:00]     ^
+[2026-02-26T07:21:14.392615+00:00]   File "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/reselling/db_runtime.py", line 128, in execute
+[2026-02-26T07:21:14.392625+00:00]     cur.execute(translated, tuple(params))
+[2026-02-26T07:21:14.392631+00:00]     ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[2026-02-26T07:21:14.392637+00:00]   File "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/.venv/lib/python3.13/site-packages/psycopg/cursor.py", line 117, in execute
+[2026-02-26T07:21:14.392884+00:00]     raise ex.with_traceback(None)
+[2026-02-26T07:21:14.392891+00:00] psycopg.OperationalError: consuming input failed: could not receive data from server: Can't assign requested address
+[2026-02-26T07:21:14.392897+00:00] SSL SYSCALL error: Can't assign requested address
+[2026-02-26T07:21:14.396313+00:00] 
+[2026-02-26T07:21:14.396323+00:00] During handling of the above exception, another exception occurred:
+[2026-02-26T07:21:14.396342+00:00] 
+[2026-02-26T07:21:14.396351+00:00] Traceback (most recent call last):
+[2026-02-26T07:21:14.397788+00:00]   File "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/scripts/run_miner_cycle.py", line 1202, in <module>
+[2026-02-26T07:21:14.397813+00:00]     raise SystemExit(main())
+[2026-02-26T07:21:14.397820+00:00]                      ~~~~^^
+[2026-02-26T07:21:14.399212+00:00]   File "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/scripts/run_miner_cycle.py", line 879, in main
+[2026-02-26T07:21:14.399224+00:00]     result = fetch_live_miner_candidates(
+[2026-02-26T07:21:14.399230+00:00]         query=query,
+[2026-02-26T07:21:14.399237+00:00]     ...<7 lines>...
+[2026-02-26T07:21:14.399243+00:00]         timeout=int(args.timeout),
+[2026-02-26T07:21:14.399249+00:00]     )
+[2026-02-26T07:21:14.399255+00:00]   File "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/reselling/live_miner_fetch.py", line 6351, in fetch_live_miner_candidates
+[2026-02-26T07:21:14.399260+00:00]     sold_first_plan = _build_ebay_sold_first_plan(
+[2026-02-26T07:21:14.399275+00:00]         query=text_query,
+[2026-02-26T07:21:14.399280+00:00]     ...<15 lines>...
+[2026-02-26T07:21:14.399285+00:00]         fixed_fee_usd=fixed_fee_usd,
+[2026-02-26T07:21:14.399590+00:00]     )
+[2026-02-26T07:21:14.399601+00:00]   File "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/reselling/live_miner_fetch.py", line 4025, in _build_ebay_sold_first_plan
+[2026-02-26T07:21:14.399609+00:00]     signal = get_liquidity_signal(
+[2026-02-26T07:21:14.399616+00:00]         query=code,
+[2026-02-26T07:21:14.399623+00:00]     ...<6 lines>...
+[2026-02-26T07:21:14.399629+00:00]         settings=settings,
+[2026-02-26T07:21:14.399635+00:00]     )
+[2026-02-26T07:21:14.399641+00:00]   File "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/reselling/liquidity.py", line 1242, in get_liquidity_signal
+[2026-02-26T07:21:14.399656+00:00]     _save_signal(settings, signal)
+[2026-02-26T07:21:14.399661+00:00]     ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+[2026-02-26T07:21:14.399666+00:00]   File "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/reselling/liquidity.py", line 306, in _save_signal
+[2026-02-26T07:21:14.399671+00:00]     with connect(settings.db_path) as conn:
+[2026-02-26T07:21:14.399908+00:00]          ~~~~~~~^^^^^^^^^^^^^^^^^^
+[2026-02-26T07:21:14.399914+00:00]   File "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/reselling/db_runtime.py", line 147, in __exit__
+[2026-02-26T07:21:14.399919+00:00]     self.rollback()
+[2026-02-26T07:21:14.399923+00:00]     ~~~~~~~~~~~~~^^
+[2026-02-26T07:21:14.399928+00:00]   File "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/reselling/db_runtime.py", line 136, in rollback
+[2026-02-26T07:21:14.399933+00:00]     self._conn.rollback()
+[2026-02-26T07:21:14.399938+00:00]     ~~~~~~~~~~~~~~~~~~~^^
+[2026-02-26T07:21:14.400167+00:00]   File "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/.venv/lib/python3.13/site-packages/psycopg/connection.py", line 310, in rollback
+[2026-02-26T07:21:14.400178+00:00]     self.wait(self._rollback_gen())
+[2026-02-26T07:21:14.400184+00:00]     ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+[2026-02-26T07:21:14.400190+00:00]   File "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/.venv/lib/python3.13/site-packages/psycopg/connection.py", line 484, in wait
+[2026-02-26T07:21:14.400195+00:00]     return waiting.wait(gen, self.pgconn.socket, interval=interval)
+[2026-02-26T07:21:14.400427+00:00]            ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[2026-02-26T07:21:14.400432+00:00]   File "psycopg_binary/_psycopg/waiting.pyx", line 219, in psycopg_binary._psycopg.wait_c
+[2026-02-26T07:21:14.400437+00:00]   File "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/.venv/lib/python3.13/site-packages/psycopg/_connection_base.py", line 610, in _rollback_gen
+[2026-02-26T07:21:14.400450+00:00]     yield from self._exec_command(b"ROLLBACK")
+[2026-02-26T07:21:14.400455+00:00]   File "/Users/tadamichikimura/Downloads/dev-HQ/Reseller/.venv/lib/python3.13/site-packages/psycopg/_connection_base.py", line 476, in _exec_command
+[2026-02-26T07:21:14.400460+00:00]     self.pgconn.send_query(command)
+[2026-02-26T07:21:14.400465+00:00]     ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+[2026-02-26T07:21:14.400469+00:00]   File "psycopg_binary/pq/pgconn.pyx", line 310, in psycopg_binary.pq.PGconn.send_query
+[2026-02-26T07:21:14.400474+00:00] psycopg.OperationalError: sending query failed: could not receive data from server: Can't assign requested address
+[2026-02-26T07:21:14.400479+00:00] SSL SYSCALL error: Can't assign requested address
+[2026-02-26T07:21:14.400483+00:00] another command is already in progress
+[2026-02-26T07:21:14.514849+00:00] END rc=1 elapsed_sec=1432.732

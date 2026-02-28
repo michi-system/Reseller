@@ -1,0 +1,29 @@
+{
+  "elapsed_sec": 41.65,
+  "created_count": 0,
+  "stop_reason": "seed_batch_completed",
+  "seed_count": 20,
+  "selected_seed_count": 20,
+  "available_after_refill": 256,
+  "refill_reason": "threshold_not_reached",
+  "stage1_pass_total": 12,
+  "stage2_runs": 6,
+  "stage1_skip_counts": {
+    "skipped_low_match": 35
+  },
+  "stage2_skip_counts": {
+    "skipped_low_liquidity": 2,
+    "skipped_liquidity_unavailable": 3,
+    "skipped_duplicates": 6,
+    "skipped_unprofitable": 1
+  },
+  "hints_head": [
+    "A段階のカテゴリ最低価格フィルタ: $100.00 を適用しました。",
+    "C段階で低流動性seedをcooldown登録: 1件",
+    "B段階の主な除外理由: skipped_low_match (35件)",
+    "B段階の一致不足主因: candidate_model_missing (22件)",
+    "B段階でseed B行を生成: 6件",
+    "C段階の主な除外理由: skipped_duplicates (6件)",
+    "C段階の詳細理由: rpa_json_not_strict_sold_filters (3件)"
+  ]
+}
