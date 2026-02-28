@@ -1707,8 +1707,14 @@ function firstOfArray(meta, keys) {
 
 function pickImage(meta, side) {
   if (side === "ebay") {
-    return pick(meta, ["ebay_image_url", "market_image_url", "market_image"])
-      || firstOfArray(meta, ["ebay_image_urls", "market_image_urls"]);
+    return pick(meta, [
+      "ebay_sold_image_url",
+      "market_image_url",
+      "ebay_active_image_url",
+      "market_image_url_active",
+      "ebay_image_url",
+      "market_image",
+    ]) || firstOfArray(meta, ["ebay_image_urls", "market_image_urls"]);
   }
   return pick(meta, ["jp_image_url", "source_image_url", "source_image"])
     || firstOfArray(meta, ["jp_image_urls", "source_image_urls"]);
@@ -3055,7 +3061,8 @@ async function api(path, options = {}) {
 
 function loadPersistedLastFetch() {
   try {
-    const raw = window.sessionStorage.getItem(LAST_FETCH_STORAGE_KEY);
+    const raw = window.localStorage.getItem(LAST_FETCH_STORAGE_KEY)
+      || window.sessionStorage.getItem(LAST_FETCH_STORAGE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     return parsed && typeof parsed === "object" ? parsed : null;
@@ -3067,9 +3074,11 @@ function loadPersistedLastFetch() {
 function persistLastFetch(payload) {
   try {
     if (!payload || typeof payload !== "object") {
+      window.localStorage.removeItem(LAST_FETCH_STORAGE_KEY);
       window.sessionStorage.removeItem(LAST_FETCH_STORAGE_KEY);
       return;
     }
+    window.localStorage.setItem(LAST_FETCH_STORAGE_KEY, JSON.stringify(payload));
     window.sessionStorage.setItem(LAST_FETCH_STORAGE_KEY, JSON.stringify(payload));
   } catch (_) {
     // ignore storage failures
@@ -3086,11 +3095,22 @@ function debugDropReasonLabel(reason) {
   if (!key) return "理由未記録";
   const map = {
     model_code_mismatch: "型番不一致",
+    source_variant_unresolved: "型番別価格未特定",
+    target_model_code_missing: "対象型番未特定",
+    price_not_found: "型番別価格未取得",
+    variant_price_timeout: "型番別価格取得タイムアウト",
+    no_source_hit: "日本側ヒットなし",
     candidate_model_missing: "候補タイトルに型番なし",
     candidate_model_missing_token_overlap: "候補型番欠落（語一致のみ）",
     accessory_title: "付属品タイトル",
     low_liquidity: "90日売却件数不足",
     liquidity_unavailable: "流動性未取得",
+    unprofitable: "利益不足",
+    low_margin: "粗利率不足",
+    missing_sold_min: "90日最低価格未取得",
+    missing_sold_sample: "売却参照欠損",
+    below_sold_min: "仕入れ額が90日最低以上",
+    seed_baseline_reject: "seed基準価格で除外",
     rpa_json_positive_sold_without_filtered_rows: "売却行抽出失敗",
   };
   return map[key] || key;
@@ -3184,6 +3204,9 @@ function ensureDebugFilter() {
 
 function buildDebugItemsFromFetch(payload) {
   if (!payload || typeof payload !== "object") return [];
+  const stage1Rejected = Array.isArray(payload.stage1_rejected_examples) ? payload.stage1_rejected_examples : [];
+  const stage1NoHit = Array.isArray(payload.stage1_no_hit_examples) ? payload.stage1_no_hit_examples : [];
+  const stage2Rejected = Array.isArray(payload.stage2_rejected_examples) ? payload.stage2_rejected_examples : [];
   const stage1Samples = Array.isArray(payload.stage1_low_match_samples) ? payload.stage1_low_match_samples : [];
   const stage2LowLiquidity = Array.isArray(payload.stage2_low_liquidity_examples) ? payload.stage2_low_liquidity_examples : [];
   const stage2Unavailable = Array.isArray(payload.stage2_liquidity_unavailable_examples)
@@ -3217,14 +3240,24 @@ function buildDebugItemsFromFetch(payload) {
     seedSourceTitle = "",
     matchScore = null,
     matchReason = "",
+    expectedProfitUsd = null,
+    expectedMarginRate = null,
+    gatePassed = null,
+    gateReason = "",
     dropStageLabel,
     dropReason,
   }) => {
+    const normalizedDropReason = String(dropReason || "").trim();
+    const resolvedGatePassed = typeof gatePassed === "boolean"
+      ? gatePassed
+      : (status === "debug_stage2_rejected"
+        ? !["low_liquidity", "liquidity_unavailable", "missing_sold_min", "missing_sold_sample"].includes(normalizedDropReason)
+        : false);
     const liquidity = {
       sold_90d_count: Number.isFinite(Number(soldCount90d)) ? Number(soldCount90d) : null,
       active_count: Number.isFinite(Number(activeCount)) ? Number(activeCount) : null,
-      gate_passed: false,
-      gate_reason: status === "debug_stage1_rejected" ? "stage1_low_match" : String(dropReason || "debug_rejected"),
+      gate_passed: resolvedGatePassed,
+      gate_reason: String(gateReason || (status === "debug_stage1_rejected" ? "stage1_low_match" : normalizedDropReason || "debug_rejected")),
       source: "debug_sample",
       metadata: {
         sold_price_min: Number.isFinite(Number(soldMin90d)) ? Number(soldMin90d) : null,
@@ -3241,8 +3274,8 @@ function buildDebugItemsFromFetch(payload) {
       source_site: String(sourceSite || "japan"),
       source_title: String(sourceTitle || "-"),
       source_item_id: String(sourceItemId || ""),
-      expected_profit_usd: null,
-      expected_margin_rate: null,
+      expected_profit_usd: Number.isFinite(Number(expectedProfitUsd)) ? Number(expectedProfitUsd) : null,
+      expected_margin_rate: Number.isFinite(Number(expectedMarginRate)) ? Number(expectedMarginRate) : null,
       fx_rate: fxRate,
       fx_source: "debug_estimated",
       created_at: "",
@@ -3254,6 +3287,9 @@ function buildDebugItemsFromFetch(payload) {
         match_reason: String(matchReason || ""),
         market_item_url: String(marketItemUrl || ""),
         market_image_url: String(marketImageUrl || ""),
+        ebay_sold_item_url: String(marketItemUrl || ""),
+        ebay_sold_image_url: String(marketImageUrl || ""),
+        ebay_sold_title: String(marketTitle || seedSourceTitle || seedQuery || "-"),
         market_price_basis_usd: Number.isFinite(Number(marketPriceUsd)) ? Number(marketPriceUsd) : null,
         market_price_basis_type: "sold_price_min_90d",
         source_item_url: String(sourceItemUrl || ""),
@@ -3269,6 +3305,101 @@ function buildDebugItemsFromFetch(payload) {
       },
     });
   };
+
+  if (stage1Rejected.length || stage1NoHit.length || stage2Rejected.length) {
+    stage1NoHit.forEach((row, index) => {
+      pushDebugCandidate({
+        id: -3900000 - index,
+        status: "debug_stage1_rejected",
+        marketTitle: row.seed_source_title || row.stage1_query || row.seed_query,
+        marketItemUrl: row.seed_source_item_url || "",
+        marketPriceUsd: row.seed_baseline_usd,
+        soldCount90d: row.seed_collected_sold_90d_count,
+        soldMin90d: row.seed_baseline_usd,
+        sourceSite: row.site || "japan",
+        sourceTitle: row.candidate_title || "日本側ヒットなし",
+        sourceItemId: row.candidate_item_id,
+        sourceItemUrl: row.candidate_item_url,
+        sourceImageUrl: row.candidate_image_url,
+        sourceCondition: row.candidate_condition || "new",
+        sourcePriceJpy: null,
+        sourceShippingJpy: 0,
+        sourceStockStatus: "B段階で除外",
+        seedQuery: row.seed_query,
+        stage1Query: row.stage1_query,
+        seedSourceTitle: row.seed_source_title,
+        matchScore: row.score,
+        matchReason: row.reason,
+        dropStageLabel: "B段階で除外",
+        dropReason: row.debug_drop_reason || row.reason || "no_source_hit",
+      });
+    });
+    stage1Rejected.forEach((row, index) => {
+      const sourcePriceJpy = toNumber(row.source_price_jpy ?? row.source_total_jpy);
+      const sourceShippingJpy = toNumber(row.source_shipping_jpy);
+      pushDebugCandidate({
+        id: -4000000 - index,
+        status: "debug_stage1_rejected",
+        marketTitle: row.seed_source_title || row.stage1_query || row.seed_query,
+        marketItemUrl: row.seed_source_item_url || "",
+        marketPriceUsd: row.seed_baseline_usd,
+        soldCount90d: row.seed_collected_sold_90d_count,
+        soldMin90d: row.seed_baseline_usd,
+        sourceSite: row.site,
+        sourceTitle: row.candidate_title,
+        sourceItemId: row.candidate_item_id,
+        sourceItemUrl: row.candidate_item_url,
+        sourceImageUrl: row.candidate_image_url,
+        sourceCondition: row.candidate_condition,
+        sourcePriceJpy,
+        sourceShippingJpy,
+        sourceStockStatus: "B段階で除外",
+        seedQuery: row.seed_query,
+        stage1Query: row.stage1_query,
+        seedSourceTitle: row.seed_source_title,
+        matchScore: row.score,
+        matchReason: row.reason,
+        dropStageLabel: "B段階で除外",
+        dropReason: row.debug_drop_reason || row.reason,
+      });
+    });
+    stage2Rejected.forEach((row, index) => {
+      const sourcePriceJpy = toNumber(row.source_price_jpy ?? row.source_total_jpy);
+      const sourceShippingJpy = toNumber(row.source_shipping_jpy);
+      pushDebugCandidate({
+        id: -5000000 - index,
+        status: "debug_stage2_rejected",
+        marketTitle: row.seed_source_title || row.liquidity_query || row.seed_query,
+        marketItemUrl: row.seed_source_item_url || "",
+        marketPriceUsd: row.sold_price_min_usd ?? row.seed_baseline_usd,
+        soldCount90d: row.sold_90d_count,
+        soldMin90d: row.sold_price_min_usd ?? row.seed_baseline_usd,
+        activeCount: row.active_count,
+        activeMinUsd: row.active_price_min_usd,
+        sourceSite: row.source_site,
+        sourceTitle: row.source_title,
+        sourceItemId: row.source_item_id,
+        sourceItemUrl: row.source_item_url,
+        sourceImageUrl: row.source_image_url,
+        sourceCondition: row.source_condition,
+        sourcePriceJpy,
+        sourceShippingJpy,
+        sourceStockStatus: "C段階で除外",
+        seedQuery: row.seed_query,
+        stage1Query: row.stage1_query,
+        seedSourceTitle: row.seed_source_title,
+        matchScore: row.stage1_match_score,
+        matchReason: row.stage1_match_reason,
+        expectedProfitUsd: row.expected_profit_usd,
+        expectedMarginRate: row.expected_margin_rate,
+        gatePassed: typeof row.liquidity_gate_passed === "boolean" ? row.liquidity_gate_passed : null,
+        gateReason: row.liquidity_gate_reason,
+        dropStageLabel: "C段階で除外",
+        dropReason: row.debug_drop_reason || row.reason,
+      });
+    });
+    return out;
+  }
 
   stage2LowLiquidity.forEach((row, index) => {
     const sourcePriceJpy = toNumber(row.source_price_jpy);
@@ -4085,6 +4216,11 @@ async function onFetchLiveCandidates() {
   refs.fetchBtn.disabled = true;
   if (refs.resetSeedBtn) refs.resetSeedBtn.disabled = true;
   refs.fetchBtn.textContent = "探索中... 0%";
+  setLastFetchPayload(null);
+  if (state.activeTab === "debug") {
+    renderReviewList();
+    renderCandidate(null);
+  }
   startRpaProgressPolling();
   try {
     const payload = await api("/v1/miner/fetch", {

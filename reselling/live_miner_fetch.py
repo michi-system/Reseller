@@ -4764,6 +4764,8 @@ def _is_informative_code(token: str) -> bool:
         return False
     if cleaned in _STOPWORDS:
         return False
+    if re.fullmatch(r"[0-9]+WAY", cleaned):
+        return False
     if cleaned.isdigit():
         return False
     if _MEASUREMENT_CODE_RE.fullmatch(cleaned):
