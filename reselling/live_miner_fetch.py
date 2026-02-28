@@ -95,6 +95,8 @@ _HEADER_CACHE_AGE_SEC_KEYS = (_HEADER_CACHE_AGE_SEC_KEY, _HEADER_LEGACY_CACHE_AG
 _HEADER_BUDGET_REMAINING_KEYS = (_HEADER_BUDGET_REMAINING_KEY, _HEADER_LEGACY_BUDGET_REMAINING_KEY)
 _RAKUTEN_CLIENT_IP_BLOCK_STATE: Dict[str, Any] = {"streak": 0, "until_ts": 0.0}
 _RAKUTEN_CLIENT_IP_BLOCK_LOCK = threading.Lock()
+_YAHOO_RATE_LIMIT_STATE: Dict[str, Any] = {"streak": 0, "until_ts": 0.0}
+_YAHOO_RATE_LIMIT_LOCK = threading.Lock()
 
 _STOPWORDS = {
     "THE",
@@ -2476,6 +2478,14 @@ def _search_rakuten(
 def _search_yahoo(
     query: str, limit: int, timeout: int, page: int = 1, require_in_stock: bool = True
 ) -> Tuple[List[MarketItem], Dict[str, Any]]:
+    circuit_enabled = _env_bool("YAHOO_RATE_LIMIT_CIRCUIT_ENABLED", True)
+    if circuit_enabled:
+        now_ts = time.time()
+        with _YAHOO_RATE_LIMIT_LOCK:
+            until_ts = float(_YAHOO_RATE_LIMIT_STATE.get("until_ts", 0.0) or 0.0)
+        if until_ts > now_ts:
+            retry_after_sec = int(max(1.0, round(until_ts - now_ts)))
+            raise ValueError(f"Yahoo検索失敗: rate_limit_circuit_open retry_after_sec={retry_after_sec}")
     app_id = _first_env("YAHOO_APP_ID", "YAHOO_CLIENT_ID")
     if not app_id:
         raise ValueError("YAHOO_APP_ID が未設定です")
@@ -2513,6 +2523,21 @@ def _search_yahoo(
         timeout=timeout,
         site="yahoo",
     )
+    if circuit_enabled:
+        with _YAHOO_RATE_LIMIT_LOCK:
+            if int(status) == 429:
+                next_streak = int(_YAHOO_RATE_LIMIT_STATE.get("streak", 0) or 0) + 1
+                _YAHOO_RATE_LIMIT_STATE["streak"] = next_streak
+                if next_streak >= max(1, _env_int("YAHOO_RATE_LIMIT_CIRCUIT_STREAK_THRESHOLD", 1)):
+                    hold_sec = max(10.0, float(_env_int("YAHOO_RATE_LIMIT_CIRCUIT_HOLD_SECONDS", 60)))
+                    until_ts = time.time() + max(hold_sec, _retry_wait_seconds(headers))
+                    _YAHOO_RATE_LIMIT_STATE["until_ts"] = max(
+                        float(_YAHOO_RATE_LIMIT_STATE.get("until_ts", 0.0) or 0.0),
+                        until_ts,
+                    )
+            elif int(status) == 200:
+                _YAHOO_RATE_LIMIT_STATE["streak"] = 0
+                _YAHOO_RATE_LIMIT_STATE["until_ts"] = 0.0
     if status != 200:
         auth_error = (headers.get("x-yahooj-autherror") or "").strip()
         parts: List[str] = []
@@ -2521,6 +2546,19 @@ def _search_yahoo(
         payload_error = str(payload.get("error", "") or "").strip()
         if payload_error:
             parts.append(payload_error)
+        if int(status) == 429:
+            retry_after_sec = int(
+                max(
+                    1.0,
+                    round(
+                        max(
+                            _retry_wait_seconds(headers),
+                            float(_env_int("YAHOO_RATE_LIMIT_CIRCUIT_HOLD_SECONDS", 60)),
+                        )
+                    ),
+                )
+            )
+            parts.append(f"retry_after_sec={retry_after_sec}")
         suffix = f" ({' / '.join(parts)})" if parts else ""
         raise ValueError(f"Yahoo検索失敗: http={status}{suffix}")
 

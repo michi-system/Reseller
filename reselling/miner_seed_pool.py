@@ -60,6 +60,7 @@ _COUNT_KEYS: Tuple[str, ...] = (
     "skipped_implausible_sold_min",
     "skipped_source_variant_unresolved",
     "skipped_stage1_api_budget",
+    "skipped_site_backoff",
     "skipped_blocked",
     "skipped_group_cap",
     "skipped_ambiguous_model_title",
@@ -228,6 +229,20 @@ def _temporary_env(overrides: Dict[str, str]):
                 os.environ.pop(key, None)
             else:
                 os.environ[key] = old
+
+
+def _stage1_site_backoff_seconds(*, site_key: str, error_message: str) -> int:
+    site_text = str(site_key or "").strip().lower()
+    message = str(error_message or "")
+    if site_text not in {"yahoo", "yahoo_shopping"}:
+        return 0
+    lower = message.lower()
+    if "http=429" not in lower and "rate_limit_circuit_open" not in lower:
+        return 0
+    match = re.search(r"retry_after_sec=(\d+)", message)
+    if match:
+        return max(1, to_int(match.group(1), 0))
+    return max(10, env_int("MINER_STAGE1_YAHOO_429_BACKOFF_SECONDS", 60))
 
 
 def _seed_key(seed_query: str) -> str:
@@ -1900,6 +1915,31 @@ def _count_available(conn: Any, *, category_key: str, now_ts: int) -> int:
     return count
 
 
+def _count_selectable_available(conn: Any, *, category_key: str, now_ts: int) -> int:
+    active_cooldown_keys = _load_active_low_liquidity_seed_keys(conn, category_key=category_key, now_ts=now_ts)
+    active_cooldown_keys.update(
+        _load_active_seed_usage_cooldown_keys(conn, category_key=category_key, now_ts=now_ts)
+    )
+    rows = conn.execute(
+        """
+        SELECT seed_key, expires_at
+        FROM miner_seed_pool
+        WHERE category_key = ?
+        """,
+        (category_key,),
+    ).fetchall()
+    count = 0
+    for row in rows:
+        expires_at = iso_to_epoch(str(row["expires_at"] or ""))
+        if expires_at <= now_ts:
+            continue
+        seed_key_text = str(row["seed_key"] or "").strip().upper()
+        if seed_key_text and seed_key_text in active_cooldown_keys:
+            continue
+        count += 1
+    return count
+
+
 def _load_refill_state(conn: Any, *, category_key: str) -> Dict[str, Any]:
     row = conn.execute(
         """
@@ -2460,6 +2500,7 @@ def get_seed_pool_status(
             take_count=run_batch_size,
             now_ts=now_ts,
         )
+        selectable_available = _count_selectable_available(conn, category_key=category_key, now_ts=now_ts)
         low_liquidity_cooldown_active_count = len(
             _load_active_low_liquidity_seed_keys(conn, category_key=category_key, now_ts=now_ts)
         )
@@ -2485,6 +2526,7 @@ def get_seed_pool_status(
         # backward-compat keys (deprecated)
         "selected_seed_count": int(selected_count),
         "available_after_refill": int(available),
+        "selectable_available_after_refill": int(selectable_available),
         "skipped_low_quality_count": 0,
         "skipped_cooldown_count": int(skipped_cooldown_count),
         "cooldown_active_count": int(cooldown_active_count),
@@ -3073,10 +3115,13 @@ def _refill_seed_pool(
     min_seed_sold_price_usd = _category_seed_min_sold_price_usd(category_key, category_row)
     _normalize_existing_seed_rows(conn, category_key=category_key)
     available = _count_available(conn, category_key=category_key, now_ts=now_ts)
+    selectable_available = _count_selectable_available(conn, category_key=category_key, now_ts=now_ts)
     summary: Dict[str, Any] = {
         "ran": False,
         "available_before": available,
         "available_after": available,
+        "selectable_available_before": selectable_available,
+        "selectable_available_after": selectable_available,
         "pre_refill_pruned_non_model_seed_count": 0,
         "added_count": 0,
         "bootstrap_added_count": 0,
@@ -3170,17 +3215,20 @@ def _refill_seed_pool(
         summary["pre_refill_pruned_non_model_seed_count"] = int(pruned_count)
         if pruned_count > 0:
             available = _count_available(conn, category_key=category_key, now_ts=now_ts)
+            selectable_available = _count_selectable_available(conn, category_key=category_key, now_ts=now_ts)
             summary["available_before"] = int(available)
+            summary["selectable_available_before"] = int(selectable_available)
             _trace(
                 "prune_non_model_seed_rows",
                 pruned_count=int(pruned_count),
                 available_before=int(available),
             )
 
-    if available > refill_trigger_available_le:
+    if selectable_available > refill_trigger_available_le:
         _trace(
             "refill_skipped_threshold",
             available_before=int(available),
+            selectable_available_before=int(selectable_available),
             threshold=int(refill_trigger_available_le),
             cooldown_active_count=int(len(active_low_liquidity_cooldown_keys)),
         )
@@ -3215,12 +3263,15 @@ def _refill_seed_pool(
             summary["reason"] = "bootstrap_refilled"
 
         available = _count_available(conn, category_key=category_key, now_ts=now_ts)
+        selectable_available = _count_selectable_available(conn, category_key=category_key, now_ts=now_ts)
         summary["available_after"] = available
-        if available > refill_trigger_available_le:
+        summary["selectable_available_after"] = selectable_available
+        if selectable_available > refill_trigger_available_le:
             _trace(
                 "refill_bootstrap_only",
                 bootstrap_added_count=int(summary["bootstrap_added_count"]),
                 available_after=int(available),
+                selectable_available_after=int(selectable_available),
                 threshold=int(refill_trigger_available_le),
             )
             _upsert_refill_state(
@@ -3846,9 +3897,11 @@ def _refill_seed_pool(
             break
 
     available_after = _count_available(conn, category_key=category_key, now_ts=now_ts)
+    selectable_available_after = _count_selectable_available(conn, category_key=category_key, now_ts=now_ts)
     summary["added_count"] = added_total
     summary["skipped_fresh_pages"] = skipped_fresh_pages
     summary["available_after"] = available_after
+    summary["selectable_available_after"] = selectable_available_after
     summary["last_rank_checked"] = last_rank
     summary["query_runs"] = query_runs
     summary["low_yield_stop_query_count"] = int(
@@ -4174,11 +4227,12 @@ def _stage1_seed_only_strict_queries(
         seen.add(key)
         out.append(text)
 
-    def _push_domestic_suffix_trim_variant(raw_query: str) -> bool:
-        brand = "Seiko" if "SEIKO" in f"{seed_query} {stage1_query} {seed_source_title}".upper() else ""
+    def _push_trimmed_market_suffix_variant(raw_query: str) -> bool:
+        upper_context = f"{seed_query} {stage1_query} {seed_source_title}".upper()
+        brand = "Seiko" if "SEIKO" in upper_context else ("CASIO" if "CASIO" in upper_context else "")
         for raw_code in _extract_codes(raw_query):
             code_text = str(raw_code or "").strip().upper()
-            trimmed = re.sub(r"(J1|P1|K1)$", "", code_text)
+            trimmed = re.sub(r"(AJR|JR|ER|CR|J1|P1|K1)$", "", code_text)
             if trimmed == code_text or len(trimmed) < 5:
                 continue
             if brand:
@@ -4189,9 +4243,36 @@ def _stage1_seed_only_strict_queries(
         return False
 
     preferred = _prefer_stage1_query_for_seed_only(seed_query=seed_query, stage1_query=stage1_query)
+    stage1_query_text = _normalize_query_text(stage1_query)
+    seed_query_text = _normalize_query_text(seed_query)
+    preferred_codes = _model_code_set(preferred)
+    stage1_codes = _model_code_set(stage1_query_text)
+    seed_codes = _model_code_set(seed_query_text)
+    title_codes = _model_code_set(seed_source_title)
+    if (
+        " " in stage1_query_text
+        and " " in seed_query_text
+        and stage1_codes
+        and seed_codes
+        and stage1_codes != seed_codes
+        and stage1_codes.issubset(title_codes)
+        and seed_codes.issubset(title_codes)
+    ):
+        preferred = stage1_query_text
+        preferred_codes = stage1_codes
     _push(preferred)
-    if len(out) < 2 and "SEIKO" in f"{seed_query} {stage1_query} {seed_source_title}".upper():
-        if _push_domestic_suffix_trim_variant(preferred):
+    if (
+        len(out) < 2
+        and " " in seed_query_text
+        and seed_query_text.lower() != preferred.lower()
+        and seed_codes
+        and seed_codes != preferred_codes
+    ):
+        _push(seed_query_text)
+        if len(out) >= 2:
+            return out[:2]
+    if len(out) < 2 and " " in preferred:
+        if _push_trimmed_market_suffix_variant(preferred):
             return out[:2]
     for text in (preferred, stage1_query, seed_query, seed_source_title):
         for raw_code in _extract_codes(text):
@@ -4416,7 +4497,7 @@ def _stage1_item_model_codes(item: MarketItem) -> Tuple[List[str], Set[str]]:
         raw_codes.extend(_specific_model_codes_in_title(text))
     raw = item.raw if isinstance(item.raw, dict) else {}
     if isinstance(raw, dict):
-        for key in ("itemCode", "model", "modelNumber", "mpn", "manufacturerPartNumber", "sku"):
+        for key in ("model", "modelNumber", "mpn", "manufacturerPartNumber", "sku"):
             text = str(raw.get(key) or "").strip()
             if not text:
                 continue
@@ -5145,6 +5226,7 @@ def run_seeded_fetch(
             progress_callback=progress_callback,
         )
         available_after = _count_available(conn, category_key=category_key, now_ts=int(time.time()))
+        selectable_available_after = _count_selectable_available(conn, category_key=category_key, now_ts=int(time.time()))
         # 1探索は「古い順20件」を上限に実行する。
         run_batch_size = max(1, min(int(available_after), env_int("MINER_SEED_POOL_RUN_BATCH_SIZE", 20)))
         selected_seeds, skipped_cooldown_count = _take_seeds_for_run(
@@ -5167,6 +5249,7 @@ def run_seeded_fetch(
             # backward-compat keys (deprecated)
             "selected_seed_count": len(selected_seeds),
             "available_after_refill": available_after,
+            "selectable_available_after_refill": selectable_available_after,
             "skipped_low_quality_count": 0,
             "skipped_cooldown_count": int(skipped_cooldown_count),
             "cooldown_active_count": int(cooldown_active_count),
@@ -5421,6 +5504,8 @@ def run_seeded_fetch(
     stage1_api_calls = 0
     stage_b_rows: List[Dict[str, Any]] = []
     stage_b_seen_keys: Set[str] = set()
+    stage1_site_backoff_until: Dict[str, float] = {}
+    stage1_site_backoff_events: Dict[str, int] = {}
     liquidity_min_sold_90d = max(
         0,
         int(stage_c_min_sold_90d)
@@ -5739,6 +5824,20 @@ def run_seeded_fetch(
                     max_queries=stage1_max_queries_per_site,
                 )
             for site_query in site_queries:
+                backoff_until_ts = float(stage1_site_backoff_until.get(site_key, 0.0) or 0.0)
+                if backoff_until_ts > time.time():
+                    _inc_skip(stage1_skip_counts, "skipped_site_backoff", 1)
+                    if stage1_include_diagnostics:
+                        site_query_logs.append(
+                            {
+                                "query": site_query,
+                                "ok": False,
+                                "error": "site_backoff_active",
+                                "raw_count": 0,
+                                "matched_count": 0,
+                            }
+                        )
+                    break
                 if stage1_api_max_calls > 0 and stage1_api_calls >= stage1_api_max_calls:
                     _inc_skip(stage1_skip_counts, "skipped_stage1_api_budget", 1)
                     if stage1_include_diagnostics:
@@ -5758,6 +5857,15 @@ def run_seeded_fetch(
                         items, fetch_info = fetcher(site_query, stage1_limit_per_site, timeout, 1, require_in_stock)
                     except Exception as err:
                         _inc_skip(stage1_skip_counts, "skipped_fetch_error", 1)
+                        backoff_sec = _stage1_site_backoff_seconds(site_key=site_key, error_message=str(err))
+                        if backoff_sec > 0:
+                            stage1_site_backoff_until[site_key] = max(
+                                float(stage1_site_backoff_until.get(site_key, 0.0) or 0.0),
+                                time.time() + float(backoff_sec),
+                            )
+                            stage1_site_backoff_events[site_key] = int(
+                                stage1_site_backoff_events.get(site_key, 0)
+                            ) + 1
                         errors.append(
                             {
                                 "seed_query": seed_query,
@@ -6910,6 +7018,9 @@ def run_seeded_fetch(
             hints.append(f"B段階seedフィードバック保存でエラー: {type(err).__name__}")
     if stage1_seed_feedback_updated > 0:
         hints.append(f"B段階 no-hit seed フィードバック更新: {stage1_seed_feedback_updated}件")
+    yahoo_backoff_events = int(stage1_site_backoff_events.get("yahoo", 0))
+    if yahoo_backoff_events > 0:
+        hints.append(f"Yahoo 429回避のためB段階で一時停止: {yahoo_backoff_events}回")
 
     if len(created_ids) <= 0 and stage1_skip_counts:
         top_stage1 = sorted(stage1_skip_counts.items(), key=lambda kv: kv[1], reverse=True)[0]
