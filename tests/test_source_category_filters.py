@@ -1,4 +1,5 @@
 import os
+import time
 import unittest
 import urllib.parse
 from unittest.mock import patch
@@ -7,6 +8,10 @@ from reselling import live_miner_fetch
 
 
 class SourceCategoryFilterTests(unittest.TestCase):
+    def setUp(self) -> None:
+        live_miner_fetch._YAHOO_RATE_LIMIT_STATE["streak"] = 0
+        live_miner_fetch._YAHOO_RATE_LIMIT_STATE["until_ts"] = 0.0
+
     def test_search_rakuten_applies_category_and_price_cap(self) -> None:
         seen_queries = []
 
@@ -101,6 +106,58 @@ class SourceCategoryFilterTests(unittest.TestCase):
         self.assertEqual(req.get("price_to", [""])[0], "22000")
         self.assertEqual(req.get("sort", [""])[0], "+price")
         self.assertTrue(bool((info.get("category_filter") or {}).get("applied")))
+
+    def test_search_yahoo_429_arms_rate_limit_circuit(self) -> None:
+        def fake_request(_url: str, **_kwargs):
+            return (
+                429,
+                {},
+                {
+                    "error": "rate_limited",
+                },
+            )
+
+        with patch.dict(
+            os.environ,
+            {
+                "YAHOO_APP_ID": "app-test",
+                "YAHOO_RATE_LIMIT_CIRCUIT_ENABLED": "1",
+                "YAHOO_RATE_LIMIT_CIRCUIT_HOLD_SECONDS": "45",
+            },
+            clear=False,
+        ), patch.object(
+            live_miner_fetch,
+            "_resolve_category_filter_for_site",
+            return_value={"applied": False},
+        ), patch.object(
+            live_miner_fetch,
+            "_request_with_retry",
+            side_effect=fake_request,
+        ):
+            with self.assertRaisesRegex(ValueError, r"Yahoo検索失敗: http=429 .*retry_after_sec=45"):
+                live_miner_fetch._search_yahoo("Seiko watch", limit=30, timeout=10)
+
+        self.assertGreater(float(live_miner_fetch._YAHOO_RATE_LIMIT_STATE.get("until_ts", 0.0) or 0.0), 0.0)
+
+    def test_search_yahoo_uses_rate_limit_circuit_before_network(self) -> None:
+        live_miner_fetch._YAHOO_RATE_LIMIT_STATE["streak"] = 1
+        live_miner_fetch._YAHOO_RATE_LIMIT_STATE["until_ts"] = time.time() + 30.0
+
+        with patch.dict(
+            os.environ,
+            {
+                "YAHOO_APP_ID": "app-test",
+                "YAHOO_RATE_LIMIT_CIRCUIT_ENABLED": "1",
+            },
+            clear=False,
+        ), patch.object(
+            live_miner_fetch,
+            "_request_with_retry",
+        ) as mocked_request:
+            with self.assertRaisesRegex(ValueError, r"rate_limit_circuit_open"):
+                live_miner_fetch._search_yahoo("Seiko watch", limit=30, timeout=10)
+
+        mocked_request.assert_not_called()
 
     def test_resolve_yahoo_category_falls_back_to_item_hits(self) -> None:
         root_payload = {

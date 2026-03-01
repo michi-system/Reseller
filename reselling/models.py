@@ -124,6 +124,23 @@ def init_db(conn: DbConnection) -> None:
         )
         conn.execute(
             """
+            CREATE TABLE IF NOT EXISTS miner_seed_usage_cooldowns (
+                id BIGSERIAL PRIMARY KEY,
+                category_key TEXT NOT NULL,
+                seed_key TEXT NOT NULL,
+                seed_query TEXT NOT NULL DEFAULT '',
+                blocked_until TEXT NOT NULL,
+                last_consumed_at TEXT NOT NULL,
+                consume_count INTEGER NOT NULL DEFAULT 1,
+                metadata_json TEXT NOT NULL DEFAULT '{}',
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL,
+                UNIQUE(category_key, seed_key)
+            )
+            """
+        )
+        conn.execute(
+            """
             CREATE TABLE IF NOT EXISTS miner_ui_settings (
                 settings_key TEXT PRIMARY KEY,
                 settings_json TEXT NOT NULL DEFAULT '{}',
@@ -165,6 +182,12 @@ def init_db(conn: DbConnection) -> None:
             """
             CREATE INDEX IF NOT EXISTS idx_miner_seed_liquidity_cooldowns_active
             ON miner_seed_liquidity_cooldowns(category_key, blocked_until)
+            """
+        )
+        conn.execute(
+            """
+            CREATE INDEX IF NOT EXISTS idx_miner_seed_usage_cooldowns_active
+            ON miner_seed_usage_cooldowns(category_key, blocked_until)
             """
         )
         conn.commit()
@@ -314,6 +337,23 @@ def init_db(conn: DbConnection) -> None:
     )
     conn.execute(
         """
+        CREATE TABLE IF NOT EXISTS miner_seed_usage_cooldowns (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            category_key TEXT NOT NULL,
+            seed_key TEXT NOT NULL,
+            seed_query TEXT NOT NULL DEFAULT '',
+            blocked_until TEXT NOT NULL,
+            last_consumed_at TEXT NOT NULL,
+            consume_count INTEGER NOT NULL DEFAULT 1,
+            metadata_json TEXT NOT NULL DEFAULT '{}',
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            UNIQUE(category_key, seed_key)
+        )
+        """
+    )
+    conn.execute(
+        """
         CREATE TABLE IF NOT EXISTS miner_ui_settings (
             settings_key TEXT PRIMARY KEY,
             settings_json TEXT NOT NULL DEFAULT '{}',
@@ -361,6 +401,12 @@ def init_db(conn: DbConnection) -> None:
         """
         CREATE INDEX IF NOT EXISTS idx_miner_seed_liquidity_cooldowns_active
         ON miner_seed_liquidity_cooldowns(category_key, blocked_until)
+        """
+    )
+    conn.execute(
+        """
+        CREATE INDEX IF NOT EXISTS idx_miner_seed_usage_cooldowns_active
+        ON miner_seed_usage_cooldowns(category_key, blocked_until)
         """
     )
     conn.commit()
